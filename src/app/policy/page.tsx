@@ -7,9 +7,9 @@ export const metadata: Metadata = {
     'POSI uses a hybrid inclusion model combining automatic metadata discovery, journal-initiated submission, and evidence-based manual verification. This policy defines how records are discovered, verified, and assessed.',
 }
 
-function Zh({ children }: { children: React.ReactNode }) {
+function Zh({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="mt-3 pl-3 text-[11px] leading-relaxed" style={{ borderLeft: '2px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
+    <div className={`mt-3 pl-3 text-[11px] leading-relaxed${className ? ` ${className}` : ''}`} style={{ borderLeft: '2px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
       {children}
     </div>
   )
