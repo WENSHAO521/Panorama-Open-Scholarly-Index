@@ -59,6 +59,7 @@ export function Footer() {
                 { href: '/data-sources',   label: 'Data Sources' },
                 { href: '/api',            label: 'API & Export' },
                 { href: '/submit-journal', label: 'Submit a Journal' },
+                { href: '/policy',         label: 'Inclusion Policy' },
               ].map(link => (
                 <li key={link.href}>
                   <Link
