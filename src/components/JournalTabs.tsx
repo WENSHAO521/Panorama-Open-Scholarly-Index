@@ -49,7 +49,6 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>IRS</th>
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>DOAJ</th>
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Registered</th>
-                <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Frequency</th>
               </tr>
             </thead>
             <tbody>
@@ -145,8 +144,7 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                         />
                       ) : '—'}
                     </td>
-                    <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{journal.registration_country ?? issnCountry ?? '—'}</td>
-                    <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>{journal.frequency}</td>
+                    <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{journal.registration_country || issnCountry || '—'}</td>
                   </tr>
                 )
               })}
