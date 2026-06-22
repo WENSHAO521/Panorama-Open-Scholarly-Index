@@ -699,7 +699,7 @@ export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | nu
     const bib = (first.bibjson ?? {}) as Record<string, unknown>
     const admin = (first.admin ?? {}) as Record<string, unknown>
     return {
-      in_doaj: (admin.in_doaj as boolean) ?? false,
+      in_doaj: true, // presence in DOAJ API v4 results implies listing
       has_seal: (admin.ticked as boolean) ?? false,
       license: ((bib.license as Array<{ type: string }>)?.[0]?.type) ?? null,
       has_apc: ((bib.apc as { has_apc?: boolean })?.has_apc) ?? false,
