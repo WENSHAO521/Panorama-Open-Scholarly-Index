@@ -22,6 +22,7 @@ export interface Journal {
   transparency_score: number
   indexing_readiness: 'A' | 'B' | 'C' | 'D' | 'Internal Review'
   pqf?: PqfScore | null
+  auto_pqf?: PqfScore | null
   /** @deprecated use pqf */
   ojqf?: PqfScore
   article_count: number

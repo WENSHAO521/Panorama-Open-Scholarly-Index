@@ -19,6 +19,25 @@ function pqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, ri
   }
 }
 
+// Auto-assessed PQF (computed from DOAJ + Crossref signals; not manually reviewed)
+function autopqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, rif: number): PqfScore {
+  const total = jtf + mqf + egf + tdf + cvf + rif
+  const grade =
+    total >= 90 ? 'A+' :
+    total >= 80 ? 'A'  :
+    total >= 70 ? 'B+' :
+    total >= 60 ? 'B'  :
+    total >= 50 ? 'C'  :
+    total >= 40 ? 'D'  : 'E'
+  return {
+    total,
+    grade,
+    subfactors: { jtf, mqf, egf, tdf, cvf, rif },
+    evaluated_at: '2026-06-22',
+    version: 'PQF v1.0-auto',
+  }
+}
+
 const COVER = (name: string) => `https://panorama-sg.com/QKFM/${name}.png`
 
 // ── PSG Journals (12 journals published by Panorama Scholarly Group) ──────
@@ -917,7 +936,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1666,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -946,7 +966,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 142,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -975,7 +996,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 318,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1004,7 +1026,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 174,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1033,7 +1056,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 36,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1062,7 +1086,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3056,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1091,7 +1116,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(18, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1120,7 +1146,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 187,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1149,7 +1176,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 724,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1178,7 +1206,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 286,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1207,7 +1236,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 63,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1265,7 +1295,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1294,7 +1325,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 161,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1323,7 +1355,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 120,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1352,7 +1385,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 102,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1381,7 +1415,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 564,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1410,7 +1445,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1439,7 +1475,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 101,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1468,7 +1505,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 540,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(17, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1497,7 +1535,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 456,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1526,7 +1565,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 309,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1642,7 +1682,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 106,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1671,7 +1712,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 127,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1700,7 +1742,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 176,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1729,7 +1772,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2005,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1787,7 +1831,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 128,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1816,7 +1861,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 183,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1845,7 +1891,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 947,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1874,7 +1921,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 409,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1903,7 +1951,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 129,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1932,7 +1981,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 553,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1961,7 +2011,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 10739,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -1990,7 +2041,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 15809,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2048,7 +2100,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 31182,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2077,7 +2130,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 12822,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2164,7 +2218,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2193,7 +2248,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 19571,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2222,7 +2278,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2510,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
   {
@@ -2250,7 +2307,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 45531,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2279,7 +2337,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1319,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2308,7 +2367,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 493,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2337,7 +2397,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2076,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2366,7 +2427,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1868,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2395,7 +2457,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 880,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2424,7 +2487,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2762,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2453,7 +2517,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2133,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2511,7 +2576,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 282,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2540,7 +2606,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 458,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2569,7 +2636,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 102,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2598,7 +2666,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 542,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2627,7 +2696,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 760,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 14, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
   {
@@ -2655,7 +2725,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 4667,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2684,7 +2755,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2077,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2713,7 +2785,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 7,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2771,7 +2844,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2800,7 +2874,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 7,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
   {
@@ -2828,7 +2903,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3107,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2857,7 +2933,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 436,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2886,7 +2963,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 13035,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2915,7 +2993,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 6073,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2944,7 +3023,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 31,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -2973,7 +3053,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 155,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3002,7 +3083,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 528,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3031,7 +3113,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3020,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3060,7 +3143,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 299,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3089,7 +3173,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1429,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3118,7 +3203,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3846,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3147,7 +3233,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1757,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3176,7 +3263,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 17304,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3205,7 +3293,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 67,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3234,7 +3323,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1179,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3263,7 +3353,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2933,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3292,7 +3383,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 11166,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3321,7 +3413,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 6869,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3350,7 +3443,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 9482,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3379,7 +3473,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 31,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3408,7 +3503,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 117,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3437,7 +3533,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 75,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3466,7 +3563,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 90,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3495,7 +3593,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 11257,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3524,7 +3623,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 847,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3553,7 +3653,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 222,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3582,7 +3683,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 296,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3611,7 +3713,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 86,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3640,7 +3743,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 4687,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3669,7 +3773,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 4777,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3698,7 +3803,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1311,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3727,7 +3833,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 8408,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3756,7 +3863,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2550,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3785,7 +3893,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 264,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3814,7 +3923,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 8191,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3843,7 +3953,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 887,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3930,7 +4041,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 165,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -3959,7 +4071,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 5754,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4017,7 +4130,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1745,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4075,7 +4189,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 151,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4104,7 +4219,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 861,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4133,7 +4249,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 11510,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4162,7 +4279,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 859,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4220,7 +4338,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 4010,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4249,7 +4368,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 493,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4278,7 +4398,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2806,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4307,7 +4428,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 846,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4336,7 +4458,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 51,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4365,7 +4488,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 397,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4394,7 +4518,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 140,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4423,7 +4548,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1153,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4452,7 +4578,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 4125,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4481,7 +4608,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2102,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4510,7 +4638,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 545,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4539,7 +4668,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 3713,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4568,7 +4698,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 547,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4597,7 +4728,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2521,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4626,7 +4758,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 253,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4655,7 +4788,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 451,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4684,7 +4818,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 580,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4713,7 +4848,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 297,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4742,7 +4878,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 6414,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4771,7 +4908,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 541,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4800,7 +4938,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 112,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4829,7 +4968,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1396,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4858,7 +4998,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1359,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4887,7 +5028,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 159,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4916,7 +5058,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 95,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4945,7 +5088,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 47,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -4974,7 +5118,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 240,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5003,7 +5148,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 167,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5032,7 +5178,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 639,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5061,7 +5208,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 289,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5090,7 +5238,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 127,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5119,7 +5268,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 187,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5148,7 +5298,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 76,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5177,7 +5328,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 106,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5206,7 +5358,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 56,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5235,7 +5388,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 284,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5264,7 +5418,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 976,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5293,7 +5448,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 689,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5322,7 +5478,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 525,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5351,7 +5508,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2342,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5380,7 +5538,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 416,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5409,7 +5568,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 139,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5438,7 +5598,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 589,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5496,7 +5657,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2872,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5525,7 +5687,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1987,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5554,7 +5717,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 553,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5583,7 +5747,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 138,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5641,7 +5806,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 828,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5670,7 +5836,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 162,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5699,7 +5866,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 217,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5728,7 +5896,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 102,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5757,7 +5926,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 71,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5786,7 +5956,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 61,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5815,7 +5986,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 208,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5844,7 +6016,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 152,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -5873,7 +6046,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 117,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
   {
@@ -5901,7 +6075,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2118,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6017,7 +6192,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 110,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6046,7 +6222,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 79,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6075,7 +6252,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 961,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6104,7 +6282,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 630,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6133,7 +6312,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 24,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6162,7 +6342,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 112,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6191,7 +6372,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 777,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6220,7 +6402,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 44,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6249,7 +6432,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 26,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6278,7 +6462,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 149,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6307,7 +6492,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 143,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6336,7 +6522,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 83,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6365,7 +6552,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 156,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6423,7 +6611,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 350,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6452,7 +6641,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 47,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6481,7 +6671,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 2023,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6510,7 +6701,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 872,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6539,7 +6731,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 23,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6568,7 +6761,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 20,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6597,7 +6791,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 36,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6655,7 +6850,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 63,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6713,7 +6909,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 132,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6742,7 +6939,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 164,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6800,7 +6998,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 155,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6829,7 +7028,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 41,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6858,7 +7058,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 82,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6887,7 +7088,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 309,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -6974,7 +7176,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 980,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7003,7 +7206,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7061,7 +7265,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 151,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7090,7 +7295,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 1045,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 17, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7119,7 +7325,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 775,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7148,7 +7355,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 804,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7177,7 +7385,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 223,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7206,7 +7415,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 77,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7235,7 +7445,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 184,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7264,7 +7475,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7322,7 +7534,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 365,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7380,7 +7593,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 217,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7409,7 +7623,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 34,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(21, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7438,7 +7653,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 60,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7467,7 +7683,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 94,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7611,7 +7828,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 75,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7669,7 +7887,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 57,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7785,7 +8004,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 372,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7843,7 +8063,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7872,7 +8093,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 126,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7930,7 +8152,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 372,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -7959,7 +8182,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 56,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8191,7 +8415,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 172,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8220,7 +8445,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 308,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8249,7 +8475,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 72,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8307,7 +8534,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 12,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8336,7 +8564,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 67,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8423,7 +8652,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 0,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 12, 15, 5, 5, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8568,7 +8798,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 341,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8655,7 +8886,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 123,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8684,7 +8916,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 90,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8771,7 +9004,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 326,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8800,7 +9034,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 260,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 15, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8858,7 +9093,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 58,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 
@@ -8945,7 +9181,8 @@ export const DISCOVERED_JOURNALS: Journal[] = [
     indexing_readiness: 'D',
     pqf: null,
     article_count: 39,
-    created_at: '2026-06-22T00:00:00Z',
+      auto_pqf: autopqf(20, 13, 15, 9, 7, 4),
+  created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
 // END:DISCOVERED_JOURNALS

@@ -157,8 +157,13 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         )}
       </div>
 
-      {/* PQF */}
-      {(journal.pqf ?? journal.ojqf) && <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />}
+      {/* PQF — official first, auto-assessed as fallback */}
+      {(journal.pqf ?? journal.ojqf)
+        ? <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />
+        : journal.auto_pqf
+          ? <OjqfCard score={journal.auto_pqf} journalCode={journal.journal_code} isAuto />
+          : null
+      }
 
       {/* Two-column: sidebar + articles */}
       <div className="grid md:grid-cols-3 gap-5">

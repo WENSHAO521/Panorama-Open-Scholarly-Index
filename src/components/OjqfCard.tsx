@@ -33,31 +33,42 @@ function getSuggestions(score: PqfScore): string[] {
 interface PqfCardProps {
   score: PqfScore
   journalCode?: string
+  isAuto?: boolean
 }
 
-export function OjqfCard({ score, journalCode }: PqfCardProps) {
+export function OjqfCard({ score, journalCode, isAuto }: PqfCardProps) {
   const gc = gradeColor(score.grade)
   const suggestions = getSuggestions(score)
+  const accentColor = isAuto ? '#B45309' : 'var(--posi-accent)'
+  const topBorder = isAuto ? '#F59E0B' : 'var(--posi-accent)'
 
   return (
-    <div className="bg-white" style={{ border: '1px solid var(--posi-border)', borderTop: '4px solid var(--posi-accent)' }}>
+    <div className="bg-white" style={{ border: '1px solid var(--posi-border)', borderTop: `4px solid ${topBorder}` }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
         <div className="flex items-center gap-2">
           <span
             className="text-[10px] font-mono font-bold px-1.5 py-0.5 leading-none"
-            style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}
+            style={{ color: accentColor, border: `1px solid ${accentColor}` }}
           >
             PQF
           </span>
           <span className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--posi-text)' }}>
-            POSI Quality Factor
+            {isAuto ? 'Auto-assessed PQF' : 'POSI Quality Factor'}
           </span>
+          {isAuto && (
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-[0.08em]"
+              style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #F59E0B' }}
+            >
+              Pending POSI Review
+            </span>
+          )}
           <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
             {score.evaluated_at}
           </span>
         </div>
-        <Link href="/pqf" className="text-[11px] hover:underline transition-colors" style={{ color: 'var(--posi-accent)' }}>
+        <Link href="/pqf" className="text-[11px] hover:underline transition-colors" style={{ color: accentColor }}>
           Methodology →
         </Link>
       </div>
@@ -101,7 +112,7 @@ export function OjqfCard({ score, journalCode }: PqfCardProps) {
                 <div className="w-full h-1.5" style={{ background: 'var(--posi-bg)' }}>
                   <div
                     className="h-1.5 transition-all"
-                    style={{ width: `${pct}%`, background: 'var(--posi-accent)' }}
+                    style={{ width: `${pct}%`, background: isAuto ? '#F59E0B' : 'var(--posi-accent)' }}
                   />
                 </div>
               </div>
@@ -140,9 +151,10 @@ export function OjqfCard({ score, journalCode }: PqfCardProps) {
       {/* Disclaimer */}
       <div className="px-5 py-2.5" style={{ borderTop: '1px solid var(--posi-border-light)', background: '#fffbeb' }}>
         <p className="text-[10px] leading-relaxed" style={{ color: '#92400e' }}>
-          PQF is not a Journal Impact Factor and should not be used as a substitute for expert review, article-level
-          assessment, researcher evaluation, institutional ranking, or funding decisions. Some journals evaluated here
-          are published by Panorama Scholarly Group, which also operates POSI.{' '}
+          {isAuto
+            ? 'This is an automated assessment computed from DOAJ and Crossref signals. It has not been manually reviewed by POSI and should not be treated as an official score. Scores may change after POSI Evidence Review.'
+            : 'PQF is not a Journal Impact Factor and should not be used as a substitute for expert review, article-level assessment, researcher evaluation, institutional ranking, or funding decisions. Some journals evaluated here are published by Panorama Scholarly Group, which also operates POSI.'
+          }{' '}
           <Link href="/about" className="underline">Conflict of interest disclosure →</Link>
         </p>
       </div>
