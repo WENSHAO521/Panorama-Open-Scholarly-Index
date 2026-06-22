@@ -7,6 +7,7 @@ import { crossrefGetWork, openAlexGetWork, rorMatchAffiliation } from '@/lib/api
 import { Badge, mqsVariant, mqsLabel } from './Badge'
 import { MetadataQualityBar } from './MetadataQualityBar'
 import type { Article, RorOrganization } from '@/lib/types'
+import { decodeHtml } from '@/lib/utils'
 
 function Skeleton({ className }: { className?: string }) {
   return <div className={`bg-gray-100 animate-pulse ${className ?? ''}`} />
@@ -126,7 +127,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
         <span>/</span>
         <Link href="/search" className="hover:text-gray-700 transition-colors">Search</Link>
         <span>/</span>
-        <span className="text-gray-600 truncate max-w-xs">{article.title}</span>
+        <span className="text-gray-600 truncate max-w-xs">{decodeHtml(article.title)}</span>
       </nav>
 
       {/* Header */}
@@ -143,7 +144,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
           <Badge label={article.article_type} variant="default" />
         </div>
 
-        <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">{article.title}</h1>
+        <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">{decodeHtml(article.title)}</h1>
 
         {/* Authors */}
         {article.authors.length > 0 && (
@@ -264,7 +265,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
           {article.abstract && (
             <div className="bg-white border border-gray-200 p-5">
               <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3">Abstract</h2>
-              <p className="text-sm text-gray-700 leading-relaxed">{article.abstract}</p>
+              <p className="text-sm text-gray-700 leading-relaxed">{decodeHtml(article.abstract)}</p>
             </div>
           )}
 

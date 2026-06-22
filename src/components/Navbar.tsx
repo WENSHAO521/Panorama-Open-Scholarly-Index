@@ -42,6 +42,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const links = [
+    { href: '/',               label: 'Home' },
     { href: '/search',         label: 'Search' },
     { href: '/journals',       label: 'Journals' },
     { href: '/articles',       label: 'Articles' },
@@ -54,6 +55,7 @@ export function Navbar() {
   ]
 
   function isActive(href: string) {
+    if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
   }
 

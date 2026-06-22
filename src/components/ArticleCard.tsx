@@ -5,6 +5,7 @@ import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import type { Article } from '@/lib/types'
 import { Badge, mqsVariant, mqsLabel } from './Badge'
 import { clsx } from 'clsx'
+import { decodeHtml } from '@/lib/utils'
 
 const CROSSREF_VARIANT = {
   verified: 'verified' as const,
@@ -47,7 +48,7 @@ export function ArticleCard({ article, showAbstract = true, className }: Article
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--posi-primary)')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--posi-text)')}
       >
-        {article.title}
+        {decodeHtml(article.title)}
       </a>
 
       {/* Authors */}
@@ -89,7 +90,7 @@ export function ArticleCard({ article, showAbstract = true, className }: Article
       {/* Abstract */}
       {showAbstract && article.abstract && (
         <p className="text-[12.5px] line-clamp-3 leading-relaxed mb-2.5" style={{ color: 'var(--posi-muted)' }}>
-          {article.abstract}
+          {decodeHtml(article.abstract)}
         </p>
       )}
 
