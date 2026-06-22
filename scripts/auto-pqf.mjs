@@ -179,7 +179,7 @@ function parseDiscoveredListed(src) {
     if (ionM) { current.issnOnline = ionM[1]; continue }
     const ipM = /issn_print:\s*["']([^"']+)["']/.exec(line)
     if (ipM) { current.issnPrint = ipM[1]; continue }
-    const doajM = /doaj_status:\s*'([^']+)'/.exec(line)
+    const doajM = /doaj_status:\s*["']([^"']+)["']/.exec(line)
     if (doajM) { current.doajStatus = doajM[1]; continue }
     const oaM = /openalex_source_id:\s*'([^']+)'/.exec(line)
     if (oaM) { current.openalex = oaM[1]; continue }

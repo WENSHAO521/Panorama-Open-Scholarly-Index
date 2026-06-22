@@ -54,8 +54,10 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
             </thead>
             <tbody>
               {rows.map(({ journal, cr, issnCountry, oaiCount }) => {
-                const pqfScore = journal.pqf ?? journal.ojqf
+                const officialScore = journal.pqf ?? journal.ojqf
+                const pqfScore = officialScore ?? journal.auto_pqf ?? null
                 const ojqfGrade = pqfScore?.grade
+                const isAutoPqf = !officialScore && !!journal.auto_pqf
                 return (
                   <tr
                     key={journal.id}
@@ -101,13 +103,18 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                     {showOjqf && (
                       <td className="px-3 py-3 text-center">
                         {ojqfGrade ? (
-                          <span className="font-mono font-bold text-xs" style={{
-                            color: ojqfGrade === 'A+' || ojqfGrade === 'A' ? '#1F7A4D'
-                                 : ojqfGrade === 'B+' || ojqfGrade === 'B' ? 'var(--posi-primary)'
-                                 : ojqfGrade === 'C' ? '#B7791F'
-                                 : 'var(--posi-muted)'
-                          }}>
-                            {ojqfGrade}
+                          <span
+                            className="font-mono font-bold text-xs"
+                            title={isAutoPqf ? 'Auto-assessed PQF (pending POSI review)' : undefined}
+                            style={{
+                              color: isAutoPqf ? '#B45309'
+                                   : ojqfGrade === 'A+' || ojqfGrade === 'A' ? '#1F7A4D'
+                                   : ojqfGrade === 'B+' || ojqfGrade === 'B' ? 'var(--posi-primary)'
+                                   : ojqfGrade === 'C' ? '#B7791F'
+                                   : 'var(--posi-muted)'
+                            }}
+                          >
+                            {ojqfGrade}{isAutoPqf ? '*' : ''}
                           </span>
                         ) : '—'}
                       </td>
@@ -183,12 +190,18 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                   <span style={{ color: 'var(--posi-muted)' }}>Articles</span>
                   <ArticleCountBadge issn={journal.issn_online ?? null} fallback={oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)} />
                 </div>
-                {showOjqf && (journal.pqf ?? journal.ojqf) && (
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--posi-muted)' }}>PQF</span>
-                    <span className="font-mono font-bold" style={{ color: 'var(--posi-accent)' }}>{(journal.pqf ?? journal.ojqf)!.total} · {(journal.pqf ?? journal.ojqf)!.grade}</span>
-                  </div>
-                )}
+                {showOjqf && (journal.pqf ?? journal.ojqf ?? journal.auto_pqf) && (() => {
+                  const score = journal.pqf ?? journal.ojqf ?? journal.auto_pqf
+                  const auto = !(journal.pqf ?? journal.ojqf) && !!journal.auto_pqf
+                  return (
+                    <div className="flex justify-between">
+                      <span style={{ color: 'var(--posi-muted)' }}>PQF{auto ? '*' : ''}</span>
+                      <span className="font-mono font-bold" style={{ color: auto ? '#B45309' : 'var(--posi-accent)' }}>
+                        {score!.total} · {score!.grade}
+                      </span>
+                    </div>
+                  )
+                })()}
               </div>
 
               <MetadataQualityBar score={journal.metadata_quality_score} />

@@ -1,7 +1,7 @@
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
-import { crossrefFetchJournal, issnGetCountry, oaiHarvestJournal, doajGetJournal } from '@/lib/api'
+import { crossrefFetchJournal, issnGetCountry, oaiHarvestJournal } from '@/lib/api'
 import { JournalTabs } from '@/components/JournalTabs'
 
 export const metadata = {
@@ -31,26 +31,14 @@ export default async function JournalsPage() {
         return { journal: j, cr, issnCountry, oaiCount: oaiItems.length }
       })
     ),
-    Promise.all(
-      DISCOVERED_JOURNALS.map(async j => {
-        const doajResult = j.issn_online ? await doajGetJournal(j.issn_online).catch(() => null) : null
-        const inDoaj = doajResult?.in_doaj ?? false
-        // For DOAJ-confirmed journals, also fetch Crossref meta for publisher_location
-        const cr = (inDoaj && j.issn_online) ? await crossrefFetchJournal(j.issn_online).catch(() => null) : null
-        const ISO_COUNTRY: Record<string, string> = {
-          AF:'Afghanistan',AR:'Argentina',AT:'Austria',AU:'Australia',BE:'Belgium',BR:'Brazil',
-          CA:'Canada',CH:'Switzerland',CN:'China',CZ:'Czech Republic',DE:'Germany',DK:'Denmark',
-          EG:'Egypt',ES:'Spain',FI:'Finland',FR:'France',GB:'United Kingdom',GR:'Greece',
-          HR:'Croatia',HU:'Hungary',ID:'Indonesia',IE:'Ireland',IL:'Israel',IN:'India',
-          IR:'Iran',IT:'Italy',JP:'Japan',KR:'South Korea',MX:'Mexico',MY:'Malaysia',
-          NL:'Netherlands',NO:'Norway',NZ:'New Zealand',PH:'Philippines',PL:'Poland',
-          PT:'Portugal',RO:'Romania',RS:'Serbia',RU:'Russia',SA:'Saudi Arabia',SE:'Sweden',
-          SG:'Singapore',SI:'Slovenia',SK:'Slovakia',TH:'Thailand',TR:'Turkey',
-          TW:'Taiwan',UA:'Ukraine',US:'United States',ZA:'South Africa',
-        }
-        const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null
-        const issnCountry = cr?.publisher_location ?? doajCountry ?? null
-        return { journal: j, cr, issnCountry, oaiCount: 0, inDoaj }
+    // Trust doaj_status from data.ts — skips live DOAJ check for faster builds.
+    // Journals with doaj_status='listed' are auto-promoted to Verified Records.
+    Promise.resolve(
+      DISCOVERED_JOURNALS.map(j => {
+        const inDoaj = j.doaj_status === 'listed'
+        // Use registration_country / country from data.ts (populated by discover-journals.mjs)
+        const issnCountry = j.registration_country ?? (j.country || null)
+        return { journal: j, cr: null as null, issnCountry, oaiCount: 0, inDoaj }
       })
     ),
   ])
@@ -84,7 +72,7 @@ export default async function JournalsPage() {
           <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: 'var(--posi-muted)' }} />
           <p className="leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
             <strong style={{ color: 'var(--posi-text)' }}>MQS</strong> = Metadata Quality Score (0–100).{' '}
-            <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Factor (Grade A+→E).{' '}
+            <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Factor (Grade A+→E); <strong style={{ color: '#B45309' }}>PQF*</strong> = auto-assessed from DOAJ signals (pending manual review).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>IRS</strong> = Indexing Readiness Score (A–D).{' '}
             Article counts from OAI-PMH (Crossref fallback).{' '}
             <Link href="/pqf" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>PQF methodology →</Link>
