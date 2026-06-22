@@ -44,6 +44,7 @@ async function fetchDoajDetails(issn) {
       review_processes: bib.editorial?.review_processes ?? [],
       has_editorial_board: !!(bib.editorial?.board_url),
       last_full_review: admin.last_full_review ?? null,
+      website_url: bib.ref?.journal ?? null,
     }
   } catch {
     return null
@@ -204,30 +205,41 @@ function parseDiscoveredListed(src) {
 
 // ─── Write auto_pqf into data.ts ─────────────────────────────────────────────
 
-function injectAutoPqf(src, id, scores) {
+function injectAutoPqf(src, id, scores, websiteUrl) {
   const { jtf, mqf, egf, tdf, cvf, rif } = scores
-  const line = `  auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),\n`
 
   const idIdx = src.indexOf(`id: '${id}'`)
   if (idIdx === -1) return src
 
-  // Find the journal block: look for created_at after the id
   const blockEnd = src.indexOf('created_at:', idIdx)
   if (blockEnd === -1) return src
 
-  // Check if auto_pqf already exists in this block
-  const blockContent = src.slice(idIdx, blockEnd)
-  if (blockContent.includes('auto_pqf:')) {
-    // Replace existing
-    const autoIdx = src.indexOf('auto_pqf:', idIdx)
-    if (autoIdx < blockEnd) {
-      const lineEnd = src.indexOf('\n', autoIdx)
-      return src.slice(0, autoIdx) + `auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),` + src.slice(lineEnd)
+  let updated = src
+  const blockContent = updated.slice(idIdx, blockEnd)
+
+  // Update website_url if journal has empty string and DOAJ has one
+  if (websiteUrl) {
+    const wsMatch = /website_url:\s*""/.exec(blockContent)
+    if (wsMatch) {
+      const wsIdx = idIdx + wsMatch.index
+      updated = updated.slice(0, wsIdx) + `website_url: "${websiteUrl}"` + updated.slice(wsIdx + wsMatch[0].length)
     }
   }
 
-  // Insert before created_at
-  return src.slice(0, blockEnd) + line + '  ' + src.slice(blockEnd)
+  // Recompute blockEnd after potential website_url replacement
+  const newBlockEnd = updated.indexOf('created_at:', idIdx)
+  const newBlockContent = updated.slice(idIdx, newBlockEnd)
+
+  const autoPqfLine = `  auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),\n`
+  if (newBlockContent.includes('auto_pqf:')) {
+    const autoIdx = updated.indexOf('auto_pqf:', idIdx)
+    if (autoIdx < newBlockEnd) {
+      const lineEnd = updated.indexOf('\n', autoIdx)
+      return updated.slice(0, autoIdx) + `auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),` + updated.slice(lineEnd)
+    }
+  }
+
+  return updated.slice(0, newBlockEnd) + autoPqfLine + '  ' + updated.slice(newBlockEnd)
 }
 
 // ─── Batch runner ─────────────────────────────────────────────────────────────
@@ -271,9 +283,10 @@ async function main() {
     scored++
 
     if (!WRITE) {
-      console.log(`[${code}] JTF:${scores.jtf} MQF:${scores.mqf} EGF:${scores.egf} TDF:${scores.tdf} CVF:${scores.cvf} RIF:${scores.rif} → ${scores.total} ${scores.grade}`)
+      const ws = doaj.website_url ? ` url:${doaj.website_url}` : ''
+      console.log(`[${code}] JTF:${scores.jtf} MQF:${scores.mqf} EGF:${scores.egf} TDF:${scores.tdf} CVF:${scores.cvf} RIF:${scores.rif} → ${scores.total} ${scores.grade}${ws}`)
     } else {
-      updated = injectAutoPqf(updated, id, scores)
+      updated = injectAutoPqf(updated, id, scores, doaj.website_url)
     }
   }
 
