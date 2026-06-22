@@ -161,18 +161,7 @@ export async function crossrefSearch(
 ): Promise<{ total: number; items: Article[] }> {
   const { page = 1, rows = 20, yearFrom, yearTo, scope = 'all', issn } = options
 
-  // In browser context, proxy through /api/search to avoid CORS and User-Agent restrictions
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams({ q: query, scope, page: String(page), rows: String(rows) })
-    if (yearFrom) params.set('yearFrom', String(yearFrom))
-    if (yearTo)   params.set('yearTo',   String(yearTo))
-    if (issn)     params.set('issn',     issn)
-    const res = await fetch(`/api/search?${params.toString()}`)
-    if (!res.ok) return { total: 0, items: [] }
-    return res.json() as Promise<{ total: number; items: Article[] }>
-  }
-
-  // Server-side: call Crossref directly with proper User-Agent for polite pool
+  // Crossref supports CORS; browsers strip User-Agent anyway so omit it here
   const offset = (page - 1) * rows
   const filterParts = [ARTICLE_FILTER]
   if (yearFrom || yearTo) {
@@ -196,9 +185,11 @@ export async function crossrefSearch(
     ? `${CROSSREF}/members/${PSG_MEMBER}/works`
     : `${CROSSREF}/works`
 
-  const res = await fetch(`${endpoint}?${params.toString()}`, {
-    headers: { 'User-Agent': UA },
-  })
+  const headers: Record<string, string> = typeof window === 'undefined'
+    ? { 'User-Agent': UA }
+    : {}
+
+  const res = await fetch(`${endpoint}?${params.toString()}`, { headers })
   if (!res.ok) return { total: 0, items: [] }
 
   const data = await res.json()

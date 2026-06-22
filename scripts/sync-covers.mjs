@@ -6,12 +6,15 @@
  * in src/lib/data.ts that currently has cover_image_url: null.
  *
  * Strategy (in order):
- *   1. Fetch the journal's website_url, look for OJS journalThumbnail in HTML
- *   2. Fall back to <meta property="og:image"> on the same page
- *   3. For OJS domains: brute-probe /public/journals/{1..60}/journalThumbnail_en.png
- *      if the URL pattern of the journal slug matches a known OJS instance
+ *   1. Crossref /journals/{ISSN} — check links[] for image content-type
+ *   2. DOAJ /api/search/journals/issn:{ISSN} — bibjson.image_links coverart
+ *   3. Fetch journal website HTML, look for OJS journalThumbnail in src attributes
+ *   4. <meta property="og:image"> from same page
+ *   5. For known OJS domains: brute-probe /public/journals/{1..60}/journalThumbnail_en.png
  *
  * Each candidate URL is verified with a HEAD request before being written.
+ *
+ * Journals that already have a non-null cover_image_url are SKIPPED.
  *
  * Usage:
  *   node scripts/sync-covers.mjs            # patch all missing covers
@@ -35,20 +38,35 @@ const UA = 'POSI-Bot/1.0 (mailto:posi@panorama-sg.com; +https://posi.panorama-sg
 const src = readFileSync(DATA_FILE, 'utf8')
 
 /**
- * Extract journal_code + website_url pairs where cover_image_url is null.
- * Matches blocks like:
+ * Match journal blocks where cover_image_url is explicitly null.
+ * Skips COVER('...') and any string URL.
+ *
+ * Matches patterns like:
  *   journal_code: 'xxx',
  *   ...
- *   website_url: 'https://...',
+ *   issn_print: '...' / null,
+ *   issn_online: '...' / null,
+ *   ...
+ *   website_url: '...' / null,
  *   cover_image_url: null,
  */
-const BLOCK_RE = /journal_code:\s*'([^']+)'[\s\S]*?website_url:\s*(?:'([^']+)'|null),\s*\n\s*cover_image_url:\s*null,/g
+const BLOCK_RE = /journal_code:\s*'([^']+)'([\s\S]*?)cover_image_url:\s*null,/g
 
 const targets = []
 for (const m of src.matchAll(BLOCK_RE)) {
-  const code = m[1]
-  const url  = m[2] ?? null
-  targets.push({ code, url })
+  const code   = m[1]
+  const block  = m[2]
+
+  const websiteMatch = block.match(/website_url:\s*'([^']+)'/)
+  const issnOnlineMatch = block.match(/issn_online:\s*'([^']+)'/)
+  const issnPrintMatch  = block.match(/issn_print:\s*'([^']+)'/)
+
+  targets.push({
+    code,
+    url:          websiteMatch?.[1]   ?? null,
+    issn_online:  issnOnlineMatch?.[1] ?? null,
+    issn_print:   issnPrintMatch?.[1]  ?? null,
+  })
 }
 
 if (targets.length === 0) {
@@ -74,6 +92,19 @@ async function fetchHtml(url) {
   }
 }
 
+async function fetchJson(url) {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, Accept: 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
 /** Returns true if the URL responds with 200 and an image content-type */
 async function verifyImageUrl(url) {
   try {
@@ -91,26 +122,51 @@ async function verifyImageUrl(url) {
   }
 }
 
-/** Extract origin from a URL string */
 function origin(urlStr) {
   try { return new URL(urlStr).origin } catch { return null }
 }
 
-/** Make an absolute URL from a possibly-relative src and a base URL */
 function toAbsolute(src, base) {
   try { return new URL(src, base).href } catch { return null }
 }
 
 // ── Cover extraction strategies ────────────────────────────────────────────
 
-/** Strategy 1: OJS journalThumbnail in HTML (most reliable) */
+/** Strategy 1: Crossref /journals/{ISSN} — links[] with image content-type */
+async function coverFromCrossref(issn) {
+  if (!issn) return null
+  const data = await fetchJson(
+    `https://api.crossref.org/journals/${issn}?mailto=posi@panorama-sg.com`
+  )
+  const links = data?.message?.links ?? []
+  const imgLink = links.find(l =>
+    typeof l['content-type'] === 'string' && l['content-type'].startsWith('image/')
+  )
+  return imgLink?.URL ?? null
+}
+
+/** Strategy 2: DOAJ bibjson.image_links coverart */
+async function coverFromDoaj(issn) {
+  if (!issn) return null
+  const data = await fetchJson(
+    `https://doaj.org/api/search/journals/issn:${issn}`
+  )
+  const bib = data?.results?.[0]?.bibjson ?? {}
+  const imageLinks = bib.image_links ?? []
+  const cover = imageLinks.find(l =>
+    l.type === 'coverart' || l.type === 'cover'
+  )
+  return cover?.url ?? null
+}
+
+/** Strategy 3: OJS journalThumbnail in page HTML */
 function extractOjsThumbnail(html, baseUrl) {
   const m = html.match(/src="([^"]*public\/journals\/\d+\/journalThumbnail[^"]*)"/i)
   if (!m) return null
   return toAbsolute(m[1], baseUrl)
 }
 
-/** Strategy 2: og:image meta tag */
+/** Strategy 4: og:image meta tag */
 function extractOgImage(html, baseUrl) {
   const m = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)
           ?? html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i)
@@ -118,7 +174,7 @@ function extractOgImage(html, baseUrl) {
   return toAbsolute(m[1], baseUrl)
 }
 
-/** Strategy 3: Brute-probe OJS sequential journal IDs */
+/** Strategy 5: Brute-probe OJS sequential journal IDs */
 async function probeOjsIds(domainOrigin) {
   for (let id = 1; id <= 60; id++) {
     const url = `${domainOrigin}/public/journals/${id}/journalThumbnail_en.png`
@@ -127,10 +183,10 @@ async function probeOjsIds(domainOrigin) {
   return null
 }
 
-/** Known OJS domains — probe sequential IDs for these */
 const OJS_DOMAINS = [
   'ojs.shiharr.com',
   'ojs.panorama-sg.com',
+  'journals.panorama-sg.com',
 ]
 
 function isOjsDomain(urlStr) {
@@ -142,39 +198,49 @@ function isOjsDomain(urlStr) {
 
 // ── Main loop ──────────────────────────────────────────────────────────────
 
-const patches = [] // { code, coverUrl }
+const patches = []
 
-for (const { code, url } of targets) {
-  process.stdout.write(`  ${code.padEnd(14)} `)
-
-  if (!url) {
-    console.log('— no website_url, skipping')
-    continue
-  }
-
-  // Fetch journal homepage
-  const html = await fetchHtml(url)
-  if (!html) {
-    console.log('— could not fetch page')
-    continue
-  }
+for (const { code, url, issn_online, issn_print } of targets) {
+  process.stdout.write(`  ${code.padEnd(16)} `)
 
   let coverUrl = null
 
-  // 1. OJS thumbnail in HTML
-  coverUrl = extractOjsThumbnail(html, url)
+  // 1. Crossref (try both ISSNs)
+  for (const issn of [issn_online, issn_print].filter(Boolean)) {
+    coverUrl = await coverFromCrossref(issn)
+    if (coverUrl) break
+  }
   if (coverUrl && !(await verifyImageUrl(coverUrl))) coverUrl = null
 
-  // 2. og:image
+  // 2. DOAJ
   if (!coverUrl) {
-    coverUrl = extractOgImage(html, url)
+    for (const issn of [issn_online, issn_print].filter(Boolean)) {
+      coverUrl = await coverFromDoaj(issn)
+      if (coverUrl) break
+    }
     if (coverUrl && !(await verifyImageUrl(coverUrl))) coverUrl = null
   }
 
-  // 3. Brute-probe OJS IDs for known OJS servers
-  if (!coverUrl && isOjsDomain(url)) {
-    const orig = origin(url)
-    if (orig) coverUrl = await probeOjsIds(orig)
+  // 3 + 4 + 5: website scraping
+  if (!coverUrl && url) {
+    const html = await fetchHtml(url)
+    if (html) {
+      // OJS thumbnail in HTML
+      coverUrl = extractOjsThumbnail(html, url)
+      if (coverUrl && !(await verifyImageUrl(coverUrl))) coverUrl = null
+
+      // og:image
+      if (!coverUrl) {
+        coverUrl = extractOgImage(html, url)
+        if (coverUrl && !(await verifyImageUrl(coverUrl))) coverUrl = null
+      }
+    }
+
+    // OJS brute-probe (known domains only)
+    if (!coverUrl && isOjsDomain(url)) {
+      const orig = origin(url)
+      if (orig) coverUrl = await probeOjsIds(orig)
+    }
   }
 
   if (coverUrl) {
@@ -199,21 +265,13 @@ if (patches.length === 0 || DRY_RUN) {
   process.exit(0)
 }
 
-/**
- * Patch cover_image_url: null → 'url' for the first occurrence
- * that follows a matching journal_code line.
- *
- * We do this by replacing occurrences in order so that multiple null
- * entries don't all get the same cover.
- */
 let updated = src
 let written = 0
 
 for (const { code, coverUrl } of patches) {
-  // Find the journal block for this code and replace its cover_image_url: null
   const codeRe = new RegExp(
     `(journal_code:\\s*'${code}'[\\s\\S]*?cover_image_url:\\s*)null(,)`,
-    ''  // first match only
+    ''
   )
   const before = updated
   updated = updated.replace(codeRe, `$1'${coverUrl}'$2`)
