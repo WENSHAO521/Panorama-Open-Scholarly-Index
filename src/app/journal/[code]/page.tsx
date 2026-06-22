@@ -84,16 +84,17 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     !isDiscovered && journal.issn_online ? doajGetJournal(journal.issn_online).catch(() => null) : null,
     // Skip Crossref meta for discovered journals (article_count comes from data.ts)
     !isDiscovered && journal.issn_online ? crossrefFetchJournal(journal.issn_online).catch(() => null) : null,
-    // Skip ISSN country lookup if registration_country is already populated
-    !journal.registration_country && journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
+    // Skip ISSN country lookup for discovered journals (registration_country already in data.ts)
+    !isDiscovered && !journal.registration_country && journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
   ])
   doaj = doajResult
   const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null
   publisherLocation = journal.registration_country ?? issnCountry ?? crMeta?.publisher_location ?? doajCountry ?? null
   const frequency = journal.frequency || weeksToFrequency(doajResult?.publication_time_weeks) || null
 
-  // OAI-PMH (PSG journals only), then Crossref for non-discovered journals
-  const oaiItems = await oaiHarvestJournal(journal.journal_code).catch(() => [])
+  // OAI-PMH only for PSG journals (oai_base_url set); skip for discovered journals to avoid
+  // 12s timeout on every website_url/oai attempt across 22k journals at build time
+  const oaiItems = isDiscovered ? [] : await oaiHarvestJournal(journal.journal_code).catch(() => [])
   if (oaiItems.length > 0) {
     total = oaiItems.length
     articles = oaiItems.slice(0, 20)
