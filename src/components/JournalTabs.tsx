@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen } from '@phosphor-icons/react/dist/ssr'
 import { Badge } from './Badge'
@@ -241,6 +242,39 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 }
 
 
+const PER_PAGE = 20
+
+function Pagination({ page, totalPages, tab }: { page: number; totalPages: number; tab: string }) {
+  if (totalPages <= 1) return null
+  const prev = page > 1 ? `?tab=${tab}&page=${page - 1}` : null
+  const next = page < totalPages ? `?tab=${tab}&page=${page + 1}` : null
+  return (
+    <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px solid var(--posi-border)' }}>
+      <div>
+        {prev ? (
+          <Link href={prev} className="px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
+            ← Prev
+          </Link>
+        ) : (
+          <span className="px-3 py-1.5 text-xs" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)', opacity: 0.4 }}>← Prev</span>
+        )}
+      </div>
+      <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
+        Page {page} / {totalPages}
+      </span>
+      <div>
+        {next ? (
+          <Link href={next} className="px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
+            Next →
+          </Link>
+        ) : (
+          <span className="px-3 py-1.5 text-xs" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)', opacity: 0.4 }}>Next →</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 type TabId = 'psg' | 'indexed' | 'crossref' | 'discovered'
 
 interface Props {
@@ -250,10 +284,22 @@ interface Props {
 }
 
 export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
-  const [active, setActive] = useState<TabId>('psg')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const activeTab = (searchParams.get('tab') ?? 'psg') as TabId
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+
+  const setTab = useCallback((tab: TabId) => {
+    router.push(`${pathname}?tab=${tab}`)
+  }, [router, pathname])
 
   const psgArticles = psgRows.reduce((s, { oaiCount, cr, journal }) => s + (oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0)
   const indexedArticles = indexedRows.reduce((s, { oaiCount, cr, journal }) => s + (oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0)
+
+  const totalDiscoveredPages = Math.ceil(discoveredRows.length / PER_PAGE)
+  const pagedDiscovered = discoveredRows.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE)
 
   const verifiedTabs: { id: TabId; label: string; count: string }[] = [
     { id: 'psg',        label: 'PSG Collection',   count: `${psgRows.length} journals` },
@@ -269,17 +315,17 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           {verifiedTabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActive(tab.id)}
+              onClick={() => setTab(tab.id)}
               className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap shrink-0"
               style={{
-                color: active === tab.id ? 'var(--posi-primary)' : 'var(--posi-muted)',
-                borderBottom: active === tab.id ? '2px solid var(--posi-primary)' : '2px solid transparent',
+                color: activeTab === tab.id ? 'var(--posi-primary)' : 'var(--posi-muted)',
+                borderBottom: activeTab === tab.id ? '2px solid var(--posi-primary)' : '2px solid transparent',
               }}
             >
               {tab.label}
               <span
                 className="ml-1.5 font-mono text-[10px]"
-                style={{ color: active === tab.id ? 'var(--posi-muted)' : 'var(--posi-border)' }}
+                style={{ color: activeTab === tab.id ? 'var(--posi-muted)' : 'var(--posi-border)' }}
               >
                 {tab.count}
               </span>
@@ -288,26 +334,26 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           {/* Extended tab — visually separated */}
           <div className="flex items-center mx-2 shrink-0" style={{ borderLeft: '1px solid var(--posi-border)' }} />
           <button
-            onClick={() => setActive('discovered')}
+            onClick={() => setTab('discovered')}
             className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap shrink-0"
             style={{
-              color: active === 'discovered' ? '#92400E' : 'var(--posi-muted)',
-              borderBottom: active === 'discovered' ? '2px solid #F59E0B' : '2px solid transparent',
+              color: activeTab === 'discovered' ? '#92400E' : 'var(--posi-muted)',
+              borderBottom: activeTab === 'discovered' ? '2px solid #F59E0B' : '2px solid transparent',
             }}
           >
             Extended Records
             <span
               className="ml-1.5 font-mono text-[10px]"
-              style={{ color: active === 'discovered' ? '#B45309' : 'var(--posi-border)' }}
+              style={{ color: activeTab === 'discovered' ? '#B45309' : 'var(--posi-border)' }}
             >
-              {discoveredRows.length} unverified
+              {discoveredRows.length.toLocaleString()} unverified
             </span>
           </button>
         </div>
       </div>
 
       {/* PSG Collection */}
-      {active === 'psg' && (
+      {activeTab === 'psg' && (
         <div>
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
@@ -322,7 +368,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       )}
 
       {/* Verified Records */}
-      {active === 'indexed' && (
+      {activeTab === 'indexed' && (
         <div>
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
@@ -337,7 +383,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       )}
 
       {/* Crossref Journals */}
-      {active === 'crossref' && (
+      {activeTab === 'crossref' && (
         <div>
           <p className="text-xs mb-4" style={{ color: 'var(--posi-muted)' }}>
             Search 50,000+ journals across all publishers indexed in Crossref.
@@ -347,7 +393,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       )}
 
       {/* Extended Records */}
-      {active === 'discovered' && (
+      {activeTab === 'discovered' && (
         <div>
           <div
             className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed"
@@ -360,7 +406,13 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               PQF* grades are auto-assessed from DOAJ/OpenAlex signals and have not been manually reviewed.
             </span>
           </div>
-          <JournalTable rows={discoveredRows} showOjqf />
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="text-xs" style={{ color: 'var(--posi-muted)' }}>
+              Showing {((currentPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(currentPage * PER_PAGE, discoveredRows.length).toLocaleString()} of {discoveredRows.length.toLocaleString()} journals
+            </span>
+          </div>
+          <JournalTable rows={pagedDiscovered} showOjqf />
+          <Pagination page={currentPage} totalPages={totalDiscoveredPages} tab="discovered" />
         </div>
       )}
     </div>

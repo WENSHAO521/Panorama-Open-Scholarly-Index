@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
@@ -64,7 +65,9 @@ export default async function JournalsPage() {
         </div>
       </div>
 
-      <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={discoveredRows} />
+      <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading journals…</div>}>
+        <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={discoveredRows} />
+      </Suspense>
 
       {/* Column legend */}
       <div className="p-4 text-xs flex flex-col sm:flex-row gap-4 mt-8" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
