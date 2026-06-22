@@ -1,0 +1,117 @@
+'use client'
+
+import { useState, FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr'
+
+const FIELDS = [
+  { value: 'all',      label: 'All Fields' },
+  { value: 'title',    label: 'Title (TI)' },
+  { value: 'author',   label: 'Author (AU)' },
+  { value: 'journal',  label: 'Source (SO)' },
+  { value: 'keyword',  label: 'Keyword' },
+  { value: 'abstract', label: 'Abstract' },
+  { value: 'doi',      label: 'DOI' },
+]
+
+export function SearchBar() {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [field, setField] = useState('all')
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    if (!query.trim()) return
+    const params = new URLSearchParams({ q: query.trim() })
+    if (field !== 'all') params.set('field', field)
+    router.push(`/search?${params.toString()}`)
+  }
+
+  return (
+    <div className="w-full max-w-2xl">
+      <form onSubmit={handleSubmit} className="flex gap-0">
+        {/* Field selector */}
+        <div className="relative shrink-0">
+          <select
+            value={field}
+            onChange={e => setField(e.target.value)}
+            className="appearance-none pl-3 pr-7 py-3 text-xs focus:outline-none h-full"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRight: 'none',
+              color: 'rgba(255,255,255,0.7)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {FIELDS.map(f => (
+              <option key={f.value} value={f.value} className="text-gray-900 bg-white">
+                {f.label}
+              </option>
+            ))}
+          </select>
+          <CaretDown
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none"
+            style={{ color: 'rgba(255,255,255,0.3)' }}
+            weight="bold"
+          />
+        </div>
+
+        {/* Text input */}
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Search articles, journals, authors, DOI..."
+          className="flex-1 px-4 py-3 text-sm focus:outline-none"
+          style={{
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRight: 'none',
+            color: '#ffffff',
+          }}
+          onFocus={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'
+          }}
+          onBlur={e => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+          }}
+        />
+
+        {/* Submit */}
+        <button
+          type="submit"
+          className="flex items-center gap-2 px-6 py-3 text-white text-sm font-semibold shrink-0 active:scale-[0.98] transition-transform"
+          style={{ background: 'var(--posi-accent)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--posi-accent)')}
+        >
+          <MagnifyingGlass className="h-4 w-4" weight="bold" />
+          <span>Search</span>
+        </button>
+      </form>
+
+      {/* Suggestions */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span
+          className="text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}
+        >
+          Try:
+        </span>
+        {['artificial intelligence', 'digital humanities', '10.63802/aifs.2024.008'].map(s => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setQuery(s)}
+            className="text-[11px] transition-colors hover:text-white"
+            style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}

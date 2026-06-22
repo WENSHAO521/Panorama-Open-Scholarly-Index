@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="Panorama Scholarly Group">
+  <rect width="500" height="500" fill="#ffffff"/>
+  <text
+    x="250"
+    y="315"
+    font-family="'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif"
+    font-size="218"
+    fill="#1c1208"
+    text-anchor="middle"
+    font-weight="700"
+    letter-spacing="-4"
+  >PSG</text>
+</svg>
