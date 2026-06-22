@@ -43,9 +43,10 @@ const fetchArticle = cache(async (realDoi: string): Promise<Article | null> => {
 export async function generateStaticParams(): Promise<{ doi: string }[]> {
   const doiSet = new Set<string>()
 
-  // Strategy 1: OAI per-journal harvest (primary — all indexed journals)
+  // Strategy 1: OAI per-journal harvest (PSG journals only — they have real OAI endpoints)
+  // Discovered journals (22k+) have website_url but no OAI endpoint; skip to avoid 12s timeouts
   await Promise.allSettled(
-    ALL_JOURNALS.map(j =>
+    PSG_JOURNALS.map(j =>
       oaiHarvestJournal(j.journal_code)
         .then(items => items.forEach(a => { if (a.doi) doiSet.add(a.doi.replace(/\//g, '_')) }))
         .catch(() => {})
