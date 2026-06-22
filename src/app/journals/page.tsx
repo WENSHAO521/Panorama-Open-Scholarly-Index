@@ -10,8 +10,17 @@ export const metadata = {
   description: 'Browse PSG journals and indexed third-party journals, or search all journals in Crossref.',
 }
 
-export default async function JournalsPage() {
-  const [psgRows, indexedRows, discoveredWithDoaj] = await Promise.all([
+const PER_PAGE = 20
+
+export default async function JournalsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; page?: string }>
+}) {
+  const { tab: tabParam = 'psg', page: pageParam = '1' } = await searchParams
+  const currentPage = Math.max(1, parseInt(pageParam, 10))
+
+  const [psgRows, manualIndexedRows] = await Promise.all([
     Promise.all(
       PSG_JOURNALS.map(async j => {
         const [cr, issnCountry, oaiItems] = await Promise.all([
@@ -32,24 +41,42 @@ export default async function JournalsPage() {
         return { journal: j, cr, issnCountry, oaiCount: oaiItems.length }
       })
     ),
-    // Trust doaj_status from data.ts — skips live DOAJ check for faster builds.
-    // Journals with doaj_status='listed' are auto-promoted to Verified Records.
-    Promise.resolve(
-      DISCOVERED_JOURNALS.map(j => {
-        const inDoaj = j.doaj_status === 'listed'
-        // Use registration_country / country from data.ts (populated by discover-journals.mjs)
-        const issnCountry = j.registration_country ?? (j.country || null)
-        return { journal: j, cr: null as null, issnCountry, oaiCount: 0, inDoaj }
-      })
-    ),
   ])
 
-  const doajConfirmed = discoveredWithDoaj.filter(r => r.inDoaj).map(({ journal, cr, issnCountry, oaiCount }) => ({ journal, cr, issnCountry, oaiCount }))
-  const discoveredRows = discoveredWithDoaj.filter(r => !r.inDoaj).map(({ journal, cr, issnCountry, oaiCount }) => ({ journal, cr, issnCountry, oaiCount }))
-  const allIndexedRows = [...indexedRows, ...doajConfirmed]
+  // Discovered journals — split by DOAJ status
+  const doajConfirmedRows = DISCOVERED_JOURNALS
+    .filter(j => j.doaj_status === 'listed')
+    .map(j => ({
+      journal: j,
+      cr: null as null,
+      issnCountry: j.registration_country ?? (j.country || null),
+      oaiCount: 0,
+    }))
+
+  const nonDoajDiscoveredRows = DISCOVERED_JOURNALS
+    .filter(j => j.doaj_status !== 'listed')
+    .map(j => ({
+      journal: j,
+      cr: null as null,
+      issnCountry: j.registration_country ?? (j.country || null),
+      oaiCount: 0,
+    }))
+
+  // Indexed tab = manual indexed + DOAJ-confirmed discovered, paginated
+  const allIndexedRows = [...manualIndexedRows, ...doajConfirmedRows]
+  const indexedTotal = allIndexedRows.length
+  const indexedTotalPages = Math.max(1, Math.ceil(indexedTotal / PER_PAGE))
+  const indexedPage = Math.min(currentPage, indexedTotalPages)
+  const pagedIndexedRows = allIndexedRows.slice((indexedPage - 1) * PER_PAGE, indexedPage * PER_PAGE)
+
+  // Extended Records tab = non-DOAJ discovered, paginated
+  const discoveredTotal = nonDoajDiscoveredRows.length
+  const discoveredTotalPages = Math.max(1, Math.ceil(discoveredTotal / PER_PAGE))
+  const discoveredPage = Math.min(currentPage, discoveredTotalPages)
+  const pagedDiscoveredRows = nonDoajDiscoveredRows.slice((discoveredPage - 1) * PER_PAGE, discoveredPage * PER_PAGE)
 
   const total = PSG_JOURNALS.length + INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length + DISCOVERED_JOURNALS.length
-  const totalArticles = [...psgRows, ...allIndexedRows].reduce(
+  const totalArticles = [...psgRows, ...manualIndexedRows].reduce(
     (s, { oaiCount, cr, journal }) => s + (oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0
   )
 
@@ -66,7 +93,17 @@ export default async function JournalsPage() {
       </div>
 
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading journals…</div>}>
-        <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={discoveredRows} />
+        <JournalTabs
+          psgRows={psgRows}
+          indexedRows={pagedIndexedRows}
+          indexedTotal={indexedTotal}
+          indexedPage={indexedPage}
+          indexedTotalPages={indexedTotalPages}
+          discoveredRows={pagedDiscoveredRows}
+          discoveredTotal={discoveredTotal}
+          discoveredPage={discoveredPage}
+          discoveredTotalPages={discoveredTotalPages}
+        />
       </Suspense>
 
       {/* Column legend */}

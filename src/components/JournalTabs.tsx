@@ -1,7 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen } from '@phosphor-icons/react/dist/ssr'
 import { Badge } from './Badge'
@@ -241,9 +240,6 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
   )
 }
 
-
-const PER_PAGE = 20
-
 function Pagination({ page, totalPages, tab }: { page: number; totalPages: number; tab: string }) {
   if (totalPages <= 1) return null
   const prev = page > 1 ? `?tab=${tab}&page=${page - 1}` : null
@@ -280,31 +276,35 @@ type TabId = 'psg' | 'indexed' | 'crossref' | 'discovered'
 interface Props {
   psgRows: JournalWithCr[]
   indexedRows: JournalWithCr[]
+  indexedTotal: number
+  indexedPage: number
+  indexedTotalPages: number
   discoveredRows: JournalWithCr[]
+  discoveredTotal: number
+  discoveredPage: number
+  discoveredTotalPages: number
 }
 
-export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
+export function JournalTabs({
+  psgRows,
+  indexedRows,
+  indexedTotal,
+  indexedPage,
+  indexedTotalPages,
+  discoveredRows,
+  discoveredTotal,
+  discoveredPage,
+  discoveredTotalPages,
+}: Props) {
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-
   const activeTab = (searchParams.get('tab') ?? 'psg') as TabId
-  const currentPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
-
-  const setTab = useCallback((tab: TabId) => {
-    router.push(`${pathname}?tab=${tab}`)
-  }, [router, pathname])
 
   const psgArticles = psgRows.reduce((s, { oaiCount, cr, journal }) => s + (oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0)
-  const indexedArticles = indexedRows.reduce((s, { oaiCount, cr, journal }) => s + (oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0)
-
-  const totalDiscoveredPages = Math.ceil(discoveredRows.length / PER_PAGE)
-  const pagedDiscovered = discoveredRows.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE)
 
   const verifiedTabs: { id: TabId; label: string; count: string }[] = [
-    { id: 'psg',        label: 'PSG Collection',   count: `${psgRows.length} journals` },
-    { id: 'indexed',    label: 'Verified Records',  count: `${indexedRows.length} journals` },
-    { id: 'crossref',   label: 'Crossref Journals', count: '50,000+' },
+    { id: 'psg',      label: 'PSG Collection',   count: `${psgRows.length} journals` },
+    { id: 'indexed',  label: 'Verified Records',  count: `${indexedTotal.toLocaleString()} journals` },
+    { id: 'crossref', label: 'Crossref Journals', count: '50,000+' },
   ]
 
   return (
@@ -313,9 +313,9 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       <div className="mb-6" style={{ borderBottom: '1px solid var(--posi-border)' }}>
         <div className="flex overflow-x-auto scrollbar-none">
           {verifiedTabs.map(tab => (
-            <button
+            <Link
               key={tab.id}
-              onClick={() => setTab(tab.id)}
+              href={`?tab=${tab.id}`}
               className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap shrink-0"
               style={{
                 color: activeTab === tab.id ? 'var(--posi-primary)' : 'var(--posi-muted)',
@@ -329,12 +329,12 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               >
                 {tab.count}
               </span>
-            </button>
+            </Link>
           ))}
           {/* Extended tab — visually separated */}
           <div className="flex items-center mx-2 shrink-0" style={{ borderLeft: '1px solid var(--posi-border)' }} />
-          <button
-            onClick={() => setTab('discovered')}
+          <Link
+            href="?tab=discovered"
             className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap shrink-0"
             style={{
               color: activeTab === 'discovered' ? '#92400E' : 'var(--posi-muted)',
@@ -346,9 +346,9 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               className="ml-1.5 font-mono text-[10px]"
               style={{ color: activeTab === 'discovered' ? '#B45309' : 'var(--posi-border)' }}
             >
-              {discoveredRows.length.toLocaleString()} unverified
+              {discoveredTotal.toLocaleString()} unverified
             </span>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -370,15 +370,16 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       {/* Verified Records */}
       {activeTab === 'indexed' && (
         <div>
-          <div className="flex items-baseline justify-between mb-4">
+          <div className="flex items-baseline justify-between mb-3">
             <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
               Third-party open access journals with verified POSI records.
             </p>
             <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-              {indexedArticles.toLocaleString()} articles
+              Showing {((indexedPage - 1) * 20 + 1).toLocaleString()}–{Math.min(indexedPage * 20, indexedTotal).toLocaleString()} of {indexedTotal.toLocaleString()}
             </span>
           </div>
           <JournalTable rows={indexedRows} showOjqf />
+          <Pagination page={indexedPage} totalPages={indexedTotalPages} tab="indexed" />
         </div>
       )}
 
@@ -408,11 +409,11 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           </div>
           <div className="flex items-baseline justify-between mb-3">
             <span className="text-xs" style={{ color: 'var(--posi-muted)' }}>
-              Showing {((currentPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(currentPage * PER_PAGE, discoveredRows.length).toLocaleString()} of {discoveredRows.length.toLocaleString()} journals
+              Showing {((discoveredPage - 1) * 20 + 1).toLocaleString()}–{Math.min(discoveredPage * 20, discoveredTotal).toLocaleString()} of {discoveredTotal.toLocaleString()} journals
             </span>
           </div>
-          <JournalTable rows={pagedDiscovered} showOjqf />
-          <Pagination page={currentPage} totalPages={totalDiscoveredPages} tab="discovered" />
+          <JournalTable rows={discoveredRows} showOjqf />
+          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" />
         </div>
       )}
     </div>
