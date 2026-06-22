@@ -1,33 +1,70 @@
 # Panorama Open Scholarly Index (POSI)
 
-An open-source scholarly metadata and citation visibility platform for emerging open access journals.
+Open scholarly metadata platform for journal transparency, metadata quality, and citation visibility. Live at [posi.panorama-sg.com](https://posi.panorama-sg.com).
 
-## About
+> **Notice:** POSI is not a replacement for Web of Science, Scopus, or DOAJ. PQF scores indicate metadata completeness and transparency readiness only — they must not be used for researcher evaluation, hiring, promotion, or funding decisions.
 
-Panorama Open Scholarly Index aggregates, normalizes, and enriches metadata from Panorama Scholarly Group journals, OJS OAI-PMH, Crossref, OpenAlex, OpenCitations, DOAJ, ROR, ORCID, and related open scholarly infrastructures.
+---
 
-The project aims to improve the **discoverability**, **transparency**, **metadata quality**, and **citation visibility** of emerging open access journals.
+## What POSI Does
 
-> **Important:** POSI does not provide Journal Impact Factors and does not claim to replace Web of Science, Scopus, or any commercial citation index.
+POSI aggregates and enriches scholarly metadata from open infrastructure sources (Crossref, OpenAlex, OAI-PMH, DOAJ, ROR, ORCID) and publishes it through a public web platform and planned API.
 
-## Features (v0.1)
+Key functions:
 
-- **Basic Search** — search across articles, journals, authors, keywords, DOI
-- **Article Detail Pages** — full metadata record with citation visibility and metadata quality score
-- **Journal Profiles** — journal metadata, quality scores, indexing readiness
-- **DOI Lookup** — verify DOI registration, Crossref status, OpenAlex visibility
-- **Metadata Quality Score (MQS)** — 0–100 score per article based on metadata completeness
-- **Citation Visibility** — open citation counts via OpenAlex and Crossref
+- **Journal indexing** — profiles for PSG journals and third-party open access journals
+- **Article metadata** — DOI-linked article records with metadata quality scoring
+- **PQF assessment** — POSI Quality Factor: composite 0–100 indicator across six dimensions
+- **Evidence registry** — per-journal, criterion-level evidence records
+- **DOI lookup** — verify DOI registration, Crossref/OpenAlex status, citation visibility
+- **Full-text search** — search articles and journals via Crossref with server-side proxy
+
+---
+
+## Platform Coverage
+
+| Scope | Count |
+|---|---|
+| PSG journals | 12 |
+| Indexed third-party journals | 18 |
+| Total journals | 30 |
+| Articles (live from Crossref) | auto-updated hourly |
+
+Stats on the homepage are fetched live from Crossref every hour via ISR (`revalidate = 3600`).
+
+---
+
+## PQF — POSI Quality Factor
+
+PQF is a composite, evidence-based journal quality indicator with six weighted subfactors:
+
+| Subfactor | Weight | Assesses |
+|---|---|---|
+| JTF — Journal Transparency | 25 pts | Governance, APC policy, ethics, corrections |
+| MQF — Metadata Quality | 25 pts | DOI, ORCID, abstracts, references, license URI |
+| EGF — Editorial Governance | 20 pts | Board diversity, reviewer guidelines, COI policy |
+| TDF — Technical Discoverability | 15 pts | OAI-PMH, sitemap, Schema.org, DOI resolution |
+| CVF — Citation Visibility | 10 pts | OpenAlex, Crossref cited-by, OpenCitations |
+| RIF — Research Integrity | 5 pts | Retraction/plagiarism/data-sharing policies |
+
+Grades: A+ (≥90) · A (80–89) · B+ (70–79) · B (60–69) · C (50–59) · D (40–49) · E (<40)
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 16 + TypeScript + Tailwind CSS |
-| Deployment | Cloudflare Pages |
-| API | Next.js Route Handlers |
-| Database (Phase 1) | In-memory seed data → Cloudflare D1 |
-| External APIs | OpenAlex, Crossref, OpenCitations |
+| Framework | Next.js 16 (App Router, RSC, ISR) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 (`@tailwindcss/postcss`) |
+| Icons | `@phosphor-icons/react` |
+| Data | Static seed in `src/lib/data.ts` + live API fetch at render |
+| External APIs | Crossref, OpenAlex, DOAJ, ISSN Portal, OAI-PMH |
+| Search proxy | `/api/search` route handler (avoids browser CORS/UA issues) |
+| Deployment | Vercel (ISR) |
+
+---
 
 ## Getting Started
 
@@ -38,56 +75,97 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Open Data Sources
+No environment variables are required — all data comes from public APIs and the static seed file.
 
-This project uses open scholarly metadata from third-party infrastructures:
-
-- [OpenAlex](https://openalex.org) — CC0
-- [Crossref](https://crossref.org) — metadata freely available
-- [OpenCitations](https://opencitations.net) — CC0
-- [DOAJ](https://doaj.org) — CC BY-SA
-- [ROR](https://ror.org) — CC0
-- [ORCID](https://orcid.org) — CC0 public records
-
-Source identifiers and provenance are preserved where available. POSI does not claim ownership over third-party metadata.
-
-## Data License
-
-PSG-curated metadata: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)  
-Code: [MIT License](./LICENSE)
-
-When reusing curated metadata, please cite: *Panorama Open Scholarly Index. https://posi.panoramagroup.org*
+---
 
 ## Project Structure
 
 ```
 src/
-├── app/                    # Next.js App Router pages and API routes
-│   ├── api/                # Route handlers
-│   ├── article/[doi]/      # Article detail page
-│   ├── doi-lookup/         # DOI verification tool
-│   ├── journal/[code]/     # Journal profile
-│   ├── journals/           # Journal list
-│   └── search/             # Search results
-├── components/             # Reusable UI components
-└── lib/                    # Data layer and external API clients
-schema/
-└── database.sql            # SQLite/D1 schema
+├── app/
+│   ├── api/
+│   │   ├── search/route.ts     # Crossref search proxy (server-side)
+│   │   └── page.tsx            # API & Export documentation
+│   ├── article/[doi]/          # Article detail page
+│   ├── articles/               # Article database browser
+│   ├── doi-lookup/             # DOI verification tool
+│   ├── evidence/               # Evidence registry
+│   ├── journal/[code]/         # Journal profile page
+│   ├── journals/               # Journal list (tabs: PSG / Indexed / Crossref)
+│   ├── pqf/                    # PQF methodology + scores table
+│   ├── search/                 # Full-text search
+│   └── page.tsx                # Homepage (live stats via ISR)
+├── components/
+│   ├── ArticleCard.tsx
+│   ├── ArticleCountBadge.tsx   # Live Crossref article count
+│   ├── Badge.tsx
+│   ├── Footer.tsx
+│   ├── JournalArticles.tsx
+│   ├── JournalBrowser.tsx      # Crossref journal browser
+│   ├── JournalTabs.tsx         # PSG / Indexed / All tabs
+│   ├── MetadataQualityBar.tsx
+│   ├── Navbar.tsx
+│   ├── OjqfCard.tsx            # PQF score card
+│   └── SearchBar.tsx
+└── lib/
+    ├── api.ts                  # Crossref, OpenAlex, DOAJ, ISSN Portal, OAI-PMH clients
+    ├── data.ts                 # Static journal seed data + getStats()
+    └── types.ts                # Shared TypeScript types
 ```
 
-## Roadmap
+---
 
-| Version | Milestone |
+## Data Sources
+
+All metadata uses openly licensed sources. Source attribution is preserved in every record.
+
+| Source | License | Used For |
+|---|---|---|
+| [Crossref](https://crossref.org) | Freely available | Article metadata, DOI records, article counts |
+| [OpenAlex](https://openalex.org) | CC0 | Citation counts, source matching |
+| [OpenCitations](https://opencitations.net) | CC0 | Open citation records |
+| [DOAJ](https://doaj.org) | CC BY-SA | OA journal status, APC data |
+| [ROR](https://ror.org) | CC0 | Institution identifiers |
+| [ORCID](https://orcid.org) | CC0 public records | Author identifiers |
+| [ISSN Portal](https://portal.issn.org) | — | ISSN registration country |
+| OAI-PMH | — | Article harvesting from OJS-based journals |
+
+POSI does not claim ownership over third-party metadata. PQF scores and curated journal profiles are original POSI content.
+
+---
+
+## Indexed Publishers
+
+**PSG Collection (12 journals)**
+- Panorama Scholarly Group — Hong Kong, China
+
+**Third-Party Indexed (18 journals)**
+- SHIHARR Publishing Limited — Hong Kong, China (10 journals)
+- China Architecture Culture Publishing House — Hong Kong, China (3 journals)
+- ATRI International — Hong Kong, China (3 journals)
+- Other indexed journals (2)
+
+---
+
+## Data License
+
+| Content | License |
 |---|---|
-| v0.1 | PSG core journal search, DOI Lookup, Article Detail |
-| v0.2 | OpenAlex + Crossref live queries, metadata enrichment |
-| v0.3 | Metadata Quality Dashboard |
-| v0.4 | Citation Visibility Reports |
-| v0.5 | Journal Transparency Reports |
-| v1.0 | PSG Core Scholarly Index (stable) |
-| v2.0 | External OA journal submissions |
-| v3.0 | Open Scholarly Index Platform |
+| PSG-curated journal metadata & PQF scores | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Source code | [MIT License](./LICENSE) |
+| Third-party metadata | Original source licenses (see above) |
+
+Attribution for curated data: *Panorama Open Scholarly Index, Panorama Scholarly Group. https://posi.panorama-sg.com*
+
+---
+
+## Conflict of Interest Disclosure
+
+Panorama Scholarly Group both operates POSI and publishes journals indexed in it. PQF scores for PSG journals are assessed using the same public criteria as all other journals. Independent third-party verification is encouraged. Full disclosure at [posi.panorama-sg.com/about](https://posi.panorama-sg.com/about).
+
+---
 
 ## Disclaimer
 
-POSI is an independent open scholarly index. It is not affiliated with or endorsed by Clarivate (Web of Science), Elsevier (Scopus), or any commercial database provider. POSI does not provide Journal Impact Factors, SCI/SSCI rankings, or any proprietary citation metric.
+POSI is an independent open scholarly index. It is not affiliated with or endorsed by Clarivate (Web of Science), Elsevier (Scopus), DOAJ, or any commercial database provider. POSI does not provide Journal Impact Factors, SCI/SSCI rankings, or any proprietary citation metric.
