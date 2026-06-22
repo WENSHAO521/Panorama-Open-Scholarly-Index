@@ -143,13 +143,13 @@ export default function SubmitJournalPage() {
         </p>
         <div className="flex flex-wrap gap-4 items-center">
           <a
-            href="mailto:index@panorama-sg.com?subject=POSI%20Journal%20Submission"
+            href="mailto:posi@panorama-sg.com?subject=POSI%20Journal%20Submission"
             className="inline-block px-6 py-2.5 text-sm font-semibold text-white transition-colors"
             style={{ background: 'var(--posi-accent)' }}
           >
             Submit via Email →
           </a>
-          <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>index@panorama-sg.com</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>posi@panorama-sg.com</span>
         </div>
       </div>
 

@@ -122,11 +122,11 @@ export function Footer() {
               </p>
               <div>
                 <a
-                  href="mailto:index@panorama-sg.com"
+                  href="mailto:posi@panorama-sg.com"
                   className="text-xs transition-colors hover:text-white block"
                   style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
                 >
-                  index@panorama-sg.com
+                  posi@panorama-sg.com
                 </a>
                 <span
                   className="text-[10px] mt-0.5 block"
