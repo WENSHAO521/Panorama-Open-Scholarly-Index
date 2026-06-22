@@ -885,7 +885,16 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = [
   },
 ]
 
-export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+// ── Auto-discovered Journals (unverified metadata records) ────────────────
+// Discovered automatically from public sources (Crossref, DOAJ, OAI-PMH).
+// Status: Auto-discovered metadata record — NOT verified by POSI.
+// DO NOT manually edit entries here; use: node scripts/discover-journals.mjs --write
+export const DISCOVERED_JOURNALS: Journal[] = [
+// BEGIN:DISCOVERED_JOURNALS
+// END:DISCOVERED_JOURNALS
+]
+
+export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...DISCOVERED_JOURNALS]
 
 // ISSN → journal_code lookup for mapping Crossref responses
 export const ISSN_TO_CODE: Record<string, string> = Object.fromEntries(
@@ -906,7 +915,7 @@ export function getStats(liveArticleCount?: number): PlatformStats {
   return {
     total_journals: ALL_JOURNALS.length,
     psg_journals: PSG_JOURNALS.length,
-    indexed_journals: INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length,
+    indexed_journals: INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length + DISCOVERED_JOURNALS.length,
     total_articles: articles,
     total_authors: Math.round(articles * 2.6),
     total_doi_records: articles,
