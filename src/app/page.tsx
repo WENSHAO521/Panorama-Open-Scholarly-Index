@@ -78,8 +78,8 @@ export default async function HomePage() {
           {/* Quick navigation links */}
           <nav className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Quick links">
             {[
-              { href: '/journals',      label: 'Browse Journals' },
-              { href: '/articles',      label: 'Article Database' },
+              { href: '/journals',      label: 'Journal Records' },
+              { href: '/articles',      label: 'Metadata Records' },
               { href: '/doi-lookup',    label: 'DOI Lookup' },
               { href: '/pqf',           label: 'PQF Methodology' },
               { href: '/evidence',      label: 'Evidence Registry' },
@@ -104,10 +104,10 @@ export default async function HomePage() {
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 sm:grid-cols-4">
               {[
-                { value: stats.total_journals,    label: 'Journals' },
-                { value: stats.total_articles,    label: 'Articles' },
-                { value: stats.total_authors,     label: 'Author Records' },
-                { value: stats.total_doi_records, label: 'DOI Records' },
+                { value: stats.psg_journals + stats.indexed_journals, label: 'Verified Records' },
+                { value: stats.discovered_journals,                   label: 'Discovered Records' },
+                { value: stats.total_doi_records,                     label: 'DOI Metadata Records' },
+                { value: stats.total_articles,                        label: 'Article Records' },
               ].map((s, i) => (
                 <div
                   key={s.label}
@@ -284,11 +284,11 @@ export default async function HomePage() {
           <div className="grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
             {[
               {
-                title: 'PSG Collection',
+                title: 'Journal Records',
                 items: [
-                  { label: 'PSG Journals',     value: stats.psg_journals },
-                  { label: 'Indexed Journals',  value: stats.indexed_journals },
-                  { label: 'Total Articles',    value: stats.total_articles },
+                  { label: 'PSG Journals',       value: stats.psg_journals },
+                  { label: 'Other Verified',     value: stats.indexed_journals },
+                  { label: 'Auto-discovered',    value: stats.discovered_journals },
                 ],
               },
               {

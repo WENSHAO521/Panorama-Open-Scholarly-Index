@@ -2249,7 +2249,8 @@ export function getStats(liveArticleCount?: number): PlatformStats {
   return {
     total_journals: ALL_JOURNALS.length,
     psg_journals: PSG_JOURNALS.length,
-    indexed_journals: INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length + DISCOVERED_JOURNALS.length,
+    indexed_journals: INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length,
+    discovered_journals: DISCOVERED_JOURNALS.length,
     total_articles: articles,
     total_authors: Math.round(articles * 2.6),
     total_doi_records: articles,

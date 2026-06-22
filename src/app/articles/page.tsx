@@ -57,9 +57,9 @@ function ArticleResults() {
       <div className="mb-6 pb-4" style={{ borderBottom: '1px solid var(--posi-border)' }}>
         <div className="flex items-baseline justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--posi-text)' }}>Article Database</h1>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--posi-text)' }}>Article Metadata Records</h1>
             <p className="text-xs mt-1" style={{ color: 'var(--posi-muted)' }}>
-              Browse all articles indexed in POSI across PSG journals.
+              Browse all articles recorded in POSI across PSG journals.
             </p>
           </div>
           {!loading && (
@@ -217,8 +217,8 @@ function ArticlesFallback() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6 pb-4" style={{ borderBottom: '1px solid var(--posi-border)' }}>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--posi-text)' }}>Article Database</h1>
-        <p className="text-xs mt-1" style={{ color: 'var(--posi-muted)' }}>Browse all articles indexed in POSI across PSG journals.</p>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--posi-text)' }}>Article Metadata Records</h1>
+        <p className="text-xs mt-1" style={{ color: 'var(--posi-muted)' }}>Browse all articles recorded in POSI across PSG journals.</p>
       </div>
       <div className="space-y-3">
         {[1, 2, 3, 4, 5].map(i => (

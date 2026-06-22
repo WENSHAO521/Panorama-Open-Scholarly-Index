@@ -21,7 +21,7 @@ export interface Journal {
   metadata_quality_score: number
   transparency_score: number
   indexing_readiness: 'A' | 'B' | 'C' | 'D' | 'Internal Review'
-  pqf?: PqfScore
+  pqf?: PqfScore | null
   /** @deprecated use pqf */
   ojqf?: PqfScore
   article_count: number
@@ -197,6 +197,7 @@ export interface PlatformStats {
   total_journals: number
   psg_journals: number
   indexed_journals: number
+  discovered_journals: number
   total_articles: number
   total_authors: number
   total_doi_records: number

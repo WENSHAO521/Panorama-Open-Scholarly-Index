@@ -3,7 +3,7 @@ import { CheckCircle, Warning, Info } from '@phosphor-icons/react/dist/ssr'
 
 export const metadata = {
   title: 'Submit Journal',
-  description: 'Information for journal editors who wish to have their journal indexed in POSI.',
+  description: 'Information for journal editors who wish to submit a journal record to POSI for review.',
 }
 
 const ELIGIBILITY = [
@@ -62,7 +62,7 @@ export default function SubmitJournalPage() {
           <span>/</span>
           <span style={{ color: 'var(--posi-text)' }}>Submit Journal</span>
         </nav>
-        <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--posi-text)' }}>Submit a Journal for Indexing</h1>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--posi-text)' }}>Submit a Journal Record for POSI Review</h1>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           POSI accepts applications from open access journal editors and publishers.
           Indexed journals receive a POSI profile, PQF quality evaluation, metadata quality assessment,

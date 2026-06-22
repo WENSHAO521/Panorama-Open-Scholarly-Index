@@ -82,7 +82,7 @@ export default function AboutPage() {
         <h2 className="text-sm font-bold mb-2" style={{ color: '#92400E' }}>Conflict of Interest Disclosure</h2>
         <p className="text-xs leading-relaxed" style={{ color: '#78350F' }}>
           POSI is operated by Panorama Scholarly Group Ltd. (PSG). The majority of journals currently
-          indexed in POSI are PSG-affiliated publications. PSG editors, staff, and affiliates may have
+          recorded in POSI are PSG-affiliated publications. PSG editors, staff, and affiliates may have
           a financial or reputational interest in the journals evaluated. All PQF scores are assigned
           using documented, publicly available criteria. Users should account for this relationship
           when interpreting scores and should not use POSI ratings as the sole basis for publication

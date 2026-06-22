@@ -44,14 +44,14 @@ export function Navbar() {
   const links = [
     { href: '/',               label: 'Home' },
     { href: '/search',         label: 'Search' },
-    { href: '/journals',       label: 'Journals' },
-    { href: '/articles',       label: 'Articles' },
+    { href: '/journals',       label: 'Records' },
     { href: '/doi-lookup',     label: 'DOI' },
     { href: '/pqf',            label: 'PQF' },
+    { href: '/policy',         label: 'Policies' },
     { href: '/evidence',       label: 'Evidence' },
     { href: '/data-sources',   label: 'Data' },
     { href: '/api',            label: 'API' },
-    { href: '/submit-journal', label: 'Submit' },
+    { href: '/submit-journal', label: 'Submit Record' },
   ]
 
   function isActive(href: string) {

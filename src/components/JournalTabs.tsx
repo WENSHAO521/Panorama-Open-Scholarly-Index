@@ -225,8 +225,8 @@ export function JournalTabs({ psgRows, indexedRows }: Props) {
 
   const tabs: { id: TabId; label: string; count: string }[] = [
     { id: 'psg', label: 'PSG Collection', count: `${psgRows.length} journals` },
-    { id: 'indexed', label: 'Indexed Journals', count: `${indexedRows.length} journals` },
-    { id: 'crossref', label: 'All Journals (Crossref)', count: '50,000+' },
+    { id: 'indexed', label: 'Verified Records', count: `${indexedRows.length} journals` },
+    { id: 'crossref', label: 'Crossref Journals', count: '50,000+' },
   ]
 
   return (
@@ -271,12 +271,12 @@ export function JournalTabs({ psgRows, indexedRows }: Props) {
         </div>
       )}
 
-      {/* Indexed Journals */}
+      {/* Verified Records */}
       {active === 'indexed' && (
         <div>
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
-              Third-party open access journals indexed by POSI.
+              Third-party open access journals with verified POSI records.
             </p>
             <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
               {indexedArticles.toLocaleString()} articles

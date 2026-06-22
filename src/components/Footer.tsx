@@ -51,15 +51,15 @@ export function Footer() {
             <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
               {[
                 { href: '/search',         label: 'Search' },
-                { href: '/journals',       label: 'Journals' },
-                { href: '/articles',       label: 'Articles' },
+                { href: '/journals',       label: 'Records' },
+                { href: '/articles',       label: 'Metadata' },
                 { href: '/doi-lookup',     label: 'DOI Lookup' },
                 { href: '/pqf',            label: 'PQF' },
                 { href: '/evidence',       label: 'Evidence' },
                 { href: '/data-sources',   label: 'Data Sources' },
                 { href: '/api',            label: 'API' },
-                { href: '/submit-journal', label: 'Submit' },
-                { href: '/policy',         label: 'Policy' },
+                { href: '/submit-journal', label: 'Submit Record' },
+                { href: '/policy',         label: 'Policies' },
               ].map(link => (
                 <li key={link.href}>
                   <Link
