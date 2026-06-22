@@ -34,7 +34,23 @@ export default async function JournalsPage() {
     Promise.all(
       DISCOVERED_JOURNALS.map(async j => {
         const doajResult = j.issn_online ? await doajGetJournal(j.issn_online).catch(() => null) : null
-        return { journal: j, cr: null, issnCountry: null as string | null, oaiCount: 0, inDoaj: doajResult?.in_doaj ?? false }
+        const inDoaj = doajResult?.in_doaj ?? false
+        // For DOAJ-confirmed journals, also fetch Crossref meta for publisher_location
+        const cr = (inDoaj && j.issn_online) ? await crossrefFetchJournal(j.issn_online).catch(() => null) : null
+        const ISO_COUNTRY: Record<string, string> = {
+          AF:'Afghanistan',AR:'Argentina',AT:'Austria',AU:'Australia',BE:'Belgium',BR:'Brazil',
+          CA:'Canada',CH:'Switzerland',CN:'China',CZ:'Czech Republic',DE:'Germany',DK:'Denmark',
+          EG:'Egypt',ES:'Spain',FI:'Finland',FR:'France',GB:'United Kingdom',GR:'Greece',
+          HR:'Croatia',HU:'Hungary',ID:'Indonesia',IE:'Ireland',IL:'Israel',IN:'India',
+          IR:'Iran',IT:'Italy',JP:'Japan',KR:'South Korea',MX:'Mexico',MY:'Malaysia',
+          NL:'Netherlands',NO:'Norway',NZ:'New Zealand',PH:'Philippines',PL:'Poland',
+          PT:'Portugal',RO:'Romania',RS:'Serbia',RU:'Russia',SA:'Saudi Arabia',SE:'Sweden',
+          SG:'Singapore',SI:'Slovenia',SK:'Slovakia',TH:'Thailand',TR:'Turkey',
+          TW:'Taiwan',UA:'Ukraine',US:'United States',ZA:'South Africa',
+        }
+        const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null
+        const issnCountry = cr?.publisher_location ?? doajCountry ?? null
+        return { journal: j, cr, issnCountry, oaiCount: 0, inDoaj }
       })
     ),
   ])

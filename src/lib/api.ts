@@ -707,6 +707,8 @@ export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | nu
       subjects: ((bib.subject as Array<{ term: string }>) ?? []).map(s => s.term),
       last_updated: (first.last_updated as string) ?? null,
       doaj_id: (first.id as string) ?? null,
+      publication_time_weeks: (bib.publication_time_weeks as number) ?? null,
+      publisher_country_code: ((bib.publisher as { country?: string })?.country) ?? null,
     }
   } catch {
     return null

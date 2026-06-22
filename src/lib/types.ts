@@ -165,6 +165,8 @@ export interface DoajJournalInfo {
   subjects: string[]
   last_updated: string | null
   doaj_id: string | null
+  publication_time_weeks: number | null
+  publisher_country_code: string | null
 }
 
 export interface RorOrganization {

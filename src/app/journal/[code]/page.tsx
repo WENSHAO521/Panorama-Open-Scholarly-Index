@@ -26,6 +26,30 @@ export async function generateMetadata(props: { params: Promise<{ code: string }
   }
 }
 
+const ISO_COUNTRY: Record<string, string> = {
+  AF:'Afghanistan',AR:'Argentina',AT:'Austria',AU:'Australia',BE:'Belgium',BR:'Brazil',
+  CA:'Canada',CH:'Switzerland',CN:'China',CZ:'Czech Republic',DE:'Germany',DK:'Denmark',
+  EG:'Egypt',ES:'Spain',FI:'Finland',FR:'France',GB:'United Kingdom',GR:'Greece',
+  HR:'Croatia',HU:'Hungary',ID:'Indonesia',IE:'Ireland',IL:'Israel',IN:'India',
+  IR:'Iran',IT:'Italy',JP:'Japan',KR:'South Korea',MX:'Mexico',MY:'Malaysia',
+  NL:'Netherlands',NO:'Norway',NZ:'New Zealand',PH:'Philippines',PL:'Poland',
+  PT:'Portugal',RO:'Romania',RS:'Serbia',RU:'Russia',SA:'Saudi Arabia',SE:'Sweden',
+  SG:'Singapore',SI:'Slovenia',SK:'Slovakia',TH:'Thailand',TR:'Turkey',
+  TW:'Taiwan',UA:'Ukraine',US:'United States',ZA:'South Africa',
+}
+
+function weeksToFrequency(weeks: number | null | undefined): string | null {
+  if (weeks === null || weeks === undefined) return null
+  if (weeks <= 1) return 'Weekly'
+  if (weeks <= 2) return 'Biweekly'
+  if (weeks <= 5) return 'Monthly'
+  if (weeks <= 9) return 'Bimonthly'
+  if (weeks <= 16) return 'Quarterly'
+  if (weeks <= 22) return 'Triannual'
+  if (weeks <= 30) return 'Biannual'
+  return 'Annual'
+}
+
 const INDEXING_LABEL: Record<string, string> = {
   A: 'A — High Readiness',
   B: 'B — Moderate Readiness',
@@ -59,7 +83,9 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
   ])
   doaj = doajResult
-  publisherLocation = journal.registration_country ?? issnCountry ?? crMeta?.publisher_location ?? null
+  const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null
+  publisherLocation = journal.registration_country ?? issnCountry ?? crMeta?.publisher_location ?? doajCountry ?? null
+  const frequency = journal.frequency || weeksToFrequency(doajResult?.publication_time_weeks) || null
 
   // OAI-PMH first (authoritative for PSG journals), Crossref as fallback
   const oaiItems = await oaiHarvestJournal(journal.journal_code).catch(() => [])
@@ -127,7 +153,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
                 ? { icon: Barcode, label: 'eISSN', value: journal.issn_online }
                 : { icon: Barcode, label: 'pISSN', value: journal.issn_print || 'N/A' },
             ...(publisherLocation ? [{ icon: Globe, label: 'ISSN Reg.', value: publisherLocation }] : []),
-            { icon: FileText, label: 'Frequency', value: journal.frequency },
+            ...(frequency ? [{ icon: FileText, label: 'Frequency', value: frequency }] : []),
             { icon: Users, label: 'Peer Review', value: journal.peer_review_type },
             { icon: Globe, label: 'Language', value: journal.language },
           ].map(item => (
