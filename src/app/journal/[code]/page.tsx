@@ -76,27 +76,35 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   let doaj: DoajJournalInfo | null = null
   let publisherLocation: string | null = null
 
-  // Fetch DOAJ, Crossref metadata, and ISSN registration country in parallel
+  // Discovered journals already have metadata from data.ts — skip redundant API calls
+  const isDiscovered = journal.id.startsWith('j-disc-')
+
   const [doajResult, crMeta, issnCountry] = await Promise.all([
-    journal.issn_online ? doajGetJournal(journal.issn_online).catch(() => null) : null,
-    journal.issn_online ? crossrefFetchJournal(journal.issn_online).catch(() => null) : null,
-    journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
+    // Skip DOAJ if journal is already auto-scored (all its info is in data.ts)
+    !isDiscovered && journal.issn_online ? doajGetJournal(journal.issn_online).catch(() => null) : null,
+    // Skip Crossref meta for discovered journals (article_count comes from data.ts)
+    !isDiscovered && journal.issn_online ? crossrefFetchJournal(journal.issn_online).catch(() => null) : null,
+    // Skip ISSN country lookup if registration_country is already populated
+    !journal.registration_country && journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
   ])
   doaj = doajResult
   const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null
   publisherLocation = journal.registration_country ?? issnCountry ?? crMeta?.publisher_location ?? doajCountry ?? null
   const frequency = journal.frequency || weeksToFrequency(doajResult?.publication_time_weeks) || null
 
-  // OAI-PMH first (authoritative for PSG journals), Crossref as fallback
+  // OAI-PMH (PSG journals only), then Crossref for non-discovered journals
   const oaiItems = await oaiHarvestJournal(journal.journal_code).catch(() => [])
   if (oaiItems.length > 0) {
     total = oaiItems.length
     articles = oaiItems.slice(0, 20)
   }
-  if (articles.length === 0 && journal.issn_online) {
+  if (!isDiscovered && articles.length === 0 && journal.issn_online) {
     const cr = await crossrefGetJournalWorks(journal.issn_online, { page: 1, rows: 20 })
     total = crMeta?.total_dois ?? cr.total
     articles = cr.items
+  }
+  if (isDiscovered && articles.length === 0) {
+    total = journal.article_count
   }
 
   return (

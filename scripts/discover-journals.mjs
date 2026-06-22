@@ -147,6 +147,71 @@ function weeksToFrequency(weeks) {
   return 'Annual'
 }
 
+// ── Inline PQF scoring (mirrors auto-pqf.mjs logic) ────────────────────────
+
+function pqfGrade(total) {
+  if (total >= 90) return 'A+'
+  if (total >= 80) return 'A'
+  if (total >= 70) return 'B+'
+  if (total >= 60) return 'B'
+  if (total >= 50) return 'C'
+  if (total >= 40) return 'D'
+  return 'E'
+}
+
+function scoreDoaj(bib, admin) {
+  const lic = (bib.license?.[0]?.type ?? '').toLowerCase()
+  const has_seal = !!(admin?.ticked)
+  const has_apc = !!(bib.apc?.has_apc)
+  const apc_max = bib.apc?.max ?? []
+  const reviews = bib.editorial?.review_processes ?? bib.editorial?.review_process ?? []
+  const reviewArr = Array.isArray(reviews) ? reviews : [reviews]
+  const peer = reviewArr.some(r => String(r).toLowerCase().includes('peer'))
+
+  // JTF /25
+  let jtf = 8
+  if (lic.includes('cc by 4') || lic === 'cc by') jtf += 5
+  else if (lic.includes('cc by-sa') || lic.includes('cc by-nc 4')) jtf += 3
+  else if (lic.includes('cc by-nd') || lic.includes('cc by-nc-nd')) jtf += 2
+  if (has_apc && apc_max.length > 0) jtf += 4
+  else if (!has_apc) jtf += 5
+  if (has_seal) jtf += 3
+  jtf = Math.min(jtf, 25)
+
+  // MQF /25
+  let mqf = 8
+  if (bib.pissn && bib.eissn) mqf += 3
+  else if (bib.pissn || bib.eissn) mqf += 1
+  if (reviewArr.length > 0) mqf += 3
+  if (has_seal) mqf += 4
+  mqf = Math.min(mqf, 25)
+
+  // EGF /20
+  let egf = 6
+  if (peer) egf += 5
+  if (bib.editorial?.board_url) egf += 4
+  if (has_seal) egf += 4
+  egf = Math.min(egf, 20)
+
+  // TDF /15
+  let tdf = 5
+  tdf = Math.min(tdf, 15)  // no Crossref/OpenAlex data at this stage
+
+  // CVF /10
+  let cvf = 3
+  if (has_seal) cvf += 2
+  cvf = Math.min(cvf, 10)
+
+  // RIF /5
+  let rif = 2
+  if (peer) rif += 1
+  if (has_seal) rif += 2
+  rif = Math.min(rif, 5)
+
+  const total = jtf + mqf + egf + tdf + cvf + rif
+  return { jtf, mqf, egf, tdf, cvf, rif, total, grade: pqfGrade(total) }
+}
+
 // ── Build journal object from DOAJ bibjson ───────────────────────────────────
 
 function buildFromDoaj(bib, item) {
@@ -161,9 +226,17 @@ function buildFromDoaj(bib, item) {
   const countryCode    = bib.publisher?.country ?? null
   const countryName    = isoToCountry(countryCode)
   const pubTimeWeeks   = bib.publication_time_weeks ?? null
+  const admin          = item.admin ?? {}
+
+  // Use ISSN as code for uniqueness at scale; fall back to slugified title
+  const primaryIssn = issn_online ?? issn_print ?? null
+  const code = primaryIssn ? `issn-${primaryIssn}` : slugify(bib.title ?? '').slice(0, 24)
+
+  // Compute auto_pqf inline — avoids a separate scoring pass
+  const scores = scoreDoaj(bib, admin)
 
   return {
-    code: slugify(bib.title ?? ''),
+    code,
     title: bib.title ?? 'Unknown',
     short_title: (bib.title ?? 'Unknown').split(':')[0].trim(),
     issn_print,
@@ -179,6 +252,7 @@ function buildFromDoaj(bib, item) {
     oai_base_url: null,
     doaj_status: 'listed',   // DOAJ search only returns listed journals
     article_count: 0,
+    _scores: scores,         // used by formatEntry; stripped before writing
   }
 }
 
@@ -228,6 +302,7 @@ function formatEntry(j) {
     transparency_score: 30,
     indexing_readiness: 'D',
     pqf: null,
+    ${j._scores ? `auto_pqf: autopqf(${j._scores.jtf}, ${j._scores.mqf}, ${j._scores.egf}, ${j._scores.tdf}, ${j._scores.cvf}, ${j._scores.rif}),` : ''}
     article_count: ${j.article_count ?? 0},
     created_at: '${TODAY}T00:00:00Z',
     updated_at: '${TODAY}T00:00:00Z',
@@ -392,8 +467,6 @@ async function discoverDoajAll(subjectFilter = '') {
   let totalKnown = null
 
   while (journals.length < LIMIT) {
-    // Without API key, use _exists_:bibjson.title to enumerate all journals
-    // With API key (--doaj-key), pass the subject filter or blank (wildcard allowed)
     const q = subjectFilter
       ? encodeURIComponent(`bibjson.subject.term:"${subjectFilter}"`)
       : encodeURIComponent('_exists_:bibjson.title')
@@ -434,6 +507,94 @@ async function discoverDoajAll(subjectFilter = '') {
     page++
     await sleep(300)
   }
+  return journals
+}
+
+// ── MODE 3c: OpenAlex — fetch all DOAJ journals via cursor (no 10k limit) ────
+
+async function discoverOpenAlexDoaj() {
+  console.error('\n🔍  Fetching DOAJ journals via OpenAlex cursor API (no page limit)\n')
+
+  const perPage = 200
+  let cursor = '*'
+  const journals = []
+  let totalKnown = null
+  let pageNum = 0
+
+  while (journals.length < LIMIT) {
+    const url = `https://api.openalex.org/sources?filter=is_in_doaj:true&per-page=${perPage}&cursor=${encodeURIComponent(cursor)}&mailto=posi@panoramagroup.org`
+
+    pageNum++
+    const totalPages = totalKnown ? Math.ceil(totalKnown / perPage) : '?'
+    console.error(`    Page ${pageNum}/${totalPages} — ${journals.length} collected so far...`)
+
+    let data
+    try {
+      data = await fetchJson(url)
+    } catch (e) {
+      console.error(`    ⚠  ${e.message} — retrying in 5s`)
+      await sleep(5000)
+      try { data = await fetchJson(url) } catch (e2) {
+        console.error(`    ❌  Fatal: ${e2.message}`)
+        break
+      }
+    }
+
+    if (totalKnown === null && data?.meta?.count != null) {
+      totalKnown = data.meta.count
+      console.error(`    Total available: ${totalKnown} journals`)
+    }
+
+    const results = data?.results ?? []
+    if (results.length === 0) break
+
+    for (const src of results) {
+      if (journals.length >= LIMIT) break
+
+      const issns = src.issn ?? []
+      const issn_online = src.issn_l ?? issns[0] ?? null
+      const issn_print  = issns.find(i => i !== issn_online) ?? null
+      const primaryIssn = issn_online ?? issn_print
+
+      const code = primaryIssn ? `issn-${primaryIssn}` : slugify(src.display_name ?? '').slice(0, 24)
+
+      // Simplified scoring from OpenAlex data (no DOAJ bibjson license/review details)
+      const has_apc      = (src.apc_usd ?? 0) > 0
+      const has_dual     = issns.length >= 2
+      const jtf = Math.min(8 + (has_apc ? 4 : 5), 25)
+      const mqf = Math.min(8 + (has_dual ? 3 : 1), 25)
+      const egf = 6   // peer review assumed (DOAJ requires it) but no detail
+      const tdf = 5   // base only
+      const cvf = 3   // base only
+      const rif = 3   // DOAJ-indexed = peer reviewed
+
+      journals.push({
+        code,
+        title:          src.display_name ?? 'Unknown',
+        short_title:    (src.display_name ?? 'Unknown').split(':')[0].trim(),
+        issn_print,
+        issn_online,
+        publisher:      src.host_organization_name ?? '',
+        country:        isoToCountry(src.country_code),
+        registration_country: isoToCountry(src.country_code) || null,
+        language:       'English',
+        frequency:      '',
+        peer_review_type: 'Peer review',
+        license:        'Open Access',
+        website_url:    src.homepage_url ?? '',
+        oai_base_url:   null,
+        doaj_status:    'listed',
+        article_count:  src.works_count ?? 0,
+        _scores: { jtf, mqf, egf, tdf, cvf, rif },
+      })
+    }
+
+    const nextCursor = data?.meta?.next_cursor
+    if (!nextCursor || results.length < perPage) break
+    cursor = nextCursor
+    await sleep(120)  // OpenAlex allows ~10 req/s; 120ms is safe
+  }
+
   return journals
 }
 
@@ -506,6 +667,8 @@ if (args[0] === '--ojs' && args[1]) {
   journals = await discoverDoajAll()
 } else if (args[0] === '--doaj-subject' && args[1]) {
   journals = await discoverDoajAll(args[1])
+} else if (args[0] === '--openalex-doaj') {
+  journals = await discoverOpenAlexDoaj()
 } else {
   console.error(`
 Usage:
@@ -514,18 +677,18 @@ Usage:
   node scripts/discover-journals.mjs --doaj "<publisher name>"   [--write] [--limit N]
   node scripts/discover-journals.mjs --doaj-all                  [--write] [--limit N] [--resume-page N]
   node scripts/discover-journals.mjs --doaj-subject "<subject>"  [--write] [--limit N]
+  node scripts/discover-journals.mjs --openalex-doaj             [--write] [--limit N]
 
 Examples:
+  node scripts/discover-journals.mjs --openalex-doaj --write           # all DOAJ (recommended)
   node scripts/discover-journals.mjs --doaj "MDPI AG" --write
-  node scripts/discover-journals.mjs --doaj-all --write --limit 500
-  node scripts/discover-journals.mjs --doaj-all --write --resume-page 10
   node scripts/discover-journals.mjs --doaj-subject "Medicine" --write --limit 200
   node scripts/discover-journals.mjs --crossref-member 1968 --write --limit 30
   node scripts/discover-journals.mjs --ojs ojs.shiharr.com --write
 
 Without --write: prints TypeScript blocks to stdout for manual review.
 With    --write: deduplicates and appends new journals to DISCOVERED_JOURNALS in data.ts.
-  --resume-page N: start from page N (useful when a previous run was interrupted)
+  --openalex-doaj: cursor-based, no 10,000 result limit (preferred over --doaj-all)
 `)
   process.exit(1)
 }
