@@ -1,4 +1,6 @@
 ﻿import type { Journal, PqfScore, PlatformStats } from './types'
+import { DISCOVERED_JOURNALS } from './discovered-journals'
+export { DISCOVERED_JOURNALS }
 
 // PQF v1.0 formula: JTF/25 + MQF/25 + EGF/20 + TDF/15 + CVF/10 + RIF/5 = 100
 function pqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, rif: number): PqfScore {
@@ -903,8 +905,6 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = [
     updated_at: '2026-06-22T00:00:00Z',
   },
 ]
-
-export { DISCOVERED_JOURNALS } from './discovered-journals'
 
 export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...DISCOVERED_JOURNALS]
 
