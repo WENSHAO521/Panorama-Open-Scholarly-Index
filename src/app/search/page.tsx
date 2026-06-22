@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState, useRef } from 'react'
-import { X, CaretDown, CaretUp, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
+import { X, CaretDown, CaretUp, MagnifyingGlass, Funnel } from '@phosphor-icons/react/dist/ssr'
 import { ArticleCard } from '@/components/ArticleCard'
 import { Badge } from '@/components/Badge'
 import { crossrefSearch } from '@/lib/api'
@@ -112,6 +112,7 @@ function SearchResults() {
   const hasFilters = journal || year
   const pageRows = 20
   const isEmpty = !q && !journal && scope === 'all'
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -190,8 +191,29 @@ function SearchResults() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
+        {/* Mobile filter toggle */}
+        <div className="flex md:hidden">
+          <button
+            onClick={() => setFiltersOpen(v => !v)}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 transition-colors"
+            style={{
+              border: '1px solid var(--posi-border)',
+              color: filtersOpen ? 'var(--posi-accent)' : 'var(--posi-muted)',
+              background: filtersOpen ? 'var(--posi-accent-light)' : '#fff',
+            }}
+          >
+            <Funnel className="h-3.5 w-3.5" />
+            Filters
+            {hasFilters && (
+              <span className="font-mono text-[10px] px-1 rounded" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
+                {[journal, year].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Sidebar filters */}
-        <aside className="w-full md:w-44 shrink-0">
+        <aside className={`w-full md:w-44 shrink-0 ${filtersOpen ? 'block' : 'hidden'} md:block`}>
           <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: '2px solid var(--posi-accent)' }}>
             <span className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-text)' }}>Refine</span>
           </div>

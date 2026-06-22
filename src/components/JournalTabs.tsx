@@ -232,12 +232,13 @@ export function JournalTabs({ psgRows, indexedRows }: Props) {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex mb-6" style={{ borderBottom: '1px solid var(--posi-border)' }}>
+      <div className="mb-6" style={{ borderBottom: '1px solid var(--posi-border)' }}>
+      <div className="flex overflow-x-auto scrollbar-none">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap"
+            className="px-4 py-2.5 text-xs font-medium -mb-px transition-colors whitespace-nowrap shrink-0"
             style={{
               color: active === tab.id ? 'var(--posi-primary)' : 'var(--posi-muted)',
               borderBottom: active === tab.id ? '2px solid var(--posi-primary)' : '2px solid transparent',
@@ -252,6 +253,7 @@ export function JournalTabs({ psgRows, indexedRows }: Props) {
             </span>
           </button>
         ))}
+      </div>
       </div>
 
       {/* PSG Collection */}

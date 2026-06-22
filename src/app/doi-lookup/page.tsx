@@ -100,7 +100,7 @@ function DoiLookupForm() {
           <input
             value={doi}
             onChange={e => setDoi(e.target.value)}
-            placeholder="e.g. 10.63802/aifs.2024.008"
+            placeholder="e.g. 10.63802/afs.2024.008"
             className="flex-1 px-4 py-2.5 text-sm focus:outline-none transition-colors"
             style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
             onFocus={e => (e.currentTarget.style.borderColor = 'var(--posi-primary)')}

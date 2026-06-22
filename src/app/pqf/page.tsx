@@ -200,7 +200,9 @@ export default function PqfPage() {
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Journal PQF Scores — 2026</h2>
           <span className="text-[10px] text-gray-400 font-mono">Assessed 2026-06-22</span>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
@@ -245,6 +247,46 @@ export default function PqfPage() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {journalsWithPqf.map(j => {
+            const pqf = (j.pqf ?? j.ojqf)!
+            const gradeData = GRADES.find(g => g.grade === pqf.grade)
+            return (
+              <div key={j.id} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <Link href={`/journal/${j.journal_code}`} className="text-xs font-semibold text-gray-800 hover:text-[#c41e3a] transition-colors">
+                      {j.short_title}
+                    </Link>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{j.publisher === 'Panorama Scholarly Group' ? 'PSG' : j.publisher}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-2xl font-bold font-mono leading-none" style={{ color: gradeData?.color ?? '#6B7280' }}>{pqf.total}</span>
+                    <span className="block text-xs font-mono font-bold" style={{ color: gradeData?.color ?? '#6B7280' }}>{pqf.grade}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-6 gap-1">
+                  {[
+                    { abbr: 'JTF', val: pqf.subfactors.jtf, max: 25 },
+                    { abbr: 'MQF', val: pqf.subfactors.mqf, max: 25 },
+                    { abbr: 'EGF', val: pqf.subfactors.egf, max: 20 },
+                    { abbr: 'TDF', val: pqf.subfactors.tdf, max: 15 },
+                    { abbr: 'CVF', val: pqf.subfactors.cvf, max: 10 },
+                    { abbr: 'RIF', val: pqf.subfactors.rif ?? 0, max: 5 },
+                  ].map(sf => (
+                    <div key={sf.abbr} className="text-center py-1.5" style={{ background: '#f9fafb' }}>
+                      <div className="text-[9px] font-mono font-bold" style={{ color: '#c41e3a' }}>{sf.abbr}</div>
+                      <div className="text-xs font-mono font-semibold text-gray-700">{sf.val}</div>
+                      <div className="text-[9px] text-gray-400">/{sf.max}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </section>
 

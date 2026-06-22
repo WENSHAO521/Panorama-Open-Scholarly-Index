@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr'
+import { Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { ArticleCard } from '@/components/ArticleCard'
 import { crossrefSearch } from '@/lib/api'
 import { ALL_JOURNALS } from '@/lib/data'
@@ -22,6 +22,7 @@ function ArticleResults() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -70,8 +71,29 @@ function ArticleResults() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
+        {/* Mobile filter toggle */}
+        <div className="flex md:hidden">
+          <button
+            onClick={() => setFiltersOpen(v => !v)}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 transition-colors"
+            style={{
+              border: '1px solid var(--posi-border)',
+              color: filtersOpen ? 'var(--posi-accent)' : 'var(--posi-muted)',
+              background: filtersOpen ? 'var(--posi-accent-light)' : '#fff',
+            }}
+          >
+            <Funnel className="h-3.5 w-3.5" />
+            Filters
+            {(journal || year) && (
+              <span className="font-mono text-[10px] px-1 rounded" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
+                {[journal, year].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Filters */}
-        <aside className="w-full md:w-48 shrink-0">
+        <aside className={`w-full md:w-48 shrink-0 ${filtersOpen ? 'block' : 'hidden'} md:block`}>
           <div className="pb-2 mb-3" style={{ borderBottom: '2px solid var(--posi-accent)' }}>
             <span className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-text)' }}>Filter</span>
           </div>

@@ -35,7 +35,7 @@ export function SearchBar() {
           <select
             value={field}
             onChange={e => setField(e.target.value)}
-            className="appearance-none pl-3 pr-7 py-3 text-xs focus:outline-none h-full"
+            className="appearance-none pl-2 sm:pl-3 pr-6 sm:pr-7 py-3 text-xs focus:outline-none h-full w-[72px] sm:w-auto"
             style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.12)',
@@ -82,13 +82,13 @@ export function SearchBar() {
         {/* Submit */}
         <button
           type="submit"
-          className="flex items-center gap-2 px-6 py-3 text-white text-sm font-semibold shrink-0 active:scale-[0.98] transition-transform"
+          className="flex items-center gap-2 px-3 sm:px-6 py-3 text-white text-sm font-semibold shrink-0 active:scale-[0.98] transition-transform"
           style={{ background: 'var(--posi-accent)' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'var(--posi-accent)')}
         >
           <MagnifyingGlass className="h-4 w-4" weight="bold" />
-          <span>Search</span>
+          <span className="hidden sm:inline">Search</span>
         </button>
       </form>
 
@@ -100,7 +100,7 @@ export function SearchBar() {
         >
           Try:
         </span>
-        {['artificial intelligence', 'digital humanities', '10.63802/aifs.2024.008'].map(s => (
+        {['artificial intelligence', 'digital humanities', '10.63802/afs.2024.008'].map(s => (
           <button
             key={s}
             type="button"

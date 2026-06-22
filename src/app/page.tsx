@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
 import { getStats } from '@/lib/data'
+import { crossrefSearch } from '@/lib/api'
+
+// Revalidate stats every hour so article counts stay current
+export const revalidate = 3600
 
 export const metadata = {
   title: 'Panorama Open Scholarly Index | POSI',
@@ -9,7 +13,19 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-  const stats = getStats()
+  // Fetch live article count from Crossref (PSG journals)
+  let liveArticleCount: number | undefined
+  try {
+    const { total } = await crossrefSearch('', { scope: 'psg', rows: 1 })
+    if (total > 0) liveArticleCount = total
+  } catch {
+    // fall back to static counts in data.ts
+  }
+
+  const stats = {
+    ...getStats(liveArticleCount),
+    last_updated: new Date().toISOString().slice(0, 10),
+  }
 
   return (
     <div className="min-h-[100dvh]">

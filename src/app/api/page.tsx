@@ -28,7 +28,7 @@ const EXPORT_FORMATS = [
 
 const QUERY_PARAMS = [
   { param: 'q',        desc: 'Full-text search query' },
-  { param: 'journal',  desc: 'Filter by journal slug (e.g. grhas, aifs)' },
+  { param: 'journal',  desc: 'Filter by journal slug (e.g. grhas, afs)' },
   { param: 'year',     desc: 'Filter by publication year (e.g. 2025)' },
   { param: 'doi',      desc: 'Filter by exact DOI' },
   { param: 'license',  desc: 'Filter by license (e.g. CC BY 4.0)' },

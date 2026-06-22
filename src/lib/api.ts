@@ -452,13 +452,16 @@ export async function issnGetCountry(issn: string): Promise<string | null> {
     // ISSN Portal flat JSON format: publication[0].location[].label
     const locations = data?.publication?.[0]?.location
     if (Array.isArray(locations) && locations.length > 0) {
-      // Prefer properly-capitalised label (skip ALL-CAPS entries)
       type LocEntry = { label?: string }
-      const preferred = (locations as LocEntry[]).find(
-        l => typeof l.label === 'string' && l.label !== l.label.toUpperCase()
-      )
-      const label = preferred?.label ?? (locations[0] as LocEntry)?.label
-      if (typeof label === 'string' && label) return label
+      const label = (locations as LocEntry[]).find(l => typeof l.label === 'string' && l.label)?.label
+      if (typeof label === 'string' && label) {
+        // Portal returns ALL-CAPS (e.g. "HONG KONG S.A.R., CHINA").
+        // \b\w+ correctly preserves single-letter abbreviations like S.A.R. as-is
+        // since each letter is already uppercase and slice(1) is empty.
+        return label === label.toUpperCase()
+          ? label.replace(/\b\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          : label
+      }
     }
 
     return null
