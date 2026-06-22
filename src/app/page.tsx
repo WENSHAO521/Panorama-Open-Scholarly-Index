@@ -1,9 +1,7 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
 import { getStats } from '@/lib/data'
-import { crossrefSearch } from '@/lib/api'
 
-// Revalidate stats every hour so article counts stay current
 export const revalidate = 3600
 
 export const metadata = {
@@ -13,17 +11,10 @@ export const metadata = {
 }
 
 export default async function HomePage() {
-  // Fetch live article count from Crossref (PSG journals)
-  let liveArticleCount: number | undefined
-  try {
-    const { total } = await crossrefSearch('', { scope: 'psg', rows: 1 })
-    if (total > 0) liveArticleCount = total
-  } catch {
-    // fall back to static counts in data.ts
-  }
-
+  // article_count on all journals (from OpenAlex/DOAJ) is the primary source.
+  // crossrefSearch scope:psg only counts ~141 PSG articles — too narrow for total.
   const stats = {
-    ...getStats(liveArticleCount),
+    ...getStats(),
     last_updated: new Date().toISOString().slice(0, 10),
   }
 
