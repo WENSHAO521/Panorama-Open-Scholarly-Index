@@ -719,7 +719,7 @@ export const SHIHARR_JOURNALS: Journal[] = [
     license: 'Open Access',
     peer_review_type: 'Peer review',
     website_url: 'https://ojs.shiharr.com/index.php/zgfx',
-    cover_image_url: null,
+    cover_image_url: 'https://ojs.shiharr.com/public/journals/13/journalThumbnail_en.png',
     oai_base_url: 'https://ojs.shiharr.com/index.php/zgfx/oai',
     registration_country: 'China, Hong Kong SAR',
     doaj_status: 'not_listed',
