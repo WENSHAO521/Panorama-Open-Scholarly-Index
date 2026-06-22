@@ -54,7 +54,7 @@ export function OjqfCard({ score, journalCode }: PqfCardProps) {
             POSI Quality Factor
           </span>
           <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
-            {score.version ?? 'PQF v1.0'}
+            {score.evaluated_at}
           </span>
         </div>
         <Link href="/pqf" className="text-[11px] hover:underline transition-colors" style={{ color: 'var(--posi-accent)' }}>
@@ -78,7 +78,7 @@ export function OjqfCard({ score, journalCode }: PqfCardProps) {
             / 100 · {score.evaluated_at}
           </div>
           <div className="mt-1 text-[10px] text-center" style={{ color: 'var(--posi-muted)' }}>
-            PQF v1.0
+            PQF
           </div>
         </div>
 
