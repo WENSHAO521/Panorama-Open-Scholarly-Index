@@ -8,12 +8,11 @@ export function Footer() {
 
           {/* Brand */}
           <div className="md:col-span-1">
-            <span
-              className="block text-2xl font-bold tracking-[0.2em] mb-5"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--posi-accent)' }}
-            >
-              POSI
-            </span>
+            <img
+              src="/posi-logo-white.svg"
+              alt="POSI - Panorama Scholarly Index"
+              style={{ height: '52px', width: 'auto', marginBottom: '20px' }}
+            />
             <p className="text-xs leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
               Open scholarly metadata platform for journal transparency, metadata quality,
               and citation visibility. Not affiliated with Web of Science, Scopus, or DOAJ.

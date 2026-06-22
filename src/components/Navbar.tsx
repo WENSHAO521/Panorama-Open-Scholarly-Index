@@ -66,19 +66,12 @@ export function Navbar() {
         <div className="flex items-center h-[60px] gap-5">
 
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <span
-              className="text-xl font-bold tracking-[0.2em]"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--posi-accent)' }}
-            >
-              POSI
-            </span>
-            <span
-              className="hidden xl:block text-[9px] uppercase tracking-[0.2em]"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
-            >
-              Panorama Scholarly Index
-            </span>
+          <Link href="/" className="flex items-center shrink-0">
+            <img
+              src="/posi-logo-white.svg"
+              alt="POSI - Panorama Scholarly Index"
+              style={{ height: '38px', width: 'auto' }}
+            />
           </Link>
 
           {/* Vertical divider */}
