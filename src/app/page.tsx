@@ -351,15 +351,13 @@ export default async function HomePage() {
                 </span>
               ))}
             </div>
-            <div className="sm:ml-auto shrink-0">
-              <Link
-                href="/data-sources"
-                className="text-xs font-semibold px-4 py-1.5 text-white transition-colors"
-                style={{ background: 'var(--posi-primary)' }}
-              >
-                Data Sources &amp; Provenance
-              </Link>
-            </div>
+            <Link
+              href="/data-sources"
+              className="sm:ml-auto shrink-0 text-xs hover:underline transition-colors"
+              style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
+            >
+              Data Sources &amp; Provenance →
+            </Link>
           </div>
         </div>
       </section>
