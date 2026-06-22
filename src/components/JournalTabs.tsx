@@ -342,7 +342,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               </span>
             </button>
           ))}
-          {/* Discovered tab — visually separated */}
+          {/* Extended tab — visually separated */}
           <div className="flex items-center mx-2 shrink-0" style={{ borderLeft: '1px solid var(--posi-border)' }} />
           <button
             onClick={() => setActive('discovered')}
@@ -352,7 +352,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               borderBottom: active === 'discovered' ? '2px solid #F59E0B' : '2px solid transparent',
             }}
           >
-            Auto-discovered
+            Extended Records
             <span
               className="ml-1.5 font-mono text-[10px]"
               style={{ color: active === 'discovered' ? '#B45309' : 'var(--posi-border)' }}
@@ -403,7 +403,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
         </div>
       )}
 
-      {/* Auto-discovered */}
+      {/* Extended Records */}
       {active === 'discovered' && (
         <div>
           <div
@@ -412,8 +412,8 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           >
             <span className="font-bold shrink-0 mt-px">!</span>
             <span>
-              These records were auto-discovered from Crossref and are <strong>pending manual verification</strong>.
-              They have not been reviewed by the POSI team and may contain inaccuracies.
+              These records are <strong>pending manual verification</strong> by the POSI team and may contain inaccuracies.
+              DOAJ-confirmed journals are automatically promoted to Verified Records.
               PQF evaluation is not available for unverified records.
             </span>
           </div>
