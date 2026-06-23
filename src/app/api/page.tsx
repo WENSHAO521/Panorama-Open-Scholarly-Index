@@ -136,7 +136,7 @@ export default function ApiPage() {
       </section>
 
       {/* Export formats */}
-      <section className="bg-white border border-gray-200 mb-6">
+      <section id="export-formats" className="bg-white border border-gray-200 mb-6">
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Export Formats</h2>
         </div>

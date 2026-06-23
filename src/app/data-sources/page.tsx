@@ -144,7 +144,7 @@ export default function DataSourcesPage() {
       </div>
 
       {/* Source status table */}
-      <div className="bg-white overflow-x-auto" style={{ border: '1px solid var(--posi-border)' }}>
+      <div id="source-status" className="bg-white overflow-x-auto" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
           <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Source Status Overview</h2>
         </div>

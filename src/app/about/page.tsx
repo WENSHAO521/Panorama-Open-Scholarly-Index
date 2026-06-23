@@ -40,7 +40,7 @@ export default function AboutPage() {
       </div>
 
       {/* What POSI is / is not */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div id="what-posi-is" className="grid md:grid-cols-2 gap-6">
         <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is</h2>
           <ul className="space-y-2">
@@ -58,7 +58,7 @@ export default function AboutPage() {
             ))}
           </ul>
         </div>
-        <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
+        <div id="what-posi-is-not" className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
           <ul className="space-y-2">
             {[
@@ -91,7 +91,7 @@ export default function AboutPage() {
       </div>
 
       {/* Operator */}
-      <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
+      <div id="operator" className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-4" style={{ color: 'var(--posi-text)' }}>Operator</h2>
         <div className="grid sm:grid-cols-2 gap-4 text-xs" style={{ color: 'var(--posi-muted)' }}>
           <div className="space-y-1">
