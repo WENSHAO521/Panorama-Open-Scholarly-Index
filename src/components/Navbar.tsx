@@ -51,18 +51,18 @@ const navItems: NavItem[] = [
     label: 'Data',
     children: [
       { label: 'Data Sources',   href: '/data-sources' },
-      { label: 'Source Status',  href: '/data-sources#source-status' },
+      { label: 'Source Status',  href: '/source-status' },
       { label: 'API Roadmap',    href: '/api' },
-      { label: 'Export Formats', href: '/api#export-formats' },
+      { label: 'Export Formats', href: '/export-formats' },
     ],
   },
   {
     label: 'About',
     children: [
       { label: 'About POSI',           href: '/about' },
-      { label: 'What POSI Is',         href: '/about#what-posi-is' },
-      { label: 'What POSI Is Not',     href: '/about#what-posi-is-not' },
-      { label: 'Operator Information', href: '/about#operator' },
+      { label: 'What POSI Is',         href: '/what-posi-is' },
+      { label: 'What POSI Is Not',     href: '/what-posi-is-not' },
+      { label: 'Operator Information', href: '/operator' },
       { label: 'Contact',              href: '/contact' },
     ],
   },
