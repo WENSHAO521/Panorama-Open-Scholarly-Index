@@ -14,8 +14,6 @@ const navItems: NavItem[] = [
     children: [
       { label: 'Advanced Search', href: '/advanced-search' },
       { label: 'DOI Lookup',      href: '/doi-lookup' },
-      { label: 'Journal Search',  href: '/journals' },
-      { label: 'Article Search',  href: '/articles' },
     ],
   },
   {
