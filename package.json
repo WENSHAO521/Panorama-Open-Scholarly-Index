@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync": "node scripts/discover-journals.mjs --openalex-doaj --write --limit 100 && node scripts/calc-discovered-mqs.mjs && node scripts/auto-pqf.mjs --write"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

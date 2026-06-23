@@ -1,0 +1,58 @@
+name: Daily Journal Sync
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每天 UTC 02:00（北京时间 10:00）
+  workflow_dispatch:        # 允许手动触发
+
+permissions:
+  contents: write           # 写入权限（commit + push）
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 步骤 1：从 DOAJ + OpenAlex 发现新期刊
+      # --limit 100 避免单次运行时间过长；API 有礼貌延迟 300ms/请求
+      - name: Discover new journals (DOAJ + OpenAlex)
+        run: node scripts/discover-journals.mjs --openalex-doaj --write --limit 100
+        env:
+          DOAJ_API_KEY: ${{ secrets.DOAJ_API_KEY }}
+
+      # 步骤 2：重新计算 metadata quality score
+      - name: Recalculate metadata quality scores
+        run: node scripts/calc-discovered-mqs.mjs
+
+      # 步骤 3：为 DOAJ 收录期刊更新 auto-PQF 评分
+      - name: Update auto-PQF scores
+        run: node scripts/auto-pqf.mjs --write
+
+      # 有变化才 commit，无变化静默退出（不产生空 commit）
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "posi-sync-bot"
+          git config user.email "posi-sync-bot@users.noreply.github.com"
+          git add src/lib/discovered-journals.ts
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+          else
+            JOURNAL_COUNT=$(node -e "const f=require('fs').readFileSync('src/lib/discovered-journals.ts','utf8'); console.log((f.match(/id: 'j-disc-/g)||[]).length)")
+            git commit -m "chore(data): daily sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
+            git push
+          fi
