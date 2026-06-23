@@ -683,9 +683,148 @@ export async function rorGetOrg(rorId: string): Promise<RorOrganization | null> 
   }
 }
 
+// ─── OpenAlex article search ──────────────────────────────────────────────────
+
+interface OpenAlexWork {
+  id: string
+  doi: string | null
+  title: string | null
+  publication_year: number | null
+  publication_date: string | null
+  type: string | null
+  language: string | null
+  is_retracted: boolean
+  cited_by_count: number
+  referenced_works_count: number
+  abstract_inverted_index: Record<string, number[]> | null
+  biblio: { volume?: string; issue?: string; first_page?: string; last_page?: string } | null
+  primary_location: {
+    source?: { display_name?: string; issn_l?: string; issn?: string[] } | null
+    landing_page_url?: string | null
+  } | null
+  open_access: { oa_url?: string | null; oa_status?: string } | null
+  authorships: Array<{
+    author: { id?: string; display_name?: string; orcid?: string | null } | null
+    institutions: Array<{ display_name?: string }> | null
+    countries: string[] | null
+    is_corresponding: boolean
+  }>
+  keywords: Array<{ display_name: string }> | null
+}
+
+function mapOpenAlexWork(work: OpenAlexWork): Article {
+  const rawDoi = work.doi?.replace('https://doi.org/', '') ?? ''
+  const issn = work.primary_location?.source?.issn_l
+    ?? work.primary_location?.source?.issn?.[0]
+    ?? ''
+  const journal = ALL_JOURNALS.find(j =>
+    j.issn_online === issn || j.issn_print === issn
+  )
+  const abstract = reconstructAbstract(work.abstract_inverted_index)
+
+  let mqs = 20
+  if (rawDoi)   mqs += 20
+  if (abstract) mqs += 20
+  if (work.authorships?.some(a => a.author?.orcid)) mqs += 15
+  if (work.authorships?.some(a => (a.institutions ?? []).length > 0)) mqs += 10
+  if ((work.referenced_works_count ?? 0) > 0) mqs += 10
+  if (work.open_access?.oa_url) mqs += 5
+
+  return {
+    id: rawDoi || work.id,
+    doi: rawDoi,
+    title: work.title ?? '',
+    subtitle: null,
+    journal_id: journal?.id ?? '',
+    journal_title: work.primary_location?.source?.display_name ?? '',
+    journal_code: journal?.journal_code ?? '',
+    volume: work.biblio?.volume ?? null,
+    issue: work.biblio?.issue ?? null,
+    first_page: work.biblio?.first_page ?? null,
+    last_page: work.biblio?.last_page ?? null,
+    publication_year: work.publication_year ?? new Date().getFullYear(),
+    publication_date: work.publication_date ?? null,
+    article_type: work.type === 'article' ? 'Research Article' : (work.type ?? 'Article'),
+    language: work.language ?? 'English',
+    abstract,
+    keywords: (work.keywords ?? []).map(k => k.display_name),
+    license: work.open_access?.oa_status === 'gold' || work.open_access?.oa_status === 'diamond'
+      ? 'Open Access' : null,
+    pdf_url: work.open_access?.oa_url ?? null,
+    html_url: work.primary_location?.landing_page_url ?? null,
+    openalex_work_id: work.id,
+    crossref_status: rawDoi ? 'registered' : null,
+    cited_by_count: work.cited_by_count ?? 0,
+    reference_count: work.referenced_works_count ?? 0,
+    is_retracted: work.is_retracted ?? false,
+    metadata_quality_score: Math.min(mqs, 100),
+    authors: (work.authorships ?? []).map((a, i) => ({
+      id: a.author?.id ?? `${work.id}-au-${i}`,
+      display_name: a.author?.display_name ?? '',
+      given_name: null,
+      family_name: null,
+      orcid: a.author?.orcid?.replace('https://orcid.org/', '') ?? null,
+      openalex_author_id: a.author?.id ?? null,
+      country: a.countries?.[0] ?? null,
+      institution: a.institutions?.[0]?.display_name ?? null,
+      is_corresponding: a.is_corresponding ?? i === 0,
+      author_order: i + 1,
+    })),
+    created_at: work.publication_date ?? '',
+    updated_at: work.publication_date ?? '',
+  }
+}
+
+const OA_SELECT = [
+  'id', 'doi', 'title', 'publication_year', 'publication_date', 'type', 'language',
+  'is_retracted', 'cited_by_count', 'referenced_works_count', 'abstract_inverted_index',
+  'biblio', 'primary_location', 'open_access', 'authorships', 'keywords',
+].join(',')
+
+export async function openalexSearch(
+  query: string,
+  options: {
+    page?: number
+    rows?: number
+    yearFrom?: number
+    yearTo?: number
+    issn?: string
+  } = {}
+): Promise<{ total: number; items: Article[] }> {
+  const { page = 1, rows = 20, yearFrom, yearTo, issn } = options
+
+  const filterParts = ['type:article']
+  if (yearFrom && yearTo && yearFrom === yearTo) filterParts.push(`publication_year:${yearFrom}`)
+  else if (yearFrom) filterParts.push(`publication_year:>${yearFrom - 1}`)
+  else if (yearTo) filterParts.push(`publication_year:<${yearTo + 1}`)
+  if (issn) filterParts.push(`primary_location.source.issn:${issn}`)
+
+  const params = new URLSearchParams({
+    'per-page': String(rows),
+    page: String(page),
+    filter: filterParts.join(','),
+    select: OA_SELECT,
+    mailto: 'posi@panoramagroup.org',
+  })
+  if (query) {
+    params.set('search', query)
+  } else {
+    params.set('sort', 'publication_date:desc')
+  }
+
+  const res = await fetch(`${OPENALEX}/works?${params.toString()}`)
+  if (!res.ok) return { total: 0, items: [] }
+
+  const data = await res.json()
+  return {
+    total: data.meta?.count ?? 0,
+    items: (data.results ?? []).map(mapOpenAlexWork),
+  }
+}
+
 // ─── DOAJ (Directory of Open Access Journals) ────────────────────────────────
 
-const DOAJ = 'https://doaj.org/api/v4'
+const DOAJ = 'https://doaj.org/api'
 
 export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | null> {
   try {

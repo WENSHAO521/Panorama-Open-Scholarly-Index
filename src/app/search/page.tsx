@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState, useRef } from 'react'
 import { X, CaretDown, CaretUp, MagnifyingGlass, Funnel } from '@phosphor-icons/react/dist/ssr'
 import { ArticleCard } from '@/components/ArticleCard'
 import { Badge } from '@/components/Badge'
-import { crossrefSearch } from '@/lib/api'
+import { crossrefSearch, openalexSearch } from '@/lib/api'
 import { ALL_JOURNALS } from '@/lib/data'
 import type { Article, SearchFacets } from '@/lib/types'
 
@@ -67,14 +67,23 @@ function SearchResults() {
     setLoading(true)
     setError(null)
 
-    crossrefSearch(q, {
+    const effectiveScope = journal ? 'psg' : scope
+    const issn = journal
+      ? (ALL_JOURNALS.find(j => j.journal_code === journal)?.issn_online ?? undefined)
+      : undefined
+    const searchOpts = {
       page,
       rows: 20,
       yearFrom: year ? Number(year) : undefined,
       yearTo: year ? Number(year) : undefined,
-      scope: journal ? 'psg' : scope,
-      issn: journal ? (ALL_JOURNALS.find(j => j.journal_code === journal)?.issn_online ?? undefined) : undefined,
-    }).then(({ total: t, items }) => {
+      issn,
+    }
+
+    const searchPromise = effectiveScope === 'psg'
+      ? crossrefSearch(q, { ...searchOpts, scope: 'psg' })
+      : openalexSearch(q, searchOpts)
+
+    searchPromise.then(({ total: t, items }) => {
       setArticles(items)
       setTotal(t)
       setFacets({
@@ -178,14 +187,14 @@ function SearchResults() {
             className="px-3 py-1 transition-colors"
             style={scope === 'all' ? { background: 'var(--posi-primary)', color: '#fff' } : { background: '#fff', color: 'var(--posi-muted)' }}
           >
-            All Crossref
+            All (OpenAlex)
           </button>
           <button
             onClick={() => updateParam('scope', 'psg')}
             className="px-3 py-1 transition-colors"
             style={{ borderLeft: '1px solid var(--posi-border)', ...(scope === 'psg' ? { background: 'var(--posi-primary)', color: '#fff' } : { background: '#fff', color: 'var(--posi-muted)' }) }}
           >
-            PSG Only
+            PSG (Crossref)
           </button>
         </div>
       </div>
