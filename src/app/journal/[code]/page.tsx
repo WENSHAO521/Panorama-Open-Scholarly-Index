@@ -166,6 +166,21 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         )
       })()}
 
+      {/* COI notice — PSG journals only */}
+      {journal.publisher?.toLowerCase().includes('panorama') && !journal.id.startsWith('j-disc-') && (
+        <div
+          className="px-4 py-3 text-xs leading-relaxed"
+          style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '3px solid #d97706' }}
+        >
+          <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>
+          <span style={{ color: '#78350f' }}>
+            This journal is published by Panorama Scholarly Group, which also operates POSI.
+            PQF scores are based on publicly verifiable criteria; independent verification is encouraged.
+          </span>{' '}
+          <Link href="/about" className="underline" style={{ color: '#92400e' }}>Governance disclosure →</Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="flex items-start gap-4">

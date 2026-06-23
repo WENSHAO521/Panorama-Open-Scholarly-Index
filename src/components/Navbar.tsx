@@ -44,7 +44,7 @@ const navItems: NavItem[] = [
     label: 'Resources',
     children: [
       { label: 'Data Sources', href: '/data-sources' },
-      { label: 'API & Export',  href: '/api' },
+      { label: 'API Roadmap',   href: '/api' },
     ],
   },
   { href: '/submit-journal', label: 'Submit' },

@@ -78,6 +78,19 @@ export default async function JournalsPage() {
         </div>
       </div>
 
+      {/* COI notice — shown on all journal listing pages */}
+      <div
+        className="mb-5 px-4 py-3 text-xs leading-relaxed"
+        style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '3px solid #d97706' }}
+      >
+        <strong style={{ color: '#92400e' }}>Conflict of Interest Disclosure: </strong>
+        <span style={{ color: '#78350f' }}>
+          POSI is operated by Panorama Scholarly Group (PSG). Some journals listed here are published by PSG.
+          PQF is a transparency and metadata-readiness framework, not an indexing status, impact metric, or endorsement of scholarly quality.
+        </span>{' '}
+        <Link href="/about" className="underline" style={{ color: '#92400e' }}>Full governance disclosure →</Link>
+      </div>
+
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading journals…</div>}>
         <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={nonDoajDiscoveredRows} />
       </Suspense>

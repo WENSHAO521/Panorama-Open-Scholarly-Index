@@ -94,11 +94,12 @@ export default async function HomePage() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4">
               {[
-                { value: stats.psg_journals + stats.indexed_journals, label: 'POSI Verified Journal Records', note: 'Manually reviewed & evidence-checked' },
-                { value: stats.discovered_journals,                    label: 'Auto-discovered Journal Records', note: 'From DOAJ, Crossref & OpenAlex' },
-                { value: stats.total_doi_records + stats.total_articles, label: 'External Metadata Records', note: 'DOI, article & author metadata' },
+                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'POSI Verified Journal Records',     note: 'Manually reviewed & evidence-checked' },
+                { value: stats.discovered_journals.toLocaleString(),                     label: 'Auto-discovered Journal Records',   note: 'From DOAJ, Crossref & OpenAlex' },
+                { value: stats.total_doi_records.toLocaleString(),                       label: 'DOI Metadata Records',             note: 'DOI-registered articles via Crossref' },
+                { value: '250M+',                                                         label: 'External Searchable Records',      note: 'Search scope via OpenAlex' },
               ].map((s, i) => (
                 <div
                   key={s.label}
@@ -108,7 +109,7 @@ export default async function HomePage() {
                     className="text-3xl md:text-4xl font-bold text-white leading-none"
                     style={{ fontFamily: 'var(--font-mono)' }}
                   >
-                    {s.value.toLocaleString()}
+                    {s.value}
                   </p>
                   <p
                     className="text-[9px] uppercase tracking-[0.16em] mt-2"
@@ -128,10 +129,16 @@ export default async function HomePage() {
               ))}
             </div>
             <p
-              className="pb-4 text-[9px]"
+              className="pb-2 text-[9px]"
               style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font-mono)' }}
             >
               Updated {stats.last_updated}
+            </p>
+            <p
+              className="pb-4 text-[9px] leading-relaxed max-w-3xl"
+              style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font-mono)' }}
+            >
+              POSI Verified and Auto-discovered records are maintained by POSI. DOI Metadata Records are DOI-registered articles indexed via Crossref. External Searchable Records represent the search scope via OpenAlex and are not equivalent to POSI-reviewed records.
             </p>
           </div>
         </div>
@@ -158,7 +165,7 @@ export default async function HomePage() {
               {
                 abbr: 'CVI',
                 label: 'Citation Visibility Index',
-                desc: 'Open citation visibility via OpenAlex, Crossref, and OpenCitations. No proprietary metrics - only open, attributed, machine-readable citation data.',
+                desc: 'Open citation visibility currently derived from Crossref and OpenAlex. OpenCitations integration is planned. No proprietary metrics — only open, attributed, machine-readable citation data.',
               },
               {
                 abbr: 'IRS',
