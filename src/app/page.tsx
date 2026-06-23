@@ -17,7 +17,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-[100dvh]">
+    <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
 
       {/* ── HERO ── */}
       <section style={{ background: 'var(--posi-primary)' }}>

@@ -830,9 +830,10 @@ export async function openalexSearch(
     yearFrom?: number
     yearTo?: number
     issn?: string
+    signal?: AbortSignal
   } = {}
 ): Promise<{ total: number; items: Article[] }> {
-  const { page = 1, rows = 20, yearFrom, yearTo, issn } = options
+  const { page = 1, rows = 20, yearFrom, yearTo, issn, signal } = options
 
   const filterParts = ['type:article']
   if (yearFrom && yearTo && yearFrom === yearTo) filterParts.push(`publication_year:${yearFrom}`)
@@ -853,7 +854,7 @@ export async function openalexSearch(
     params.set('sort', 'publication_date:desc')
   }
 
-  const res = await fetch(`${OPENALEX}/works?${params.toString()}`)
+  const res = await fetch(`${OPENALEX}/works?${params.toString()}`, { signal })
   if (!res.ok) return { total: 0, items: [] }
 
   const data = await res.json()

@@ -178,7 +178,7 @@ function ArticleResults() {
                 fontFamily: 'var(--font-mono)',
               }}
             />
-            <div className="space-y-px max-h-64 overflow-y-auto">
+            <div className="space-y-px max-h-64 overflow-y-auto scroll-contain scrollbar-none">
               {ALL_JOURNALS
                 .filter(j => {
                   if (!journalQuery) return true

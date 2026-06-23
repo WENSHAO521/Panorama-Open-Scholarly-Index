@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, CheckCircle, XCircle, Warning, Clock, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { Badge } from '@/components/Badge'
@@ -21,6 +21,7 @@ const STATUS_CONFIG = {
 function DoiLookupForm() {
   const router = useRouter()
   const [doi, setDoi] = useState('')
+  const lookupCount = useRef(0)
 
   // Read initial DOI from URL after hydration (avoids useSearchParams / Suspense requirement)
   useEffect(() => {
@@ -38,6 +39,7 @@ function DoiLookupForm() {
     const trimmed = doi.trim()
     if (!trimmed) return
 
+    const myId = ++lookupCount.current
     setLoading(true)
     setError(null)
     setResult(null)
@@ -48,6 +50,8 @@ function DoiLookupForm() {
         crossrefGetWork(trimmed).catch(() => null),
         openAlexGetWork(trimmed).catch(() => null),
       ])
+
+      if (myId !== lookupCount.current) return
 
       const crossrefFound = cr !== null
       const openalexFound = oa !== null
@@ -82,9 +86,10 @@ function DoiLookupForm() {
       setArticle(cr)
       router.replace(`/doi-lookup?doi=${encodeURIComponent(trimmed)}`, { scroll: false })
     } catch {
+      if (myId !== lookupCount.current) return
       setError('The DOI lookup service is temporarily unavailable. Please try again, or use the Search page to browse POSI records.')
     } finally {
-      setLoading(false)
+      if (myId === lookupCount.current) setLoading(false)
     }
   }
 

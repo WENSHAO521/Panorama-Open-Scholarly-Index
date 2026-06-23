@@ -74,6 +74,20 @@ a {
   overflow: hidden;
 }
 
+/* Safari: hide scrollbars on custom scroll containers (e.g. journal list, citation tabs) */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safari: prevent momentum scroll from leaking out of modal/panel containers */
+.scroll-contain {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

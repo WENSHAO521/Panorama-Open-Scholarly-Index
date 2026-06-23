@@ -67,7 +67,7 @@ function SearchResults() {
     setLoading(true)
     setError(null)
 
-    const effectiveScope = journal ? 'psg' : scope
+    const controller = new AbortController()
     const issn = journal
       ? (ALL_JOURNALS.find(j => j.journal_code === journal)?.issn_online ?? undefined)
       : undefined
@@ -77,9 +77,10 @@ function SearchResults() {
       yearFrom: year ? Number(year) : undefined,
       yearTo: year ? Number(year) : undefined,
       issn,
+      signal: controller.signal,
     }
 
-    const searchPromise = effectiveScope === 'psg'
+    const searchPromise = scope === 'psg'
       ? crossrefSearch(q, { ...searchOpts, scope: 'psg' })
       : openalexSearch(q, searchOpts)
 
@@ -97,11 +98,16 @@ function SearchResults() {
         languages: [],
         open_access: [],
       })
-    }).catch(() => {
+    }).catch((err: unknown) => {
+      if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) return
       setArticles([])
       setTotal(0)
       setError('Unable to load search results. The OpenAlex/Crossref API may be temporarily unavailable. Please try again.')
-    }).finally(() => setLoading(false))
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
+
+    return () => controller.abort()
   }, [q, journal, year, scope, page])
 
   function updateParam(key: string, value: string) {

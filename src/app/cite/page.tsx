@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, XCircle, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
@@ -14,6 +14,7 @@ function CitePage() {
   const router = useRouter()
   const [doi, setDoi] = useState('')
   const [article, setArticle] = useState<Article | null>(null)
+  const lookupCount = useRef(0)
   const [source, setSource] = useState<Source>('crossref')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,6 +31,7 @@ function CitePage() {
   async function doLookup(doiStr: string) {
     const trimmed = doiStr.trim()
     if (!trimmed) return
+    const myId = ++lookupCount.current
     setLoading(true)
     setError(null)
     setArticle(null)
@@ -40,6 +42,8 @@ function CitePage() {
         crossrefGetWork(trimmed).catch(() => null),
         openAlexGetArticle(trimmed).catch(() => null),
       ])
+
+      if (myId !== lookupCount.current) return
 
       let result: Article | null = null
       let src: Source = 'crossref'
@@ -69,9 +73,10 @@ function CitePage() {
       setSource(src)
       router.replace(`/cite?doi=${encodeURIComponent(trimmed)}`, { scroll: false })
     } catch {
+      if (myId !== lookupCount.current) return
       setError('Lookup failed. Verify the DOI format and try again.')
     } finally {
-      setLoading(false)
+      if (myId === lookupCount.current) setLoading(false)
     }
   }
 

@@ -210,7 +210,7 @@ export function CitationFormatter({ article }: Props) {
   return (
     <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
       {/* Format tabs */}
-      <div className="flex overflow-x-auto" style={{ borderBottom: '1px solid var(--posi-border)' }}>
+      <div className="flex overflow-x-auto scroll-contain scrollbar-none" style={{ borderBottom: '1px solid var(--posi-border)' }}>
         {FORMATS.map(f => (
           <button
             key={f.id}
