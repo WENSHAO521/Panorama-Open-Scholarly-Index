@@ -157,9 +157,10 @@ export async function crossrefSearch(
     yearTo?: number
     scope?: 'all' | 'psg'  // 'all' = global Crossref, 'psg' = PSG member only
     issn?: string
+    signal?: AbortSignal
   } = {}
 ): Promise<{ total: number; items: Article[] }> {
-  const { page = 1, rows = 20, yearFrom, yearTo, scope = 'all', issn } = options
+  const { page = 1, rows = 20, yearFrom, yearTo, scope = 'all', issn, signal } = options
 
   // Crossref supports CORS; browsers strip User-Agent anyway so omit it here
   const offset = (page - 1) * rows
@@ -189,7 +190,7 @@ export async function crossrefSearch(
     ? { 'User-Agent': UA }
     : {}
 
-  const res = await fetch(`${endpoint}?${params.toString()}`, { headers })
+  const res = await fetch(`${endpoint}?${params.toString()}`, { headers, signal })
   if (!res.ok) return { total: 0, items: [] }
 
   const data = await res.json()

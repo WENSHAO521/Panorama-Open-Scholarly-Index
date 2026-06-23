@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Funnel, X } from '@phosphor-icons/react/dist/ssr'
@@ -24,9 +24,24 @@ function ArticleResults() {
   const [error, setError] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
+  // Simple in-memory cache: avoids re-fetching already-seen pages/filters
+  const cache = useRef<Map<string, { total: number; items: Article[] }>>(new Map())
+
   useEffect(() => {
+    const cacheKey = `${journal}|${year}|${page}`
+    const cached = cache.current.get(cacheKey)
+    if (cached) {
+      setArticles(cached.items)
+      setTotal(cached.total)
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
+    const controller = new AbortController()
     setLoading(true)
     setError(null)
+
     crossrefSearch('', {
       page,
       rows: 15,
@@ -34,12 +49,24 @@ function ArticleResults() {
       yearFrom: year ? Number(year) : undefined,
       yearTo: year ? Number(year) : undefined,
       issn: journal ? (ALL_JOURNALS.find(j => j.journal_code === journal)?.issn_online ?? undefined) : undefined,
+      signal: controller.signal,
     }).then(({ total: t, items }) => {
+      if (cancelled) return
+      cache.current.set(cacheKey, { total: t, items })
       setArticles(items)
       setTotal(t)
-    }).catch(() => {
+    }).catch((err: unknown) => {
+      if (cancelled) return
+      if (err instanceof Error && err.name === 'AbortError') return
       setError('Unable to load article records. Please try again.')
-    }).finally(() => setLoading(false))
+    }).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
   }, [journal, year, page])
 
   function updateParam(key: string, value: string) {
