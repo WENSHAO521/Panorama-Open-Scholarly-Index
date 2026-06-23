@@ -1,4 +1,4 @@
-import type { Article, RorOrganization, DoajJournalInfo } from './types'
+import type { Article, Reference, RorOrganization, DoajJournalInfo } from './types'
 import { ALL_JOURNALS, PSG_JOURNALS } from './data'
 
 const CROSSREF = 'https://api.crossref.org'
@@ -208,6 +208,46 @@ export async function crossrefGetWork(doi: string): Promise<Article | null> {
   if (!res.ok) return null
   const data = await res.json()
   return mapCrossrefWork(data.message)
+}
+
+interface CrossrefRefItem {
+  key?: string
+  DOI?: string
+  'article-title'?: string
+  'volume-title'?: string
+  author?: string
+  year?: string
+  'journal-title'?: string
+  volume?: string
+  issue?: string
+  'first-page'?: string
+  unstructured?: string
+}
+
+export async function crossrefGetReferences(doi: string): Promise<Reference[]> {
+  try {
+    const res = await fetch(
+      `${CROSSREF}/works/${encodeURIComponent(doi)}?mailto=posi@panoramagroup.org`,
+      { headers: { 'User-Agent': UA } }
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    const refs: CrossrefRefItem[] = data.message?.reference ?? []
+    return refs.map((r, i) => ({
+      key:          r.key ?? String(i + 1),
+      doi:          r.DOI ?? null,
+      title:        r['article-title'] ?? r['volume-title'] ?? null,
+      author:       r.author ?? null,
+      year:         r.year ?? null,
+      journal:      r['journal-title'] ?? null,
+      volume:       r.volume ?? null,
+      issue:        r.issue ?? null,
+      first_page:   r['first-page'] ?? null,
+      unstructured: r.unstructured ?? null,
+    }))
+  } catch {
+    return []
+  }
 }
 
 export async function crossrefGetJournalWorks(

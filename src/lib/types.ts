@@ -75,6 +75,19 @@ export interface Article {
   updated_at: string
 }
 
+export interface Reference {
+  key: string
+  doi: string | null
+  title: string | null
+  author: string | null
+  year: string | null
+  journal: string | null
+  volume: string | null
+  issue: string | null
+  first_page: string | null
+  unstructured: string | null
+}
+
 export interface SearchResult {
   total: number
   page: number
