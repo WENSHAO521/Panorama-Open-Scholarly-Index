@@ -1,229 +1,221 @@
 import Link from 'next/link'
 
+const NAV_COLUMNS = [
+  {
+    heading: 'Platform',
+    links: [
+      { href: '/search',           label: 'Search' },
+      { href: '/journals',         label: 'Journal Records' },
+      { href: '/articles',         label: 'Article Metadata' },
+      { href: '/doi-lookup',       label: 'DOI Lookup' },
+      { href: '/journals?tab=psg', label: 'POSI Verified Journals' },
+    ],
+  },
+  {
+    heading: 'Assessment',
+    links: [
+      { href: '/pqf',      label: 'PQF Methodology' },
+      { href: '/mqs',      label: 'Metadata Quality Score' },
+      { href: '/cvi',      label: 'Citation Visibility Index' },
+      { href: '/irs',      label: 'Indexing Readiness Score' },
+      { href: '/evidence', label: 'Evidence Registry' },
+    ],
+  },
+  {
+    heading: 'Data & Resources',
+    links: [
+      { href: '/data-sources',        label: 'Data Sources' },
+      { href: '/api',                 label: 'API Roadmap' },
+      { href: '/api#export-formats',  label: 'Export Formats' },
+      { href: '/policies',            label: 'Policy Evidence Directory' },
+      { href: '/responsible-use',     label: 'Responsible Use Notice' },
+    ],
+  },
+  {
+    heading: 'Organization',
+    links: [
+      { href: '/about',          label: 'About POSI' },
+      { href: '/coi',            label: 'Conflict of Interest' },
+      { href: '/contact',        label: 'Contact' },
+      { href: '/submit-journal', label: 'Submit Journal' },
+    ],
+  },
+]
+
+const OPEN_INFRA = [
+  { label: 'Crossref',      href: 'https://crossref.org' },
+  { label: 'OpenAlex',      href: 'https://openalex.org' },
+  { label: 'DOAJ',          href: 'https://doaj.org' },
+  { label: 'ROR',           href: 'https://ror.org' },
+  { label: 'ORCID',         href: 'https://orcid.org' },
+  { label: 'OpenCitations', href: 'https://opencitations.net' },
+]
+
 export function Footer() {
   return (
-    <footer style={{ background: 'var(--posi-primary)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.1fr_1fr_1fr] gap-8 lg:gap-8">
+    <footer style={{ background: 'var(--posi-primary)' }}>
 
-          {/* Brand */}
-          <div>
+      {/* Gradient top rule */}
+      <div style={{
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent 0%, rgba(196,30,58,0.5) 25%, rgba(196,30,58,0.5) 75%, transparent 100%)',
+      }} />
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* ── Masthead ── */}
+        <div
+          className="py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <div className="flex items-center gap-5">
             <img
               src="/posi-logo-white.svg"
-              alt="POSI - Panorama Scholarly Index"
-              style={{ height: '52px', width: 'auto', marginBottom: '20px' }}
+              alt="POSI - Panorama Open Scholarly Index"
+              style={{ height: '40px', width: 'auto', flexShrink: 0 }}
             />
-            <p className="text-xs leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Open scholarly metadata platform for journal transparency, metadata quality,
-              and citation visibility. Not affiliated with Web of Science, Scopus, or DOAJ.
+            <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+            <p
+              className="text-[11px] leading-relaxed hidden md:block max-w-[260px]"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              Open scholarly metadata platform for journal transparency and citation visibility.
             </p>
-            <div className="flex items-center gap-3">
-              <span
-                className="text-[9px] font-bold uppercase tracking-[0.12em] px-2 py-0.5 text-white"
-                style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-              >
-                Open Access
-              </span>
-              <a
-                href="https://creativecommons.org/licenses/by/4.0/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] px-2 py-0.5 transition-colors"
-                style={{
-                  color: 'rgba(255,255,255,0.3)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                CC BY 4.0
-              </a>
-            </div>
           </div>
 
-          {/* Platform */}
-          <div>
-            <p
-              className="text-[9px] font-bold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
+          <div className="flex items-center gap-3 shrink-0">
+            <a
+              href="https://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] px-2 py-1 transition-colors hover:border-white/20"
+              style={{
+                color: 'rgba(255,255,255,0.3)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.1em',
+              }}
             >
-              Platform
-            </p>
-            <ul className="space-y-3">
-              {[
-                { href: '/search',     label: 'Search' },
-                { href: '/journals',   label: 'Journal Records' },
-                { href: '/articles',   label: 'Article Metadata' },
-                { href: '/doi-lookup', label: 'DOI Lookup' },
-              ].map(link => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-xs transition-colors hover:text-white"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Assessment & Evidence */}
-          <div>
-            <p
-              className="text-[9px] font-bold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
+              CC BY 4.0
+            </a>
+            <span
+              className="text-[9px] px-2 py-1"
+              style={{
+                color: 'rgba(255,255,255,0.55)',
+                background: 'rgba(196,30,58,0.15)',
+                border: '1px solid rgba(196,30,58,0.3)',
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.1em',
+              }}
             >
-              Assessment &amp; Evidence
-            </p>
-            <ul className="space-y-3">
-              {[
-                { href: '/pqf',      label: 'PQF Methodology' },
-                { href: '/evidence', label: 'Evidence Registry' },
-                { href: '/policies', label: 'Policy Evidence Directory' },
-                { href: '/about',    label: 'Responsible Use Notice' },
-              ].map(link => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs transition-colors hover:text-white"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Data & Resources */}
-          <div>
-            <p
-              className="text-[9px] font-bold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
+              OPEN ACCESS
+            </span>
+            <Link
+              href="/submit-journal"
+              className="px-4 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-white whitespace-nowrap transition-opacity hover:opacity-80"
+              style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
             >
-              Data &amp; Resources
-            </p>
-            <ul className="space-y-3">
-              {[
-                { href: '/data-sources', label: 'Data Sources' },
-                { href: '/api',          label: 'API Roadmap' },
-                { href: '/api',          label: 'Export Formats' },
-              ].map(link => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs transition-colors hover:text-white"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <span
-                  className="text-xs"
-                  style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
-                >
-                  Open Infrastructure
-                </span>
-                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-                  {[
-                    { href: 'https://crossref.org',      label: 'Crossref' },
-                    { href: 'https://openalex.org',      label: 'OpenAlex' },
-                    { href: 'https://doaj.org',          label: 'DOAJ' },
-                    { href: 'https://ror.org',           label: 'ROR' },
-                    { href: 'https://orcid.org',         label: 'ORCID' },
-                  ].map(src => (
-                    <a
-                      key={src.href}
-                      href={src.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] transition-colors hover:text-white"
-                      style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
-                    >
-                      {src.label}
-                    </a>
-                  ))}
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          {/* Organization */}
-          <div>
-            <p
-              className="text-[9px] font-bold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
-            >
-              Organization
-            </p>
-            <ul className="space-y-3">
-              {[
-                { href: '/about',          label: 'About POSI' },
-                { href: '/about',          label: 'Conflict of Interest Disclosure' },
-                { href: '/submit-journal', label: 'Submit Journal' },
-              ].map(link => (
-                <li key={link.href + link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-xs transition-colors hover:text-white"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <a
-                  href="mailto:posi@panorama-sg.com"
-                  className="text-xs transition-colors hover:text-white block"
-                  style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
-                >
-                  posi@panorama-sg.com
-                </a>
-                <span
-                  className="text-[10px] mt-0.5 block"
-                  style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}
-                >
-                  Contact
-                </span>
-              </li>
-            </ul>
+              Submit Journal
+            </Link>
           </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* ── Navigation columns ── */}
         <div
-          className="mt-12 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+          className="py-10 grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         >
+          {NAV_COLUMNS.map(col => (
+            <div key={col.heading}>
+              <p
+                className="text-[9px] font-bold uppercase mb-4"
+                style={{
+                  color: 'var(--posi-accent)',
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.2em',
+                  opacity: 0.85,
+                }}
+              >
+                {col.heading}
+              </p>
+              <ul className="space-y-2.5">
+                {col.links.map(link => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-[11px] transition-colors hover:text-white"
+                      style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Open Infrastructure strip ── */}
+        <div
+          className="py-4 flex flex-wrap items-center gap-x-2 gap-y-2"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <span
+            className="text-[9px] uppercase shrink-0 mr-3"
+            style={{
+              color: 'rgba(255,255,255,0.18)',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.18em',
+            }}
+          >
+            Open Infrastructure
+          </span>
+          {OPEN_INFRA.map(src => (
+            <a
+              key={src.label}
+              href={src.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] px-2 py-0.5 transition-all hover:text-white"
+              style={{
+                color: 'rgba(255,255,255,0.25)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {src.label}
+            </a>
+          ))}
+        </div>
+
+        {/* ── Bottom bar ── */}
+        <div className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <p
             className="text-[10px]"
-            style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}
+            style={{ color: 'rgba(255,255,255,0.16)', fontFamily: 'var(--font-mono)' }}
           >
-            &copy; {new Date().getFullYear()} Panorama Scholarly Group. Curated metadata freely available for reuse.
+            &copy; {new Date().getFullYear()} Panorama Scholarly Group Ltd. Curated metadata freely available for reuse.
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/coi"
+              className="text-[10px] transition-colors hover:text-white"
+              style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}
+            >
+              Conflict of Interest Disclosure
+            </Link>
             <a
               href="https://panorama-sg.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] transition-colors hover:text-white"
-              style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}
+              style={{ color: 'rgba(255,255,255,0.16)', fontFamily: 'var(--font-mono)' }}
             >
               panorama-sg.com
             </a>
-            <Link
-              href="/about"
-              className="text-[10px] transition-colors hover:text-white"
-              style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}
-            >
-              Conflict of Interest Disclosure
-            </Link>
           </div>
         </div>
+
       </div>
     </footer>
   )
