@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowSquareOut, BookOpen, User, Buildings, Hash, Quotes, FileText, Calendar, Globe, Medal } from '@phosphor-icons/react/dist/ssr'
-import { crossrefGetWork, openAlexGetWork, rorMatchAffiliation, crossrefGetReferences } from '@/lib/api'
+import { ArrowSquareOut, BookOpen, User, Buildings, Hash, Quotes, FileText, Calendar, Globe, Medal, X } from '@phosphor-icons/react/dist/ssr'
+import { crossrefGetWork, openAlexGetWork, rorMatchAffiliation } from '@/lib/api'
 import { Badge, mqsVariant, mqsLabel } from './Badge'
+import { CitationFormatter } from './CitationFormatter'
 import { MetadataQualityBar } from './MetadataQualityBar'
-import type { Article, Reference, RorOrganization } from '@/lib/types'
+import type { Article, RorOrganization } from '@/lib/types'
 import { decodeHtml } from '@/lib/utils'
 
 function Skeleton({ className }: { className?: string }) {
@@ -45,8 +46,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
   const [loading, setLoading] = useState(!hasServerData)
   const [error, setError] = useState(hasServerData && !initialArticle)
   const [rorMap, setRorMap] = useState<Record<string, RorOrganization>>({})
-  const [references, setReferences] = useState<Reference[]>([])
-  const [refsLoading, setRefsLoading] = useState(false)
+  const [showCite, setShowCite] = useState(false)
 
   function doRorLookup(art: Article) {
     const institutions = [...new Set(
@@ -64,13 +64,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
 
   useEffect(() => {
     if (hasServerData) {
-      if (initialArticle) {
-        doRorLookup(initialArticle)
-        if (initialArticle.reference_count > 0) {
-          setRefsLoading(true)
-          crossrefGetReferences(doi).then(setReferences).catch(() => {}).finally(() => setRefsLoading(false))
-        }
-      }
+      if (initialArticle) doRorLookup(initialArticle)
       return
     }
     setLoading(true)
@@ -88,10 +82,6 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
       }
       setArticle(cr)
       doRorLookup(cr)
-      if (cr.reference_count > 0) {
-        setRefsLoading(true)
-        crossrefGetReferences(doi).then(setReferences).catch(() => {}).finally(() => setRefsLoading(false))
-      }
     }).catch(() => setError(true)).finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doi])
@@ -242,8 +232,8 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
           </span>
         </div>
 
-        {/* Links */}
-        <div className="flex flex-wrap gap-4 text-xs">
+        {/* Links + Cite toggle */}
+        <div className="flex flex-wrap items-center gap-4 text-xs">
           <a
             href={`https://doi.org/${article.doi}`}
             target="_blank"
@@ -266,15 +256,33 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
               Full Text<ArrowSquareOut className="h-3 w-3" />
             </a>
           )}
-          <a
-            href={`/cite?doi=${encodeURIComponent(article.doi)}`}
-            className="flex items-center gap-1 text-[#c41e3a] hover:underline"
+          {/* Inline cite toggle */}
+          <button
+            onClick={() => setShowCite(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
+            style={
+              showCite
+                ? { background: '#c41e3a', color: '#fff', border: '1px solid #c41e3a' }
+                : { background: 'transparent', color: '#c41e3a', border: '1px solid #c41e3a' }
+            }
           >
-            <Quotes className="h-3.5 w-3.5" />
-            Generate Citation
-          </a>
+            {showCite ? <X className="h-3.5 w-3.5" /> : <Quotes className="h-3.5 w-3.5" />}
+            {showCite ? 'Close Citation' : 'Cite This Article'}
+          </button>
         </div>
       </div>
+
+      {/* Inline citation panel */}
+      {showCite && (
+        <div>
+          <div className="px-1 pb-2 flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
+              Citation — {decodeHtml(article.title).slice(0, 60)}{article.title.length > 60 ? '…' : ''}
+            </p>
+          </div>
+          <CitationFormatter article={article} />
+        </div>
+      )}
 
       {/* Two columns */}
       <div className="grid md:grid-cols-3 gap-5">
@@ -303,76 +311,6 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
             </div>
           )}
 
-          {/* References */}
-          {(refsLoading || references.length > 0 || article.reference_count > 0) && (
-            <div className="bg-white border border-gray-200 p-5">
-              <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3 flex items-center gap-2">
-                References
-                {article.reference_count > 0 && (
-                  <span className="font-mono font-normal text-gray-400">({article.reference_count})</span>
-                )}
-              </h2>
-
-              {refsLoading && (
-                <div className="space-y-2">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-3 bg-gray-100 rounded w-full mb-1" />
-                      <div className="h-3 bg-gray-100 rounded w-2/3" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!refsLoading && references.length === 0 && article.reference_count > 0 && (
-                <p className="text-xs text-gray-400">
-                  Reference metadata not deposited with Crossref for this article.
-                </p>
-              )}
-
-              {!refsLoading && references.length > 0 && (
-                <ol className="space-y-3">
-                  {references.map((ref, i) => (
-                    <li key={ref.key} className="flex gap-3 text-[12px]">
-                      <span className="text-[10px] font-mono text-gray-300 shrink-0 pt-0.5 w-5 text-right leading-tight">
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0">
-                        {(ref.title || ref.author || ref.year) ? (
-                          <p className="leading-snug text-gray-700">
-                            {ref.author && <span className="font-medium">{ref.author}</span>}
-                            {ref.author && ref.year && '. '}
-                            {!ref.author && ref.year && ''}
-                            {ref.year && `(${ref.year}). `}
-                            {ref.title && <em className="not-italic font-medium">{ref.title}. </em>}
-                            {ref.journal && <span className="italic">{ref.journal}</span>}
-                            {ref.volume && `, ${ref.volume}`}
-                            {ref.issue && `(${ref.issue})`}
-                            {ref.first_page && `:${ref.first_page}`}
-                            {!ref.title && !ref.author && !ref.journal && ref.unstructured && (
-                              <span className="text-gray-600">{ref.unstructured}</span>
-                            )}
-                          </p>
-                        ) : ref.unstructured ? (
-                          <p className="leading-snug text-gray-600">{ref.unstructured}</p>
-                        ) : null}
-                        {ref.doi && (
-                          <a
-                            href={`https://doi.org/${ref.doi}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[10.5px] text-[#c41e3a] hover:underline inline-flex items-center gap-0.5 mt-0.5"
-                          >
-                            {ref.doi} <ArrowSquareOut className="h-2.5 w-2.5" />
-                          </a>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -426,29 +364,13 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
           </div>
 
           <div className="bg-white border border-gray-200 p-4">
-            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3">Actions</h2>
-            <div className="space-y-1.5">
-              <Link
-                href={`/cite?doi=${encodeURIComponent(article.doi)}`}
-                className="flex items-center justify-between w-full text-xs text-[#c41e3a] border border-[#c41e3a]/20 px-3 py-2 hover:bg-[#fef2f2] transition-colors"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Quotes className="h-3.5 w-3.5" />
-                  Generate Citation
-                </span>
-                <span>→</span>
-              </Link>
-              <Link
-                href={`/doi-lookup?doi=${encodeURIComponent(article.doi)}`}
-                className="flex items-center justify-between w-full text-xs text-gray-500 border border-gray-200 px-3 py-2 hover:bg-gray-50 transition-colors"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Hash className="h-3.5 w-3.5" />
-                  DOI Status Check
-                </span>
-                <span>→</span>
-              </Link>
-            </div>
+            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3">External Verification</h2>
+            <Link
+              href={`/doi-lookup?doi=${encodeURIComponent(article.doi)}`}
+              className="block w-full text-center text-xs text-[#c41e3a] border border-[#c41e3a]/20 py-2 hover:bg-[#fef2f2] transition-colors"
+            >
+              Check DOI Status →
+            </Link>
           </div>
         </div>
       </div>

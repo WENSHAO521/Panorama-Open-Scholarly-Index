@@ -895,6 +895,21 @@ export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | nu
   }
 }
 
+// Full Article object from OpenAlex (used by /cite as fallback when Crossref has no record)
+export async function openAlexGetArticle(doi: string): Promise<Article | null> {
+  try {
+    const params = new URLSearchParams({ select: OA_SELECT, mailto: 'posi@panoramagroup.org' })
+    const res = await fetch(
+      `${OPENALEX}/works/https://doi.org/${encodeURIComponent(doi)}?${params.toString()}`,
+      { headers: { 'User-Agent': UA } }
+    )
+    if (!res.ok) return null
+    return mapOpenAlexWork(await res.json())
+  } catch {
+    return null
+  }
+}
+
 // Legacy aliases used by /api/doi/[doi]
 export const fetchOpenAlexWork = openAlexGetWork
 export const fetchCrossrefWork = crossrefGetWork

@@ -4,14 +4,17 @@ import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, XCircle, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
-import { crossrefGetWork } from '@/lib/api'
+import { crossrefGetWork, openAlexGetArticle } from '@/lib/api'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
+
+type Source = 'crossref' | 'openalex'
 
 function CitePage() {
   const router = useRouter()
   const [doi, setDoi] = useState('')
   const [article, setArticle] = useState<Article | null>(null)
+  const [source, setSource] = useState<Source>('crossref')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -30,12 +33,43 @@ function CitePage() {
     setLoading(true)
     setError(null)
     setArticle(null)
+
     try {
-      const result = await crossrefGetWork(trimmed)
+      // Try Crossref and OpenAlex in parallel
+      const [cr, oa] = await Promise.all([
+        crossrefGetWork(trimmed).catch(() => null),
+        openAlexGetArticle(trimmed).catch(() => null),
+      ])
+
+      let result: Article | null = null
+      let src: Source = 'crossref'
+
+      if (cr) {
+        // Crossref is primary — enrich with OpenAlex data where missing
+        result = { ...cr }
+        if (oa) {
+          if (!result.abstract && oa.abstract)   result = { ...result, abstract: oa.abstract }
+          if (result.keywords.length === 0 && oa.keywords.length > 0) result = { ...result, keywords: oa.keywords }
+          if (oa.cited_by_count > result.cited_by_count) result = { ...result, cited_by_count: oa.cited_by_count }
+          if (oa.openalex_work_id) result = { ...result, openalex_work_id: oa.openalex_work_id }
+        }
+        src = 'crossref'
+      } else if (oa) {
+        // Crossref not found — use OpenAlex
+        result = oa
+        src = 'openalex'
+      }
+
+      if (!result) {
+        setError('No article metadata found for this DOI in Crossref or OpenAlex.')
+        return
+      }
+
       setArticle(result)
+      setSource(src)
       router.replace(`/cite?doi=${encodeURIComponent(trimmed)}`, { scroll: false })
     } catch {
-      setError('No article metadata found for this DOI. Verify the DOI is correct and try again.')
+      setError('Lookup failed. Verify the DOI format and try again.')
     } finally {
       setLoading(false)
     }
@@ -52,11 +86,11 @@ function CitePage() {
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--posi-text)' }}>Citation Generator</h1>
         <p className="text-sm" style={{ color: 'var(--posi-muted)' }}>
-          Enter a DOI to retrieve article metadata and generate a formatted citation in APA, MLA, Chicago, GB/T 7714, BibTeX, or RIS format.
+          Enter a DOI to generate a formatted citation. Metadata retrieved from Crossref and OpenAlex.
         </p>
       </div>
 
-      {/* Input form */}
+      {/* Input */}
       <form onSubmit={handleSubmit} className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--posi-text)' }}>
           Enter DOI
@@ -84,12 +118,11 @@ function CitePage() {
           </button>
         </div>
         <p className="text-xs mt-2" style={{ color: 'var(--posi-muted)' }}>
-          Metadata retrieved from Crossref. PSG DOIs use prefix{' '}
-          <span className="font-mono">10.63802</span>.
+          PSG DOIs use prefix <span className="font-mono">10.63802</span>. Any Crossref or OpenAlex DOI is supported.
         </p>
       </form>
 
-      {/* Loading skeleton */}
+      {/* Loading */}
       {loading && (
         <div className="bg-white p-6 animate-pulse" style={{ border: '1px solid var(--posi-border)' }}>
           <div className="h-4 rounded w-3/4 mb-3" style={{ background: 'var(--posi-bg)' }} />
@@ -114,14 +147,27 @@ function CitePage() {
       {/* Results */}
       {!loading && article && (
         <div className="space-y-4">
-          {/* Article summary card */}
+          {/* Article summary */}
           <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-            <p
-              className="text-[9px] font-bold uppercase tracking-[0.2em] mb-3"
-              style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-            >
-              Article Found
-            </p>
+            <div className="flex items-center gap-2 mb-3">
+              <p
+                className="text-[9px] font-bold uppercase tracking-[0.2em]"
+                style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
+              >
+                Article Found
+              </p>
+              <span
+                className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  background: source === 'openalex' ? '#E8F5EE' : '#f5f5f5',
+                  color: source === 'openalex' ? '#1F7A4D' : '#666',
+                  border: `1px solid ${source === 'openalex' ? '#bbdece' : '#ddd'}`,
+                }}
+              >
+                via {source === 'openalex' ? 'OpenAlex' : 'Crossref'}
+              </span>
+            </div>
             <h2 className="text-sm font-semibold leading-snug mb-2" style={{ color: 'var(--posi-text)' }}>
               {decodeHtml(article.title)}
             </h2>
