@@ -49,10 +49,11 @@ const navItems: NavItem[] = [
   {
     label: 'Data',
     children: [
-      { label: 'Data Sources',   href: '/data-sources' },
-      { label: 'Source Status',  href: '/source-status' },
-      { label: 'API Roadmap',    href: '/api' },
-      { label: 'Export Formats', href: '/export-formats' },
+      { label: 'Citation Generator', href: '/cite' },
+      { label: 'Data Sources',       href: '/data-sources' },
+      { label: 'Source Status',      href: '/source-status' },
+      { label: 'API Roadmap',        href: '/api' },
+      { label: 'Export Formats',     href: '/export-formats' },
     ],
   },
   {

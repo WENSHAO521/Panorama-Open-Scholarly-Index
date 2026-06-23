@@ -8,6 +8,7 @@ const NAV_COLUMNS = [
       { href: '/journals',         label: 'Journal Records' },
       { href: '/articles',         label: 'Article Metadata' },
       { href: '/doi-lookup',       label: 'DOI Lookup' },
+      { href: '/cite',             label: 'Citation Generator' },
       { href: '/journals?tab=psg', label: 'POSI Verified Journals' },
     ],
   },
@@ -110,13 +111,6 @@ export function Footer() {
             >
               OPEN ACCESS
             </span>
-            <Link
-              href="/submit-journal"
-              className="px-4 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-white whitespace-nowrap transition-opacity hover:opacity-80"
-              style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-            >
-              Submit Journal
-            </Link>
           </div>
         </div>
 

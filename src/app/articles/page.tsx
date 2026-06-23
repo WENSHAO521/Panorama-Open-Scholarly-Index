@@ -23,6 +23,7 @@ function ArticleResults() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [journalQuery, setJournalQuery] = useState('')
 
   // Simple in-memory cache: avoids re-fetching already-seen pages/filters
   const cache = useRef<Map<string, { total: number; items: Article[] }>>(new Map())
@@ -145,17 +146,44 @@ function ArticleResults() {
 
           <div className="mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.08em] mb-2" style={{ color: 'var(--posi-muted)' }}>Journal</p>
-            <div className="space-y-px">
-              {ALL_JOURNALS.map(j => (
-                <button
-                  key={j.journal_code}
-                  onClick={() => updateParam('journal', journal === j.journal_code ? '' : j.journal_code)}
-                  className="w-full text-left text-[11px] px-2 py-1 transition-colors"
-                  style={journal === j.journal_code ? { background: 'var(--posi-accent-light)', color: 'var(--posi-accent)', fontWeight: 600 } : { color: 'var(--posi-muted)' }}
-                >
-                  <span className="block truncate">{j.short_title}</span>
-                </button>
-              ))}
+            <input
+              value={journalQuery}
+              onChange={e => setJournalQuery(e.target.value)}
+              placeholder="Search journals…"
+              className="w-full px-2 py-1.5 text-[11px] mb-2 focus:outline-none"
+              style={{
+                border: '1px solid var(--posi-border)',
+                color: 'var(--posi-text)',
+                background: '#fff',
+                fontFamily: 'var(--font-mono)',
+              }}
+            />
+            <div className="space-y-px max-h-64 overflow-y-auto">
+              {ALL_JOURNALS
+                .filter(j => {
+                  if (!journalQuery) return true
+                  const q = journalQuery.toLowerCase()
+                  return (
+                    j.title.toLowerCase().includes(q) ||
+                    j.short_title.toLowerCase().includes(q) ||
+                    j.journal_code.toLowerCase().includes(q)
+                  )
+                })
+                .map(j => (
+                  <button
+                    key={j.journal_code}
+                    onClick={() => {
+                      updateParam('journal', journal === j.journal_code ? '' : j.journal_code)
+                      setJournalQuery('')
+                    }}
+                    className="w-full text-left px-2 py-1.5 transition-colors"
+                    style={journal === j.journal_code ? { background: 'var(--posi-accent-light)', color: 'var(--posi-accent)', fontWeight: 600 } : { color: 'var(--posi-muted)' }}
+                  >
+                    <span className="block text-[11px] truncate">{j.short_title}</span>
+                    <span className="block text-[9px] font-mono opacity-60">{j.journal_code}</span>
+                  </button>
+                ))
+              }
             </div>
           </div>
 

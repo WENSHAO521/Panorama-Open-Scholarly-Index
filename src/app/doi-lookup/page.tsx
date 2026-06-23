@@ -4,9 +4,10 @@ import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, CheckCircle, XCircle, Warning, Clock, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { Badge } from '@/components/Badge'
+import { CitationFormatter } from '@/components/CitationFormatter'
 import { crossrefGetWork, openAlexGetWork } from '@/lib/api'
 import { ALL_JOURNALS } from '@/lib/data'
-import type { DoiStatus } from '@/lib/types'
+import type { Article, DoiStatus } from '@/lib/types'
 
 const STATUS_CONFIG = {
   verified:   { icon: CheckCircle, color: '#1F7A4D', bg: '#E8F5EE', label: 'Verified',          desc: 'DOI is resolvable and metadata is complete.' },
@@ -28,6 +29,7 @@ function DoiLookupForm() {
     if (urlDoi) setDoi(urlDoi)
   }, [])
   const [result, setResult] = useState<DoiStatus | null>(null)
+  const [article, setArticle] = useState<Article | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,6 +41,7 @@ function DoiLookupForm() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setArticle(null)
 
     try {
       const [cr, oa] = await Promise.all([
@@ -76,6 +79,7 @@ function DoiLookupForm() {
         metadata_quality_score: cr?.metadata_quality_score ?? (crossrefFound ? 55 : 20),
       }
       setResult(doiStatus)
+      setArticle(cr)
       router.replace(`/doi-lookup?doi=${encodeURIComponent(trimmed)}`, { scroll: false })
     } catch {
       setError('The DOI lookup service is temporarily unavailable. Please try again, or use the Search page to browse POSI records.')
@@ -328,6 +332,17 @@ function DoiLookupForm() {
               </div>
             )}
           </div>
+
+          {/* Citation Generator */}
+          {article && (
+            <div>
+              <div className="mb-2 flex items-baseline gap-3">
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--posi-text)' }}>Citation Generator</h3>
+                <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>Copy a formatted citation for this work.</p>
+              </div>
+              <CitationFormatter article={article} />
+            </div>
+          )}
         </div>
       )}
     </div>
