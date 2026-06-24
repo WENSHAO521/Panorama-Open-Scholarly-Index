@@ -5,9 +5,10 @@ import { Copy, Check } from '@phosphor-icons/react/dist/ssr'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
 
-type CitationFormat = 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
+type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
 
 const FORMATS: { id: CitationFormat; label: string }[] = [
+  { id: 'psg',     label: 'PSG Format' },
   { id: 'apa',     label: 'APA 7' },
   { id: 'mla',     label: 'MLA 9' },
   { id: 'chicago', label: 'Chicago 17' },
@@ -17,6 +18,7 @@ const FORMATS: { id: CitationFormat; label: string }[] = [
 ]
 
 const FORMAT_NOTES: Record<CitationFormat, string> = {
+  psg:     'PSG Author–Date Citation Format — official citation standard of Panorama Scholarly Group',
   apa:     'APA 7th Edition — Publication Manual of the American Psychological Association (7th ed.)',
   mla:     'MLA 9th Edition — MLA Handbook (9th ed.), 2021',
   chicago: 'Chicago 17th Edition Author-Date — The Chicago Manual of Style (17th ed.)',
@@ -34,6 +36,27 @@ function apaAuthor(a: Article['authors'][0]): string {
   return a.display_name
 }
 
+// PSG Format helpers
+function psgRefFirst(a: Article['authors'][0]): string {
+  return a.family_name && a.given_name ? `${a.family_name}, ${a.given_name}` : a.display_name
+}
+function psgRefOther(a: Article['authors'][0]): string {
+  return a.given_name && a.family_name ? `${a.given_name} ${a.family_name}` : a.display_name
+}
+function psgSurname(a: Article['authors'][0]): string {
+  return a.family_name ?? a.display_name.split(/\s+/).pop() ?? a.display_name
+}
+
+export function generatePsgInText(authors: Article['authors'], year: number | null): string {
+  const surnames = authors.map(psgSurname)
+  const yr = year ?? 'n.d.'
+  if (surnames.length === 0)  return `(${yr})`
+  if (surnames.length === 1)  return `(${surnames[0]} ${yr})`
+  if (surnames.length === 2)  return `(${surnames[0]} and ${surnames[1]} ${yr})`
+  if (surnames.length === 3)  return `(${surnames[0]}, ${surnames[1]}, and ${surnames[2]} ${yr})`
+  return `(${surnames[0]} et al. ${yr})`
+}
+
 export function generateCitationText(article: Article, format: CitationFormat): string {
   const title       = decodeHtml(article.title)
   const journal     = decodeHtml(article.journal_title ?? '')
@@ -48,6 +71,31 @@ export function generateCitationText(article: Article, format: CitationFormat): 
   const doiUrl      = doi ? `https://doi.org/${doi}` : null
 
   switch (format) {
+
+    case 'psg': {
+      // Reference list entry — all authors named regardless of count
+      let refAuthorStr = ''
+      if (authors.length === 1) {
+        refAuthorStr = psgRefFirst(authors[0])
+      } else if (authors.length === 2) {
+        refAuthorStr = `${psgRefFirst(authors[0])}, and ${psgRefOther(authors[1])}`
+      } else if (authors.length > 2) {
+        const rest = authors.slice(1, -1).map(psgRefOther)
+        refAuthorStr = [psgRefFirst(authors[0]), ...rest].join(', ') + ', and ' + psgRefOther(authors[authors.length - 1])
+      }
+
+      let ref = refAuthorStr ? `${refAuthorStr}. ` : ''
+      ref += `${year ?? 'n.d.'}. `
+      ref += `“${title}.”`  // "Title." with curly quotes, period inside
+      if (journal) ref += ` ${journal}`
+      if (vol)     ref += ` ${vol}`
+      if (iss)     ref += `, no. ${iss}`
+      if (pages)   ref += `: ${pages}`
+      ref += '.'
+      if (doiUrl)  ref += ` ${doiUrl}`  // No trailing period after DOI
+      return ref
+    }
+
     case 'apa': {
       const names = authors.map(apaAuthor)
       let authorStr = ''
@@ -186,11 +234,13 @@ interface Props {
 }
 
 export function CitationFormatter({ article }: Props) {
-  const [format, setFormat] = useState<CitationFormat>('apa')
+  const [format, setFormat] = useState<CitationFormat>('psg')
   const [copied, setCopied] = useState(false)
 
   const text = generateCitationText(article, format)
   const isCode = format === 'bibtex' || format === 'ris'
+  const isPsg = format === 'psg'
+  const psgInText = isPsg ? generatePsgInText(article.authors, article.publication_year) : null
 
   async function handleCopy() {
     try {
@@ -219,10 +269,10 @@ export function CitationFormatter({ article }: Props) {
             style={
               format === f.id
                 ? {
-                    color: 'var(--posi-accent)',
-                    borderBottom: '2px solid var(--posi-accent)',
+                    color: f.id === 'psg' ? '#c41e3a' : 'var(--posi-accent)',
+                    borderBottom: `2px solid ${f.id === 'psg' ? '#c41e3a' : 'var(--posi-accent)'}`,
                     fontFamily: 'var(--font-mono)',
-                    background: 'var(--posi-accent-light)',
+                    background: f.id === 'psg' ? '#fef2f4' : 'var(--posi-accent-light)',
                     marginBottom: '-1px',
                   }
                 : {
@@ -269,6 +319,16 @@ export function CitationFormatter({ article }: Props) {
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
+
+      {/* PSG in-text citation */}
+      {isPsg && psgInText && (
+        <div className="px-5 pb-4 pt-0" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+            In-text Citation
+          </p>
+          <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{psgInText}</p>
+        </div>
+      )}
 
       {/* Format note */}
       <div className="px-5 pb-4" style={{ borderTop: '1px solid var(--posi-border-light)' }}>

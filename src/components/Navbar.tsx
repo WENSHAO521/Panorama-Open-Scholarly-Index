@@ -50,6 +50,7 @@ const navItems: NavItem[] = [
     label: 'Data',
     children: [
       { label: 'Citation Generator', href: '/cite' },
+      { label: 'PSG Format',         href: '/psg-format' },
       { label: 'Data Sources',       href: '/data-sources' },
       { label: 'Source Status',      href: '/source-status' },
       { label: 'API Roadmap',        href: '/api' },
