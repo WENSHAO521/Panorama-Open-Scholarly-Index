@@ -102,7 +102,6 @@ export default async function HomePage() {
               >
                 {[
                   { href: '/journals',   label: 'Journals' },
-                  { href: '/articles',   label: 'Articles' },
                   { href: '/doi-lookup', label: 'DOI Lookup' },
                   { href: '/pqf',        label: 'PQF Methodology' },
                   { href: '/evidence',   label: 'Evidence Registry' },

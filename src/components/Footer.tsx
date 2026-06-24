@@ -6,7 +6,6 @@ const NAV_COLUMNS = [
     links: [
       { href: '/search',           label: 'Search' },
       { href: '/journals',         label: 'Journal Records' },
-      { href: '/articles',         label: 'Article Metadata' },
       { href: '/doi-lookup',       label: 'DOI Lookup' },
       { href: '/cite',             label: 'Citation Generator' },
       { href: '/journals?tab=psg', label: 'POSI Verified Journals' },

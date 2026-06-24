@@ -80,8 +80,7 @@ export default function ExportFormatsPage() {
           <strong>Export Status:</strong> Bulk exports are planned alongside the POSI public API.
           Currently, individual records are accessible via the{' '}
           <Link href="/doi-lookup" className="underline">DOI Lookup</Link>,{' '}
-          <Link href="/journals" className="underline">Journal pages</Link>, and{' '}
-          <Link href="/articles" className="underline">Article pages</Link>.
+          <Link href="/journals" className="underline">Journal pages</Link>.
         </p>
       </div>
 
