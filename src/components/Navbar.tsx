@@ -22,7 +22,6 @@ const navItems: NavItem[] = [
     label: 'Records',
     children: [
       { label: 'Journal Records',          href: '/journals' },
-      { label: 'Article Metadata Records', href: '/articles' },
       { label: 'POSI Verified Journals',   href: '/journals?tab=psg' },
       { label: 'Auto-discovered Records',  href: '/journals?tab=discovered' },
     ],

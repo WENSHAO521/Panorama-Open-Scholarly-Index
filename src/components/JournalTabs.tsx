@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from './Badge'
 import { MetadataQualityBar } from './MetadataQualityBar'
@@ -8,6 +8,13 @@ import { JournalBrowser } from './JournalBrowser'
 import { ArticleCountBadge } from './ArticleCountBadge'
 import type { Journal } from '@/lib/types'
 import type { CrossrefJournalMeta } from '@/lib/api'
+
+// Top-level LCC subject categories present in DOAJ
+const LCC_TOP = [
+  'Medicine','Science','Social Sciences','Technology','Agriculture',
+  'Education','Law','Language and Literature','Philosophy','History',
+  'Geography','Fine Arts','Religion',
+]
 
 const INDEXING_VARIANT = {
   A: 'indexing-a' as const,
@@ -254,21 +261,41 @@ interface Props {
 
 export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const activeTab = (searchParams.get('tab') ?? 'psg') as TabId
   const currentPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+  const activeSubject = searchParams.get('subject') ?? ''
 
   const psgArticles = psgRows.reduce((s, { oaiCount, cr, journal }) => s + (oaiCount && oaiCount > 0 ? oaiCount : (cr?.total_dois ?? journal.article_count)), 0)
 
+  // Subject filter helper
+  function filterBySubject(rows: JournalWithCr[]) {
+    if (!activeSubject) return rows
+    return rows.filter(({ journal }) =>
+      journal.subjects?.some(s => s.toLowerCase().includes(activeSubject.toLowerCase()))
+    )
+  }
+
+  function handleSubjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (e.target.value) params.set('subject', e.target.value)
+    else params.delete('subject')
+    params.delete('page')
+    router.push(`?${params.toString()}`)
+  }
+
   // Indexed tab pagination
-  const indexedTotalPages = Math.max(1, Math.ceil(indexedRows.length / PER_PAGE))
+  const filteredIndexed = filterBySubject(indexedRows)
+  const indexedTotalPages = Math.max(1, Math.ceil(filteredIndexed.length / PER_PAGE))
   const indexedPage = Math.min(currentPage, indexedTotalPages)
-  const pagedIndexed = indexedRows.slice((indexedPage - 1) * PER_PAGE, indexedPage * PER_PAGE)
+  const pagedIndexed = filteredIndexed.slice((indexedPage - 1) * PER_PAGE, indexedPage * PER_PAGE)
 
   // Discovered tab pagination
-  const discoveredTotalPages = Math.max(1, Math.ceil(discoveredRows.length / PER_PAGE))
+  const filteredDiscovered = filterBySubject(discoveredRows)
+  const discoveredTotalPages = Math.max(1, Math.ceil(filteredDiscovered.length / PER_PAGE))
   const discoveredPage = Math.min(currentPage, discoveredTotalPages)
-  const pagedDiscovered = discoveredRows.slice((discoveredPage - 1) * PER_PAGE, discoveredPage * PER_PAGE)
+  const pagedDiscovered = filteredDiscovered.slice((discoveredPage - 1) * PER_PAGE, discoveredPage * PER_PAGE)
 
   const verifiedTabs: { id: TabId; label: string; count: string }[] = [
     { id: 'psg',      label: 'PSG Collection',   count: `${psgRows.length} journals` },
@@ -339,13 +366,24 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       {/* Verified Records */}
       {activeTab === 'indexed' && (
         <div>
-          <div className="flex items-baseline justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
               Third-party open access journals with verified POSI records.
             </p>
-            <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-              Showing {((indexedPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(indexedPage * PER_PAGE, indexedRows.length).toLocaleString()} of {indexedRows.length.toLocaleString()}
-            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={activeSubject}
+                onChange={handleSubjectChange}
+                className="text-xs px-2 py-1.5 focus:outline-none"
+                style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
+              >
+                <option value="">All subjects</option>
+                {LCC_TOP.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
+                {((indexedPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(indexedPage * PER_PAGE, filteredIndexed.length).toLocaleString()} of {filteredIndexed.length.toLocaleString()}
+              </span>
+            </div>
           </div>
           <JournalTable rows={pagedIndexed} showOjqf />
           <Pagination page={indexedPage} totalPages={indexedTotalPages} tab="indexed" />
@@ -376,9 +414,18 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               PQF* grades are auto-assessed from DOAJ/OpenAlex signals and have not been manually reviewed.
             </span>
           </div>
-          <div className="flex items-baseline justify-between mb-3">
-            <span className="text-xs" style={{ color: 'var(--posi-muted)' }}>
-              Showing {((discoveredPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(discoveredPage * PER_PAGE, discoveredRows.length).toLocaleString()} of {discoveredRows.length.toLocaleString()} journals
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <select
+              value={activeSubject}
+              onChange={handleSubjectChange}
+              className="text-xs px-2 py-1.5 focus:outline-none"
+              style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
+            >
+              <option value="">All subjects</option>
+              {LCC_TOP.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
+              {((discoveredPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(discoveredPage * PER_PAGE, filteredDiscovered.length).toLocaleString()} of {filteredDiscovered.length.toLocaleString()} journals
             </span>
           </div>
           <JournalTable rows={pagedDiscovered} showOjqf />

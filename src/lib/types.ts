@@ -18,6 +18,7 @@ export interface Journal {
   registration_country: string | null
   doaj_status: 'listed' | 'application_submitted' | 'not_listed' | null
   openalex_source_id: string | null
+  subjects?: string[] | null
   metadata_quality_score: number
   transparency_score: number
   indexing_readiness: 'A' | 'B' | 'C' | 'D' | 'Internal Review'

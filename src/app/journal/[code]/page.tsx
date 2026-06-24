@@ -382,6 +382,27 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           </div>
 
+          {/* Subject Classification */}
+          {(journal.subjects?.length ?? 0) > 0 && (
+            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-2.5" style={{ color: 'var(--posi-muted)' }}>
+                Subject Classification
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {journal.subjects!.map(s => (
+                  <span
+                    key={s}
+                    className="text-[10px] px-1.5 py-0.5 leading-snug"
+                    style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[9px] mt-2" style={{ color: 'var(--posi-muted)' }}>LCC via DOAJ</p>
+            </div>
+          )}
+
           {/* DOAJ */}
           <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
             <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>

@@ -227,6 +227,10 @@ function buildFromDoaj(bib, item) {
   const countryName    = isoToCountry(countryCode)
   const pubTimeWeeks   = bib.publication_time_weeks ?? null
   const admin          = item.admin ?? {}
+  const subjects       = (bib.subject ?? [])
+    .map(s => s.term)
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)  // deduplicate
 
   // Use ISSN as code for uniqueness at scale; fall back to slugified title
   const primaryIssn = issn_online ?? issn_print ?? null
@@ -251,6 +255,7 @@ function buildFromDoaj(bib, item) {
     website_url: bib.ref?.journal ?? '',
     oai_base_url: null,
     doaj_status: 'listed',   // DOAJ search only returns listed journals
+    subjects: subjects.length ? subjects : null,
     article_count: 0,
     _scores: scores,         // used by formatEntry; stripped before writing
   }
@@ -303,6 +308,7 @@ function formatEntry(j) {
     indexing_readiness: 'D',
     pqf: null,
     ${j._scores ? `auto_pqf: autopqf(${j._scores.jtf}, ${j._scores.mqf}, ${j._scores.egf}, ${j._scores.tdf}, ${j._scores.cvf}, ${j._scores.rif}),` : ''}
+    subjects: ${j.subjects?.length ? JSON.stringify(j.subjects) : 'null'},
     article_count: ${j.article_count ?? 0},
     created_at: '${TODAY}T00:00:00Z',
     updated_at: '${TODAY}T00:00:00Z',
