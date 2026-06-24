@@ -97,6 +97,37 @@ a {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Responsive grid dividers — stats strip (2-col mobile, 4-col sm+) */
+.stats-grid > div:nth-child(odd) {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+.stats-grid > div:nth-child(-n+2) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+@media (min-width: 640px) {
+  .stats-grid > div:nth-child(odd)  { border-right: none; }
+  .stats-grid > div:nth-child(-n+2) { border-bottom: none; }
+  .stats-grid > div:nth-child(-n+3) { border-right: 1px solid rgba(255, 255, 255, 0.06); }
+}
+
+/* Indicators grid — 1-col mobile, 4-col md+ */
+.indicators-grid > div:not(:last-child) {
+  border-bottom: 1px solid var(--posi-border);
+}
+@media (min-width: 768px) {
+  .indicators-grid > div:not(:last-child) { border-bottom: none; }
+  .indicators-grid > div:nth-child(-n+3)  { border-right: 1px solid var(--posi-border); }
+}
+
+/* Coverage grid — 1-col mobile, 3-col sm+ */
+.coverage-grid > div:not(:last-child) {
+  border-bottom: 1px solid var(--posi-border);
+}
+@media (min-width: 640px) {
+  .coverage-grid > div:not(:last-child) { border-bottom: none; }
+  .coverage-grid > div:nth-child(-n+2)  { border-right: 1px solid var(--posi-border); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

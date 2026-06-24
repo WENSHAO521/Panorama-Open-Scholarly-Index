@@ -195,14 +195,14 @@ function SearchResults() {
         <div className="flex text-[11px] font-medium" style={{ border: '1px solid var(--posi-border)' }}>
           <button
             onClick={() => updateParam('scope', 'all')}
-            className="px-3 py-1 transition-colors"
+            className="px-3 py-2 transition-colors"
             style={scope === 'all' ? { background: 'var(--posi-primary)', color: '#fff' } : { background: '#fff', color: 'var(--posi-muted)' }}
           >
             All (OpenAlex)
           </button>
           <button
             onClick={() => updateParam('scope', 'psg')}
-            className="px-3 py-1 transition-colors"
+            className="px-3 py-2 transition-colors"
             style={{ borderLeft: '1px solid var(--posi-border)', ...(scope === 'psg' ? { background: 'var(--posi-primary)', color: '#fff' } : { background: '#fff', color: 'var(--posi-muted)' }) }}
           >
             PSG (Crossref)
@@ -225,7 +225,7 @@ function SearchResults() {
             <Funnel className="h-3.5 w-3.5" />
             Filters
             {hasFilters && (
-              <span className="font-mono text-[10px] px-1 rounded" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
+              <span className="font-mono text-[10px] px-1" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
                 {[journal, year].filter(Boolean).length}
               </span>
             )}

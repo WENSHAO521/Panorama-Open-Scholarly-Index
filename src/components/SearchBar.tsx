@@ -54,7 +54,7 @@ export function SearchBar() {
           <select
             value={field}
             onChange={e => setField(e.target.value)}
-            className="appearance-none pl-2 sm:pl-3 pr-6 sm:pr-7 py-3 focus:outline-none h-full w-[72px] sm:w-auto"
+            className="appearance-none pl-2 sm:pl-3 pr-6 sm:pr-7 py-3 focus:outline-none h-full w-[96px] sm:w-auto"
             style={{
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.12)',

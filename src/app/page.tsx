@@ -28,7 +28,7 @@ export default async function HomePage() {
 
             {/* Left: POSI brand pillar */}
             <div
-              className="px-6 sm:px-8 pt-12 pb-6 md:pt-16 md:pb-16 shrink-0 md:w-[280px] lg:w-[320px] xl:w-[360px]"
+              className="px-6 sm:px-8 pt-8 pb-5 md:pt-16 md:pb-16 shrink-0 md:w-[280px] lg:w-[320px] xl:w-[360px]"
             >
               <div aria-hidden="true" className="select-none">
                 <div
@@ -122,19 +122,16 @@ export default async function HomePage() {
 
           {/* Stats strip */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="grid grid-cols-2 sm:grid-cols-4">
+            <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
               {[
                 { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'POSI Verified Journal Records',   note: 'Manually reviewed & evidence-checked' },
                 { value: stats.discovered_journals.toLocaleString(),                     label: 'Auto-discovered Journal Records', note: 'From DOAJ, Crossref & OpenAlex' },
                 { value: stats.total_doi_records.toLocaleString(),                       label: 'DOI Metadata Records',            note: 'DOI-registered articles via Crossref' },
                 { value: '250M+',                                                         label: 'External Searchable Records',     note: 'Search scope via OpenAlex' },
-              ].map((s, i) => (
+              ].map((s) => (
                 <div
                   key={s.label}
                   className="py-7 px-6"
-                  style={{
-                    borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : undefined,
-                  }}
                 >
                   <p
                     className="text-3xl md:text-4xl font-bold text-white leading-none"
@@ -178,7 +175,7 @@ export default async function HomePage() {
       {/* ── CORE INDICATORS ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
         <div className="max-w-[1400px] mx-auto">
-          <div className="grid md:grid-cols-4">
+          <div className="indicators-grid grid md:grid-cols-4">
             {[
               {
                 abbr: 'PQF',
@@ -200,13 +197,10 @@ export default async function HomePage() {
                 label: 'Indexing Readiness Score',
                 desc: 'Technical readiness assessment for common scholarly indexing: OAI-PMH, sitemap, DOI resolution, Schema.org, and Google Scholar discoverability.',
               },
-            ].map((f, i) => (
+            ].map((f) => (
               <div
                 key={f.abbr}
                 className="p-7"
-                style={{
-                  borderRight: i < 3 ? '1px solid var(--posi-border)' : undefined,
-                }}
               >
                 {/* DIN-style: mono abbreviation + rule divider */}
                 <div className="mb-5">
@@ -317,7 +311,7 @@ export default async function HomePage() {
       {/* ── PLATFORM COVERAGE ── */}
       <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div className="grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
+          <div className="coverage-grid grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
             {[
               {
                 title: 'Journal Records',
@@ -343,14 +337,11 @@ export default async function HomePage() {
                   { label: 'Avg. MQS',                    value: `${stats.avg_metadata_quality}/100` },
                 ],
               },
-            ].map((group, gi) => (
+            ].map((group) => (
               <div
                 key={group.title}
                 className="p-7"
-                style={{
-                  background: 'var(--posi-surface)',
-                  borderRight: gi < 2 ? '1px solid var(--posi-border)' : undefined,
-                }}
+                style={{ background: 'var(--posi-surface)' }}
               >
                 <p
                   className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"

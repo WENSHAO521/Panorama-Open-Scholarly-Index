@@ -278,7 +278,7 @@ export function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href!}
-                  className="block px-3 py-2.5 text-xs uppercase tracking-[0.1em] transition-colors"
+                  className="block px-3 py-3.5 text-xs uppercase tracking-[0.1em] transition-colors"
                   style={{
                     color: active ? '#ffffff' : 'rgba(255,255,255,0.5)',
                     fontFamily: 'var(--font-mono)',
@@ -294,7 +294,7 @@ export function Navbar() {
             return (
               <div key={item.label}>
                 <button
-                  className="w-full flex items-center justify-between px-3 py-2.5 text-xs uppercase tracking-[0.1em] transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-3.5 text-xs uppercase tracking-[0.1em] transition-colors"
                   style={{
                     color: active || expanded ? '#ffffff' : 'rgba(255,255,255,0.5)',
                     fontFamily: 'var(--font-mono)',
@@ -315,7 +315,7 @@ export function Navbar() {
                       <Link
                         key={child.label}
                         href={child.href}
-                        className="block px-4 py-2 text-[11px] uppercase tracking-[0.08em] transition-colors"
+                        className="block px-4 py-3 text-[11px] uppercase tracking-[0.08em] transition-colors"
                         style={
                           isChildActive(child.href)
                             ? { color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }

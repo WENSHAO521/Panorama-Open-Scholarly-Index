@@ -134,7 +134,7 @@ function ArticleResults() {
             <Funnel className="h-3.5 w-3.5" />
             Filters
             {(journal || year) && (
-              <span className="font-mono text-[10px] px-1 rounded" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
+              <span className="font-mono text-[10px] px-1" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
                 {[journal, year].filter(Boolean).length}
               </span>
             )}
@@ -176,6 +176,7 @@ function ArticleResults() {
                 color: 'var(--posi-text)',
                 background: '#fff',
                 fontFamily: 'var(--font-mono)',
+                fontSize: '16px',
               }}
             />
             <div className="space-y-px max-h-64 overflow-y-auto scroll-contain scrollbar-none">

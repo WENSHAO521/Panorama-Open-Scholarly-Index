@@ -85,13 +85,13 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
             </span>
           </div>
 
-          {/* DOI link — visible on hover */}
+          {/* DOI link — always visible on mobile, hover-fade on desktop */}
           {article.doi && (
             <a
               href={`https://doi.org/${article.doi}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] flex items-center gap-0.5 hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+              className="text-[10px] flex items-center gap-0.5 hover:underline opacity-50 md:opacity-0 group-hover:opacity-100 transition-opacity"
               style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
               title={article.doi}
             >
