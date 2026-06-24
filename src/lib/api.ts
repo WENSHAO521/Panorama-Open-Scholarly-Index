@@ -1,5 +1,6 @@
 import type { Article, Reference, RorOrganization, DoajJournalInfo } from './types'
 import { ALL_JOURNALS, PSG_JOURNALS } from './data'
+import { extractDoi } from './utils'
 
 const CROSSREF = 'https://api.crossref.org'
 const OPENALEX = 'https://api.openalex.org'
@@ -63,7 +64,12 @@ export interface SearchFields {
  */
 export function parseFieldQuery(query: string): SearchFields {
   if (!query.trim()) return {}
-  if (!/[A-Z]{2,3}=\(/.test(query)) return { freeText: query }
+  if (!/[A-Z]{2,3}=\(/.test(query)) {
+    // Auto-detect DOI or DOI URL so it is routed to exact filter, not full-text search
+    const doi = extractDoi(query)
+    if (doi) return { doi }
+    return { freeText: query }
+  }
 
   const fields: SearchFields = {}
   const re = /(?:^|\s+(?:AND|OR|NOT)\s+)([A-Z]{2,3})=\(([^)]*)\)/g
@@ -919,9 +925,10 @@ export async function openalexSearch(
     const clean = f.doi.replace(/^https?:\/\/doi\.org\//i, '')
     filterParts.push(`doi:https://doi.org/${clean}`)
   }
-  if (f.author)      filterParts.push(`authorships.author.display_name.search:${f.author}`)
-  if (f.title)       filterParts.push(`title.search:${f.title}`)
-  if (f.journal)     filterParts.push(`primary_location.source.display_name.search:${f.journal}`)
+  // Wrap multi-word values in quotes for phrase matching (exact title / exact author)
+  if (f.author)      filterParts.push(`authorships.author.display_name.search:"${f.author}"`)
+  if (f.title)       filterParts.push(`title.search:"${f.title}"`)
+  if (f.journal)     filterParts.push(`primary_location.source.display_name.search:"${f.journal}"`)
   if (f.institution) filterParts.push(`authorships.institutions.display_name.search:${f.institution}`)
   if (f.keyword)     filterParts.push(`keywords.keyword.search:${f.keyword}`)
   if (f.language)    filterParts.push(`language:${f.language}`)

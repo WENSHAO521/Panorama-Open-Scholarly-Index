@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useState, FormEvent, Suspense } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
+import { extractDoi } from '@/lib/utils'
 
 type SubItem = { label: string; href: string }
 type NavItem = { label: string; href?: string; children?: SubItem[] }
@@ -75,7 +76,14 @@ function NavSearch() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (query.trim()) router.push(`/search?q=${encodeURIComponent(query.trim())}`)
+    const trimmed = query.trim()
+    if (!trimmed) return
+    const doi = extractDoi(trimmed)
+    if (doi) {
+      router.push(`/doi-lookup?doi=${encodeURIComponent(doi)}`)
+    } else {
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`)
+    }
   }
 
   return (

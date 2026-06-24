@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr'
+import { extractDoi } from '@/lib/utils'
 
 // Map field selector values to the field codes used by parseFieldQuery / api.ts
 const FIELD_CODE: Record<string, string> = {
@@ -33,9 +34,10 @@ export function SearchBar() {
     const trimmed = query.trim()
     if (!trimmed) return
 
-    // DOI field → go straight to the DOI lookup page
-    if (field === 'doi') {
-      router.push(`/doi-lookup?doi=${encodeURIComponent(trimmed)}`)
+    // Auto-detect DOI or DOI URL regardless of selected field → DOI lookup
+    const detectedDoi = extractDoi(trimmed)
+    if (detectedDoi || field === 'doi') {
+      router.push(`/doi-lookup?doi=${encodeURIComponent(detectedDoi ?? trimmed)}`)
       return
     }
 

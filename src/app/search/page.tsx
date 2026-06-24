@@ -7,6 +7,7 @@ import { ArticleCard } from '@/components/ArticleCard'
 import { Badge } from '@/components/Badge'
 import { crossrefSearch, openalexSearch, parseFieldQuery } from '@/lib/api'
 import { ALL_JOURNALS } from '@/lib/data'
+import { extractDoi } from '@/lib/utils'
 import type { Article, SearchFacets } from '@/lib/types'
 
 const YEARS = Array.from({ length: 6 }, (_, i) => 2026 - i)
@@ -49,6 +50,13 @@ function SearchResults() {
   const [error, setError] = useState<string | null>(null)
   const [localQuery, setLocalQuery] = useState(q)
   const hasSearched = useRef(false)
+
+  // If the query is a DOI or DOI URL, redirect immediately to the DOI lookup page
+  useEffect(() => {
+    if (!q) return
+    const doi = extractDoi(q)
+    if (doi) router.replace(`/doi-lookup?doi=${encodeURIComponent(doi)}`)
+  }, [q, router])
 
   useEffect(() => {
     setLocalQuery(q)
