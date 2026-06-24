@@ -1073,6 +1073,43 @@ export async function openAlexGetArticle(doi: string): Promise<Article | null> {
 export const fetchOpenAlexWork = openAlexGetWork
 export const fetchCrossrefWork = crossrefGetWork
 
+// ─── Book metadata (ISBN → Open Library) ──────────────────────────────────────
+
+export interface BookInfo {
+  title: string
+  subtitle?: string
+  authors: string[]
+  year: string | null
+  publisher: string | null
+  place: string | null
+  isbn: string
+}
+
+export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
+  try {
+    const clean = isbn.replace(/[-\s]/g, '')
+    const res = await fetch(
+      `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`
+    )
+    if (!res.ok) return null
+    const data = await res.json() as Record<string, Record<string, unknown>>
+    const book = data[`ISBN:${clean}`]
+    if (!book) return null
+    type OLEntry = { name: string }
+    return {
+      title: (book.title as string) ?? '',
+      subtitle: book.subtitle as string | undefined,
+      authors: ((book.authors as OLEntry[]) ?? []).map((a) => a.name),
+      year: ((book.publish_date as string) ?? '').match(/\d{4}/)?.[0] ?? null,
+      publisher: ((book.publishers as OLEntry[]) ?? [])[0]?.name ?? null,
+      place: ((book.publish_places as OLEntry[]) ?? [])[0]?.name ?? null,
+      isbn: clean,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function fetchOpenAlexSearch(query: string, page = 1) {
   const params = new URLSearchParams({
     search: query,
