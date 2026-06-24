@@ -233,10 +233,15 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 
 const PER_PAGE = 20
 
-function Pagination({ page, totalPages, tab }: { page: number; totalPages: number; tab: string }) {
+function Pagination({ page, totalPages, tab, subject }: { page: number; totalPages: number; tab: string; subject?: string }) {
   if (totalPages <= 1) return null
-  const prev = page > 1 ? `?tab=${tab}&page=${page - 1}` : null
-  const next = page < totalPages ? `?tab=${tab}&page=${page + 1}` : null
+  const makeHref = (p: number) => {
+    const params = new URLSearchParams({ tab, page: String(p) })
+    if (subject) params.set('subject', subject)
+    return `?${params.toString()}`
+  }
+  const prev = page > 1 ? makeHref(page - 1) : null
+  const next = page < totalPages ? makeHref(page + 1) : null
   return (
     <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px solid var(--posi-border)' }}>
       <div>
@@ -399,7 +404,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
             </div>
           </div>
           <JournalTable rows={pagedIndexed} showOjqf />
-          <Pagination page={indexedPage} totalPages={indexedTotalPages} tab="indexed" />
+          <Pagination page={indexedPage} totalPages={indexedTotalPages} tab="indexed" subject={activeSubject || undefined} />
         </div>
       )}
 
@@ -442,7 +447,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
             </span>
           </div>
           <JournalTable rows={pagedDiscovered} showOjqf />
-          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" />
+          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" subject={activeSubject || undefined} />
         </div>
       )}
     </div>
