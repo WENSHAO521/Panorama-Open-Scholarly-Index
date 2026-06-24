@@ -1022,6 +1022,38 @@ export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | nu
   }
 }
 
+// ─── OpenAlex journal/source citation stats ───────────────────────────────────
+
+export interface OpenAlexSourceStats {
+  two_yr_mean_citedness: number | null
+  h_index: number | null
+  cited_by_count: number | null
+}
+
+export async function openAlexGetSourceStats(issn: string): Promise<OpenAlexSourceStats | null> {
+  try {
+    const params = new URLSearchParams({
+      filter: `issn:${issn}`,
+      select: 'summary_stats,cited_by_count',
+      mailto: 'posi@panoramagroup.org',
+    })
+    const res = await fetch(`${OPENALEX}/sources?${params.toString()}`, {
+      headers: { 'User-Agent': UA },
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const source = data.results?.[0]
+    if (!source) return null
+    return {
+      two_yr_mean_citedness: source.summary_stats?.['2yr_mean_citedness'] ?? null,
+      h_index: source.summary_stats?.h_index ?? null,
+      cited_by_count: source.cited_by_count ?? null,
+    }
+  } catch {
+    return null
+  }
+}
+
 // Full Article object from OpenAlex (used by /cite as fallback when Crossref has no record)
 export async function openAlexGetArticle(doi: string): Promise<Article | null> {
   try {

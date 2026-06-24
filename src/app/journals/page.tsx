@@ -2,13 +2,20 @@ import { Suspense } from 'react'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
-import { crossrefFetchJournal, issnGetCountry, oaiHarvestJournal } from '@/lib/api'
+import { crossrefFetchJournal, issnGetCountry, oaiHarvestJournal, openAlexGetSourceStats } from '@/lib/api'
 import { JournalTabs, type SlimJournal } from '@/components/JournalTabs'
 import type { Journal } from '@/lib/types'
 
 // Reduce full Journal objects to only fields needed by the journal list table.
 // This keeps the serialized HTML well below Cloudflare Pages' 25 MB file limit.
-function slim(j: Journal, cr_total_dois?: number | null, issnCountry?: string | null, oaiCount?: number) {
+function slim(
+  j: Journal,
+  cr_total_dois?: number | null,
+  issnCountry?: string | null,
+  oaiCount?: number,
+  two_yr_mean_citedness?: number | null,
+  h_index?: number | null,
+) {
   const officialScore = j.pqf ?? j.ojqf
   const score = officialScore ?? j.auto_pqf ?? null
   const s: SlimJournal = {
@@ -29,6 +36,8 @@ function slim(j: Journal, cr_total_dois?: number | null, issnCountry?: string | 
     pqf_grade: score?.grade ?? null,
     pqf_total: score?.total ?? null,
     pqf_is_auto: !officialScore && !!j.auto_pqf,
+    two_yr_mean_citedness: two_yr_mean_citedness ?? null,
+    h_index: h_index ?? null,
   }
   return { journal: s, cr_total_dois: cr_total_dois ?? null, issnCountry: issnCountry ?? null, oaiCount: oaiCount ?? 0 }
 }
@@ -47,22 +56,26 @@ export default async function JournalsPage() {
   const [psgRows, manualIndexedRows] = await Promise.all([
     Promise.all(
       PSG_JOURNALS.map(async j => {
-        const [cr, issnCountry, oaiItems] = await Promise.all([
+        const issn = j.issn_online ?? j.issn_print
+        const [cr, issnCountry, oaiItems, oaStats] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           withTimeout(oaiHarvestJournal(j.journal_code).catch(() => []), TIMEOUT_MS, []),
+          issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length)
+        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
       })
     ),
     Promise.all(
       [...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS].map(async j => {
-        const [cr, issnCountry, oaiItems] = await Promise.all([
+        const issn = j.issn_online ?? j.issn_print
+        const [cr, issnCountry, oaiItems, oaStats] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           withTimeout(oaiHarvestJournal(j.journal_code).catch(() => []), TIMEOUT_MS, []),
+          issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length)
+        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
       })
     ),
   ])

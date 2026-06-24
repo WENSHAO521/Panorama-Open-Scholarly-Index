@@ -92,6 +92,8 @@ export interface SlimJournal {
   pqf_grade: string | null
   pqf_total: number | null
   pqf_is_auto: boolean
+  two_yr_mean_citedness: number | null
+  h_index: number | null
 }
 
 const INDEXING_VARIANT = {
@@ -128,6 +130,7 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>ISSN</th>
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Publisher</th>
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Articles</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }} title="2-year mean citedness (OpenAlex) — comparable to impact factor">2yr CI</th>
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>MQS</th>
                 {showOjqf && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PQF</th>}
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>IRS</th>
@@ -179,6 +182,11 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                     <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{journal.publisher}</td>
                     <td className="px-3 py-3 text-center font-mono font-medium">
                       <ArticleCountBadge issn={journal.issn_online ?? null} fallback={oaiCount && oaiCount > 0 ? oaiCount : (cr_total_dois ?? journal.article_count)} />
+                    </td>
+                    <td className="px-3 py-3 text-center font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
+                      {journal.two_yr_mean_citedness != null
+                        ? journal.two_yr_mean_citedness.toFixed(2)
+                        : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                     </td>
                     <td className="px-3 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>{journal.metadata_quality_score}</td>
                     {showOjqf && (
@@ -262,6 +270,14 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                   <span style={{ color: 'var(--posi-muted)' }}>Articles</span>
                   <ArticleCountBadge issn={journal.issn_online ?? null} fallback={oaiCount && oaiCount > 0 ? oaiCount : (cr_total_dois ?? journal.article_count)} />
                 </div>
+                {journal.two_yr_mean_citedness != null && (
+                  <div className="flex justify-between">
+                    <span style={{ color: 'var(--posi-muted)' }}>2yr CI</span>
+                    <span className="font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
+                      {journal.two_yr_mean_citedness.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 {showOjqf && journal.pqf_grade && (
                   <div className="flex justify-between">
                     <span style={{ color: 'var(--posi-muted)' }}>PQF{journal.pqf_is_auto ? '*' : ''}</span>
