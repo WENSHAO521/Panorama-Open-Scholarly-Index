@@ -6,9 +6,9 @@ import { Suspense, useEffect, useState, useRef, useMemo } from 'react'
 import { X, CaretDown, CaretUp, MagnifyingGlass, Funnel } from '@phosphor-icons/react/dist/ssr'
 import { ArticleCard } from '@/components/ArticleCard'
 import { Badge } from '@/components/Badge'
-import { crossrefSearch, openalexSearch, parseFieldQuery } from '@/lib/api'
+import { crossrefSearch, openalexSearch, parseFieldQuery, crossrefTitleLookup } from '@/lib/api'
 import { ALL_JOURNALS } from '@/lib/data'
-import { extractDoi, wordOverlap } from '@/lib/utils'
+import { extractDoi, wordOverlap, decodeHtml } from '@/lib/utils'
 import type { Article, SearchFacets } from '@/lib/types'
 
 const YEARS = Array.from({ length: 6 }, (_, i) => 2026 - i)
@@ -98,41 +98,62 @@ function SearchResults() {
     const issn = journal
       ? (ALL_JOURNALS.find(j => j.journal_code === journal)?.issn_online ?? undefined)
       : undefined
-    const searchOpts = {
+    const baseOpts = {
       page,
-      rows: 20,
       yearFrom: year ? Number(year) : undefined,
       yearTo: year ? Number(year) : undefined,
       issn,
       signal: controller.signal,
     }
 
-    const searchPromise = scope === 'psg'
-      ? crossrefSearch(q, { ...searchOpts, scope: 'psg' })
-      : openalexSearch(q, searchOpts)
+    // Detect Title-field query format: "TI=(full title text)"
+    const titleText = q.match(/^TI=\(([^)]*)\)/)?.[1]?.trim() ?? ''
 
-    searchPromise.then(({ total: t, items }) => {
-      setArticles(items)
-      setTotal(t)
-      setFacets({
-        years: [],
-        journals: ALL_JOURNALS.map(j => ({
-          value: j.journal_code,
-          label: j.short_title,
-          count: items.filter(a => a.journal_code === j.journal_code).length,
-        })).filter(f => f.count > 0),
-        document_types: [],
-        languages: [],
-        open_access: [],
-      })
-    }).catch((err: unknown) => {
-      if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) return
-      setArticles([])
-      setTotal(0)
-      setError('Unable to load search results. The OpenAlex/Crossref API may be temporarily unavailable. Please try again.')
-    }).finally(() => {
-      if (!controller.signal.aborted) setLoading(false)
-    })
+    ;(async () => {
+      try {
+        let items: Article[] = []
+        let total = 0
+
+        if (scope === 'psg') {
+          const r = await crossrefSearch(q, { ...baseOpts, rows: 20, scope: 'psg' })
+          items = r.items; total = r.total
+        } else if (titleText) {
+          // Title-field search: OpenAlex (50 rows) + Crossref bibliographic in parallel
+          const [oaR, crItems] = await Promise.all([
+            openalexSearch(q, { ...baseOpts, rows: 50 }),
+            crossrefTitleLookup(titleText, { rows: 10, signal: controller.signal }),
+          ])
+          const seenDois = new Set(oaR.items.map(a => a.doi).filter(Boolean))
+          items = [...oaR.items, ...crItems.filter(a => a.doi && !seenDois.has(a.doi))]
+          total = oaR.total
+        } else {
+          const r = await openalexSearch(q, { ...baseOpts, rows: 20 })
+          items = r.items; total = r.total
+        }
+
+        if (controller.signal.aborted) return
+        setArticles(items)
+        setTotal(total)
+        setFacets({
+          years: [],
+          journals: ALL_JOURNALS.map(j => ({
+            value: j.journal_code,
+            label: j.short_title,
+            count: items.filter(a => a.journal_code === j.journal_code).length,
+          })).filter(f => f.count > 0),
+          document_types: [],
+          languages: [],
+          open_access: [],
+        })
+      } catch (err: unknown) {
+        if (controller.signal.aborted || (err instanceof Error && err.name === 'AbortError')) return
+        setArticles([])
+        setTotal(0)
+        setError('Unable to load search results. The OpenAlex/Crossref API may be temporarily unavailable. Please try again.')
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    })()
 
     return () => controller.abort()
   }, [q, journal, year, scope, page])
@@ -168,7 +189,7 @@ function SearchResults() {
     let best: Article | null = null
     let bestScore = 0.68
     for (const a of articles) {
-      const score = wordOverlap(query, a.title || '')
+      const score = wordOverlap(query, decodeHtml(a.title))
       if (score > bestScore) { best = a; bestScore = score }
     }
     return best

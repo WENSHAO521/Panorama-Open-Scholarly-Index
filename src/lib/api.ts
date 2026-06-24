@@ -271,6 +271,35 @@ export async function crossrefSearch(
   }
 }
 
+/**
+ * Top-N Crossref results for an exact title query via query.bibliographic.
+ * Run in parallel with OpenAlex for title-field searches to widen candidate pool.
+ */
+export async function crossrefTitleLookup(
+  title: string,
+  options: { rows?: number; signal?: AbortSignal } = {}
+): Promise<Article[]> {
+  const { rows = 10, signal } = options
+  if (!title.trim()) return []
+  const params = new URLSearchParams({
+    'query.bibliographic': title,
+    rows: String(rows),
+    filter: ARTICLE_FILTER,
+    sort: 'relevance',
+    order: 'desc',
+    mailto: 'posi@panoramagroup.org',
+  })
+  try {
+    const headers: Record<string, string> = typeof window === 'undefined' ? { 'User-Agent': UA } : {}
+    const res = await fetch(`${CROSSREF}/works?${params.toString()}`, { headers, signal, cache: 'no-store' })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.message?.items ?? []).map(mapCrossrefWork)
+  } catch {
+    return []
+  }
+}
+
 export async function crossrefGetWork(doi: string): Promise<Article | null> {
   const res = await fetch(`${CROSSREF}/works/${encodeURIComponent(doi)}`, {
     headers: { 'User-Agent': UA },
