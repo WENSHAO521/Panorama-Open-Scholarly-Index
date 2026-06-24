@@ -6,12 +6,72 @@ import { Badge } from './Badge'
 import { MetadataQualityBar } from './MetadataQualityBar'
 import { JournalBrowser } from './JournalBrowser'
 import { ArticleCountBadge } from './ArticleCountBadge'
-// Top-level LCC subject categories present in DOAJ
-const LCC_TOP = [
-  'Medicine','Science','Social Sciences','Technology','Agriculture',
-  'Education','Law','Language and Literature','Philosophy','History',
-  'Geography','Fine Arts','Religion',
-]
+// LCC top-level category → keyword list for broad subject matching.
+// DOAJ subjects are LCC subclasses (e.g. "Dermatology", "Physics") that often
+// don't contain the top-level name, so we match on characteristic keywords.
+const SUBJECT_KEYWORDS: Record<string, string[]> = {
+  Medicine: [
+    'medicine', 'health', 'clinical', 'surgery', 'surgical', 'pharmacol',
+    'pharmacy', 'nursing', 'dentistry', 'dental', 'psychiatr', 'psychol',
+    'dermatol', 'ophthalmol', 'pediat', 'oncol', 'pathol', 'physiol',
+    'anatom', 'biochem', 'microbiolog', 'virolog', 'immunolog', 'epidemiol',
+    'cardiol', 'neurolog', 'orthoped', 'radiolog', 'urolog', 'gastroenterol',
+    'hematol', 'endocrinol', 'gynecol', 'obstetric', 'rehabilit', 'toxicol',
+    'nutrit', 'infect', 'neoplasm', 'tumor', 'cancer', 'therapeut',
+    'diagnos', 'biomedic', 'public health',
+  ],
+  Science: [
+    'science', 'physic', 'chemistr', 'biolog', 'mathemat', 'statistic',
+    'astronom', 'geolog', 'ecolog', 'botan', 'zoolog', 'genetic', 'molecul',
+    'evolution', 'geophysic', 'meteorolog', 'oceanograph', 'paleontol',
+    'crystallograph', 'spectroscop', 'biophysic', 'natural history',
+  ],
+  Technology: [
+    'technolog', 'engineer', 'computer', 'software', 'electrical',
+    'mechanical', 'aerospace', 'nuclear', 'materials of', 'manufactur',
+    'industrial', 'transport', 'robotic', 'telecommunication', 'electronic',
+    'information system', 'computing', 'optic', 'photonic', 'construct', 'mining',
+  ],
+  'Social Sciences': [
+    'social science', 'sociolog', 'economic', 'political', 'anthropolog',
+    'demograph', 'criminolog', 'public administration', 'communication',
+    'gender', 'international relation', 'social work',
+  ],
+  Agriculture: [
+    'agricultur', 'agron', 'horticultur', 'forestry', 'fisher', 'aquacultur',
+    'veterinar', 'animal culture', 'animal husbandry', 'crop', 'soil science',
+    'food supply', 'food process', 'plant patholog', 'entomolog',
+  ],
+  Education: [
+    'education', 'pedagogic', 'teaching', 'learning', 'curriculum', 'training',
+  ],
+  Law: [
+    'law', 'legal', 'jurisprudence', 'legislation', 'criminal', 'constitutional',
+    'human rights',
+  ],
+  'Language and Literature': [
+    'language', 'literature', 'linguistic', 'philolog', 'translation', 'poetry', 'rhetoric',
+  ],
+  Philosophy: [
+    'philosophy', 'ethic', 'logic', 'metaphysic', 'epistemolog',
+  ],
+  History: [
+    'history', 'historical', 'archaeolog', 'heritage', 'civilization', 'ancient', 'medieval',
+  ],
+  Geography: [
+    'geography', 'cartograph', 'environment', 'climatol', 'geographic', 'geograph',
+    'regional planning',
+  ],
+  'Fine Arts': [
+    'fine art', 'music', 'theater', 'theatre', 'dance', 'cinema', 'film',
+    'architecture', 'sculpture', 'painting', 'photograph', 'visual art',
+    'performing art', 'decorative', 'drawing', 'design',
+  ],
+  Religion: [
+    'religion', 'theolog', 'spiritual', 'faith', 'christian', 'islam',
+    'buddhis', 'hinduism', 'jewish',
+  ],
+}
 
 // Only the fields needed for the journal list table — keeps serialized HTML small
 export interface SlimJournal {
@@ -287,11 +347,16 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
 
   const psgArticles = psgRows.reduce((s, { oaiCount, cr_total_dois, journal }) => s + ((oaiCount ?? 0) > 0 ? (oaiCount ?? 0) : (cr_total_dois ?? journal.article_count)), 0)
 
-  // Subject filter helper
+  // Subject filter: match against keyword list so subclasses like "Dermatology"
+  // correctly fall under top-level "Medicine", "Physics" under "Science", etc.
   function filterBySubject(rows: JournalWithCr[]) {
     if (!activeSubject) return rows
+    const keywords = SUBJECT_KEYWORDS[activeSubject] ?? [activeSubject.toLowerCase()]
     return rows.filter(({ journal }) =>
-      journal.subjects?.some(s => s.toLowerCase().includes(activeSubject.toLowerCase()))
+      journal.subjects?.some(subj => {
+        const lower = subj.toLowerCase()
+        return keywords.some(kw => lower.includes(kw))
+      })
     )
   }
 
@@ -309,11 +374,8 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
   const indexedPage = Math.min(currentPage, indexedTotalPages)
   const pagedIndexed = filteredIndexed.slice((indexedPage - 1) * PER_PAGE, indexedPage * PER_PAGE)
 
-  // Discovered tab pagination
+  // Auto-discovered tab: show all results without pagination (≤60 total)
   const filteredDiscovered = filterBySubject(discoveredRows)
-  const discoveredTotalPages = Math.max(1, Math.ceil(filteredDiscovered.length / PER_PAGE))
-  const discoveredPage = Math.min(currentPage, discoveredTotalPages)
-  const pagedDiscovered = filteredDiscovered.slice((discoveredPage - 1) * PER_PAGE, discoveredPage * PER_PAGE)
 
   const verifiedTabs: { id: TabId; label: string; count: string }[] = [
     { id: 'psg',      label: 'PSG Collection',   count: `${psgRows.length} journals` },
@@ -396,7 +458,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
                 style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
               >
                 <option value="">All subjects</option>
-                {LCC_TOP.map(s => <option key={s} value={s}>{s}</option>)}
+                {Object.keys(SUBJECT_KEYWORDS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
                 {((indexedPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(indexedPage * PER_PAGE, filteredIndexed.length).toLocaleString()} of {filteredIndexed.length.toLocaleString()}
@@ -440,14 +502,13 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
             >
               <option value="">All subjects</option>
-              {LCC_TOP.map(s => <option key={s} value={s}>{s}</option>)}
+              {Object.keys(SUBJECT_KEYWORDS).map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-              {((discoveredPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(discoveredPage * PER_PAGE, filteredDiscovered.length).toLocaleString()} of {filteredDiscovered.length.toLocaleString()} journals
+              {filteredDiscovered.length.toLocaleString()} journal{filteredDiscovered.length !== 1 ? 's' : ''}
             </span>
           </div>
-          <JournalTable rows={pagedDiscovered} showOjqf />
-          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" subject={activeSubject || undefined} />
+          <JournalTable rows={filteredDiscovered} showOjqf />
         </div>
       )}
     </div>
