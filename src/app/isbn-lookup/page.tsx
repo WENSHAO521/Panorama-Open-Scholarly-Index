@@ -442,9 +442,10 @@ function IsbnLookupForm() {
           {' '}· 🇩🇪{' '}<a href="https://www.dnb.de" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Deutsche Nationalbibliothek</a>
           {' '}· 🇫🇷{' '}<a href="https://catalogue.bnf.fr" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Bibliothèque nationale de France</a>
           {' '}· 🇰🇷 Korean National Library
+          {' '}· 🌍{' '}<a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Europeana</a>
         </p>
         <p className="mt-2">
-          All free, no API keys. For article DOI lookup, use{' '}
+          For article DOI lookup, use{' '}
           <Link href="/doi-lookup" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>DOI Lookup</Link>.
         </p>
       </div>
