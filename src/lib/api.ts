@@ -1073,7 +1073,7 @@ export async function openAlexGetArticle(doi: string): Promise<Article | null> {
 export const fetchOpenAlexWork = openAlexGetWork
 export const fetchCrossrefWork = crossrefGetWork
 
-// ─── Book metadata (ISBN → Open Library) ──────────────────────────────────────
+// ─── Book metadata (ISBN lookup with multi-source fallback) ───────────────────
 
 export interface BookInfo {
   title: string
@@ -1085,9 +1085,9 @@ export interface BookInfo {
   isbn: string
 }
 
-export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
+// Source 1: Open Library (CORS-native, broad English/global coverage)
+async function fetchBookOl(clean: string): Promise<BookInfo | null> {
   try {
-    const clean = isbn.replace(/[-\s]/g, '')
     const res = await fetch(
       `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`
     )
@@ -1108,6 +1108,62 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   } catch {
     return null
   }
+}
+
+// Source 2: Korean National Library / SEOJI (via Cloudflare Pages Function proxy)
+// Requires NLK_API_KEY env var set in Cloudflare Pages dashboard.
+// Falls back silently if proxy returns 503 (key not configured).
+async function fetchBookNlk(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/nlk-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as {
+      TOTAL_COUNT?: string | number
+      docs?: Record<string, string>[]
+    }
+    const count = Number(data.TOTAL_COUNT ?? 0)
+    if (count === 0 || !data.docs?.length) return null
+    const doc = data.docs[0]
+
+    // AUTHOR field may look like "홍길동 지음" or "Smith, John, 1970-, author"
+    const rawAuthor = doc.AUTHOR ?? ''
+    const authors = rawAuthor
+      ? rawAuthor
+          .split(/[;,](?![^(]*\))/)          // split on ; or , not inside parens
+          .map(a =>
+            a
+              .replace(/\s*(지음|저|편저|옮김|역|글|그림|author|editor|illustrator)[,.]?.*$/i, '')
+              .replace(/,\s*\d{4}-.*$/, '')  // remove birth years like ", 1970-"
+              .trim()
+          )
+          .filter(Boolean)
+      : []
+
+    // PUBLISH_PREDATE is "yyyymmdd"
+    const rawDate = doc.PUBLISH_PREDATE ?? ''
+    const year = rawDate.length >= 4 ? rawDate.slice(0, 4) : null
+
+    return {
+      title: doc.TITLE ?? '',
+      authors,
+      year,
+      publisher: doc.PUBLISHER ?? null,
+      place: null,  // NLK API does not expose place of publication
+      isbn: clean,
+    }
+  } catch {
+    return null
+  }
+}
+
+// Public entry point: tries Open Library first, then Korean National Library
+export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
+  const clean = isbn.replace(/[-\s]/g, '')
+  const ol = await fetchBookOl(clean)
+  if (ol?.title) return ol
+  const nlk = await fetchBookNlk(clean)
+  if (nlk?.title) return nlk
+  return null
 }
 
 export async function fetchOpenAlexSearch(query: string, page = 1) {
