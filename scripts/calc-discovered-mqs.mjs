@@ -75,8 +75,8 @@ const section = src.slice(beginIdx + BEGIN.length, endIdx)
 const footer  = src.slice(endIdx)
 
 // Split section into individual journal blocks (each block: "  {\n    ...\n  },")
-// Split on blank lines that precede a `  {`
-const blocks = section.split(/\n(?=\n  \{)/)
+// Split on the newline immediately before each `  {` (works with or without blank lines)
+const blocks = section.split(/\n(?=  \{)/)
 
 let patched = 0
 const newBlocks = blocks.map(block => {
