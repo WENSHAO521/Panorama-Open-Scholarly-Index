@@ -1491,31 +1491,70 @@ async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/europeana-isbn?isbn=${encodeURIComponent(clean)}`)
     if (!res.ok) return null
-    const data = await res.json() as {
-      found?: boolean
-      title?: string
-      authors?: string[]
-      year?: string | null
-      publisher?: string | null
-    }
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
     if (!data.found || !data.title) return null
-    return {
-      title: data.title,
-      authors: data.authors ?? [],
-      year: data.year ?? null,
-      publisher: data.publisher ?? null,
-      place: null,
-      isbn: clean,
-      source: 'Europeana',
-    }
-  } catch {
-    return null
-  }
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'Europeana' }
+  } catch { return null }
 }
 
-// Public entry point — two-phase parallel cascade across 11 international library sources.
+// Source 12: National Library of Australia — Trove (via CF proxy — requires TROVE_API_KEY env var)
+async function fetchBookTrove(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/trove-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
+    if (!data.found || !data.title) return null
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'Trove / National Library of Australia' }
+  } catch { return null }
+}
+
+// Source 13: Singapore National Library Board (via CF proxy — requires NLB_SG_API_KEY env var)
+async function fetchBookNlbSg(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/nlb-sg-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
+    if (!data.found || !data.title) return null
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'National Library Board Singapore' }
+  } catch { return null }
+}
+
+// Source 14: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy — SRU, no key)
+async function fetchBookLac(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/lac-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
+    if (!data.found || !data.title) return null
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'Library and Archives Canada' }
+  } catch { return null }
+}
+
+// Source 15: National Library of New Zealand Te Puna (via CF proxy — Alma SRU, no key)
+async function fetchBookNlnz(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/nlnz-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
+    if (!data.found || !data.title) return null
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'National Library of New Zealand' }
+  } catch { return null }
+}
+
+// Source 16: National Central Library of Taiwan 國立中央圖書館 (via CF proxy — SRU, no key)
+async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/taiwan-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
+    if (!data.found || !data.title) return null
+    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: '國立中央圖書館 (NCL Taiwan)' }
+  } catch { return null }
+}
+
+// Public entry point — two-phase parallel cascade across 16 international library sources.
 // Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland — all in parallel.
-// Phase 2 (SRU/XML + keyed proxies): LOC / DNB / BnF / NLK / NDL / Europeana — all in parallel.
+// Phase 2 (SRU/XML + keyed proxies, 11 sources) — all in parallel.
 export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   const clean = isbn.replace(/[-\s]/g, '')
 
@@ -1533,14 +1572,19 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (libris?.title) return libris
   if (finna?.title)  return finna
 
-  // Phase 2: SRU / proxied sources — run in parallel
-  const [loc, dnb, bnf, nlk, ndl, europeana] = await Promise.all([
+  // Phase 2: SRU / proxied / keyed sources — all in parallel
+  const [loc, dnb, bnf, nlk, ndl, europeana, trove, nlbSg, lac, nlnz, taiwan] = await Promise.all([
     fetchBookLoc(clean),
     fetchBookDnb(clean),
     fetchBookBnf(clean),
     fetchBookNlk(clean),
     fetchBookNdl(clean),
     fetchBookEuropeana(clean),
+    fetchBookTrove(clean),
+    fetchBookNlbSg(clean),
+    fetchBookLac(clean),
+    fetchBookNlnz(clean),
+    fetchBookTaiwan(clean),
   ])
   if (loc?.title)       return loc
   if (dnb?.title)       return dnb
@@ -1548,6 +1592,11 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (nlk?.title)       return nlk
   if (ndl?.title)       return ndl
   if (europeana?.title) return europeana
+  if (trove?.title)     return trove
+  if (nlbSg?.title)     return nlbSg
+  if (lac?.title)       return lac
+  if (nlnz?.title)      return nlnz
+  if (taiwan?.title)    return taiwan
 
   return null
 }
