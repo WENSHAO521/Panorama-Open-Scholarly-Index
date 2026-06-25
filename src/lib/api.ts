@@ -1110,7 +1110,46 @@ async function fetchBookOl(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 2: Korean National Library / SEOJI (via Cloudflare Pages Function proxy)
+// Source 2: Google Books (via Cloudflare Pages Function proxy)
+// Requires BOOKS_API env var set in Cloudflare Pages dashboard.
+// Falls back silently if proxy returns 503 (key not configured).
+async function fetchBookGoogle(clean: string): Promise<BookInfo | null> {
+  try {
+    const res = await fetch(`/api/google-isbn?isbn=${encodeURIComponent(clean)}`)
+    if (!res.ok) return null
+    const data = await res.json() as {
+      totalItems?: number
+      items?: Array<{
+        volumeInfo: {
+          title?: string
+          subtitle?: string
+          authors?: string[]
+          publisher?: string
+          publishedDate?: string
+          industryIdentifiers?: Array<{ type: string; identifier: string }>
+        }
+      }>
+    }
+    if (!data.totalItems || !data.items?.length) return null
+    const v = data.items[0].volumeInfo
+    if (!v.title) return null
+    const year = v.publishedDate?.match(/\d{4}/)?.[0] ?? null
+    const isbn13 = v.industryIdentifiers?.find(i => i.type === 'ISBN_13')?.identifier ?? clean
+    return {
+      title: v.title,
+      subtitle: v.subtitle,
+      authors: v.authors ?? [],
+      year,
+      publisher: v.publisher ?? null,
+      place: null,
+      isbn: isbn13,
+    }
+  } catch {
+    return null
+  }
+}
+
+// Source 3: Korean National Library / SEOJI (via Cloudflare Pages Function proxy)
 // Requires NLK_API_KEY env var set in Cloudflare Pages dashboard.
 // Falls back silently if proxy returns 503 (key not configured).
 async function fetchBookNlk(clean: string): Promise<BookInfo | null> {
@@ -1156,11 +1195,13 @@ async function fetchBookNlk(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Public entry point: tries Open Library first, then Korean National Library
+// Public entry point: Open Library → Google Books → Korean NLK
 export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   const clean = isbn.replace(/[-\s]/g, '')
   const ol = await fetchBookOl(clean)
   if (ol?.title) return ol
+  const google = await fetchBookGoogle(clean)
+  if (google?.title) return google
   const nlk = await fetchBookNlk(clean)
   if (nlk?.title) return nlk
   return null
