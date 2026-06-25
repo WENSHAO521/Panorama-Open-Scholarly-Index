@@ -143,9 +143,13 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
               {rows.map(({ journal, cr_total_dois, issnCountry, oaiCount }) => {
                 const ojqfGrade = journal.pqf_grade
                 const isAutoPqf = journal.pqf_is_auto
+                // Use ISSN as key — guaranteed unique per journal.
+                // journal.id has slug-collision duplicates in auto-generated data,
+                // causing React to reuse stale DOM nodes across page changes.
+                const rowKey = journal.issn_online ?? journal.issn_print ?? journal.id
                 return (
                   <tr
-                    key={journal.id}
+                    key={rowKey}
                     className="hover:bg-gray-50 transition-colors"
                     style={{ borderBottom: '1px solid var(--posi-border-light)' }}
                   >
@@ -241,9 +245,10 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
           const cardProps = isDisc
             ? { href: journal.website_url || '#', target: '_blank', rel: 'noopener noreferrer' }
             : { href: `/journal/${journal.journal_code}` }
+          const rowKey = journal.issn_online ?? journal.issn_print ?? journal.id
           return (
             <CardEl
-              key={journal.id}
+              key={rowKey}
               {...(cardProps as any)}
               className="bg-white p-4 flex flex-col group transition-colors"
               style={{ border: '1px solid var(--posi-border)' }}
@@ -403,6 +408,11 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
   const indexedPage = Math.min(currentPage, indexedTotalPages)
   const pagedIndexed = filteredIndexed.slice((indexedPage - 1) * PER_PAGE, indexedPage * PER_PAGE)
 
+  // Discovered tab pagination
+  const discoveredTotalPages = Math.max(1, Math.ceil(filteredDiscovered.length / PER_PAGE))
+  const discoveredPage = Math.min(currentPage, discoveredTotalPages)
+  const pagedDiscovered = filteredDiscovered.slice((discoveredPage - 1) * PER_PAGE, discoveredPage * PER_PAGE)
+
   const verifiedTabs: { id: TabId; label: string; count: string }[] = [
     { id: 'psg',      label: 'PSG Collection',   count: `${psgRows.length} journals` },
     { id: 'indexed',  label: 'Verified Records',  count: `${indexedRows.length.toLocaleString()} journals` },
@@ -531,10 +541,11 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
               {Object.keys(SUBJECT_KEYWORDS).map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-              {filteredDiscovered.length.toLocaleString()} journal{filteredDiscovered.length !== 1 ? 's' : ''}
+              {((discoveredPage - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(discoveredPage * PER_PAGE, filteredDiscovered.length).toLocaleString()} of {filteredDiscovered.length.toLocaleString()}
             </span>
           </div>
-          <JournalTable rows={filteredDiscovered} showOjqf />
+          <JournalTable rows={pagedDiscovered} showOjqf />
+          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" subject={activeSubject || undefined} pathname={pathname} />
         </div>
       )}
     </div>
