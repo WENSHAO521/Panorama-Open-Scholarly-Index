@@ -444,8 +444,6 @@ function IsbnLookupForm() {
           {' '}· 🇰🇷 Korean National Library
           {' '}· 🇯🇵{' '}<a href="https://iss.ndl.go.jp" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>国立国会図書館 (NDL)</a>
           {' '}· 🌍{' '}<a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Europeana</a>
-          {' '}· 🇦🇺{' '}<a href="https://trove.nla.gov.au" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Trove / NLA</a>
-          {' '}· 🇸🇬{' '}<a href="https://catalogue.nlb.gov.sg" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>NLB Singapore</a>
           {' '}· 🇨🇦{' '}<a href="https://www.bac-lac.gc.ca" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Library and Archives Canada</a>
           {' '}· 🇳🇿{' '}<a href="https://natlib.govt.nz" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>National Library of New Zealand</a>
           {' '}· 🇹🇼{' '}<a href="https://aleweb.ncl.edu.tw" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>國立中央圖書館 (NCL Taiwan)</a>

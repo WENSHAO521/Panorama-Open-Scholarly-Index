@@ -1497,29 +1497,7 @@ async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Source 12: National Library of Australia — Trove (via CF proxy — requires TROVE_API_KEY env var)
-async function fetchBookTrove(clean: string): Promise<BookInfo | null> {
-  try {
-    const res = await fetch(`/api/trove-isbn?isbn=${encodeURIComponent(clean)}`)
-    if (!res.ok) return null
-    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
-    if (!data.found || !data.title) return null
-    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'Trove / National Library of Australia' }
-  } catch { return null }
-}
-
-// Source 13: Singapore National Library Board (via CF proxy — requires NLB_SG_API_KEY env var)
-async function fetchBookNlbSg(clean: string): Promise<BookInfo | null> {
-  try {
-    const res = await fetch(`/api/nlb-sg-isbn?isbn=${encodeURIComponent(clean)}`)
-    if (!res.ok) return null
-    const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
-    if (!data.found || !data.title) return null
-    return { title: data.title, authors: data.authors ?? [], year: data.year ?? null, publisher: data.publisher ?? null, place: null, isbn: clean, source: 'National Library Board Singapore' }
-  } catch { return null }
-}
-
-// Source 14: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy — SRU, no key)
+// Source 12: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy — SRU, no key)
 async function fetchBookLac(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/lac-isbn?isbn=${encodeURIComponent(clean)}`)
@@ -1552,9 +1530,9 @@ async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Public entry point — two-phase parallel cascade across 16 international library sources.
+// Public entry point — two-phase parallel cascade across 14 international library sources.
 // Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland — all in parallel.
-// Phase 2 (SRU/XML + keyed proxies, 11 sources) — all in parallel.
+// Phase 2 (SRU/XML + keyed proxies, 9 sources) — all in parallel.
 export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   const clean = isbn.replace(/[-\s]/g, '')
 
@@ -1573,15 +1551,13 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (finna?.title)  return finna
 
   // Phase 2: SRU / proxied / keyed sources — all in parallel
-  const [loc, dnb, bnf, nlk, ndl, europeana, trove, nlbSg, lac, nlnz, taiwan] = await Promise.all([
+  const [loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan] = await Promise.all([
     fetchBookLoc(clean),
     fetchBookDnb(clean),
     fetchBookBnf(clean),
     fetchBookNlk(clean),
     fetchBookNdl(clean),
     fetchBookEuropeana(clean),
-    fetchBookTrove(clean),
-    fetchBookNlbSg(clean),
     fetchBookLac(clean),
     fetchBookNlnz(clean),
     fetchBookTaiwan(clean),
@@ -1592,8 +1568,6 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (nlk?.title)       return nlk
   if (ndl?.title)       return ndl
   if (europeana?.title) return europeana
-  if (trove?.title)     return trove
-  if (nlbSg?.title)     return nlbSg
   if (lac?.title)       return lac
   if (nlnz?.title)      return nlnz
   if (taiwan?.title)    return taiwan
