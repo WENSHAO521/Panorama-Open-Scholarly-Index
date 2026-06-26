@@ -429,30 +429,42 @@ function IsbnLookupForm() {
         </div>
       )}
 
-      {/* Data sources note */}
-      <div className="text-xs pt-4" style={{ borderTop: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
-        <p className="mb-1 font-semibold" style={{ color: 'var(--posi-text)' }}>Library sources queried (in parallel):</p>
-        <p className="leading-relaxed">
-          🌐{' '}<a href="https://openlibrary.org" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Open Library</a>
-          {' '}· Google Books
-          {' '}· 🇳🇴{' '}<a href="https://www.nb.no" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Nasjonalbiblioteket</a>
-          {' '}· 🇸🇪{' '}<a href="https://libris.kb.se" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Libris / KB</a>
-          {' '}· 🇫🇮{' '}<a href="https://finna.fi" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Finna</a>
-          {' '}· 🇺🇸{' '}<a href="https://www.loc.gov" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Library of Congress</a>
-          {' '}· 🇩🇪{' '}<a href="https://www.dnb.de" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Deutsche Nationalbibliothek</a>
-          {' '}· 🇫🇷{' '}<a href="https://catalogue.bnf.fr" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Bibliothèque nationale de France</a>
-          {' '}· 🇰🇷 Korean National Library
-          {' '}· 🇯🇵{' '}<a href="https://iss.ndl.go.jp" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>国立国会図書館 (NDL)</a>
-          {' '}· 🌍{' '}<a href="https://www.europeana.eu" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Europeana</a>
-          {' '}· 🇨🇦{' '}<a href="https://www.bac-lac.gc.ca" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Library and Archives Canada</a>
-          {' '}· 🇳🇿{' '}<a href="https://natlib.govt.nz" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>National Library of New Zealand</a>
-          {' '}· 🇹🇼{' '}<a href="https://aleweb.ncl.edu.tw" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>國立中央圖書館 (NCL Taiwan)</a>
-        </p>
-        <p className="mt-2">
-          For article DOI lookup, use{' '}
-          <Link href="/doi-lookup" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>DOI Lookup</Link>.
-        </p>
-      </div>
+      {/* Data sources — collapsed by default */}
+      <details className="text-xs pt-4 group" style={{ borderTop: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
+        <summary className="cursor-pointer list-none flex items-center gap-1 select-none hover:opacity-80 transition-opacity">
+          <span style={{ color: 'var(--posi-muted)' }}>▸</span>
+          <span>Searches 14 international library catalogues</span>
+          <span className="ml-auto" style={{ color: 'var(--posi-accent)' }}>
+            <Link href="/doi-lookup" className="hover:underline" onClick={e => e.stopPropagation()}>DOI Lookup</Link>
+          </span>
+        </summary>
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 leading-relaxed">
+          {[
+            { flag: '🌐', label: 'Open Library',                  href: 'https://openlibrary.org' },
+            { flag: '🌐', label: 'Google Books',                  href: null },
+            { flag: '🇳🇴', label: 'Nasjonalbiblioteket',          href: 'https://www.nb.no' },
+            { flag: '🇸🇪', label: 'Libris / KB',                  href: 'https://libris.kb.se' },
+            { flag: '🇫🇮', label: 'Finna',                        href: 'https://finna.fi' },
+            { flag: '🇺🇸', label: 'Library of Congress',          href: 'https://www.loc.gov' },
+            { flag: '🇩🇪', label: 'Deutsche Nationalbibliothek',  href: 'https://www.dnb.de' },
+            { flag: '🇫🇷', label: 'BnF',                          href: 'https://catalogue.bnf.fr' },
+            { flag: '🇰🇷', label: 'Korean National Library',      href: null },
+            { flag: '🇯🇵', label: '国立国会図書館',                href: 'https://iss.ndl.go.jp' },
+            { flag: '🌍', label: 'Europeana',                     href: 'https://www.europeana.eu' },
+            { flag: '🇨🇦', label: 'Lib. & Archives Canada',       href: 'https://www.bac-lac.gc.ca' },
+            { flag: '🇳🇿', label: 'Natl. Library NZ',             href: 'https://natlib.govt.nz' },
+            { flag: '🇹🇼', label: '國立中央圖書館',               href: 'https://aleweb.ncl.edu.tw' },
+          ].map(({ flag, label, href }) => (
+            <span key={label} className="whitespace-nowrap">
+              {flag}{' '}
+              {href
+                ? <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>{label}</a>
+                : <span>{label}</span>
+              }
+            </span>
+          ))}
+        </div>
+      </details>
     </div>
   )
 }
