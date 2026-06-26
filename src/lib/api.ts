@@ -1515,7 +1515,7 @@ async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
 // Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland — all in parallel.
 // Detect likely language/region from ISBN registration-group prefix.
 // All requests still run in parallel — this only reorders which result is returned first.
-function detectIsbnLang(clean: string): 'en' | 'fr' | 'de' | 'ja' | 'ko' | 'zh-tw' | 'no' | 'sv' | 'fi' | 'other' {
+function detectIsbnLang(clean: string): 'en' | 'fr' | 'de' | 'ja' | 'ko' | 'zh-tw' | 'zh-hk' | 'no' | 'sv' | 'fi' | 'other' {
   if (clean.startsWith('9780') || clean.startsWith('9781') || clean.startsWith('9798')) return 'en'
   if (clean.startsWith('9782') || clean.startsWith('97910'))                             return 'fr'
   if (clean.startsWith('9783'))                                                           return 'de'
@@ -1525,6 +1525,8 @@ function detectIsbnLang(clean: string): 'en' | 'fr' | 'de' | 'ja' | 'ko' | 'zh-t
   if (clean.startsWith('97891'))                                                          return 'sv'
   if (clean.startsWith('978951') || clean.startsWith('978952'))                          return 'fi'
   if (clean.startsWith('978957') || clean.startsWith('978986') || clean.startsWith('978626')) return 'zh-tw'
+  // 978-962 / 978-988 = Hong Kong; 978-972 / 978-989 covers Macau via Portugal group
+  if (clean.startsWith('978962') || clean.startsWith('978988')) return 'zh-hk'
   return 'other'
 }
 
@@ -1534,16 +1536,17 @@ type P2 = BookInfo | null
 function p2Ordered(lang: ReturnType<typeof detectIsbnLang>, loc: P2, dnb: P2, bnf: P2, nlk: P2, ndl: P2, europeana: P2, lac: P2, nlnz: P2, taiwan: P2): P2[] {
   const all = { loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan }
   switch (lang) {
-    case 'ja':    return [all.ndl,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,    all.taiwan]
-    case 'ko':    return [all.nlk,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.ndl,    all.taiwan]
-    case 'zh-tw': return [all.taiwan, all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,    all.ndl   ]
-    case 'fr':    return [all.bnf,    all.europeana, all.loc, all.lac, all.dnb, all.nlnz,  all.nlk,  all.ndl,    all.taiwan]
-    case 'de':    return [all.dnb,    all.europeana, all.loc, all.lac, all.bnf, all.nlnz,  all.nlk,  all.ndl,    all.taiwan]
-    case 'en':    return [all.loc,    all.lac, all.nlnz, all.europeana, all.dnb, all.bnf,  all.nlk,  all.ndl,    all.taiwan]
+    case 'ja':    return [all.ndl,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,  all.taiwan]
+    case 'ko':    return [all.nlk,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.ndl,  all.taiwan]
+    case 'zh-tw': return [all.taiwan, all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,  all.ndl   ]
+    case 'zh-hk': return [all.loc,    all.europeana, all.lac, all.nlnz, all.dnb, all.bnf,  all.nlk,  all.ndl,  all.taiwan]
+    case 'fr':    return [all.bnf,    all.europeana, all.loc, all.lac, all.dnb, all.nlnz,  all.nlk,  all.ndl,  all.taiwan]
+    case 'de':    return [all.dnb,    all.europeana, all.loc, all.lac, all.bnf, all.nlnz,  all.nlk,  all.ndl,  all.taiwan]
+    case 'en':    return [all.loc,    all.lac, all.nlnz, all.europeana, all.dnb, all.bnf,  all.nlk,  all.ndl,  all.taiwan]
     case 'no':
     case 'sv':
-    case 'fi':    return [all.europeana, all.loc, all.lac, all.dnb, all.bnf, all.nlnz,    all.nlk,  all.ndl,    all.taiwan]
-    default:      return [all.loc,    all.dnb, all.bnf, all.nlk, all.ndl, all.europeana,  all.lac,  all.nlnz,   all.taiwan]
+    case 'fi':    return [all.europeana, all.loc, all.lac, all.dnb, all.bnf, all.nlnz,    all.nlk,  all.ndl,  all.taiwan]
+    default:      return [all.loc,    all.dnb, all.bnf, all.nlk, all.ndl, all.europeana,  all.lac,  all.nlnz, all.taiwan]
   }
 }
 
