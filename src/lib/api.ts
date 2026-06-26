@@ -1513,26 +1513,55 @@ async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
 
 // Public entry point — two-phase parallel cascade across 14 international library sources.
 // Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland — all in parallel.
-// Phase 2 (SRU/XML + keyed proxies, 9 sources) — all in parallel.
+// Detect likely language/region from ISBN registration-group prefix.
+// All requests still run in parallel — this only reorders which result is returned first.
+function detectIsbnLang(clean: string): 'en' | 'fr' | 'de' | 'ja' | 'ko' | 'zh-tw' | 'no' | 'sv' | 'fi' | 'other' {
+  if (clean.startsWith('9780') || clean.startsWith('9781') || clean.startsWith('9798')) return 'en'
+  if (clean.startsWith('9782') || clean.startsWith('97910'))                             return 'fr'
+  if (clean.startsWith('9783'))                                                           return 'de'
+  if (clean.startsWith('9784'))                                                           return 'ja'
+  if (clean.startsWith('97882'))                                                          return 'no'
+  if (clean.startsWith('97889') || clean.startsWith('97911'))                            return 'ko'
+  if (clean.startsWith('97891'))                                                          return 'sv'
+  if (clean.startsWith('978951') || clean.startsWith('978952'))                          return 'fi'
+  if (clean.startsWith('978957') || clean.startsWith('978986') || clean.startsWith('978626')) return 'zh-tw'
+  return 'other'
+}
+
+type P2 = BookInfo | null
+// Returns Phase 2 results in language-priority order.
+// Sources: loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan
+function p2Ordered(lang: ReturnType<typeof detectIsbnLang>, loc: P2, dnb: P2, bnf: P2, nlk: P2, ndl: P2, europeana: P2, lac: P2, nlnz: P2, taiwan: P2): P2[] {
+  const all = { loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan }
+  switch (lang) {
+    case 'ja':    return [all.ndl,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,    all.taiwan]
+    case 'ko':    return [all.nlk,    all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.ndl,    all.taiwan]
+    case 'zh-tw': return [all.taiwan, all.loc, all.lac, all.nlnz, all.europeana, all.dnb,  all.bnf,  all.nlk,    all.ndl   ]
+    case 'fr':    return [all.bnf,    all.europeana, all.loc, all.lac, all.dnb, all.nlnz,  all.nlk,  all.ndl,    all.taiwan]
+    case 'de':    return [all.dnb,    all.europeana, all.loc, all.lac, all.bnf, all.nlnz,  all.nlk,  all.ndl,    all.taiwan]
+    case 'en':    return [all.loc,    all.lac, all.nlnz, all.europeana, all.dnb, all.bnf,  all.nlk,  all.ndl,    all.taiwan]
+    case 'no':
+    case 'sv':
+    case 'fi':    return [all.europeana, all.loc, all.lac, all.dnb, all.bnf, all.nlnz,    all.nlk,  all.ndl,    all.taiwan]
+    default:      return [all.loc,    all.dnb, all.bnf, all.nlk, all.ndl, all.europeana,  all.lac,  all.nlnz,   all.taiwan]
+  }
+}
+
+// All regional sources in parallel, results checked in language-priority order.
 export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   const clean = isbn.replace(/[-\s]/g, '')
+  const lang  = detectIsbnLang(clean)
 
-  // Phase 1: CORS-friendly JSON sources — run in parallel for speed
-  const [ol, google, nb, libris, finna] = await Promise.all([
-    fetchBookOl(clean),
-    fetchBookGoogle(clean),
+  // Phase 1: two fast global JSON sources
+  const [ol, google] = await Promise.all([fetchBookOl(clean), fetchBookGoogle(clean)])
+  if (ol?.title)     return ol
+  if (google?.title) return google
+
+  // Phase 2: all remaining sources in parallel — 12 requests, no waterfalls
+  const [nb, libris, finna, loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan] = await Promise.all([
     fetchBookNb(clean),
     fetchBookLibris(clean),
     fetchBookFinna(clean),
-  ])
-  if (ol?.title)     return ol
-  if (google?.title) return google
-  if (nb?.title)     return nb
-  if (libris?.title) return libris
-  if (finna?.title)  return finna
-
-  // Phase 2: SRU / proxied / keyed sources — all in parallel
-  const [loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan] = await Promise.all([
     fetchBookLoc(clean),
     fetchBookDnb(clean),
     fetchBookBnf(clean),
@@ -1543,15 +1572,21 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
     fetchBookNlnz(clean),
     fetchBookTaiwan(clean),
   ])
-  if (loc?.title)       return loc
-  if (dnb?.title)       return dnb
-  if (bnf?.title)       return bnf
-  if (nlk?.title)       return nlk
-  if (ndl?.title)       return ndl
-  if (europeana?.title) return europeana
-  if (lac?.title)       return lac
-  if (nlnz?.title)      return nlnz
-  if (taiwan?.title)    return taiwan
+
+  // Nordic sources first for their own ISBN ranges
+  if (lang === 'no' && nb?.title)     return nb
+  if (lang === 'sv' && libris?.title) return libris
+  if (lang === 'fi' && finna?.title)  return finna
+
+  // Remaining sources in language-priority order
+  for (const r of p2Ordered(lang, loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan)) {
+    if (r?.title) return r
+  }
+
+  // Nordic sources as final fallback for non-Nordic ISBNs
+  if (nb?.title)     return nb
+  if (libris?.title) return libris
+  if (finna?.title)  return finna
 
   return null
 }
