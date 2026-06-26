@@ -167,7 +167,17 @@ function BookResultCard({ result }: { result: BookSearchResult }) {
               ISBN Lookup →
             </Link>
           )}
-          {result.key?.startsWith('/') && (
+          {result.source_url ? (
+            <a
+              href={result.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] hover:underline flex items-center gap-0.5"
+              style={{ color: 'var(--posi-muted)' }}
+            >
+              {result.source_label ?? 'Library'} <ArrowSquareOut className="h-2.5 w-2.5" />
+            </a>
+          ) : result.key?.startsWith('/') ? (
             <a
               href={`https://openlibrary.org${result.key}`}
               target="_blank"
@@ -177,7 +187,7 @@ function BookResultCard({ result }: { result: BookSearchResult }) {
             >
               Open Library <ArrowSquareOut className="h-2.5 w-2.5" />
             </a>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

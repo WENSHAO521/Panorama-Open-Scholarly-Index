@@ -1615,6 +1615,8 @@ export interface BookSearchResult {
   isbn: string[]
   cover_url: string | null
   edition_count: number
+  source_url?: string | null
+  source_label?: string | null
 }
 
 export async function openLibrarySearch(
@@ -1723,16 +1725,21 @@ export async function nlkBookSearch(
     }
     return {
       total: data.total ?? 0,
-      items: (data.items ?? []).map((item, i) => ({
-        key: item.isbn?.[0] ?? `nlk-${i}`,
-        title: item.title ?? '',
-        authors: item.authors ?? [],
-        year: typeof item.year === 'number' ? item.year : (item.year ? parseInt(String(item.year), 10) || null : null),
-        publisher: item.publisher ?? null,
-        isbn: item.isbn ?? [],
-        cover_url: null,
-        edition_count: 1,
-      })),
+      items: (data.items ?? []).map((item, i) => {
+        const isbn0 = item.isbn?.[0] ?? ''
+        return {
+          key: isbn0 || `nlk-${i}`,
+          title: item.title ?? '',
+          authors: item.authors ?? [],
+          year: typeof item.year === 'number' ? item.year : (item.year ? parseInt(String(item.year), 10) || null : null),
+          publisher: item.publisher ?? null,
+          isbn: item.isbn ?? [],
+          cover_url: null,
+          edition_count: 1,
+          source_url: isbn0 ? `https://www.nl.go.kr/NL/search/search.do?searchType=BI&kwd=${isbn0}` : null,
+          source_label: 'NLK',
+        }
+      }),
     }
   } catch {
     return { total: 0, items: [] }
@@ -1764,16 +1771,21 @@ export async function ndlBookSearch(
     }
     return {
       total: data.total ?? 0,
-      items: (data.items ?? []).map((item, i) => ({
-        key: item.isbn?.[0] ?? `ndl-${i}`,
-        title: item.title ?? '',
-        authors: item.authors ?? [],
-        year: typeof item.year === 'number' ? item.year : (item.year ? parseInt(String(item.year), 10) || null : null),
-        publisher: item.publisher ?? null,
-        isbn: item.isbn ?? [],
-        cover_url: null,
-        edition_count: 1,
-      })),
+      items: (data.items ?? []).map((item, i) => {
+        const isbn0 = item.isbn?.[0] ?? ''
+        return {
+          key: isbn0 || `ndl-${i}`,
+          title: item.title ?? '',
+          authors: item.authors ?? [],
+          year: typeof item.year === 'number' ? item.year : (item.year ? parseInt(String(item.year), 10) || null : null),
+          publisher: item.publisher ?? null,
+          isbn: item.isbn ?? [],
+          cover_url: null,
+          edition_count: 1,
+          source_url: isbn0 ? `https://ndlsearch.ndl.go.jp/search?searchWord=${isbn0}` : null,
+          source_label: 'NDL',
+        }
+      }),
     }
   } catch {
     return { total: 0, items: [] }
@@ -1794,16 +1806,21 @@ export async function taiwanBookSearch(
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
       total: data.total ?? 0,
-      items: (data.items ?? []).map((item, i) => ({
-        key: item.isbn?.[0] ?? `tw-${i}`,
-        title: item.title ?? '',
-        authors: item.authors ?? [],
-        year: item.year ?? null,
-        publisher: item.publisher ?? null,
-        isbn: item.isbn ?? [],
-        cover_url: null,
-        edition_count: 1,
-      })),
+      items: (data.items ?? []).map((item, i) => {
+        const isbn0 = item.isbn?.[0] ?? ''
+        return {
+          key: isbn0 || `tw-${i}`,
+          title: item.title ?? '',
+          authors: item.authors ?? [],
+          year: item.year ?? null,
+          publisher: item.publisher ?? null,
+          isbn: item.isbn ?? [],
+          cover_url: null,
+          edition_count: 1,
+          source_url: isbn0 ? `https://aleweb.ncl.edu.tw/F/?func=find-b&find_code=ISB&request=${isbn0}` : null,
+          source_label: 'NCL Taiwan',
+        }
+      }),
     }
   } catch {
     return { total: 0, items: [] }
@@ -1824,16 +1841,21 @@ export async function bnfBookSearch(
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
       total: data.total ?? 0,
-      items: (data.items ?? []).map((item, i) => ({
-        key: item.isbn?.[0] ?? `bnf-${i}`,
-        title: item.title ?? '',
-        authors: item.authors ?? [],
-        year: item.year ?? null,
-        publisher: item.publisher ?? null,
-        isbn: item.isbn ?? [],
-        cover_url: null,
-        edition_count: 1,
-      })),
+      items: (data.items ?? []).map((item, i) => {
+        const isbn0 = item.isbn?.[0] ?? ''
+        return {
+          key: isbn0 || `bnf-${i}`,
+          title: item.title ?? '',
+          authors: item.authors ?? [],
+          year: item.year ?? null,
+          publisher: item.publisher ?? null,
+          isbn: item.isbn ?? [],
+          cover_url: null,
+          edition_count: 1,
+          source_url: isbn0 ? `https://catalogue.bnf.fr/recherche.do?motRecherche=${isbn0}&typeRecherche=isbn` : null,
+          source_label: 'BnF',
+        }
+      }),
     }
   } catch {
     return { total: 0, items: [] }
@@ -1854,16 +1876,21 @@ export async function dnbBookSearch(
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
       total: data.total ?? 0,
-      items: (data.items ?? []).map((item, i) => ({
-        key: item.isbn?.[0] ?? `dnb-${i}`,
-        title: item.title ?? '',
-        authors: item.authors ?? [],
-        year: item.year ?? null,
-        publisher: item.publisher ?? null,
-        isbn: item.isbn ?? [],
-        cover_url: null,
-        edition_count: 1,
-      })),
+      items: (data.items ?? []).map((item, i) => {
+        const isbn0 = item.isbn?.[0] ?? ''
+        return {
+          key: isbn0 || `dnb-${i}`,
+          title: item.title ?? '',
+          authors: item.authors ?? [],
+          year: item.year ?? null,
+          publisher: item.publisher ?? null,
+          isbn: item.isbn ?? [],
+          cover_url: null,
+          edition_count: 1,
+          source_url: isbn0 ? `https://portal.dnb.de/opac.htm?method=simpleSearch&cqlMode=true&query=isbn%3D${isbn0}` : null,
+          source_label: 'DNB',
+        }
+      }),
     }
   } catch {
     return { total: 0, items: [] }
@@ -1924,6 +1951,8 @@ export async function nbBookSearch(
         isbn: isbn ? [isbn] : [],
         cover_url: null,
         edition_count: 1,
+        source_url: isbn ? `https://www.nb.no/search?q=${isbn}` : null,
+        source_label: 'NB',
       }
     }).filter(Boolean)
     return { total, items }
@@ -1983,6 +2012,8 @@ export async function librisBookSearch(
         isbn: isbn ? [isbn] : [],
         cover_url: null,
         edition_count: 1,
+        source_url: isbn ? `https://libris.kb.se/search?q=${isbn}` : null,
+        source_label: 'Libris',
       }
     }).filter(Boolean)
     return { total: hits, items }
@@ -2038,6 +2069,8 @@ export async function finnaBookSearch(
         isbn: isbn ? [isbn] : [],
         cover_url: null,
         edition_count: 1,
+        source_url: isbn ? `https://finna.fi/Search/Results?lookfor=${isbn}&type=ISN` : null,
+        source_label: 'Finna',
       }
     }).filter(Boolean)
     return { total, items }
