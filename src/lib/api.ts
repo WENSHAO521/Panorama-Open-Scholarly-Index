@@ -1163,44 +1163,25 @@ async function fetchBookGoogle(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 3: Korean National Library / SEOJI (via Cloudflare Pages Function proxy)
-// Requires NLK_API_KEY env var set in Cloudflare Pages dashboard.
-// Falls back silently if proxy returns 503 (key not configured).
+// Source 3: Korean National Library Open API (via Cloudflare Pages Function proxy)
+// Requires NLK_API_KEY env var. Falls back silently if proxy returns 503.
 async function fetchBookNlk(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/nlk-isbn?isbn=${encodeURIComponent(clean)}`)
     if (!res.ok) return null
     const data = await res.json() as {
-      TOTAL_COUNT?: string | number
-      docs?: Record<string, string>[]
+      found?: boolean
+      title?: string
+      authors?: string[]
+      year?: string | null
+      publisher?: string | null
     }
-    const count = Number(data.TOTAL_COUNT ?? 0)
-    if (count === 0 || !data.docs?.length) return null
-    const doc = data.docs[0]
-
-    // AUTHOR field may look like "홍길동 지음" or "Smith, John, 1970-, author"
-    const rawAuthor = doc.AUTHOR ?? ''
-    const authors = rawAuthor
-      ? rawAuthor
-          .split(/[;,](?![^(]*\))/)          // split on ; or , not inside parens
-          .map(a =>
-            a
-              .replace(/\s*(지음|저|편저|옮김|역|글|그림|author|editor|illustrator)[,.]?.*$/i, '')
-              .replace(/,\s*\d{4}-.*$/, '')  // remove birth years like ", 1970-"
-              .trim()
-          )
-          .filter(Boolean)
-      : []
-
-    // PUBLISH_PREDATE is "yyyymmdd"
-    const rawDate = doc.PUBLISH_PREDATE ?? ''
-    const year = rawDate.length >= 4 ? rawDate.slice(0, 4) : null
-
+    if (!data.found || !data.title) return null
     return {
-      title: doc.TITLE ?? '',
-      authors,
-      year,
-      publisher: doc.PUBLISHER ?? null,
+      title: data.title,
+      authors: data.authors ?? [],
+      year: data.year ?? null,
+      publisher: data.publisher ?? null,
       place: null,
       isbn: clean,
       source: 'Korean National Library',
