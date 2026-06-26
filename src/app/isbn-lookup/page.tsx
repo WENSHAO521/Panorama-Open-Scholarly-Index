@@ -4,7 +4,12 @@ import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { MagnifyingGlass, Books, ArrowSquareOut, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
-import { fetchBookByIsbn, openLibrarySearch, nlkBookSearch, ndlBookSearch, detectQueryLang } from '@/lib/api'
+import {
+  fetchBookByIsbn, openLibrarySearch,
+  nlkBookSearch, ndlBookSearch, taiwanBookSearch,
+  bnfBookSearch, dnbBookSearch, nbBookSearch, librisBookSearch, finnaBookSearch,
+  detectQueryLang, mergeBookResults,
+} from '@/lib/api'
 import { extractIsbn } from '@/lib/utils'
 import type { BookInfo, BookSearchResult } from '@/lib/api'
 
@@ -245,41 +250,66 @@ function IsbnLookupForm() {
     setSearched(true)
     try {
       const lang = detectQueryLang(q)
-      let result: { total: number; items: BookSearchResult[] }
-      let src = 'Open Library'
+      let items: BookSearchResult[] = []
+      let total  = 0
+      let src    = 'Open Library'
 
       if (lang === 'ko') {
         const [nlkResult, olResult] = await Promise.all([
           nlkBookSearch(q, { field: m }),
           openLibrarySearch(q, { field: m }),
         ])
-        if (nlkResult.total > 0) {
-          result = nlkResult
-          src = 'Korean National Library'
-        } else {
-          result = olResult
-        }
+        items = mergeBookResults(nlkResult, olResult)
+        total = nlkResult.total || olResult.total
+        src   = nlkResult.total > 0 ? 'Korean National Library' : 'Open Library'
+
       } else if (lang === 'ja') {
-        const ndlField = m === 'author' ? 'author' : m === 'title' ? 'title' : 'any'
+        const jf = m === 'author' ? 'author' : m === 'title' ? 'title' : 'any'
         const [ndlResult, olResult] = await Promise.all([
-          ndlBookSearch(q, { field: ndlField }),
+          ndlBookSearch(q, { field: jf }),
           openLibrarySearch(q, { field: m }),
         ])
-        if (ndlResult.total > 0) {
-          result = ndlResult
-          src = '国立国会図書館 (NDL)'
-        } else {
-          result = olResult
-        }
+        items = mergeBookResults(ndlResult, olResult)
+        total = ndlResult.total || olResult.total
+        src   = ndlResult.total > 0 ? '国立国会図書館 (NDL)' : 'Open Library'
+
+      } else if (lang === 'zh') {
+        const [twResult, olResult] = await Promise.all([
+          taiwanBookSearch(q, { field: m }),
+          openLibrarySearch(q, { field: m }),
+        ])
+        items = mergeBookResults(twResult, olResult)
+        total = twResult.total || olResult.total
+        src   = twResult.total > 0 ? '國立中央圖書館 (NCL Taiwan)' : 'Open Library'
+
       } else {
-        result = await openLibrarySearch(q, { field: m })
+        // Latin-script / other: run all broad-coverage sources in parallel and merge
+        const [olResult, bnfResult, dnbResult, nbResult, librisResult, finnaResult] = await Promise.all([
+          openLibrarySearch(q, { field: m }),
+          bnfBookSearch(q, { field: m }),
+          dnbBookSearch(q, { field: m }),
+          nbBookSearch(q, { field: m }),
+          librisBookSearch(q, { field: m }),
+          finnaBookSearch(q, { field: m }),
+        ])
+        items = mergeBookResults(olResult, bnfResult, dnbResult, nbResult, librisResult, finnaResult)
+        total = olResult.total + bnfResult.total + dnbResult.total + nbResult.total + librisResult.total + finnaResult.total
+        const contributors = [
+          olResult.total     > 0 ? 'Open Library'         : '',
+          bnfResult.total    > 0 ? 'BnF'                  : '',
+          dnbResult.total    > 0 ? 'DNB'                  : '',
+          nbResult.total     > 0 ? 'NB'                   : '',
+          librisResult.total > 0 ? 'Libris'               : '',
+          finnaResult.total  > 0 ? 'Finna'                : '',
+        ].filter(Boolean)
+        src = contributors.length > 1 ? `${contributors.slice(0, 3).join(', ')} & more` : contributors[0] ?? 'Open Library'
       }
 
       if (myId !== lookupRef.current) return
-      setTotal(result.total)
-      setSearchResults(result.items)
+      setTotal(total)
+      setSearchResults(items)
       setSearchSource(src)
-      if (result.items.length === 0) setError(`No books found for "${q}".`)
+      if (items.length === 0) setError(`No books found for "${q}".`)
     } catch {
       if (myId !== lookupRef.current) return
       setError('Book search is temporarily unavailable. Please try again.')
@@ -370,7 +400,7 @@ function IsbnLookupForm() {
         </div>
         <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>
           ISBN lookup uses Open Library, Google Books, and Korean NLK in sequence.
-          Title/author search uses Open Library (English/global), Korean NLK, or Japan NDL — auto-detected from your query language.
+          Title/author search queries multiple international libraries in parallel — automatically routed by language (Korean → NLK, Japanese → NDL, Chinese → NCL Taiwan, other → OL + BnF + DNB + Nordic).
         </p>
       </form>
 

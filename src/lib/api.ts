@@ -1691,9 +1691,10 @@ export async function openLibrarySearch(
  * Detects the primary non-Latin script in a query string.
  * Used to route title/author searches to the appropriate national library API.
  */
-export function detectQueryLang(q: string): 'ko' | 'ja' | 'other' {
+export function detectQueryLang(q: string): 'ko' | 'ja' | 'zh' | 'other' {
   if (/[가-힯ᄀ-ᇿ]/.test(q)) return 'ko'
   if (/[぀-ヿ]/.test(q)) return 'ja'
+  if (/[一-鿿㐀-䶿]/.test(q)) return 'zh'
   return 'other'
 }
 
@@ -1777,6 +1778,282 @@ export async function ndlBookSearch(
   } catch {
     return { total: 0, items: [] }
   }
+}
+
+/** Search Taiwan NCL by title/author via CF proxy (SRU, no key needed). */
+export async function taiwanBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
+  try {
+    const params = new URLSearchParams({ q: query, target, limit: String(limit) })
+    const res = await fetch(`/api/taiwan-search?${params.toString()}`)
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as { total?: number; items?: BookSearchResult[] }
+    return {
+      total: data.total ?? 0,
+      items: (data.items ?? []).map((item, i) => ({
+        key: item.isbn?.[0] ?? `tw-${i}`,
+        title: item.title ?? '',
+        authors: item.authors ?? [],
+        year: item.year ?? null,
+        publisher: item.publisher ?? null,
+        isbn: item.isbn ?? [],
+        cover_url: null,
+        edition_count: 1,
+      })),
+    }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/** Search BnF by title/author via CF proxy (SRU, no key needed). */
+export async function bnfBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
+  try {
+    const params = new URLSearchParams({ q: query, target, limit: String(limit) })
+    const res = await fetch(`/api/bnf-search?${params.toString()}`)
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as { total?: number; items?: BookSearchResult[] }
+    return {
+      total: data.total ?? 0,
+      items: (data.items ?? []).map((item, i) => ({
+        key: item.isbn?.[0] ?? `bnf-${i}`,
+        title: item.title ?? '',
+        authors: item.authors ?? [],
+        year: item.year ?? null,
+        publisher: item.publisher ?? null,
+        isbn: item.isbn ?? [],
+        cover_url: null,
+        edition_count: 1,
+      })),
+    }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/** Search DNB by title/author via CF proxy (SRU, no key needed). */
+export async function dnbBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
+  try {
+    const params = new URLSearchParams({ q: query, target, limit: String(limit) })
+    const res = await fetch(`/api/dnb-search?${params.toString()}`)
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as { total?: number; items?: BookSearchResult[] }
+    return {
+      total: data.total ?? 0,
+      items: (data.items ?? []).map((item, i) => ({
+        key: item.isbn?.[0] ?? `dnb-${i}`,
+        title: item.title ?? '',
+        authors: item.authors ?? [],
+        year: item.year ?? null,
+        publisher: item.publisher ?? null,
+        isbn: item.isbn ?? [],
+        cover_url: null,
+        edition_count: 1,
+      })),
+    }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/** Search Nasjonalbiblioteket (Norway) directly — CORS-native JSON API. */
+export async function nbBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const qStr = field === 'title' ? `title:${query}` : field === 'author' ? `creator:${query}` : query
+  try {
+    const params = new URLSearchParams({ q: qStr, mediatype: 'bøker', size: String(limit) })
+    const res = await fetch(`https://api.nb.no/catalog/v1/items?${params.toString()}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as {
+      page?: { totalElements?: number }
+      _embedded?: {
+        items?: Array<{
+          metadata?: {
+            title?: string
+            creators?: Array<{ name?: string }>
+            originInfo?: { publisher?: string; dateIssued?: string }
+            identifiers?: Array<{ value?: string; type?: string }>
+          }
+        }>
+      }
+    }
+    const total = data.page?.totalElements ?? 0
+    const itemsRaw = data._embedded?.items ?? []
+    const items: BookSearchResult[] = itemsRaw.map((entry, i) => {
+      const meta = entry.metadata
+      if (!meta?.title) return null as unknown as BookSearchResult
+      const authors = (meta.creators ?? []).map(c => {
+        const name = c.name ?? ''
+        const comma = name.indexOf(',')
+        if (comma === -1) return name.trim()
+        return [name.slice(comma + 1).trim(), name.slice(0, comma).trim()].filter(Boolean).join(' ')
+      }).filter(Boolean)
+      const isbn = (meta.identifiers ?? []).find(id => id.type === 'isbn')?.value?.replace(/[-\s]/g, '') ?? ''
+      const year = meta.originInfo?.dateIssued?.match(/\d{4}/)?.[0]
+      return {
+        key: isbn || `nb-${i}`,
+        title: meta.title,
+        authors,
+        year: year ? parseInt(year, 10) : null,
+        publisher: meta.originInfo?.publisher ?? null,
+        isbn: isbn ? [isbn] : [],
+        cover_url: null,
+        edition_count: 1,
+      }
+    }).filter(Boolean)
+    return { total, items }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/** Search Libris / KB (Sweden) directly — CORS-native JSON xsearch. */
+export async function librisBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const qStr = field === 'title' ? `title:${query}` : field === 'author' ? `creator:${query}` : query
+  try {
+    const params = new URLSearchParams({ query: qStr, format: 'json', n: String(limit) })
+    const res = await fetch(`https://libris.kb.se/xsearch?${params.toString()}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as {
+      xsearch?: {
+        'total-hits'?: number
+        list?: Array<{ title?: string; creator?: string; publisher?: string; date?: string; identifier?: string }>
+      }
+    }
+    const hits = data.xsearch?.['total-hits'] ?? 0
+    const list = data.xsearch?.list ?? []
+    const items: BookSearchResult[] = list.map((entry, i) => {
+      if (!entry.title) return null as unknown as BookSearchResult
+      const title = entry.title.replace(/\s*\/\s*.+$/, '').replace(/\.$/, '').trim()
+      const authors = entry.creator
+        ? entry.creator.split(/\s*;\s*/).map(c => {
+            const s = c.replace(/,\s*\d{4}-(\d{4})?\.?$/, '').trim()
+            const comma = s.indexOf(',')
+            if (comma === -1) return s
+            return [s.slice(comma + 1).trim(), s.slice(0, comma).trim()].filter(Boolean).join(' ')
+          }).filter(Boolean)
+        : []
+      const isbn = (entry.identifier ?? '').replace(/[-\s]/g, '').match(/\d{10,13}/)?.[0] ?? ''
+      return {
+        key: isbn || `libris-${i}`,
+        title,
+        authors,
+        year: entry.date ? parseInt(entry.date.match(/\d{4}/)?.[0] ?? '', 10) || null : null,
+        publisher: entry.publisher ? entry.publisher.split(/\s*[;:]\s*/)[0].trim() : null,
+        isbn: isbn ? [isbn] : [],
+        cover_url: null,
+        edition_count: 1,
+      }
+    }).filter(Boolean)
+    return { total: hits, items }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/** Search Finna (Finland) directly — CORS-native JSON API. */
+export async function finnaBookSearch(
+  query: string,
+  options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
+): Promise<{ total: number; items: BookSearchResult[] }> {
+  const { limit = 15, field = 'any' } = options
+  const type = field === 'title' ? 'Title' : field === 'author' ? 'Author' : 'AllFields'
+  try {
+    const params = new URLSearchParams({
+      lookfor: query, type, limit: String(limit),
+      'field[]': 'title,authors,year,publishers,identifiers',
+    })
+    const res = await fetch(`https://api.finna.fi/v1/search?${params.toString()}`, {
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return { total: 0, items: [] }
+    const data = await res.json() as {
+      resultCount?: number
+      records?: Array<{
+        title?: string
+        authors?: { primary?: Record<string, unknown>; secondary?: Record<string, unknown> }
+        year?: string
+        publishers?: string[]
+        identifiers?: Array<{ value?: string; type?: string }>
+      }>
+    }
+    const total = data.resultCount ?? 0
+    const items: BookSearchResult[] = (data.records ?? []).map((r, i) => {
+      if (!r.title) return null as unknown as BookSearchResult
+      const authors = [
+        ...Object.keys(r.authors?.primary ?? {}),
+        ...Object.keys(r.authors?.secondary ?? {}),
+      ].filter(Boolean)
+      const isbn = (r.identifiers ?? []).find(id => id.type === 'isbn')
+        ?.value?.replace(/[-\s]/g, '') ?? ''
+      return {
+        key: isbn || `finna-${i}`,
+        title: r.title,
+        authors,
+        year: r.year ? parseInt(r.year, 10) || null : null,
+        publisher: r.publishers?.[0] ?? null,
+        isbn: isbn ? [isbn] : [],
+        cover_url: null,
+        edition_count: 1,
+      }
+    }).filter(Boolean)
+    return { total, items }
+  } catch {
+    return { total: 0, items: [] }
+  }
+}
+
+/**
+ * Merge results from multiple sources, deduplicate by ISBN-13 then normalised title.
+ * Earlier sources in the array take priority when there's a duplicate.
+ */
+export function mergeBookResults(
+  ...sets: { items: BookSearchResult[] }[]
+): BookSearchResult[] {
+  const seenIsbn  = new Set<string>()
+  const seenTitle = new Set<string>()
+  const out: BookSearchResult[] = []
+  for (const { items } of sets) {
+    for (const item of items) {
+      if (!item.title) continue
+      const isbn13 = item.isbn.find(s => s.length === 13)
+      if (isbn13) {
+        if (seenIsbn.has(isbn13)) continue
+        seenIsbn.add(isbn13)
+      } else {
+        const norm = item.title.toLowerCase().replace(/\W/g, '').slice(0, 40)
+        if (seenTitle.has(norm)) continue
+        seenTitle.add(norm)
+      }
+      out.push(item)
+    }
+  }
+  return out.slice(0, 24)
 }
 
 export async function fetchOpenAlexSearch(query: string, page = 1) {
