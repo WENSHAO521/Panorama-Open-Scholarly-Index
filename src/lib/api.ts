@@ -1576,22 +1576,32 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
     fetchBookTaiwan(clean),
   ])
 
+  // Prefer results that have both title AND authors; keep a title-only fallback
+  let partial: BookInfo | null = null
+  function accept(r: BookInfo | null): r is BookInfo {
+    if (!r?.title) return false
+    if (r.authors.length > 0) return true
+    if (!partial) partial = r
+    return false
+  }
+
   // Nordic sources first for their own ISBN ranges
-  if (lang === 'no' && nb?.title)     return nb
-  if (lang === 'sv' && libris?.title) return libris
-  if (lang === 'fi' && finna?.title)  return finna
+  if (lang === 'no' && accept(nb))     return nb
+  if (lang === 'sv' && accept(libris)) return libris
+  if (lang === 'fi' && accept(finna))  return finna
 
   // Remaining sources in language-priority order
   for (const r of p2Ordered(lang, loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan)) {
-    if (r?.title) return r
+    if (accept(r)) return r!
   }
 
   // Nordic sources as final fallback for non-Nordic ISBNs
-  if (nb?.title)     return nb
-  if (libris?.title) return libris
-  if (finna?.title)  return finna
+  if (accept(nb))     return nb
+  if (accept(libris)) return libris
+  if (accept(finna))  return finna
 
-  return null
+  // Nothing has authors — return the best title-only result we found
+  return partial
 }
 
 // ─── Open Library book search ─────────────────────────────────────────────────
@@ -1615,7 +1625,8 @@ export async function openLibrarySearch(
   const params = new URLSearchParams({
     [field]: query,
     limit: String(limit),
-    fields: 'key,title,author_name,first_publish_year,publisher,isbn,cover_i,edition_count',
+    // author_key used as fallback when author_name is missing
+    fields: 'key,title,author_name,author_key,first_publish_year,publisher,isbn,cover_i,edition_count',
   })
   try {
     const res = await fetch(`https://openlibrary.org/search.json?${params.toString()}`)
@@ -1626,6 +1637,7 @@ export async function openLibrarySearch(
         key?: string
         title?: string
         author_name?: string[]
+        author_key?: string[]
         first_publish_year?: number
         publisher?: string[]
         isbn?: string[]
@@ -1633,15 +1645,37 @@ export async function openLibrarySearch(
         edition_count?: number
       }>
     }
+    const docs = data.docs ?? []
+
+    // For docs missing author_name but having author_key, resolve the name in parallel
+    const authorNames: (string[] | null)[] = await Promise.all(
+      docs.map(async d => {
+        if ((d.author_name?.length ?? 0) > 0) return null  // already have names
+        const keys = d.author_key ?? []
+        if (keys.length === 0) return null
+        // Fetch up to 2 author names to cover co-authored works
+        const fetched = await Promise.all(
+          keys.slice(0, 2).map(k =>
+            fetch(`https://openlibrary.org${k}.json`)
+              .then(r => r.ok ? r.json() as Promise<{ name?: string }> : null)
+              .then(a => a?.name ?? null)
+              .catch(() => null)
+          )
+        )
+        const names = fetched.filter((n): n is string => Boolean(n))
+        return names.length > 0 ? names : null
+      })
+    )
+
     return {
       total: data.numFound ?? 0,
-      items: (data.docs ?? []).map(d => ({
+      items: docs.map((d, i) => ({
         key: d.key ?? '',
         title: d.title ?? '',
-        authors: d.author_name ?? [],
+        authors: d.author_name ?? authorNames[i] ?? [],
         year: d.first_publish_year ?? null,
         publisher: d.publisher?.[0] ?? null,
-        isbn: (d.isbn ?? []).filter(i => i.length === 13 || i.length === 10).slice(0, 2),
+        isbn: (d.isbn ?? []).filter(s => s.length === 13 || s.length === 10).slice(0, 2),
         cover_url: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : null,
         edition_count: d.edition_count ?? 1,
       })),
