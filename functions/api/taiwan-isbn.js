@@ -18,7 +18,7 @@ export async function onRequestGet({ request }) {
   const params = new URLSearchParams({
     version: '1.1',
     operation: 'searchRetrieve',
-    query: `bath.isbn="${clean}"`,
+    query: `isbn=${clean}`,
     recordSchema: 'dc',
     maximumRecords: '1',
   })
@@ -26,7 +26,7 @@ export async function onRequestGet({ request }) {
   let upstream
   try {
     upstream = await fetch(
-      `https://aleweb.ncl.edu.tw/F/sru?${params.toString()}`,
+      `https://ncltw.alma.exlibrisgroup.com/view/sru/886NCL_INST?${params.toString()}`,
       {
         headers: { 'User-Agent': 'POSI/0.1 (mailto:posi@panoramagroup.org)' },
         signal: AbortSignal.timeout(10000),
@@ -40,22 +40,25 @@ export async function onRequestGet({ request }) {
 
   const xml = await upstream.text()
 
-  const title = xmlText(xml, 'title')
+  // NCL title format: "Main title : subtitle / " — strip trailing " / "
+  const rawTitle = xmlText(xml, 'title')
+  if (!rawTitle) return json({ found: false }, 200)
+  const title = rawTitle.split(' / ')[0].trim()
   if (!title) return json({ found: false }, 200)
 
-  const creators = xmlAll(xml, 'creator')
+  // NCL Alma uses <dc:contributor> (not creator); Chinese names use "|" as surname/given separator
+  const contributors = xmlAll(xml, 'contributor')
   const publisher = xmlText(xml, 'publisher') || null
   const date = xmlText(xml, 'date')
   const year = date.match(/\d{4}/)?.[0] ?? null
 
-  // NCL may return names as "姓名" (Chinese) or "Lastname, Firstname" (Western)
-  const authors = creators.map(c => {
-    const s = c.replace(/,\s*\d{4}-(\d{4})?\.?$/, '').trim()
-    const comma = s.indexOf(',')
-    if (comma === -1) return s
-    const last  = s.slice(0, comma).trim()
-    const first = s.slice(comma + 1).trim()
-    return first ? `${first} ${last}` : last
+  const authors = contributors.map(c => {
+    const s = c.replace(/\|/g, '')           // join surname|given
+               .replace(/\s*\(.*?\)/g, '')   // strip qualifications in parens
+               .replace(/,\s*\d{4}.*$/, '')  // strip ", YYYY-..." and role words after date
+               .replace(/,\s*[一-鿿぀-ヿ]+$/, '') // strip ", 役者" style role words
+               .trim()
+    return s
   }).filter(Boolean)
 
   return json({ found: true, title, authors, year, publisher }, 200)

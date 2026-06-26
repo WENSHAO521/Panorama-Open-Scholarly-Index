@@ -1,7 +1,11 @@
 /**
- * Cloudflare Pages Function — proxy for Japan National Diet Library SRU API.
- * No API key required; this proxy exists solely to bypass CORS restrictions on
- * the NDL SRU endpoint (iss.ndl.go.jp) when called from a browser.
+ * Cloudflare Pages Function — proxy for Japan National Diet Library SRU ISBN lookup.
+ * No API key required; CORS bypass only.
+ *
+ * Endpoint: https://ndlsearch.ndl.go.jp/api/sru  (new, replaces iss.ndl.go.jp which 303-redirects)
+ *
+ * The new NDL endpoint returns recordPacking="string": DC content inside <recordData> is
+ * HTML-encoded. xmlText() HTML-decodes it, then we parse DC fields from the resulting string.
  *
  * Usage: GET /api/ndl-isbn?isbn=9784003010105
  */
@@ -26,7 +30,7 @@ export async function onRequestGet({ request }) {
 
   let upstream
   try {
-    upstream = await fetch(`https://iss.ndl.go.jp/api/sru?${params.toString()}`, {
+    upstream = await fetch(`https://ndlsearch.ndl.go.jp/api/sru?${params.toString()}`, {
       headers: { 'User-Agent': 'POSI/0.1 (mailto:posi@panoramagroup.org)' },
       signal: AbortSignal.timeout(10000),
     })
@@ -38,25 +42,26 @@ export async function onRequestGet({ request }) {
 
   const xml = await upstream.text()
 
-  const title = xmlText(xml, 'title')
+  const total = parseInt(xmlText(xml, 'numberOfRecords') || '0', 10)
+  if (total === 0) return json({ found: false }, 200)
+
+  // Extract <recordData> and HTML-decode it (recordPacking=string on the new NDL endpoint)
+  const recordBlock = xmlAll(xml, 'record')[0]
+  if (!recordBlock) return json({ found: false }, 200)
+
+  const dc = xmlText(recordBlock, 'recordData')   // HTML-decoded DC string
+  if (!dc) return json({ found: false }, 200)
+
+  const title = xmlText(dc, 'title')
   if (!title) return json({ found: false }, 200)
 
-  const creators = xmlAll(xml, 'creator')
-  const publisher = xmlText(xml, 'publisher') || null
-  const date = xmlText(xml, 'date') || xmlText(xml, 'issued')
-  const year = date.match(/\d{4}/)?.[0] ?? null
-  const subjects = xmlAll(xml, 'subject')
+  const creatorsRaw = xmlAll(dc, 'creator')
+  const authors = creatorsRaw.flatMap(cleanNdlCreator).filter(Boolean)
 
-  // NDL stores creators as "姓, 名" for Western names or "姓名" for Japanese names.
-  // Also strips birth/death year annotations like "著者名, 1934-2010"
-  const authors = creators.map(c => {
-    const s = c.replace(/,\s*\d{4}[-–]\d{0,4}\.?$/, '').trim()
-    const comma = s.indexOf(',')
-    if (comma === -1) return s
-    const last  = s.slice(0, comma).trim()
-    const first = s.slice(comma + 1).trim()
-    return first ? `${first} ${last}` : last
-  }).filter(Boolean)
+  const publisher = xmlText(dc, 'publisher') || null
+  const dateRaw   = xmlText(dc, 'date') || xmlText(dc, 'issued') || ''
+  const year      = dateRaw.match(/\d{4}/)?.[0] ?? null
+  const subjects  = xmlAll(dc, 'subject')
 
   return json({ found: true, title, authors, year, publisher, subjects }, 200)
 }
@@ -65,28 +70,45 @@ export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: corsHeaders() })
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+/**
+ * NDL creator: may pack multiple authors into one element separated by " ; ".
+ * Strips role brackets [原作][著], trailing role kanji, and birth/death years.
+ * Returns an array (use with flatMap).
+ */
+function cleanNdlCreator(raw) {
+  return raw
+    .split(/\s*;\s*/)
+    .map(s => s
+      .replace(/\[.*?\]/g, '')
+      .replace(/\s*(?:著者?|編著?|訳者?|監修|画|絵)$/, '')
+      .replace(/,\s*\d{4}[-–]\d{0,4}\.?$/, '')
+      .trim()
+    )
+    .filter(Boolean)
+}
 
 function xmlText(xml, tag) {
   const re = new RegExp(
-    `<(?:[a-z]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z]+:)?${tag}>`, 'i'
+    `<(?:[a-z_]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z_]+:)?${tag}>`, 'i'
   )
   const raw = re.exec(xml)?.[1] ?? ''
   return raw
     .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim()
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim()
 }
 
 function xmlAll(xml, tag) {
   const re = new RegExp(
-    `<(?:[a-z]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z]+:)?${tag}>`, 'gi'
+    `<(?:[a-z_]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z_]+:)?${tag}>`, 'gi'
   )
   const out = []
   let m
   while ((m = re.exec(xml)) !== null) {
     const val = m[1]
       .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim()
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim()
     if (val) out.push(val)
   }
   return out

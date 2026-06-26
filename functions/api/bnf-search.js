@@ -21,7 +21,7 @@ export async function onRequestGet({ request }) {
     version: '1.2',
     operation: 'searchRetrieve',
     query: cql,
-    recordSchema: 'oai_dc',
+    recordSchema: 'dc',
     maximumRecords: '15',
     startRecord: '1',
   })
@@ -56,13 +56,16 @@ export async function onRequestGet({ request }) {
 
     const creators = xmlAll(block, 'creator')
     const authors = creators.map(c => {
-      const s = c.replace(/\s*\(\d{4}-(\d{4})?\)\.?/, '').trim()
+      // BnF format: "Lastname, Firstname (1906-1989). Role text" — strip date+role suffix
+      const s = c.replace(/\s*\(\d{4}[^)]*\)\s*.*$/, '').trim()
       const comma = s.indexOf(',')
       if (comma === -1) return s
       return [s.slice(comma + 1).trim(), s.slice(0, comma).trim()].filter(Boolean).join(' ')
     }).filter(Boolean)
 
-    const publisher  = xmlText(block, 'publisher') || null
+    // BnF publisher format: "Publisher Name (City)" — strip city in parens at end
+    const publisherRaw = xmlText(block, 'publisher') || null
+    const publisher = publisherRaw ? publisherRaw.replace(/\s*\([^)]+\)\s*$/, '').trim() || publisherRaw : null
     const dateRaw    = xmlText(block, 'date')
     const year       = parseInt(dateRaw.match(/\d{4}/)?.[0] ?? '', 10) || null
     const identifiers = xmlAll(block, 'identifier')

@@ -47,23 +47,37 @@ export async function onRequestGet({ request }) {
     : xmlAll(xml, 'record')
 
   const items = recordBlocks.map(block => {
-    const title = xmlText(block, 'title')
+    // DNB title format: "Title : subtitle / Author Name" — strip the author suffix
+    const rawTitle = xmlText(block, 'title')
+    if (!rawTitle) return null
+    const title = rawTitle.split(' / ')[0].trim()
     if (!title) return null
 
     const creators = xmlAll(block, 'creator')
     const authors = creators.map(c => {
-      const s = c.replace(/,\s*\d{4}-(\d{4})?\.?$/, '').replace(/\[.*?\]/g, '').trim()
+      // Strip role brackets [Verfasser], [Hrsg.], etc. and date ranges
+      const s = c.replace(/\[.*?\]/g, '').replace(/,\s*\d{4}-(\d{4})?\.?$/, '').trim()
       const comma = s.indexOf(',')
       if (comma === -1) return s
       return [s.slice(comma + 1).trim(), s.slice(0, comma).trim()].filter(Boolean).join(' ')
     }).filter(Boolean)
 
-    const publisher  = xmlText(block, 'publisher') || null
+    // DNB publisher format: "City : Publisher Name" — take the part after " : "
+    const publisherRaw = xmlText(block, 'publisher') || null
+    const publisher = publisherRaw
+      ? (publisherRaw.includes(' : ') ? publisherRaw.split(' : ').slice(1).join(' : ').trim() : publisherRaw)
+      : null
+
     const dateRaw    = xmlText(block, 'date')
     const year       = parseInt(dateRaw.match(/\d{4}/)?.[0] ?? '', 10) || null
     const identifiers = xmlAll(block, 'identifier')
+    // DNB identifier format: "978-3-xxx-xxx-x kart. : EUR 9.90 (DE)" — extract leading digits+hyphens only
     const isbn = identifiers
-      .map(id => id.replace(/isbn[:\s]*/i, '').replace(/[-\s]/g, '').trim())
+      .map(id => {
+        const stripped = id.replace(/isbn[:\s]*/i, '')
+        const m = stripped.match(/^[\d-]+/)
+        return m ? m[0].replace(/-/g, '') : ''
+      })
       .find(id => /^\d{10,13}$/.test(id)) ?? ''
 
     return { title, authors, year, publisher, isbn: isbn ? [isbn] : [], cover_url: null, edition_count: 1 }

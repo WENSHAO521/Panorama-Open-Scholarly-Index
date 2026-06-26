@@ -29,7 +29,7 @@ export async function onRequestGet({ request }) {
 
   let upstream
   try {
-    upstream = await fetch(`https://aleweb.ncl.edu.tw/F/sru?${params.toString()}`, {
+    upstream = await fetch(`https://ncltw.alma.exlibrisgroup.com/view/sru/886NCL_INST?${params.toString()}`, {
       headers: { 'User-Agent': 'POSI/0.1 (mailto:posi@panoramagroup.org)' },
       signal: AbortSignal.timeout(12000),
     })
@@ -47,15 +47,22 @@ export async function onRequestGet({ request }) {
     : xmlAll(xml, 'record')
 
   const items = recordBlocks.map(block => {
-    const title = xmlText(block, 'title')
+    // NCL title format: "Main title : subtitle / " — strip the trailing " / "
+    const rawTitle = xmlText(block, 'title')
+    if (!rawTitle) return null
+    const title = rawTitle.split(' / ')[0].trim()
     if (!title) return null
 
-    const creators = xmlAll(block, 'creator')
-    const authors = creators.map(c => {
-      const s = c.replace(/,\s*\d{4}-(\d{4})?\.?$/, '').trim()
-      const comma = s.indexOf(',')
-      if (comma === -1) return s
-      return [s.slice(comma + 1).trim(), s.slice(0, comma).trim()].filter(Boolean).join(' ')
+    // NCL Alma uses <dc:contributor>; Chinese names use "|" as surname/given separator
+    // Format: "村上|貴仁, 1970- 文字作者" or "蘇|楓雅 (翻譯學), 譯者"
+    const contributors = xmlAll(block, 'contributor')
+    const authors = contributors.map(c => {
+      let s = c.replace(/\|/g, '')           // join surname|given → surname given
+               .replace(/\s*\(.*?\)/g, '')   // strip qualifications in parens
+               .replace(/,\s*\d{4}.*$/, '')  // strip ", YYYY-..." and everything after
+               .replace(/,\s*[一-鿿぀-ヿ]+$/, '') // strip ", 役者" style role words
+               .trim()
+      return s
     }).filter(Boolean)
 
     const publisher  = xmlText(block, 'publisher') || null

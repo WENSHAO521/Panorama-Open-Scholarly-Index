@@ -1,6 +1,12 @@
 /**
- * Cloudflare Pages Function — proxy for Japan NDL (National Diet Library) SRU title/author search.
+ * Cloudflare Pages Function — proxy for Japan National Diet Library SRU title/author search.
  * No API key required; CORS bypass only.
+ *
+ * Endpoint: https://ndlsearch.ndl.go.jp/api/sru  (new, replaces iss.ndl.go.jp which 303-redirects)
+ *
+ * The new NDL endpoint returns recordPacking="string", meaning DC content inside <recordData>
+ * is HTML-encoded (e.g. &lt;dc:title&gt;). We extract <recordData>, let xmlText() HTML-decode it,
+ * then parse DC fields from the resulting string.
  *
  * Usage: GET /api/ndl-search?q=銀河鉄道の夜&target=title
  *        target: title | author | any (default: any)
@@ -13,9 +19,9 @@ export async function onRequestGet({ request }) {
   if (!q) return json({ total: 0, items: [] }, 200)
 
   let cql
-  if (target === 'title')       cql = `title="${q}"`
-  else if (target === 'author') cql = `creator="${q}"`
-  else                          cql = `(title="${q}" or creator="${q}")`
+  if (target === 'title')       cql = `title="${q.replace(/"/g, '')}"`
+  else if (target === 'author') cql = `creator="${q.replace(/"/g, '')}"`
+  else                          cql = `(title="${q.replace(/"/g, '')}" or creator="${q.replace(/"/g, '')}")`
 
   const params = new URLSearchParams({
     operation: 'searchRetrieve',
@@ -28,9 +34,9 @@ export async function onRequestGet({ request }) {
 
   let upstream
   try {
-    upstream = await fetch(`https://iss.ndl.go.jp/api/sru?${params.toString()}`, {
+    upstream = await fetch(`https://ndlsearch.ndl.go.jp/api/sru?${params.toString()}`, {
       headers: { 'User-Agent': 'POSI/0.1 (mailto:posi@panoramagroup.org)' },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(12000),
     })
   } catch {
     return json({ total: 0, items: [], error: 'Upstream fetch failed' }, 502)
@@ -41,25 +47,26 @@ export async function onRequestGet({ request }) {
   const xml = await upstream.text()
   const total = parseInt(xmlText(xml, 'numberOfRecords') || '0', 10)
 
-  const recordBlocks = xmlAll(xml, 'zs:record').length
-    ? xmlAll(xml, 'zs:record')
-    : xmlAll(xml, 'record')
+  // Each <record> block contains <recordData> with HTML-encoded DC content (recordPacking=string).
+  // xmlText() HTML-decodes the extracted value, giving us parseable DC XML.
+  const recordBlocks = xmlAll(xml, 'record')
 
   const items = recordBlocks.map(block => {
-    const title = xmlText(block, 'title')
+    const dc = xmlText(block, 'recordData')   // HTML-decoded DC string
+    if (!dc) return null
+
+    const title = xmlText(dc, 'title')
     if (!title) return null
 
-    const creatorsRaw = xmlAll(block, 'creator')
-    const authors = creatorsRaw
-      .map(a => a.replace(/\s*\d{4}-(\d{4})?$/, '').trim())
-      .filter(Boolean)
+    const creatorsRaw = xmlAll(dc, 'creator')
+    const authors = creatorsRaw.flatMap(cleanNdlCreator).filter(Boolean)
 
-    const publisher = xmlText(block, 'publisher') || null
-    const dateRaw   = xmlText(block, 'date')
+    const publisher = xmlText(dc, 'publisher') || null
+    const dateRaw   = xmlText(dc, 'date') || xmlText(dc, 'issued') || ''
     const year      = parseInt(dateRaw.match(/\d{4}/)?.[0] ?? '', 10) || null
 
-    // NDL identifier fields can be "ISBN:XXXX" or "urn:isbn:XXXX" or just digits
-    const identifiers = xmlAll(block, 'identifier')
+    // NDL identifiers: "ISBN:XXXX" or "urn:isbn:XXXX"
+    const identifiers = xmlAll(dc, 'identifier')
     const isbn = identifiers
       .map(id => id.replace(/(?:urn:)?isbn[:\s]*/i, '').replace(/[-\s]/g, '').trim())
       .find(id => /^\d{10,13}$/.test(id)) ?? ''
@@ -72,6 +79,24 @@ export async function onRequestGet({ request }) {
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: corsHeaders() })
+}
+
+/**
+ * NDL creator format: "村上春樹 著" or "宮沢賢治 [原作] ; 別役実, 杉井ギサブロウ著"
+ * Splits on " ; " (NDL sometimes packs multiple creators into one element),
+ * strips role brackets [原作][著][編], trailing role words, and birth/death years.
+ * Returns an array (use with flatMap).
+ */
+function cleanNdlCreator(raw) {
+  return raw
+    .split(/\s*;\s*/)
+    .map(s => s
+      .replace(/\[.*?\]/g, '')                // strip [原作], [著], [編], etc.
+      .replace(/\s*(?:著者?|編著?|訳者?|監修|画|絵)$/, '') // strip trailing role kanji (with or without space)
+      .replace(/,\s*\d{4}[-–]\d{0,4}\.?$/, '') // strip Western birth/death years
+      .trim()
+    )
+    .filter(Boolean)
 }
 
 function xmlText(xml, tag) {

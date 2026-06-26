@@ -1889,9 +1889,10 @@ export async function nbBookSearch(
         items?: Array<{
           metadata?: {
             title?: string
-            creators?: Array<{ name?: string }>
-            originInfo?: { publisher?: string; dateIssued?: string }
-            identifiers?: Array<{ value?: string; type?: string }>
+            creators?: string[]
+            originInfo?: { publisher?: string; issued?: string }
+            // identifiers is an object with named keys (isbn13, isbn10, sesamId, oaiId)
+            identifiers?: { isbn13?: string[]; isbn10?: string[]; sesamId?: string; oaiId?: string }
           }
         }>
       }
@@ -1901,14 +1902,19 @@ export async function nbBookSearch(
     const items: BookSearchResult[] = itemsRaw.map((entry, i) => {
       const meta = entry.metadata
       if (!meta?.title) return null as unknown as BookSearchResult
+      // creators is a plain string array: ["Lastname, Firstname", ...]
       const authors = (meta.creators ?? []).map(c => {
-        const name = c.name ?? ''
-        const comma = name.indexOf(',')
-        if (comma === -1) return name.trim()
-        return [name.slice(comma + 1).trim(), name.slice(0, comma).trim()].filter(Boolean).join(' ')
+        const s = c.replace(/,\s*\d{4}-(\d{4})?\.?$/, '').trim()
+        const comma = s.indexOf(',')
+        if (comma === -1) return s.trim()
+        return [s.slice(comma + 1).trim(), s.slice(0, comma).trim()].filter(Boolean).join(' ')
       }).filter(Boolean)
-      const isbn = (meta.identifiers ?? []).find(id => id.type === 'isbn')?.value?.replace(/[-\s]/g, '') ?? ''
-      const year = meta.originInfo?.dateIssued?.match(/\d{4}/)?.[0]
+      // identifiers is an object with isbn13/isbn10 as arrays
+      const isbn13 = meta.identifiers?.isbn13?.[0]?.replace(/[-\s]/g, '') ?? ''
+      const isbn10 = meta.identifiers?.isbn10?.[0]?.replace(/[-\s]/g, '') ?? ''
+      const isbn = isbn13 || isbn10
+      // issued may be "2006" or "20060101" — extract first 4-digit year
+      const year = meta.originInfo?.issued?.match(/\d{4}/)?.[0]
       return {
         key: isbn || `nb-${i}`,
         title: meta.title,
@@ -1959,12 +1965,21 @@ export async function librisBookSearch(
           }).filter(Boolean)
         : []
       const isbn = (entry.identifier ?? '').replace(/[-\s]/g, '').match(/\d{10,13}/)?.[0] ?? ''
+      // Libris publisher can be a string or array; format: "City : Publisher Name"
+      const pubRaw = Array.isArray(entry.publisher)
+        ? (entry.publisher as string[]).find(p => p.includes(' : ')) ?? (entry.publisher as string[])[0]
+        : entry.publisher
+      const publisher = pubRaw
+        ? (pubRaw.includes(' : ')
+            ? pubRaw.split(' : ').slice(1).join(' : ').replace(/\.$/, '').trim()
+            : pubRaw.split(/\s*;\s*/)[0].replace(/\.$/, '').trim())
+        : null
       return {
         key: isbn || `libris-${i}`,
         title,
         authors,
         year: entry.date ? parseInt(entry.date.match(/\d{4}/)?.[0] ?? '', 10) || null : null,
-        publisher: entry.publisher ? entry.publisher.split(/\s*[;:]\s*/)[0].trim() : null,
+        publisher,
         isbn: isbn ? [isbn] : [],
         cover_url: null,
         edition_count: 1,
@@ -1999,18 +2014,21 @@ export async function finnaBookSearch(
         authors?: { primary?: Record<string, unknown>; secondary?: Record<string, unknown> }
         year?: string
         publishers?: string[]
-        identifiers?: Array<{ value?: string; type?: string }>
+        identifiers?: string[]
       }>
     }
     const total = data.resultCount ?? 0
     const items: BookSearchResult[] = (data.records ?? []).map((r, i) => {
       if (!r.title) return null as unknown as BookSearchResult
+      // Finna author dict keys are "Name, role" — strip lowercase role word after last comma
       const authors = [
         ...Object.keys(r.authors?.primary ?? {}),
         ...Object.keys(r.authors?.secondary ?? {}),
-      ].filter(Boolean)
-      const isbn = (r.identifiers ?? []).find(id => id.type === 'isbn')
-        ?.value?.replace(/[-\s]/g, '') ?? ''
+      ].map(name => name.replace(/,\s+[a-zäöåæø]+$/, '').trim()).filter(Boolean)
+      // Finna identifiers are strings like "ISBN:9789510430873"
+      const isbn = (r.identifiers ?? [])
+        .find(id => /^ISBN:/i.test(id))
+        ?.replace(/^ISBN:/i, '').replace(/[-\s]/g, '') ?? ''
       return {
         key: isbn || `finna-${i}`,
         title: r.title,

@@ -20,7 +20,7 @@ export async function onRequestGet({ request }) {
     version: '1.2',
     operation: 'searchRetrieve',
     query: `bib.isbn all "${clean}"`,
-    recordSchema: 'oai_dc',
+    recordSchema: 'dc',
     maximumRecords: '1',
   })
 
@@ -53,9 +53,9 @@ export async function onRequestGet({ request }) {
   const year = date.match(/\d{4}/)?.[0] ?? null
   const subjects = xmlAll(xml, 'subject')
 
-  // BnF uses "Lastname, Firstname (YYYY-YYYY)" — convert to "Firstname Lastname"
+  // BnF uses "Lastname, Firstname (YYYY-YYYY). Role text" — strip date+role suffix
   const authors = creators.map(c => {
-    const s = c.replace(/\s*\(\d{4}-(\d{4})?\)/, '').trim()
+    const s = c.replace(/\s*\(\d{4}[^)]*\)\s*.*$/, '').trim()
     const comma = s.indexOf(',')
     if (comma === -1) return s
     const last = s.slice(0, comma).trim()
