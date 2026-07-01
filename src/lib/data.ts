@@ -3,7 +3,7 @@ import { DISCOVERED_JOURNALS } from './discovered-journals'
 export { DISCOVERED_JOURNALS }
 
 // PQF v1.0 formula: JTF/25 + MQF/25 + EGF/20 + TDF/15 + CVF/10 + RIF/5 = 100
-function pqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, rif: number): PqfScore {
+function pqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, rif: number, evaluatedAt = '2026-06-22'): PqfScore {
   const total = jtf + mqf + egf + tdf + cvf + rif
   const grade =
     total >= 90 ? 'A+' :
@@ -16,7 +16,7 @@ function pqf(jtf: number, mqf: number, egf: number, tdf: number, cvf: number, ri
     total,
     grade,
     subfactors: { jtf, mqf, egf, tdf, cvf, rif },
-    evaluated_at: '2026-06-22',
+    evaluated_at: evaluatedAt,
     version: 'PQF v1.0',
   }
 }
@@ -903,6 +903,36 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = [
     article_count: 0,
     created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
+  },
+  {
+    id: 'j-dif-rfp',
+    journal_code: 'dif-rfp',
+    title: 'Digital Intelligence Frontiers',
+    short_title: 'DIF',
+    issn_print: null,
+    issn_online: '3135-0011',
+    publisher: 'Research Front Press',
+    country: 'China, Hong Kong SAR',
+    language: 'English',
+    frequency: 'Quarterly',
+    open_access: true,
+    license: 'CC BY 4.0',
+    peer_review_type: 'Peer review (stated)',
+    website_url: 'https://www.researchfrontpress.com/',
+    cover_image_url: 'https://www.researchfrontpress.com/images/cover-vol1-issue1.jpg',
+    oai_base_url: null,
+    registration_country: 'China, Hong Kong SAR',
+    doaj_status: 'not_listed',
+    openalex_source_id: null,
+    metadata_quality_score: 40,
+    transparency_score: 52,
+    indexing_readiness: 'D',
+    // Site evidence: ISSN 3135-0011; OA + CC BY 4.0; sitemap and article citation meta tags present.
+    // Gaps: no Crossref/OpenAlex/DOAJ record, no DOI evidence, no OAI-PMH, no robots.txt, and limited integrity policies.
+    pqf: pqf(13, 10, 6, 5, 0, 0, '2026-07-01'),  // total: 34, Grade E
+    article_count: 17,
+    created_at: '2026-07-01T00:00:00Z',
+    updated_at: '2026-07-01T00:00:00Z',
   },
 ]
 
