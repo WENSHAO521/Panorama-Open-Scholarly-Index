@@ -74,6 +74,12 @@ const INDEXING_VARIANT = {
   'Internal Review': 'default' as const,
 }
 
+// A single slow/hanging external journal site (OAI-PMH or Crossref) must never
+// block static generation of its page past the host's per-page build timeout.
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([p, new Promise<T>(res => setTimeout(() => res(fallback), ms))])
+}
+
 export default async function JournalPage(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
   const journal = getJournalByCode(code)
@@ -101,14 +107,21 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   const frequency = journal.frequency || weeksToFrequency(doajResult?.publication_time_weeks) || null
 
   // OAI-PMH only for PSG journals (oai_base_url set); skip for discovered journals to avoid
-  // 12s timeout on every website_url/oai attempt across 22k journals at build time
-  const oaiItems = isDiscovered ? [] : await oaiHarvestJournal(journal.journal_code).catch(() => [])
+  // 12s timeout on every website_url/oai attempt across 22k journals at build time.
+  // Wrapped in withTimeout: a slow/hanging journal site must not stall the whole build.
+  const oaiItems = isDiscovered
+    ? []
+    : await withTimeout(oaiHarvestJournal(journal.journal_code).catch(() => []), 12000, [])
   if (oaiItems.length > 0) {
     total = oaiItems.length
     articles = oaiItems.slice(0, 20)
   }
   if (!isDiscovered && articles.length === 0 && journal.issn_online) {
-    const cr = await crossrefGetJournalWorks(journal.issn_online, { page: 1, rows: 20 })
+    const cr = await withTimeout(
+      crossrefGetJournalWorks(journal.issn_online, { page: 1, rows: 20 }).catch(() => ({ total: 0, items: [] })),
+      12000,
+      { total: 0, items: [] }
+    )
     total = crMeta?.total_dois ?? cr.total
     articles = cr.items
   }

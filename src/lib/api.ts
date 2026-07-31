@@ -261,7 +261,9 @@ export async function crossrefSearch(
     ? { 'User-Agent': UA }
     : {}
 
-  const res = await fetch(`${endpoint}?${params.toString()}`, { headers, signal, cache: 'no-store' })
+  const res = await fetch(`${endpoint}?${params.toString()}`, {
+    headers, signal: signal ?? AbortSignal.timeout(15000), cache: 'no-store',
+  })
   if (!res.ok) return { total: 0, items: [] }
 
   const data = await res.json()
@@ -292,7 +294,9 @@ export async function crossrefTitleLookup(
   })
   try {
     const headers: Record<string, string> = typeof window === 'undefined' ? { 'User-Agent': UA } : {}
-    const res = await fetch(`${CROSSREF}/works?${params.toString()}`, { headers, signal, cache: 'no-store' })
+    const res = await fetch(`${CROSSREF}/works?${params.toString()}`, {
+      headers, signal: signal ?? AbortSignal.timeout(15000), cache: 'no-store',
+    })
     if (!res.ok) return []
     const data = await res.json()
     return (data.message?.items ?? []).map(mapCrossrefWork)
@@ -305,6 +309,7 @@ export async function crossrefGetWork(doi: string): Promise<Article | null> {
   const res = await fetch(`${CROSSREF}/works/${encodeURIComponent(doi)}`, {
     headers: { 'User-Agent': UA },
     cache: 'no-store',
+    signal: AbortSignal.timeout(15000),
   })
   if (!res.ok) return null
   const data = await res.json()
@@ -329,7 +334,7 @@ export async function crossrefGetReferences(doi: string): Promise<Reference[]> {
   try {
     const res = await fetch(
       `${CROSSREF}/works/${encodeURIComponent(doi)}?mailto=posi@panoramagroup.org`,
-      { headers: { 'User-Agent': UA } }
+      { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) }
     )
     if (!res.ok) return []
     const data = await res.json()
@@ -369,7 +374,7 @@ export async function crossrefGetJournalWorks(
 
   const res = await fetch(
     `${CROSSREF}/journals/${issn}/works?${params.toString()}`,
-    { headers: { 'User-Agent': UA } }
+    { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) }
   )
   if (!res.ok) {
     // Fallback: member works filtered by ISSN
@@ -377,7 +382,7 @@ export async function crossrefGetJournalWorks(
     fp.set('filter', `${ARTICLE_FILTER},issn:${issn}`)
     const fallback = await fetch(
       `${CROSSREF}/members/${PSG_MEMBER}/works?${fp.toString()}`,
-      { headers: { 'User-Agent': UA } }
+      { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) }
     )
     if (!fallback.ok) return { total: 0, items: [] }
     const d = await fallback.json()
@@ -403,6 +408,7 @@ export async function openAlexGetWork(doi: string): Promise<{
 } | null> {
   const res = await fetch(`${OPENALEX}/works/https://doi.org/${doi}`, {
     headers: { 'User-Agent': UA },
+    signal: AbortSignal.timeout(15000),
   })
   if (!res.ok) return null
   const d = await res.json()
@@ -542,12 +548,19 @@ async function oaiFetchUrl(url: string, params: Record<string, string>): Promise
   }
 }
 
+// Caps pagination so a journal with many resumption pages (or a slow OAI
+// server) can't stall SSG generation — each page already has its own fetch
+// timeout, but an unbounded loop still risks blowing past per-page build
+// time limits (e.g. Cloudflare Pages' 60s cap).
+const MAX_OAI_PAGES = 5
+
 export async function oaiHarvestJournal(journalCode: string): Promise<Article[]> {
   const oaiUrl = getJournalOaiUrl(journalCode)
   if (!oaiUrl) return []
 
   const articles: Article[] = []
   let token: string | null = null
+  let page = 0
 
   do {
     const xml = await oaiFetchUrl(
@@ -564,7 +577,8 @@ export async function oaiHarvestJournal(journalCode: string): Promise<Article[]>
     }
 
     token = (/<resumptionToken[^>]*>([^<]*)<\/resumptionToken>/.exec(xml)?.[1] ?? '').trim() || null
-  } while (token)
+    page++
+  } while (token && page < MAX_OAI_PAGES)
 
   return articles
 }
@@ -637,6 +651,7 @@ export async function crossrefSearchJournals(
   if (query) params.set('query', query)
   const res = await fetch(`${CROSSREF}/journals?${params.toString()}`, {
     headers: { 'User-Agent': UA },
+    signal: AbortSignal.timeout(15000),
   })
   if (!res.ok) return { total: 0, items: [] }
   const data = await res.json()
@@ -673,8 +688,8 @@ export interface CrossrefJournalMeta {
 export async function crossrefFetchJournal(issn: string): Promise<CrossrefJournalMeta | null> {
   // Fetch journal metadata and accurate article-only count in parallel
   const [metaRes, countRes] = await Promise.all([
-    fetch(`${CROSSREF}/journals/${issn}?mailto=posi@panoramagroup.org`, { headers: { 'User-Agent': UA } }),
-    fetch(`${CROSSREF}/journals/${issn}/works?filter=${ARTICLE_FILTER}&rows=0&mailto=posi@panoramagroup.org`, { headers: { 'User-Agent': UA } }),
+    fetch(`${CROSSREF}/journals/${issn}?mailto=posi@panoramagroup.org`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) }),
+    fetch(`${CROSSREF}/journals/${issn}/works?filter=${ARTICLE_FILTER}&rows=0&mailto=posi@panoramagroup.org`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) }),
   ])
   if (!metaRes.ok) return null
   const meta = (await metaRes.json()).message
@@ -708,6 +723,7 @@ export async function crossrefHarvestAll(): Promise<Article[]> {
     })
     const res = await fetch(`${CROSSREF}/members/${PSG_MEMBER}/works?${params.toString()}`, {
       headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) break
     const data = await res.json()
@@ -738,6 +754,7 @@ export async function crossrefHarvestJournal(issn: string): Promise<Article[]> {
     })
     const res = await fetch(`${CROSSREF}/journals/${issn}/works?${params.toString()}`, {
       headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) break
     const data = await res.json()
@@ -777,7 +794,7 @@ export async function rorMatchAffiliation(affiliation: string): Promise<RorOrgan
   try {
     const res = await fetch(
       `${ROR}/organizations?affiliation=${encodeURIComponent(affiliation)}`,
-      { headers: { 'User-Agent': UA } }
+      { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000) }
     )
     if (!res.ok) return null
     const data = await res.json()
@@ -796,7 +813,8 @@ export async function rorSearch(
   try {
     const params = new URLSearchParams({ query, page: String(page) })
     const res = await fetch(`${ROR}/organizations?${params.toString()}`, {
-      headers: { 'User-Agent': UA }
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json()
@@ -816,7 +834,8 @@ export async function rorGetOrg(rorId: string): Promise<RorOrganization | null> 
   try {
     const id = rorId.replace('https://ror.org/', '')
     const res = await fetch(`${ROR}/organizations/${id}`, {
-      headers: { 'User-Agent': UA }
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return null
     return mapRorOrg(await res.json())
@@ -991,7 +1010,9 @@ export async function openalexSearch(
     params.set('sort', 'publication_date:desc')
   }
 
-  const res = await fetch(`${OPENALEX}/works?${params.toString()}`, { signal, cache: 'no-store' })
+  const res = await fetch(`${OPENALEX}/works?${params.toString()}`, {
+    signal: signal ?? AbortSignal.timeout(15000), cache: 'no-store',
+  })
   if (!res.ok) return { total: 0, items: [] }
 
   const data = await res.json()
@@ -1009,6 +1030,7 @@ export async function doajGetJournal(issn: string): Promise<DoajJournalInfo | nu
   try {
     const res = await fetch(`${DOAJ}/search/journals/issn:${issn}`, {
       headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return null
     const data = await res.json()
@@ -1050,6 +1072,7 @@ export async function openAlexGetSourceStats(issn: string): Promise<OpenAlexSour
     })
     const res = await fetch(`${OPENALEX}/sources?${params.toString()}`, {
       headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return null
     const data = await res.json()
@@ -1071,7 +1094,7 @@ export async function openAlexGetArticle(doi: string): Promise<Article | null> {
     const params = new URLSearchParams({ select: OA_SELECT, mailto: 'posi@panoramagroup.org' })
     const res = await fetch(
       `${OPENALEX}/works/https://doi.org/${encodeURIComponent(doi)}?${params.toString()}`,
-      { headers: { 'User-Agent': UA }, cache: 'no-store' }
+      { headers: { 'User-Agent': UA }, cache: 'no-store', signal: AbortSignal.timeout(15000) }
     )
     if (!res.ok) return null
     return mapOpenAlexWork(await res.json())
@@ -1101,7 +1124,8 @@ export interface BookInfo {
 async function fetchBookOl(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(
-      `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`
+      `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`,
+      { signal: AbortSignal.timeout(10000) }
     )
     if (!res.ok) return null
     const data = await res.json() as Record<string, Record<string, unknown>>
@@ -1128,7 +1152,7 @@ async function fetchBookOl(clean: string): Promise<BookInfo | null> {
 // Falls back silently if proxy returns 503 (key not configured).
 async function fetchBookGoogle(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/google-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/google-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as {
       totalItems?: number
@@ -1167,7 +1191,7 @@ async function fetchBookGoogle(clean: string): Promise<BookInfo | null> {
 // Requires NLK_API_KEY env var. Falls back silently if proxy returns 503.
 async function fetchBookNlk(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/nlk-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/nlk-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as {
       found?: boolean
@@ -1386,7 +1410,7 @@ async function fetchBookFinna(clean: string): Promise<BookInfo | null> {
 // Source 8: Deutsche Nationalbibliothek (via CF proxy — SRU has CORS restrictions)
 async function fetchBookDnb(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/dnb-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/dnb-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as {
       found?: boolean
@@ -1414,7 +1438,7 @@ async function fetchBookDnb(clean: string): Promise<BookInfo | null> {
 // Source 9: Bibliothèque nationale de France (via CF proxy — SRU has CORS restrictions)
 async function fetchBookBnf(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/bnf-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/bnf-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as {
       found?: boolean
@@ -1443,7 +1467,7 @@ async function fetchBookBnf(clean: string): Promise<BookInfo | null> {
 // Source 10: Japan National Diet Library (via CF proxy — SRU has CORS restrictions)
 async function fetchBookNdl(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/ndl-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/ndl-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as {
       found?: boolean
@@ -1470,7 +1494,7 @@ async function fetchBookNdl(clean: string): Promise<BookInfo | null> {
 // Source 11: Europeana (via CF proxy — requires PERSONAL_API_KEY env var)
 async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/europeana-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/europeana-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
     if (!data.found || !data.title) return null
@@ -1481,7 +1505,7 @@ async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
 // Source 12: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy — SRU, no key)
 async function fetchBookLac(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/lac-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/lac-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
     if (!data.found || !data.title) return null
@@ -1492,7 +1516,7 @@ async function fetchBookLac(clean: string): Promise<BookInfo | null> {
 // Source 15: National Library of New Zealand Te Puna (via CF proxy — Alma SRU, no key)
 async function fetchBookNlnz(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/nlnz-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/nlnz-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
     if (!data.found || !data.title) return null
@@ -1503,7 +1527,7 @@ async function fetchBookNlnz(clean: string): Promise<BookInfo | null> {
 // Source 16: National Central Library of Taiwan 國立中央圖書館 (via CF proxy — SRU, no key)
 async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
   try {
-    const res = await fetch(`/api/taiwan-isbn?isbn=${encodeURIComponent(clean)}`)
+    const res = await fetch(`/api/taiwan-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return null
     const data = await res.json() as { found?: boolean; title?: string; authors?: string[]; year?: string | null; publisher?: string | null }
     if (!data.found || !data.title) return null
@@ -1631,7 +1655,9 @@ export async function openLibrarySearch(
     fields: 'key,title,author_name,author_key,first_publish_year,publisher,isbn,cover_i,edition_count',
   })
   try {
-    const res = await fetch(`https://openlibrary.org/search.json?${params.toString()}`)
+    const res = await fetch(`https://openlibrary.org/search.json?${params.toString()}`, {
+      signal: AbortSignal.timeout(10000),
+    })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as {
       numFound?: number
@@ -1658,7 +1684,7 @@ export async function openLibrarySearch(
         // Fetch up to 2 author names to cover co-authored works
         const fetched = await Promise.all(
           keys.slice(0, 2).map(k =>
-            fetch(`https://openlibrary.org${k}.json`)
+            fetch(`https://openlibrary.org${k}.json`, { signal: AbortSignal.timeout(8000) })
               .then(r => r.ok ? r.json() as Promise<{ name?: string }> : null)
               .then(a => a?.name ?? null)
               .catch(() => null)
@@ -1709,7 +1735,7 @@ export async function nlkBookSearch(
   const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'total'
   try {
     const params = new URLSearchParams({ q: query, target, limit: String(limit) })
-    const res = await fetch(`/api/nlk-search?${params.toString()}`)
+    const res = await fetch(`/api/nlk-search?${params.toString()}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as {
       total?: number
@@ -1757,7 +1783,7 @@ export async function ndlBookSearch(
   const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
   try {
     const params = new URLSearchParams({ q: query, target, limit: String(limit) })
-    const res = await fetch(`/api/ndl-search?${params.toString()}`)
+    const res = await fetch(`/api/ndl-search?${params.toString()}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as {
       total?: number
@@ -1805,7 +1831,7 @@ export async function taiwanBookSearch(
   const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
   try {
     const params = new URLSearchParams({ q: query, target, limit: String(limit) })
-    const res = await fetch(`/api/taiwan-search?${params.toString()}`)
+    const res = await fetch(`/api/taiwan-search?${params.toString()}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
@@ -1842,7 +1868,7 @@ export async function bnfBookSearch(
   const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
   try {
     const params = new URLSearchParams({ q: query, target, limit: String(limit) })
-    const res = await fetch(`/api/bnf-search?${params.toString()}`)
+    const res = await fetch(`/api/bnf-search?${params.toString()}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
@@ -1879,7 +1905,7 @@ export async function dnbBookSearch(
   const target = field === 'author' ? 'author' : field === 'title' ? 'title' : 'any'
   try {
     const params = new URLSearchParams({ q: query, target, limit: String(limit) })
-    const res = await fetch(`/api/dnb-search?${params.toString()}`)
+    const res = await fetch(`/api/dnb-search?${params.toString()}`, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) return { total: 0, items: [] }
     const data = await res.json() as { total?: number; items?: BookSearchResult[] }
     return {
@@ -2133,6 +2159,7 @@ export async function fetchOpenAlexSearch(query: string, page = 1) {
   })
   const res = await fetch(`${OPENALEX}/works?${params.toString()}`, {
     headers: { 'User-Agent': UA },
+    signal: AbortSignal.timeout(15000),
   })
   if (!res.ok) return null
   return res.json()
