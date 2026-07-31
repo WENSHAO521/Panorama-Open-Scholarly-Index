@@ -62,7 +62,7 @@ function titleCase(str) {
 async function fetchJson(url, opts = {}) {
   const res = await fetch(url, {
     headers: { 'User-Agent': UA, Accept: 'application/json', ...opts.headers },
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(20000),
     ...opts,
   })
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`)
@@ -622,17 +622,20 @@ async function discoverOpenAlexDoaj() {
     const totalPages = totalKnown ? Math.ceil(totalKnown / perPage) : '?'
     console.error(`    Page ${pageNum}/${totalPages} — ${journals.length} collected so far...`)
 
-    let data
-    try {
-      data = await fetchJson(url)
-    } catch (e) {
-      console.error(`    ⚠  ${e.message} — retrying in 5s`)
-      await sleep(5000)
-      try { data = await fetchJson(url) } catch (e2) {
-        console.error(`    ❌  Fatal: ${e2.message}`)
-        break
+    let data = null
+    for (let attempt = 1; attempt <= 5 && data === null; attempt++) {
+      try {
+        data = await fetchJson(url)
+      } catch (e) {
+        if (attempt === 5) {
+          console.error(`    ❌  Fatal after 5 attempts: ${e.message}`)
+          break
+        }
+        console.error(`    ⚠  ${e.message} — retrying in ${attempt * 3}s (attempt ${attempt}/5)`)
+        await sleep(attempt * 3000)
       }
     }
+    if (data === null) break
 
     if (totalKnown === null && data?.meta?.count != null) {
       totalKnown = data.meta.count
