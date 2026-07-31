@@ -465,15 +465,17 @@ function AuthorList({ authors, onChange }: { authors: ManualAuthor[]; onChange: 
         </button>
       </div>
       {authors.map((a, i) => (
-        <div key={i} className="flex gap-2 items-center">
+        <div key={i} className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <FInput value={a.first} onChange={e => update(i, 'first', e.target.value)} placeholder="Given name(s)" className={inputCls} />
-          <FInput value={a.last} onChange={e => update(i, 'last', e.target.value)} placeholder="Family name" className={inputCls} />
-          {authors.length > 1 && (
-            <button type="button" onClick={() => onChange(authors.filter((_, idx) => idx !== i))}
-              className="p-1.5 hover:opacity-70" style={{ color: 'var(--posi-muted)' }}>
-              <Trash className="h-3.5 w-3.5" />
-            </button>
-          )}
+          <div className="flex gap-2 items-center">
+            <FInput value={a.last} onChange={e => update(i, 'last', e.target.value)} placeholder="Family name" className={inputCls} />
+            {authors.length > 1 && (
+              <button type="button" onClick={() => onChange(authors.filter((_, idx) => idx !== i))}
+                className="p-1.5 hover:opacity-70 shrink-0" style={{ color: 'var(--posi-muted)' }}>
+                <Trash className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>

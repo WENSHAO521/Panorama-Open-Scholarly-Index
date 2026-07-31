@@ -366,12 +366,12 @@ function IsbnLookupForm() {
             <select
               value={mode}
               onChange={e => setMode(e.target.value as 'isbn' | 'title' | 'author')}
-              className="appearance-none pl-3 pr-7 py-2.5 h-full focus:outline-none"
+              className="appearance-none pl-2 sm:pl-3 pr-6 sm:pr-7 py-2.5 h-full focus:outline-none w-[84px] sm:w-[108px]"
               style={{
                 border: '1px solid var(--posi-border)', borderRight: 'none',
                 color: 'var(--posi-text)', background: 'var(--posi-bg)',
                 fontFamily: 'var(--font-mono)', fontSize: '16px',
-                WebkitAppearance: 'none', width: '108px',
+                WebkitAppearance: 'none',
               }}
             >
               {SEARCH_MODES.map(m => (
@@ -390,7 +390,7 @@ function IsbnLookupForm() {
               mode === 'title'  ? 'Enter book title…' :
               'Enter author name…'
             }
-            className="flex-1 px-4 py-2.5 focus:outline-none"
+            className="flex-1 min-w-0 px-4 py-2.5 focus:outline-none"
             style={{ border: '1px solid var(--posi-border)', borderRight: 'none', color: 'var(--posi-text)', fontSize: '16px' }}
             onFocus={e => (e.currentTarget.style.borderColor = 'var(--posi-primary)')}
             onBlur={e => (e.currentTarget.style.borderColor = 'var(--posi-border)')}
@@ -399,13 +399,13 @@ function IsbnLookupForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50 transition-colors shrink-0"
+            className="flex items-center gap-2 px-3 sm:px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50 transition-colors shrink-0"
             style={{ background: 'var(--posi-accent)' }}
             onMouseEnter={e => !loading && (e.currentTarget.style.background = 'var(--posi-accent-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--posi-accent)')}
           >
             <MagnifyingGlass className="h-4 w-4" />
-            {loading ? 'Searching…' : 'Search'}
+            <span className="hidden sm:inline">{loading ? 'Searching…' : 'Search'}</span>
           </button>
         </div>
         <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>

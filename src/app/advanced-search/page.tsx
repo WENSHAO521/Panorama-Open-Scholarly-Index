@@ -91,7 +91,7 @@ export default function AdvancedSearchPage() {
 
           <div className="p-5 space-y-3">
             {rows.map((row, idx) => (
-              <div key={row.id} className="flex items-center gap-2">
+              <div key={row.id} className="flex flex-wrap items-center gap-2">
                 {idx > 0 ? (
                   <select
                     value={row.op}
@@ -118,7 +118,7 @@ export default function AdvancedSearchPage() {
                   value={row.value}
                   onChange={e => updateRow(row.id, 'value', e.target.value)}
                   placeholder={`Enter ${FIELDS.find(f => f.code === row.field)?.label ?? 'value'}...`}
-                  className="flex-1 py-2 px-3 focus:outline-none transition-colors"
+                  className="flex-1 min-w-[140px] py-2 px-3 focus:outline-none transition-colors"
                   style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '16px' }}
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--posi-primary)')}
                   onBlur={e => (e.currentTarget.style.borderColor = 'var(--posi-border)')}

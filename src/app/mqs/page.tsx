@@ -91,32 +91,34 @@ export default function MqsPage() {
         <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
           <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Scoring Criteria</h2>
         </div>
-        <table className="w-full text-xs">
-          <thead>
-            <tr style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border-light)' }}>
-              <th className="text-left px-5 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>#</th>
-              <th className="text-left px-4 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>Criterion</th>
-              <th className="text-left px-4 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>Rationale</th>
-              <th className="text-right px-5 py-2 font-semibold w-14" style={{ color: 'var(--posi-muted)' }}>Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {CRITERIA.map((c, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
-                <td className="px-5 py-2.5 font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{i + 1}</td>
-                <td className="px-4 py-2.5" style={{ color: 'var(--posi-text)' }}>{c.label}</td>
-                <td className="px-4 py-2.5" style={{ color: 'var(--posi-muted)' }}>{c.note}</td>
-                <td className="px-5 py-2.5 text-right font-mono font-bold" style={{ color: 'var(--posi-accent)' }}>{c.pts}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border-light)' }}>
+                <th className="text-left px-5 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>#</th>
+                <th className="text-left px-4 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>Criterion</th>
+                <th className="text-left px-4 py-2 font-semibold" style={{ color: 'var(--posi-muted)' }}>Rationale</th>
+                <th className="text-right px-5 py-2 font-semibold w-14" style={{ color: 'var(--posi-muted)' }}>Pts</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr style={{ borderTop: '2px solid var(--posi-border)' }}>
-              <td colSpan={3} className="px-5 py-2.5 text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>Total (MQF subfactor)</td>
-              <td className="px-5 py-2.5 text-right font-mono font-bold text-base" style={{ color: 'var(--posi-accent)' }}>25</td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {CRITERIA.map((c, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
+                  <td className="px-5 py-2.5 font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{i + 1}</td>
+                  <td className="px-4 py-2.5" style={{ color: 'var(--posi-text)' }}>{c.label}</td>
+                  <td className="px-4 py-2.5" style={{ color: 'var(--posi-muted)' }}>{c.note}</td>
+                  <td className="px-5 py-2.5 text-right font-mono font-bold" style={{ color: 'var(--posi-accent)' }}>{c.pts}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ borderTop: '2px solid var(--posi-border)' }}>
+                <td colSpan={3} className="px-5 py-2.5 text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>Total (MQF subfactor)</td>
+                <td className="px-5 py-2.5 text-right font-mono font-bold text-base" style={{ color: 'var(--posi-accent)' }}>25</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </section>
 
       {/* Score bands */}
