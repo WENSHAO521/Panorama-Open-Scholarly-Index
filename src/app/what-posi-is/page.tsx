@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const WHAT_IT_IS = [
   {
     title: 'An open metadata aggregation platform',
-    body: 'POSI aggregates openly licensed metadata from Crossref, OpenAlex, DOAJ, OAI-PMH, ROR, and ORCID into a single searchable index. All records include source attribution and provenance.',
+    body: 'POSI aggregates openly licensed metadata from Crossref, OpenAlex, OpenCitations, DOAJ, ROR, and ORCID into a single searchable index. All records include source attribution and provenance.',
   },
   {
     title: 'A metadata quality assessment tool (PQF)',
@@ -17,7 +17,7 @@ const WHAT_IT_IS = [
   },
   {
     title: 'A discoverability layer for PSG-affiliated journals',
-    body: 'POSI provides detailed journal and article records for journals published by Panorama Scholarly Group, including OAI-PMH harvested metadata, DOI coverage, and PQF scores. A conflict of interest disclosure accompanies all PSG-related records.',
+    body: 'POSI provides detailed journal and article records for journals published by Panorama Scholarly Group, including Crossref/OpenAlex-sourced article metadata, DOI coverage, and PQF scores. A conflict of interest disclosure accompanies all PSG-related records.',
   },
   {
     title: 'A freely reusable dataset under CC BY 4.0',

@@ -158,7 +158,7 @@ export default function ApiPage() {
         <div className="p-5 space-y-3 text-xs text-gray-600 leading-relaxed">
           <p>
             POSI metadata is available for open reuse. All records include source attribution indicating
-            whether data originates from Crossref, OpenAlex, OAI-PMH, DOAJ, ROR, or ORCID.
+            whether data originates from Crossref, OpenAlex, OpenCitations, DOAJ, ROR, or ORCID.
           </p>
           <p>
             When citing or reusing POSI data, please attribute the original data sources (Crossref, OpenAlex, etc.)

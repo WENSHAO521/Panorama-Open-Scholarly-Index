@@ -379,7 +379,7 @@ export default function PqfPage() {
       </div>
 
       {/* Eligibility */}
-      <section className="bg-white border border-gray-200 mb-6">
+      <section id="eligibility" className="bg-white border border-gray-200 mb-6 scroll-mt-20">
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">PQF Eligibility</h2>
         </div>

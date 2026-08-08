@@ -67,7 +67,6 @@ const REQUIRED_DOCS = [
   { field: 'APC / Fee Information URL', detail: 'Page disclosing charges or confirming no APC' },
   { field: 'Open Access Policy URL', detail: 'Page with license terms and copyright policy' },
   { field: 'Corrections Policy URL', detail: 'Page describing retraction and correction procedures' },
-  { field: 'OAI-PMH Endpoint', detail: 'If available — used for article-level metadata harvesting' },
 ]
 
 export default function SubmitJournalPage() {

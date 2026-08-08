@@ -7,72 +7,7 @@ import { Badge } from './Badge'
 import { MetadataQualityBar } from './MetadataQualityBar'
 import { JournalBrowser } from './JournalBrowser'
 import { ArticleCountBadge } from './ArticleCountBadge'
-// LCC top-level category → keyword list for broad subject matching.
-// DOAJ subjects are LCC subclasses (e.g. "Dermatology", "Physics") that often
-// don't contain the top-level name, so we match on characteristic keywords.
-const SUBJECT_KEYWORDS: Record<string, string[]> = {
-  Medicine: [
-    'medicine', 'health', 'clinical', 'surgery', 'surgical', 'pharmacol',
-    'pharmacy', 'nursing', 'dentistry', 'dental', 'psychiatr', 'psychol',
-    'dermatol', 'ophthalmol', 'pediat', 'oncol', 'pathol', 'physiol',
-    'anatom', 'biochem', 'microbiolog', 'virolog', 'immunolog', 'epidemiol',
-    'cardiol', 'neurolog', 'orthoped', 'radiolog', 'urolog', 'gastroenterol',
-    'hematol', 'endocrinol', 'gynecol', 'obstetric', 'rehabilit', 'toxicol',
-    'nutrit', 'infect', 'neoplasm', 'tumor', 'cancer', 'therapeut',
-    'diagnos', 'biomedic', 'public health',
-  ],
-  Science: [
-    'science', 'physic', 'chemistr', 'biolog', 'mathemat', 'statistic',
-    'astronom', 'geolog', 'ecolog', 'botan', 'zoolog', 'genetic', 'molecul',
-    'evolution', 'geophysic', 'meteorolog', 'oceanograph', 'paleontol',
-    'crystallograph', 'spectroscop', 'biophysic', 'natural history',
-  ],
-  Technology: [
-    'technolog', 'engineer', 'computer', 'software', 'electrical',
-    'mechanical', 'aerospace', 'nuclear', 'materials of', 'manufactur',
-    'industrial', 'transport', 'robotic', 'telecommunication', 'electronic',
-    'information system', 'computing', 'optic', 'photonic', 'construct', 'mining',
-  ],
-  'Social Sciences': [
-    'social science', 'sociolog', 'economic', 'political', 'anthropolog',
-    'demograph', 'criminolog', 'public administration', 'communication',
-    'gender', 'international relation', 'social work',
-  ],
-  Agriculture: [
-    'agricultur', 'agron', 'horticultur', 'forestry', 'fisher', 'aquacultur',
-    'veterinar', 'animal culture', 'animal husbandry', 'crop', 'soil science',
-    'food supply', 'food process', 'plant patholog', 'entomolog',
-  ],
-  Education: [
-    'education', 'pedagogic', 'teaching', 'learning', 'curriculum', 'training',
-  ],
-  Law: [
-    'law', 'legal', 'jurisprudence', 'legislation', 'criminal', 'constitutional',
-    'human rights',
-  ],
-  'Language and Literature': [
-    'language', 'literature', 'linguistic', 'philolog', 'translation', 'poetry', 'rhetoric',
-  ],
-  Philosophy: [
-    'philosophy', 'ethic', 'logic', 'metaphysic', 'epistemolog',
-  ],
-  History: [
-    'history', 'historical', 'archaeolog', 'heritage', 'civilization', 'ancient', 'medieval',
-  ],
-  Geography: [
-    'geography', 'cartograph', 'environment', 'climatol', 'geographic', 'geograph',
-    'regional planning',
-  ],
-  'Fine Arts': [
-    'fine art', 'music', 'theater', 'theatre', 'dance', 'cinema', 'film',
-    'architecture', 'sculpture', 'painting', 'photograph', 'visual art',
-    'performing art', 'decorative', 'drawing', 'design',
-  ],
-  Religion: [
-    'religion', 'theolog', 'spiritual', 'faith', 'christian', 'islam',
-    'buddhis', 'hinduism', 'jewish',
-  ],
-}
+import { SUBJECT_KEYWORDS } from '@/lib/subject-keywords'
 
 // Only the fields needed for the journal list table — keeps serialized HTML small
 export interface SlimJournal {
@@ -115,7 +50,6 @@ interface JournalWithCr {
   journal: SlimJournal
   cr_total_dois?: number | null
   issnCountry?: string | null
-  oaiCount?: number
 }
 
 function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: boolean }) {
@@ -131,7 +65,8 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>ISSN</th>
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Publisher</th>
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Articles</th>
-                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }} title="2-year mean citedness (OpenAlex) — comparable to impact factor">2yr CI</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }} title="POSI Citation Impact — OpenAlex 2-year mean citedness, comparable to a Journal Impact Factor">PCI</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }} title="h-index (OpenAlex)">h-index</th>
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>MQS</th>
                 {showOjqf && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PQF</th>}
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>IRS</th>
@@ -140,7 +75,7 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ journal, cr_total_dois, issnCountry, oaiCount }) => {
+              {rows.map(({ journal, cr_total_dois, issnCountry }) => {
                 const ojqfGrade = journal.pqf_grade
                 const isAutoPqf = journal.pqf_is_auto
                 // Use ISSN as key — guaranteed unique per journal.
@@ -175,7 +110,12 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                               {journal.title}
                             </Link>
                           )}
-                          <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{journal.short_title}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{journal.short_title}</span>
+                            {journal.pqf_grade && !journal.pqf_is_auto && (
+                              <Badge label="Core Collection" variant="core-collection" className="text-[9px] px-1 py-0" />
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -186,11 +126,16 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                     </td>
                     <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{journal.publisher}</td>
                     <td className="px-3 py-3 text-center font-mono font-medium">
-                      <ArticleCountBadge issn={journal.issn_online ?? null} fallback={oaiCount && oaiCount > 0 ? oaiCount : (cr_total_dois ?? journal.article_count)} />
+                      <ArticleCountBadge issn={journal.issn_online ?? null} fallback={cr_total_dois ?? journal.article_count} />
                     </td>
                     <td className="px-3 py-3 text-center font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
                       {journal.two_yr_mean_citedness != null
                         ? journal.two_yr_mean_citedness.toFixed(2)
+                        : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    </td>
+                    <td className="px-3 py-3 text-center font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
+                      {journal.h_index != null
+                        ? journal.h_index
                         : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                     </td>
                     <td className="px-3 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>{journal.metadata_quality_score}</td>
@@ -239,7 +184,7 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 
       {/* Mobile cards */}
       <div className="md:hidden grid sm:grid-cols-2 gap-3">
-        {rows.map(({ journal, cr_total_dois, oaiCount }) => {
+        {rows.map(({ journal, cr_total_dois }) => {
           const isDisc = journal.id.startsWith('j-disc-')
           const CardEl = isDisc ? 'a' : Link
           const cardProps = isDisc
@@ -274,13 +219,21 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                 )}
                 <div className="flex justify-between">
                   <span style={{ color: 'var(--posi-muted)' }}>Articles</span>
-                  <ArticleCountBadge issn={journal.issn_online ?? null} fallback={oaiCount && oaiCount > 0 ? oaiCount : (cr_total_dois ?? journal.article_count)} />
+                  <ArticleCountBadge issn={journal.issn_online ?? null} fallback={cr_total_dois ?? journal.article_count} />
                 </div>
                 {journal.two_yr_mean_citedness != null && (
                   <div className="flex justify-between">
-                    <span style={{ color: 'var(--posi-muted)' }}>2yr CI</span>
+                    <span style={{ color: 'var(--posi-muted)' }}>PCI</span>
                     <span className="font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
                       {journal.two_yr_mean_citedness.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {journal.h_index != null && (
+                  <div className="flex justify-between">
+                    <span style={{ color: 'var(--posi-muted)' }}>h-index</span>
+                    <span className="font-mono text-xs" style={{ color: 'var(--posi-text)' }}>
+                      {journal.h_index}
                     </span>
                   </div>
                 )}
@@ -303,6 +256,9 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                     label={`DOAJ: ${journal.doaj_status.replace('_', ' ')}`}
                     variant={DOAJ_VARIANT[journal.doaj_status] ?? 'default'}
                   />
+                )}
+                {journal.pqf_grade && !journal.pqf_is_auto && (
+                  <Badge label="Core Collection" variant="core-collection" />
                 )}
               </div>
             </CardEl>
@@ -368,7 +324,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
   const currentPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
   const activeSubject = searchParams.get('subject') ?? ''
 
-  const psgArticles = psgRows.reduce((s, { oaiCount, cr_total_dois, journal }) => s + ((oaiCount ?? 0) > 0 ? (oaiCount ?? 0) : (cr_total_dois ?? journal.article_count)), 0)
+  const psgArticles = psgRows.reduce((s, { cr_total_dois, journal }) => s + (cr_total_dois ?? journal.article_count), 0)
 
   // Subject filter: match against keyword list so subclasses like "Dermatology"
   // correctly fall under top-level "Medicine", "Physics" under "Science", etc.
@@ -463,6 +419,22 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           </Link>
         </div>
       </div>
+
+      {/* Core Collection explainer — shown for the two manually-reviewable tabs */}
+      {(activeTab === 'psg' || activeTab === 'indexed') && (
+        <div
+          className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed"
+          style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a' }}
+        >
+          <span className="font-bold shrink-0 mt-px">i</span>
+          <span>
+            <Badge label="Core Collection" variant="core-collection" className="mr-1.5 align-middle" /> journals have undergone manual PQF review.
+            Rows marked PQF* are auto-assessed from DOAJ/OpenAlex signals and have not been manually reviewed — see{' '}
+            <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>. Citation-impact metrics for this collection are ranked in{' '}
+            <Link href="/citation-reports" className="underline">POSI Citation Reports →</Link>
+          </span>
+        </div>
+      )}
 
       {/* PSG Collection */}
       {activeTab === 'psg' && (

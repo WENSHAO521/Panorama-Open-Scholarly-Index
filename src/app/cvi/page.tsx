@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const CRITERIA = [
   { label: 'Crossref cited-by data detectable',                       pts: 2, note: 'Journal articles appear in Crossref cited-by API results' },
   { label: 'OpenAlex source record exists and matchable',             pts: 2, note: 'Journal matched to an OpenAlex Source record (ISSN-based)' },
-  { label: 'OpenCitations data detectable',                           pts: 2, note: 'Planned — integration in progress; currently scored 0 for all' },
+  { label: 'OpenCitations data detectable',                           pts: 2, note: 'Live — checked via OpenCitations COCI citation-count API' },
   { label: 'Open reference lists deposited via I4OC (Crossref)',      pts: 2, note: 'References publicly accessible under open license (CC0)' },
   { label: 'Citation data source clearly attributed in article page', pts: 2, note: 'Citation source identified and accessible to readers' },
 ]
@@ -17,7 +17,7 @@ const CRITERIA = [
 const SOURCES = [
   { name: 'Crossref',        status: 'Live',    role: 'DOI-level citation tracking via cited-by API' },
   { name: 'OpenAlex',        status: 'Live',    role: 'Open knowledge graph; citation counts and source matching' },
-  { name: 'OpenCitations',   status: 'Planned', role: 'CC0 open citation links; integration pending' },
+  { name: 'OpenCitations',   status: 'Live',    role: 'CC0 open citation counts via the COCI citation-count API' },
   { name: 'I4OC',            status: 'Live',    role: 'Initiative for Open Citations — reference deposit compliance check' },
 ]
 
@@ -54,6 +54,16 @@ export default function CviPage() {
           It does not measure citation frequency, h-index, or academic influence.
           High CVI means a journal participates in open citation standards; it does not mean the journal is highly cited.
         </span>
+      </div>
+
+      {/* Pointer to real citation-impact numbers */}
+      <div className="p-4 text-xs leading-relaxed flex items-start justify-between gap-3 flex-wrap" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+        <span style={{ color: '#166534' }}>
+          Looking for citation impact numbers? See <strong>PCI</strong> (POSI Citation Impact), h-index, and total citations. CVI does not measure these by design (see notice below).
+        </span>
+        <Link href="/citation-reports" className="font-medium shrink-0 hover:underline" style={{ color: '#1F7A4D' }}>
+          POSI Citation Reports →
+        </Link>
       </div>
 
       {/* Criteria */}
@@ -135,6 +145,7 @@ export default function CviPage() {
       </section>
 
       <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/citation-reports" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Reports →</Link>
         <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
         <Link href="/mqs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Metadata Quality Score →</Link>
         <Link href="/irs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Indexing Readiness Score →</Link>

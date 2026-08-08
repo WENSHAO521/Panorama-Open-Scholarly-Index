@@ -21,6 +21,7 @@ type BadgeVariant =
   | 'doaj-listed'
   | 'doaj-pending'
   | 'doaj-not'
+  | 'core-collection'
   | 'default'
 
 const VARIANT_STYLES: Record<BadgeVariant, string> = {
@@ -44,6 +45,7 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
   'doaj-listed': 'bg-green-50 text-green-700 ring-1 ring-green-200',
   'doaj-pending': 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   'doaj-not': 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
+  'core-collection': 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
   default: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
 }
 

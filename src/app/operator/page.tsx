@@ -21,7 +21,7 @@ const ROLES = [
   {
     role: 'Data Infrastructure',
     name: 'Open Infrastructure Partners',
-    responsibility: 'Crossref, OpenAlex, DOAJ, ROR, ORCID, and OAI-PMH endpoints supply the underlying metadata. POSI is not affiliated with any of these organizations.',
+    responsibility: 'Crossref, OpenAlex, OpenCitations, DOAJ, ROR, and ORCID supply the underlying metadata. POSI is not affiliated with any of these organizations.',
   },
 ]
 

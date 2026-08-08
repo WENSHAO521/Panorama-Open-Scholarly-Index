@@ -43,10 +43,10 @@ const SOURCES = [
     abbr: 'OCI',
     purpose: 'Open citation dataset providing attributed citation links between scholarly works',
     dataTypes: ['Citation links', 'Cited-by counts', 'Reference resolution'],
-    updateFrequency: 'Periodic (bulk)',
+    updateFrequency: 'Real-time (API)',
     license: 'CC0 1.0',
     url: 'https://opencitations.net',
-    status: 'Planned',
+    status: 'Live',
   },
   {
     name: 'DOAJ',
@@ -61,12 +61,12 @@ const SOURCES = [
   {
     name: 'OAI-PMH',
     abbr: 'OAI',
-    purpose: 'Open Archives Initiative Protocol for metadata harvesting from OJS-based journal platforms',
+    purpose: 'Formerly used for per-journal article harvesting from OJS platforms; discontinued in favor of Crossref (DOI registry) and OpenAlex, which proved more reliable at build time',
     dataTypes: ['Article records', 'Title/author data', 'Abstract', 'Publication dates'],
-    updateFrequency: 'Periodic (harvest)',
+    updateFrequency: 'Discontinued',
     license: 'Varies per journal',
     url: 'https://www.openarchives.org/pmh/',
-    status: 'Integrated',
+    status: 'Discontinued',
   },
   {
     name: 'ROR',
@@ -88,13 +88,24 @@ const SOURCES = [
     url: 'https://orcid.org',
     status: 'Integrated',
   },
+  {
+    name: 'Zenodo',
+    abbr: 'ZEN',
+    purpose: 'Open research repository used to surface datasets/software explicitly linked to a POSI article via related-identifier metadata',
+    dataTypes: ['Related datasets', 'Related software', 'Supplementary evidence — not counted toward citation stats'],
+    updateFrequency: 'Real-time (API)',
+    license: 'Varies per deposit',
+    url: 'https://zenodo.org',
+    status: 'Live',
+  },
 ]
 
 const STATUS_STYLE: Record<string, React.CSSProperties> = {
-  Primary:    { background: '#fef2f2', color: '#c41e3a' },
-  Live:       { background: '#E8F5EE', color: '#1F7A4D' },
-  Integrated: { background: '#f5f5f5', color: '#374151' },
-  Planned:    { background: '#F6F8FA', color: '#6B7280' },
+  Primary:      { background: '#fef2f2', color: '#c41e3a' },
+  Live:         { background: '#E8F5EE', color: '#1F7A4D' },
+  Integrated:   { background: '#f5f5f5', color: '#374151' },
+  Planned:      { background: '#F6F8FA', color: '#6B7280' },
+  Discontinued: { background: '#fef2f2', color: '#b91c1c' },
 }
 
 export default function DataSourcesPage() {
@@ -164,10 +175,11 @@ export default function DataSourcesPage() {
               { src: 'DOAJ',            type: 'External OA', use: 'Journal verification, OA status, license data',    status: 'Integrated', sync: stats.last_updated },
               { src: 'Crossref',        type: 'External',   use: 'DOI records, article metadata, reference lists',    status: 'Live',       sync: 'Real-time' },
               { src: 'OpenAlex',        type: 'External',   use: 'Citation visibility, source matching, author IDs',  status: 'Live',       sync: 'Real-time' },
-              { src: 'OAI-PMH',         type: 'Harvest',    use: 'Article harvesting from OJS-based platforms',       status: 'Integrated', sync: stats.last_updated },
+              { src: 'OAI-PMH',         type: 'Harvest',    use: 'Discontinued — replaced by Crossref + OpenAlex',    status: 'Discontinued', sync: '—' },
               { src: 'ROR',             type: 'External',   use: 'Institution identifier resolution',                 status: 'Integrated', sync: 'Periodic' },
               { src: 'ORCID',           type: 'External',   use: 'Author identifier linking',                         status: 'Integrated', sync: 'Real-time' },
-              { src: 'OpenCitations',   type: 'External',   use: 'Open citation links and cited-by counts',           status: 'Planned',    sync: '—' },
+              { src: 'OpenCitations',   type: 'External',   use: 'Open citation links and cited-by counts',           status: 'Live',       sync: 'Real-time' },
+              { src: 'Zenodo',          type: 'External',   use: 'Related datasets/software linked to POSI articles', status: 'Live',       sync: 'Real-time' },
             ].map(row => (
               <tr key={row.src} style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                 <td className="px-5 py-2.5 font-semibold" style={{ color: 'var(--posi-text)' }}>{row.src}</td>
@@ -175,9 +187,10 @@ export default function DataSourcesPage() {
                 <td className="px-4 py-2.5" style={{ color: 'var(--posi-muted)' }}>{row.use}</td>
                 <td className="px-4 py-2.5 text-center">
                   <span className="text-[10px] font-medium px-1.5 py-0.5" style={
-                    row.status === 'Primary'    ? { background: '#fef2f2', color: '#c41e3a', border: '1px solid #fecaca' } :
-                    row.status === 'Live'       ? { background: '#f0fdf4', color: '#1F7A4D', border: '1px solid #bbf7d0' } :
-                    row.status === 'Integrated' ? { background: '#f5f5f5', color: '#374151', border: '1px solid #e5e7eb' } :
+                    row.status === 'Primary'      ? { background: '#fef2f2', color: '#c41e3a', border: '1px solid #fecaca' } :
+                    row.status === 'Live'         ? { background: '#f0fdf4', color: '#1F7A4D', border: '1px solid #bbf7d0' } :
+                    row.status === 'Integrated'   ? { background: '#f5f5f5', color: '#374151', border: '1px solid #e5e7eb' } :
+                    row.status === 'Discontinued' ? { background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' } :
                     { background: '#f9fafb', color: '#6B7280', border: '1px solid #e5e7eb' }
                   }>
                     {row.status}

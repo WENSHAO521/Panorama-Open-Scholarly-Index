@@ -56,3 +56,13 @@ jobs:
             git commit -m "chore(data): daily sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
             git push
           fi
+
+      # 步骤 4：不管上面有没有 commit，都强制触发一次 Cloudflare Pages 重新构建。
+      # PCI（OpenAlex 2yr mean citedness/h-index）和 Related Datasets（Zenodo）都是
+      # build 时现抓的实时数据，不写进 data.ts——如果当天没有新期刊、没有 git diff，
+      # 上面那步就不会 push，也就不会触发 Cloudflare Pages 自动部署，这些数字会跟着卡住。
+      # 需要在 Cloudflare Pages 项目设置里创建一个 Deploy Hook，并把 URL 存进
+      # Actions secret CLOUDFLARE_DEPLOY_HOOK_URL；没配置的话这步会跳过，不影响其余步骤。
+      - name: Trigger Cloudflare Pages rebuild (refresh PCI + Zenodo data)
+        if: ${{ vars.CLOUDFLARE_DEPLOY_HOOK_URL != '' || secrets.CLOUDFLARE_DEPLOY_HOOK_URL != '' }}
+        run: curl -sf -X POST "${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL || vars.CLOUDFLARE_DEPLOY_HOOK_URL }}"

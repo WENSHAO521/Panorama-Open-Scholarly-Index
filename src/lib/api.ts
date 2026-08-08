@@ -420,179 +420,6 @@ export async function openAlexGetWork(doi: string): Promise<{
   }
 }
 
-// ─── OAI-PMH (primary harvest source) ────────────────────────────────────────
-
-function xmlText(xml: string, tag: string): string {
-  const re = new RegExp(`<(?:[a-z]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z]+:)?${tag}>`, 'i')
-  const raw = re.exec(xml)?.[1] ?? ''
-  return raw
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .trim()
-}
-
-function xmlAll(xml: string, tag: string): string[] {
-  const re = new RegExp(`<(?:[a-z]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[a-z]+:)?${tag}>`, 'gi')
-  const out: string[] = []
-  let m: RegExpExecArray | null
-  while ((m = re.exec(xml)) !== null) {
-    const val = m[1]
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-      .trim()
-    if (val) out.push(val)
-  }
-  return out
-}
-
-function parseOaiRecord(block: string): Article | null {
-  const identifiers = xmlAll(block, 'identifier')
-  const doi = identifiers.find(id => id.includes('doi.org/'))?.replace(/.*doi\.org\//, '')
-    ?? identifiers.find(id => id.startsWith('10.'))
-  if (!doi) return null
-
-  const title = xmlText(block, 'title')
-  if (!title) return null
-
-  const creators = xmlAll(block, 'creator')
-  const description = xmlText(block, 'description')
-  const date = xmlText(block, 'date')
-  const year = date ? parseInt(date.slice(0, 4), 10) : new Date().getFullYear()
-  const rights = xmlText(block, 'rights')
-  const source = xmlText(block, 'source')
-  const subjects = xmlAll(block, 'subject').filter(Boolean)
-  const setSpec = xmlAll(block, 'setSpec')[0] ?? ''
-
-  const codeMatch = doi.match(/10\.63802\/([a-z]+)\./i)
-  const journalCode = codeMatch?.[1]?.toLowerCase() ?? setSpec.split(':')[0].toLowerCase()
-  const journal = ALL_JOURNALS.find(j => j.journal_code === journalCode)
-
-  const volMatch = source.match(/[Vv]ol\.?\s*(\d+)/)
-  const issueMatch = source.match(/[Nn]o\.?\s*(\d+)/)
-
-  let license: string | null = null
-  if (rights.includes('/by/4')) license = 'CC BY 4.0'
-  else if (rights.includes('/by-nc-nd/')) license = 'CC BY-NC-ND 4.0'
-  else if (rights.includes('/by-nc/')) license = 'CC BY-NC 4.0'
-  else if (rights.includes('/by-sa/')) license = 'CC BY-SA 4.0'
-
-  const htmlUrl = identifiers.find(id => id.startsWith('http') && !id.includes('doi.org') && id.includes('/article/'))
-
-  const authors = creators.map((c, i) => {
-    const commaIdx = c.indexOf(',')
-    const family = commaIdx > -1 ? c.slice(0, commaIdx).trim() : c
-    const given = commaIdx > -1 ? c.slice(commaIdx + 1).trim() : null
-    return {
-      id: `${doi}-au-${i}`,
-      display_name: given ? `${given} ${family}` : c,
-      given_name: given,
-      family_name: family,
-      orcid: null,
-      openalex_author_id: null,
-      country: null,
-      institution: null,
-      is_corresponding: i === 0,
-      author_order: i + 1,
-    }
-  })
-
-  return {
-    id: doi,
-    doi,
-    title,
-    subtitle: null,
-    journal_id: journal?.id ?? '',
-    journal_title: (journal?.title ?? source.split(';')[0].trim()) || '',
-    journal_code: journalCode,
-    volume: volMatch?.[1] ?? null,
-    issue: issueMatch?.[1] ?? null,
-    first_page: null,
-    last_page: null,
-    publication_year: year,
-    publication_date: date || null,
-    article_type: 'Research Article',
-    language: 'English',
-    abstract: description || null,
-    keywords: subjects,
-    license,
-    pdf_url: null,
-    html_url: htmlUrl ?? null,
-    openalex_work_id: null,
-    crossref_status: 'registered',
-    cited_by_count: 0,
-    reference_count: 0,
-    is_retracted: false,
-    metadata_quality_score: description ? 55 : 35,
-    authors,
-    created_at: date || '',
-    updated_at: date || '',
-  }
-}
-
-// Derive per-journal OAI endpoint: use oai_base_url if set, else append /oai to website_url
-function getJournalOaiUrl(journalCode: string): string | null {
-  const journal = ALL_JOURNALS.find(j => j.journal_code === journalCode)
-  if (!journal) return null
-  if (journal.oai_base_url) return journal.oai_base_url
-  if (journal.website_url) return journal.website_url.replace(/\/+$/, '') + '/oai'
-  return null
-}
-
-async function oaiFetchUrl(url: string, params: Record<string, string>): Promise<string | null> {
-  try {
-    const res = await fetch(url + '?' + new URLSearchParams(params).toString(), {
-      headers: { 'User-Agent': UA },
-      signal: AbortSignal.timeout(15000),
-    })
-    return res.ok ? res.text() : null
-  } catch {
-    return null
-  }
-}
-
-// Caps pagination so a journal with many resumption pages (or a slow OAI
-// server) can't stall SSG generation — each page already has its own fetch
-// timeout, but an unbounded loop still risks blowing past per-page build
-// time limits (e.g. Cloudflare Pages' 60s cap).
-const MAX_OAI_PAGES = 5
-
-export async function oaiHarvestJournal(journalCode: string): Promise<Article[]> {
-  const oaiUrl = getJournalOaiUrl(journalCode)
-  if (!oaiUrl) return []
-
-  const articles: Article[] = []
-  let token: string | null = null
-  let page = 0
-
-  do {
-    const xml = await oaiFetchUrl(
-      oaiUrl,
-      token
-        ? { verb: 'ListRecords', resumptionToken: token }
-        : { verb: 'ListRecords', metadataPrefix: 'oai_dc' }
-    )
-    if (!xml || xml.includes('<error')) break
-
-    for (const block of xml.match(/<record>[\s\S]*?<\/record>/g) ?? []) {
-      const a = parseOaiRecord(block)
-      if (a) articles.push(a)
-    }
-
-    token = (/<resumptionToken[^>]*>([^<]*)<\/resumptionToken>/.exec(xml)?.[1] ?? '').trim() || null
-    page++
-  } while (token && page < MAX_OAI_PAGES)
-
-  return articles
-}
-
-// Harvest all indexed journals via their individual OAI endpoints
-export async function oaiHarvestAll(): Promise<Article[]> {
-  const results = await Promise.allSettled(
-    ALL_JOURNALS.map(j => oaiHarvestJournal(j.journal_code))
-  )
-  return results
-    .filter((r): r is PromiseFulfilledResult<Article[]> => r.status === 'fulfilled')
-    .flatMap(r => r.value)
-}
-
 // ─── ISSN Portal (registration country) ──────────────────────────────────────
 
 export async function issnGetCountry(issn: string): Promise<string | null> {
@@ -1085,6 +912,83 @@ export async function openAlexGetSourceStats(issn: string): Promise<OpenAlexSour
     }
   } catch {
     return null
+  }
+}
+
+// ─── OpenCitations (COCI) ──────────────────────────────────────────────────
+
+const OPENCITATIONS = 'https://api.opencitations.net/index/v1'
+
+export async function openCitationsGetCount(doi: string): Promise<number | null> {
+  try {
+    const res = await fetch(`${OPENCITATIONS}/citation-count/${encodeURIComponent(doi)}`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const count = data?.[0]?.count
+    return count != null ? parseInt(count, 10) : null
+  } catch {
+    return null
+  }
+}
+
+// ─── Zenodo (related datasets/software) ────────────────────────────────────
+
+export interface ZenodoRecord {
+  zenodo_id: number
+  doi: string
+  title: string
+  url: string
+  relation: string
+  resource_type: string | null
+}
+
+const ZENODO = 'https://zenodo.org/api/records'
+
+// Finds Zenodo records (datasets, software, etc.) that declare a relation to the
+// given article DOI via their related_identifiers metadata (e.g. a dataset an
+// author deposited and linked back to the published article). Supplementary
+// evidence only — never folded into POSI's citation counts (see PCI methodology
+// on /citation-reports: one DOI per cited work, no proprietary blending).
+export async function zenodoGetRelatedRecords(articleDoi: string): Promise<ZenodoRecord[]> {
+  try {
+    const params = new URLSearchParams({
+      q: `metadata.related_identifiers.identifier:"${articleDoi}"`,
+      size: '10',
+    })
+    const res = await fetch(`${ZENODO}?${params.toString()}`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    const hits = (data?.hits?.hits ?? []) as Array<{
+      id: number
+      doi?: string
+      links?: { self_html?: string }
+      metadata?: {
+        title?: string
+        resource_type?: { title?: string }
+        related_identifiers?: { identifier: string; relation: string }[]
+      }
+    }>
+    return hits.flatMap(hit => {
+      const related = hit.metadata?.related_identifiers ?? []
+      const match = related.find(r => r.identifier.toLowerCase() === articleDoi.toLowerCase())
+      if (!match || !hit.doi || !hit.metadata?.title) return []
+      return [{
+        zenodo_id: hit.id,
+        doi: hit.doi,
+        title: hit.metadata.title,
+        url: hit.links?.self_html ?? `https://zenodo.org/records/${hit.id}`,
+        relation: match.relation,
+        resource_type: hit.metadata.resource_type?.title ?? null,
+      }]
+    })
+  } catch {
+    return []
   }
 }
 

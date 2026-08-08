@@ -4,7 +4,7 @@ import { getStats } from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'Source Status | POSI',
-  description: 'Sync status of all POSI data sources: Crossref, OpenAlex, DOAJ, OAI-PMH, ROR, ORCID, and OpenCitations.',
+  description: 'Sync status of all POSI data sources: Crossref, OpenAlex, OpenCitations, DOAJ, ROR, and ORCID.',
 }
 
 const SOURCES = [
@@ -43,10 +43,10 @@ const SOURCES = [
   {
     name: 'OAI-PMH',
     type: 'Harvest',
-    use: 'Article harvesting from OJS-based platforms',
-    status: 'Integrated',
-    sync: 'last_updated' as const,
-    notes: 'Periodic harvest from journal OAI-PMH endpoints. Protocol: Dublin Core.',
+    use: 'Discontinued — replaced by Crossref (DOI registry) + OpenAlex',
+    status: 'Discontinued',
+    sync: 'Not in use',
+    notes: 'Formerly used for per-journal article harvesting from OJS platforms. Discontinued: unreliable at build time (slow/hanging journal endpoints), replaced by Crossref + OpenAlex.',
   },
   {
     name: 'ROR',
@@ -68,17 +68,26 @@ const SOURCES = [
     name: 'OpenCitations',
     type: 'External',
     use: 'Open citation links and cited-by counts',
-    status: 'Planned',
-    sync: 'Not yet active',
-    notes: 'Integration planned. Will provide open citation links for CVF scoring.',
+    status: 'Live',
+    sync: 'Real-time',
+    notes: 'Real-time queries via the OpenCitations COCI citation-count API. Used for CVI\'s OpenCitations-detectable check.',
+  },
+  {
+    name: 'Zenodo',
+    type: 'External',
+    use: 'Related datasets/software explicitly linked to POSI articles',
+    status: 'Live',
+    sync: 'Real-time',
+    notes: 'Client-side query via the Zenodo records API, matched on related_identifiers metadata. Shown as supplementary evidence on article pages; never counted toward citation statistics.',
   },
 ]
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; border: string }> = {
-  Primary:    { bg: '#fef2f2', color: '#c41e3a', border: '#fecaca' },
-  Live:       { bg: '#f0fdf4', color: '#1F7A4D', border: '#bbf7d0' },
-  Integrated: { bg: '#f5f5f5', color: '#374151', border: '#e5e7eb' },
-  Planned:    { bg: '#f9fafb', color: '#6B7280', border: '#e5e7eb' },
+  Primary:      { bg: '#fef2f2', color: '#c41e3a', border: '#fecaca' },
+  Live:         { bg: '#f0fdf4', color: '#1F7A4D', border: '#bbf7d0' },
+  Integrated:   { bg: '#f5f5f5', color: '#374151', border: '#e5e7eb' },
+  Planned:      { bg: '#f9fafb', color: '#6B7280', border: '#e5e7eb' },
+  Discontinued: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
 }
 
 export default function SourceStatusPage() {
@@ -171,10 +180,11 @@ export default function SourceStatusPage() {
               {key}
             </span>
             <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-              {key === 'Primary'    && 'Internal POSI data. Manually curated and updated on each assessment cycle.'}
-              {key === 'Live'       && 'Real-time connection. Queries are resolved on demand via the source\'s public API.'}
-              {key === 'Integrated' && 'Periodic sync. Data is harvested or imported on a scheduled basis.'}
-              {key === 'Planned'    && 'Integration documented but not yet active. No data from this source is currently used.'}
+              {key === 'Primary'      && 'Internal POSI data. Manually curated and updated on each assessment cycle.'}
+              {key === 'Live'         && 'Real-time connection. Queries are resolved on demand via the source\'s public API.'}
+              {key === 'Integrated'   && 'Periodic sync. Data is harvested or imported on a scheduled basis.'}
+              {key === 'Planned'      && 'Integration documented but not yet active. No data from this source is currently used.'}
+              {key === 'Discontinued' && 'Formerly integrated; no longer queried. Retained here for transparency about POSI\'s data-sourcing history.'}
             </p>
           </div>
         ))}

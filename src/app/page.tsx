@@ -380,7 +380,7 @@ export default async function HomePage() {
               Data Sources
             </span>
             <div className="flex flex-wrap gap-x-5 gap-y-1">
-              {['Crossref', 'OpenAlex', 'DOAJ', 'ROR', 'ORCID', 'OAI-PMH'].map(src => (
+              {['Crossref', 'OpenAlex', 'OpenCitations', 'DOAJ', 'ROR', 'ORCID'].map(src => (
                 <span
                   key={src}
                   className="text-xs"

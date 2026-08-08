@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
-import { crossrefFetchJournal, issnGetCountry, oaiHarvestJournal, openAlexGetSourceStats } from '@/lib/api'
+import { crossrefFetchJournal, issnGetCountry, openAlexGetSourceStats } from '@/lib/api'
 import { JournalTabs, type SlimJournal } from '@/components/JournalTabs'
 import type { Journal } from '@/lib/types'
 
@@ -12,7 +12,6 @@ function slim(
   j: Journal,
   cr_total_dois?: number | null,
   issnCountry?: string | null,
-  oaiCount?: number,
   two_yr_mean_citedness?: number | null,
   h_index?: number | null,
 ) {
@@ -39,7 +38,7 @@ function slim(
     two_yr_mean_citedness: two_yr_mean_citedness ?? null,
     h_index: h_index ?? null,
   }
-  return { journal: s, cr_total_dois: cr_total_dois ?? null, issnCountry: issnCountry ?? null, oaiCount: oaiCount ?? 0 }
+  return { journal: s, cr_total_dois: cr_total_dois ?? null, issnCountry: issnCountry ?? null }
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
@@ -57,25 +56,23 @@ export default async function JournalsPage() {
     Promise.all(
       PSG_JOURNALS.map(async j => {
         const issn = j.issn_online ?? j.issn_print
-        const [cr, issnCountry, oaiItems, oaStats] = await Promise.all([
+        const [cr, issnCountry, oaStats] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
-          withTimeout(oaiHarvestJournal(j.journal_code).catch(() => []), TIMEOUT_MS, []),
           issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
+        return slim(j, cr?.total_dois, issnCountry, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
       })
     ),
     Promise.all(
       [...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS].map(async j => {
         const issn = j.issn_online ?? j.issn_print
-        const [cr, issnCountry, oaiItems, oaStats] = await Promise.all([
+        const [cr, issnCountry, oaStats] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
-          withTimeout(oaiHarvestJournal(j.journal_code).catch(() => []), TIMEOUT_MS, []),
           issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, (oaiItems as unknown[]).length, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
+        return slim(j, cr?.total_dois, issnCountry, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
       })
     ),
   ])
@@ -83,18 +80,18 @@ export default async function JournalsPage() {
   // Trust doaj_status from data.ts — skips live DOAJ check for faster builds.
   const doajConfirmedRows = DISCOVERED_JOURNALS
     .filter(j => j.doaj_status === 'listed')
-    .map(j => slim(j, null, j.registration_country ?? (j.country || null), 0))
+    .map(j => slim(j, null, j.registration_country ?? (j.country || null)))
 
   const nonDoajDiscoveredRows = DISCOVERED_JOURNALS
     .filter(j => j.doaj_status !== 'listed')
-    .map(j => slim(j, null, j.registration_country ?? (j.country || null), 0))
+    .map(j => slim(j, null, j.registration_country ?? (j.country || null)))
 
   // Verified Records = manual indexed + DOAJ-confirmed discovered
   const allIndexedRows = [...manualIndexedRows, ...doajConfirmedRows]
 
   const total = PSG_JOURNALS.length + INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length + DISCOVERED_JOURNALS.length
   const totalArticles = [...psgRows, ...manualIndexedRows].reduce(
-    (s, { oaiCount, cr_total_dois, journal }) => s + ((oaiCount ?? 0) > 0 ? (oaiCount ?? 0) : (cr_total_dois ?? journal.article_count)), 0
+    (s, { cr_total_dois, journal }) => s + (cr_total_dois ?? journal.article_count), 0
   )
 
   return (
@@ -134,7 +131,9 @@ export default async function JournalsPage() {
             <strong style={{ color: 'var(--posi-text)' }}>MQS</strong> = Metadata Quality Score (0–100).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Framework (Grade A+→E); <strong style={{ color: '#B45309' }}>PQF*</strong> = auto-assessed from DOAJ signals (pending manual review).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>IRS</strong> = Discoverability Score (A–D).{' '}
-            Article counts from OAI-PMH (Crossref fallback).{' '}
+            <strong style={{ color: 'var(--posi-text)' }}>PCI</strong> = POSI Citation Impact (OpenAlex 2yr mean citedness) / <strong style={{ color: 'var(--posi-text)' }}>h-index</strong>, ranked by subject in{' '}
+            <Link href="/citation-reports" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>POSI Citation Reports</Link>.{' '}
+            Article counts from Crossref (DOI registry).{' '}
             <Link href="/pqf" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>PQF methodology →</Link>
           </p>
         </div>

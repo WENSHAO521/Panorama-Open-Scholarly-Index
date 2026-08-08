@@ -1,16 +1,10 @@
 import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import { crossrefSearch, crossrefGetWork, openAlexGetWork, crossrefHarvestJournal, oaiHarvestJournal } from '@/lib/api'
-import { PSG_JOURNALS, ALL_JOURNALS, getJournalByCode } from '@/lib/data'
+import { crossrefSearch, crossrefGetWork, openAlexGetWork, openAlexGetArticle, crossrefHarvestJournal } from '@/lib/api'
+import { PSG_JOURNALS, getJournalByCode } from '@/lib/data'
 import type { Article } from '@/lib/types'
 import { ArticleDetail } from '@/components/ArticleDetail'
-
-// Extract PSG journal code from DOI (e.g. 10.63802/grhas.v1.i1.7 → 'grhas')
-function journalCodeFromDoi(doi: string): string | null {
-  const m = doi.match(/10\.\d{5}\/([a-z]+)[.\-]/i)
-  return m ? m[1].toLowerCase() : null
-}
 
 // Deduplicates fetch across generateMetadata + page render for the same DOI
 const fetchArticle = cache(async (realDoi: string): Promise<Article | null> => {
@@ -29,37 +23,20 @@ const fetchArticle = cache(async (realDoi: string): Promise<Article | null> => {
     return cr as Article
   }
 
-  // Crossref failed — try OAI harvest for the journal
-  const code = journalCodeFromDoi(realDoi)
-  if (code) {
-    const oaiItems = await oaiHarvestJournal(code).catch(() => [])
-    const found = oaiItems.find(a => a.doi.toLowerCase() === realDoi.toLowerCase())
-    if (found) return found
-  }
-
-  return null
+  // Crossref failed — fall back to OpenAlex's own full work record
+  return openAlexGetArticle(realDoi).catch(() => null)
 })
 
 export async function generateStaticParams(): Promise<{ doi: string }[]> {
   const doiSet = new Set<string>()
 
-  // Strategy 1: OAI per-journal harvest (PSG journals only — they have real OAI endpoints)
-  // Discovered journals (22k+) have website_url but no OAI endpoint; skip to avoid 12s timeouts
-  await Promise.allSettled(
-    PSG_JOURNALS.map(j =>
-      oaiHarvestJournal(j.journal_code)
-        .then(items => items.forEach(a => { if (a.doi) doiSet.add(a.doi.replace(/\//g, '_')) }))
-        .catch(() => {})
-    )
-  )
-
-  // Strategy 2: Crossref PSG member endpoint (supplement)
+  // Strategy 1: Crossref PSG member endpoint
   try {
     const { items } = await crossrefSearch('', { rows: 250, scope: 'psg' })
     items.forEach(a => doiSet.add(a.doi.replace(/\//g, '_')))
   } catch {}
 
-  // Strategy 3: Per-journal Crossref harvest (final fallback)
+  // Strategy 2: Per-journal Crossref harvest (fallback if the member endpoint found nothing)
   if (doiSet.size === 0) {
     await Promise.allSettled(
       PSG_JOURNALS

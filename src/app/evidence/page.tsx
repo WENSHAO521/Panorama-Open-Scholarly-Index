@@ -35,7 +35,7 @@ const EVIDENCE_CRITERIA = [
       { name: 'Crossref Metadata',     status: 'verified',       source: 'Crossref API' },
       { name: 'Author Names',          status: 'verified',       source: 'Crossref API' },
       { name: 'ORCID Coverage',        status: 'partial',        source: 'Crossref API / OpenAlex' },
-      { name: 'Abstract & Keywords',   status: 'partial',        source: 'Crossref API / OAI-PMH' },
+      { name: 'Abstract & Keywords',   status: 'partial',        source: 'Crossref API / OpenAlex' },
       { name: 'Reference Lists',       status: 'missing',        source: 'Crossref API' },
       { name: 'License URI',           status: 'partial',        source: 'Crossref API' },
       { name: 'Full-text Links',       status: 'verified',       source: 'Crossref API / Journal website' },
@@ -65,7 +65,7 @@ const EVIDENCE_CRITERIA = [
     criteria: [
       { name: 'sitemap.xml',           status: 'partial',        source: 'Automated check' },
       { name: 'robots.txt',            status: 'verified',       source: 'Automated check' },
-      { name: 'OAI-PMH',              status: 'partial',        source: 'OAI-PMH harvest' },
+      { name: 'OAI-PMH endpoint (journal-side)', status: 'partial', source: 'Automated check' },
       { name: 'Schema.org JSON-LD',   status: 'missing',        source: 'Automated check' },
       { name: 'Google Scholar Tags',  status: 'partial',        source: 'Manual check' },
       { name: 'DOI Resolution',       status: 'verified',       source: 'doi.org resolver' },

@@ -144,7 +144,7 @@ export default function ExportFormatsPage() {
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Attribution Requirements</h2>
         <div className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-          <p>All POSI exports include a <code className="font-mono text-[10px] bg-gray-100 px-1">source_attribution</code> field indicating the origin of each metadata field (Crossref, OpenAlex, OAI-PMH, DOAJ, or POSI Core).</p>
+          <p>All POSI exports include a <code className="font-mono text-[10px] bg-gray-100 px-1">source_attribution</code> field indicating the origin of each metadata field (Crossref, OpenAlex, OpenCitations, DOAJ, or POSI Core).</p>
           <p>When reusing POSI exports, attribute the original data sources as indicated. POSI does not claim ownership of metadata sourced from third-party registries.</p>
           <p>PQF scores are produced by POSI and should be attributed as: <em>"POSI Quality Framework (PQF), Panorama Open Scholarly Index"</em>. Licensed under CC BY 4.0.</p>
         </div>

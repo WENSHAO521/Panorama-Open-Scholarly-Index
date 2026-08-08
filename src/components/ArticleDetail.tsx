@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowSquareOut, BookOpen, User, Buildings, Hash, Quotes, FileText, Calendar, Globe, Medal, X } from '@phosphor-icons/react/dist/ssr'
-import { crossrefGetWork, openAlexGetWork, rorMatchAffiliation } from '@/lib/api'
+import { crossrefGetWork, openAlexGetWork, rorMatchAffiliation, zenodoGetRelatedRecords, type ZenodoRecord } from '@/lib/api'
 import { Badge, mqsVariant, mqsLabel } from './Badge'
 import { CitationFormatter } from './CitationFormatter'
 import { MetadataQualityBar } from './MetadataQualityBar'
+import { RelatedDatasetsCard } from './RelatedDatasetsCard'
 import type { Article, RorOrganization } from '@/lib/types'
 import { decodeHtml } from '@/lib/utils'
 
@@ -47,6 +48,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
   const [error, setError] = useState(hasServerData && !initialArticle)
   const [rorMap, setRorMap] = useState<Record<string, RorOrganization>>({})
   const [showCite, setShowCite] = useState(false)
+  const [zenodoRecords, setZenodoRecords] = useState<ZenodoRecord[]>([])
 
   function doRorLookup(art: Article) {
     const institutions = [...new Set(
@@ -84,6 +86,10 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
       doRorLookup(cr)
     }).catch(() => setError(true)).finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doi])
+
+  useEffect(() => {
+    zenodoGetRelatedRecords(doi).then(setZenodoRecords).catch(() => {})
   }, [doi])
 
   if (loading) return <LoadingSkeleton />
@@ -347,6 +353,8 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
               )}
             </div>
           </div>
+
+          <RelatedDatasetsCard records={zenodoRecords} />
 
           <div className="bg-white border border-gray-200 p-4">
             <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5">

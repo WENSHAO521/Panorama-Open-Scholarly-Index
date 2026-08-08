@@ -47,7 +47,7 @@ export default function ResponsibleUsePage() {
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is</h2>
         <ul className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
           {[
-            'An open metadata platform aggregating journal records from Crossref, OpenAlex, DOAJ, and OAI-PMH sources.',
+            'An open metadata platform aggregating journal records from Crossref, OpenAlex, OpenCitations, and DOAJ sources.',
             'A transparency assessment tool measuring publicly verifiable journal policies and metadata quality.',
             'A tool for editors and publishers to identify gaps in metadata completeness and technical discoverability.',
             'A research resource for studying open access journal infrastructure and policy transparency.',

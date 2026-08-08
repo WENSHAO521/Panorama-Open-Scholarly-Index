@@ -3,8 +3,12 @@
  * auto-pqf.mjs
  *
  * Computes automated PQF scores for all DISCOVERED_JOURNALS with doaj_status='listed'.
- * Fetches DOAJ bibjson details and combines with static journal data to score each
- * subfactor (JTF, MQF, EGF, TDF, CVF, RIF).
+ * Fetches DOAJ bibjson details, OpenAlex source stats, and an OpenCitations sample
+ * check, and combines with static journal data to score each subfactor
+ * (JTF, MQF, EGF, TDF, CVF, RIF). CVF is a live citation-infrastructure-visibility
+ * check (does OpenAlex/OpenCitations actually resolve this journal), not a raw
+ * citation-count score — see src/app/cvi/page.tsx for why CVI/CVF deliberately
+ * doesn't score citation volume.
  *
  * Usage:
  *   node scripts/auto-pqf.mjs           # dry run — print scores
@@ -48,6 +52,67 @@ async function fetchDoajDetails(issn) {
       last_full_review: admin.last_full_review ?? null,
       website_url: bib.ref?.journal ?? null,
     }
+  } catch {
+    return null
+  }
+}
+
+// ─── OpenAlex / OpenCitations fetch (scripts duplicate lib/api.ts's fetch logic —
+// they run standalone via node, not through the Next.js TS build) ────────────
+
+async function fetchOpenAlexStats(issn) {
+  try {
+    const params = new URLSearchParams({
+      filter: `issn:${issn}`,
+      select: 'summary_stats,cited_by_count',
+      mailto: 'posi@panoramagroup.org',
+    })
+    const res = await fetch(`https://api.openalex.org/sources?${params.toString()}`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const source = data.results?.[0]
+    if (!source) return null
+    return {
+      two_yr_mean_citedness: source.summary_stats?.['2yr_mean_citedness'] ?? null,
+      h_index: source.summary_stats?.h_index ?? null,
+      cited_by_count: source.cited_by_count ?? null,
+    }
+  } catch {
+    return null
+  }
+}
+
+// One sample DOI per journal is enough to check whether OpenCitations tracks
+// this journal's citations at all — not a per-article scoring signal.
+async function fetchSampleDoi(issn) {
+  try {
+    const res = await fetch(`https://api.crossref.org/journals/${issn}/works?rows=1&select=DOI&mailto=posi@panoramagroup.org`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.message?.items?.[0]?.DOI ?? null
+  } catch {
+    return null
+  }
+}
+
+async function fetchOpenCitationsSample(issn) {
+  const doi = await fetchSampleDoi(issn)
+  if (!doi) return null
+  try {
+    const res = await fetch(`https://api.opencitations.net/index/v1/citation-count/${encodeURIComponent(doi)}`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const count = data?.[0]?.count
+    return count != null ? parseInt(count, 10) : null
   } catch {
     return null
   }
@@ -114,12 +179,14 @@ function scoreTdf(doaj, journal) {
   return clamp(s, 15)
 }
 
-function scoreCvf(doaj, journal) {
+function scoreCvf(doaj, journal, openAlexStats, openCitationsCount) {
   // CVF — Citation Visibility Factor /10
   let s = 3  // base: in DOAJ
-  if (journal.openalex_source_id) s += 3
-  if ((journal.article_count ?? 0) > 0) s += 2  // Crossref DOIs inferred
-  if (doaj.has_seal) s += 2
+  if (openAlexStats) s += 3          // OpenAlex source record actually resolves (live check)
+  else if (journal.openalex_source_id) s += 1  // ID present but didn't resolve live — partial credit
+  if (openCitationsCount != null) s += 2  // OpenCitations tracks a citation count for this journal
+  if ((journal.article_count ?? 0) > 0) s += 1
+  if (doaj.has_seal) s += 1
   return clamp(s, 10)
 }
 
@@ -132,12 +199,12 @@ function scoreRif(doaj, journal) {
   return clamp(s, 5)
 }
 
-function computeAutoPqf(doaj, journal) {
+function computeAutoPqf(doaj, journal, openAlexStats, openCitationsCount) {
   const jtf = scoreJtf(doaj, journal)
   const mqf = scoreMqf(doaj, journal)
   const egf = scoreEgf(doaj, journal)
   const tdf = scoreTdf(doaj, journal)
-  const cvf = scoreCvf(doaj, journal)
+  const cvf = scoreCvf(doaj, journal, openAlexStats, openCitationsCount)
   const rif = scoreRif(doaj, journal)
   const total = jtf + mqf + egf + tdf + cvf + rif
   return { jtf, mqf, egf, tdf, cvf, rif, total, grade: grade(total) }
@@ -268,10 +335,14 @@ async function main() {
 
   const results = await runBatch(listed, async (j) => {
     const issn = j.issnOnline ?? j.issnPrint
-    if (!issn) return { ...j, doaj: null }
-    const doaj = await fetchDoajDetails(issn)
+    if (!issn) return { ...j, doaj: null, openAlexStats: null, openCitationsCount: null }
+    const [doaj, openAlexStats, openCitationsCount] = await Promise.all([
+      fetchDoajDetails(issn),
+      fetchOpenAlexStats(issn),
+      fetchOpenCitationsSample(issn),
+    ])
     process.stdout.write('.')
-    return { ...j, doaj }
+    return { ...j, doaj, openAlexStats, openCitationsCount }
   }, CONCURRENCY)
   console.log('\n')
 
@@ -279,9 +350,9 @@ async function main() {
   let failed = 0
   let updated = src
 
-  for (const { id, code, doaj, ...journal } of results) {
+  for (const { id, code, doaj, openAlexStats, openCitationsCount, ...journal } of results) {
     if (!doaj) { failed++; continue }
-    const scores = computeAutoPqf(doaj, journal)
+    const scores = computeAutoPqf(doaj, journal, openAlexStats, openCitationsCount)
     scored++
 
     if (!WRITE) {
