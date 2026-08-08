@@ -13,13 +13,16 @@ export interface CitationReportRow {
   h_index: number | null
   cited_by_count: number | null
   subject_percentile: number | null
+  pcs_ratio: number | null
+  pcs_window: string | null
 }
 
-type SortKey = 'title' | 'two_yr_mean_citedness' | 'h_index' | 'cited_by_count' | 'subject_percentile'
+type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs_ratio' | 'h_index' | 'cited_by_count' | 'subject_percentile'
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
   { key: 'two_yr_mean_citedness', label: 'PCI', title: 'POSI Citation Impact — OpenAlex 2-year mean citedness, comparable to a Journal Impact Factor' },
+  { key: 'pcs_ratio', label: 'PCS', title: 'POSI Citation Score — Crossref mean citations per article over a trailing 4-year window, comparable to CiteScore' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
   { key: 'subject_percentile', label: 'Subject Percentile' },
@@ -112,6 +115,9 @@ export function CitationReportsTable({ rows }: { rows: CitationReportRow[] }) {
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.two_yr_mean_citedness != null ? row.two_yr_mean_citedness.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }} title={row.pcs_window ?? undefined}>
+                    {row.pcs_ratio != null ? row.pcs_ratio.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.h_index != null ? row.h_index : <span style={{ color: 'var(--posi-muted)' }}>—</span>}

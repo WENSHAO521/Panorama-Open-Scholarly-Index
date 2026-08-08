@@ -396,7 +396,7 @@ export default function PqfPage() {
               {[
                 { type: 'POSI Verified Journal Record (evidence complete)', status: 'Official PQF', note: 'Full manual PQF assessment published in Evidence Registry.' },
                 { type: 'POSI Verified Journal Record (under review)', status: 'Preliminary PQF', note: 'Draft scores; subject to change after evidence review.' },
-                { type: 'DOAJ-listed auto-imported record', status: 'Automated PQF*', note: 'Computed from DOAJ + Crossref signals. Not manually reviewed.' },
+                { type: 'DOAJ-listed auto-imported record', status: 'Automated PQF*', note: 'Computed primarily from direct verification of the journal\'s own website, Crossref, and OpenAlex; DOAJ\'s public registry is used only as a fallback signal when a site can\'t be directly crawled. Not manually reviewed.' },
                 { type: 'Submitted journal (under review)', status: 'Pending', note: 'Assessment begins after POSI evidence review is complete.' },
                 { type: 'Auto-discovered from Crossref / OpenAlex', status: 'Not eligible', note: 'Metadata only. PQF requires a minimum evidence baseline.' },
                 { type: 'PSG-published journal', status: 'Official PQF (with COI disclosure)', note: 'Assessed under same criteria; conflict of interest disclosed.' },
@@ -441,15 +441,30 @@ export default function PqfPage() {
             {
               version: 'PQF v1.0-auto',
               date: '2026-06-22',
-              status: 'Current',
+              status: 'Superseded',
               notes: 'Automated variant computed from DOAJ and Crossref signals. Used for DOAJ-listed journals pending manual review. Not equivalent to official PQF v1.0.',
+            },
+            {
+              version: 'PQF v2.0-auto',
+              date: '2026-08-09',
+              status: 'Current',
+              notes: 'Automated variant recomputed from POSI\'s own direct verification — the journal\'s own website (crawled for the same evidence categories as Official PQF), Crossref metadata completeness, live OpenAlex/OpenCitations checks, and direct sitemap/robots/DOI-resolution probes. DOAJ\'s public registry is used only as a disclosed fallback signal when a site cannot be crawled directly (e.g. bot-protected platforms) — no longer a primary input. Used for DOAJ-listed journals pending manual review. Not equivalent to official PQF v1.0.',
             },
           ].map(v => (
             <div key={v.version} className="px-5 py-3 flex flex-col sm:flex-row sm:items-start gap-3">
               <div className="shrink-0 sm:w-40">
                 <p className="font-mono font-bold text-[11px]" style={{ color: 'var(--posi-primary)' }}>{v.version}</p>
                 <p className="text-[10px] text-gray-400 font-mono mt-0.5">{v.date}</p>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 mt-1 inline-block" style={{ background: '#f0fdf4', color: '#1F7A4D', border: '1px solid #bbf7d0' }}>{v.status}</span>
+                <span
+                  className="text-[10px] font-medium px-1.5 py-0.5 mt-1 inline-block"
+                  style={
+                    v.status === 'Current'
+                      ? { background: '#f0fdf4', color: '#1F7A4D', border: '1px solid #bbf7d0' }
+                      : { background: '#f9fafb', color: '#6B7280', border: '1px solid #e5e7eb' }
+                  }
+                >
+                  {v.status}
+                </span>
               </div>
               <p className="text-[11px] text-gray-600 leading-relaxed">{v.notes}</p>
             </div>

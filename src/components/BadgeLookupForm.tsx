@@ -84,6 +84,10 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
       {match && (
         <div className="mt-4 space-y-5">
           {VARIANTS.map(v => {
+            // Relative path for the on-page preview (works in any environment);
+            // the copyable snippet below needs the absolute siteUrl since it's
+            // meant to be pasted onto a third-party website.
+            const previewUrl = `/api/badge/${match.code}/${v.id}`
             const imgUrl = `${siteUrl}/api/badge/${match.code}/${v.id}`
             const linkUrl = `${siteUrl}/journal/${match.code}/`
             const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer"><img src="${imgUrl}" alt="POSI Verified — ${match.title}" /></a>`
@@ -94,7 +98,7 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
                 </div>
                 <div className="flex items-center gap-4 p-3 mb-2" style={{ background: v.id === 'dark' ? '#111111' : 'var(--posi-bg)' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imgUrl} alt={`POSI badge preview (${v.label})`} width={v.id === 'compact' ? 90 : 220} height={v.id === 'compact' ? 90 : 64} />
+                  <img src={previewUrl} alt={`POSI badge preview (${v.label})`} width={v.id === 'compact' ? 90 : 220} height={v.id === 'compact' ? 90 : 64} />
                 </div>
                 <CopyBox text={html} />
               </div>

@@ -54,13 +54,16 @@ export default function BadgesPage() {
         <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
           <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Example</h2>
           <div className="flex flex-wrap items-center gap-4 p-3" style={{ background: 'var(--posi-bg)' }}>
+            {/* Relative paths for on-page preview — works in any environment (dev/preview/prod).
+                The copyable embed snippets below use the absolute SITE_URL instead, since those
+                are meant to be pasted onto a third-party site. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`${SITE_URL}/api/badge/${example.journal_code}/standard`} alt="POSI badge example — standard" width={220} height={64} />
+            <img src={`/api/badge/${example.journal_code}/standard`} alt="POSI badge example — standard" width={220} height={64} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`${SITE_URL}/api/badge/${example.journal_code}/compact`} alt="POSI badge example — compact seal" width={90} height={90} />
+            <img src={`/api/badge/${example.journal_code}/compact`} alt="POSI badge example — compact seal" width={90} height={90} />
             <div className="p-3" style={{ background: '#111111' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`${SITE_URL}/api/badge/${example.journal_code}/dark`} alt="POSI badge example — dark" width={220} height={64} />
+              <img src={`/api/badge/${example.journal_code}/dark`} alt="POSI badge example — dark" width={220} height={64} />
             </div>
           </div>
           <p className="text-[10px] mt-2" style={{ color: 'var(--posi-muted)' }}>Live example: {example.title}</p>

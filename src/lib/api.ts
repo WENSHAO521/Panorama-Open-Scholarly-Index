@@ -400,6 +400,51 @@ export async function crossrefGetJournalWorks(
   }
 }
 
+// ─── PCS (POSI Citation Score) — Crossref-sourced, CiteScore-style ──────────
+// A second, independently-sourced citation ratio alongside PCI (OpenAlex-based),
+// deliberately using a different underlying database and a different window —
+// the same way Scopus's CiteScore is a distinct measurement from WoS's Journal
+// Impact Factor, not a recomputation of it. See /pci for the full rationale.
+
+export interface CrossrefCitationScore {
+  ratio: number | null       // mean citations per article across the sampled window
+  window: string             // e.g. "2021–2024"
+  sampled_articles: number   // articles actually fetched and summed (capped, see note)
+  total_in_window: number    // Crossref's reported total-results for the window (may exceed sampled_articles)
+}
+
+const PCS_SAMPLE_CAP = 200
+
+export async function crossrefGetCitationScore(issn: string): Promise<CrossrefCitationScore | null> {
+  try {
+    const currentYear = new Date().getFullYear()
+    // 4-year trailing window excluding the current (incomplete) year — mirrors
+    // CiteScore's 4-year publication window without needing partial-year data.
+    const fromYear = currentYear - 4
+    const toYear = currentYear - 1
+    const params = new URLSearchParams({
+      filter: `${ARTICLE_FILTER},from-pub-date:${fromYear}-01-01,until-pub-date:${toYear}-12-31`,
+      rows: String(PCS_SAMPLE_CAP),
+      select: 'DOI,is-referenced-by-count,published',
+      mailto: 'posi@panoramagroup.org',
+    })
+    const res = await fetch(`${CROSSREF}/journals/${issn}/works?${params.toString()}`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const items: { 'is-referenced-by-count'?: number }[] = data.message?.items ?? []
+    const total = data.message?.['total-results'] ?? items.length
+    const window = `${fromYear}–${toYear}`
+    if (items.length === 0) return { ratio: null, window, sampled_articles: 0, total_in_window: total }
+    const citedSum = items.reduce((s, it) => s + (it['is-referenced-by-count'] ?? 0), 0)
+    return { ratio: citedSum / items.length, window, sampled_articles: items.length, total_in_window: total }
+  } catch {
+    return null
+  }
+}
+
 export async function openAlexGetWork(doi: string): Promise<{
   id: string
   cited_by_count: number

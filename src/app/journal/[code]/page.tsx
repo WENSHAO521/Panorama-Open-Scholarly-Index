@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowSquareOut, Globe, FileText, Users, Barcode, ChartBar } from '@phosphor-icons/react/dist/ssr'
 import { getJournalByCode } from '@/lib/data'
-import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry, openAlexGetSourceStats } from '@/lib/api'
+import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry, openAlexGetSourceStats, crossrefGetCitationScore } from '@/lib/api'
 import type { DoajJournalInfo } from '@/lib/types'
 import { Badge } from '@/components/Badge'
 import { MetadataQualityBar } from '@/components/MetadataQualityBar'
@@ -98,7 +98,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   const showCitationImpact = !isDiscovered || journal.doaj_status === 'listed'
   const citationIssn = journal.issn_online ?? journal.issn_print
 
-  const [doajResult, crMeta, issnCountry, citationStats] = await Promise.all([
+  const [doajResult, crMeta, issnCountry, citationStats, citationScore] = await Promise.all([
     // Skip DOAJ if journal is already auto-scored (all its info is in data.ts)
     !isDiscovered && journal.issn_online ? doajGetJournal(journal.issn_online).catch(() => null) : null,
     // Skip Crossref meta for discovered journals (article_count comes from data.ts)
@@ -107,6 +107,9 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     !isDiscovered && !journal.registration_country && journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
     showCitationImpact && citationIssn
       ? withTimeout(openAlexGetSourceStats(citationIssn).catch(() => null), 4000, null)
+      : null,
+    showCitationImpact && citationIssn
+      ? withTimeout(crossrefGetCitationScore(citationIssn).catch(() => null), 4000, null)
       : null,
   ])
   doaj = doajResult
@@ -407,7 +410,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           </div>
 
           {/* Citation Impact — Core Collection feature, see showCitationImpact above */}
-          {citationStats && <CitationImpactCard stats={citationStats} />}
+          {citationStats && <CitationImpactCard stats={citationStats} pcs={citationScore} />}
 
           {/* Subject Classification */}
           {(journal.subjects?.length ?? 0) > 0 && (

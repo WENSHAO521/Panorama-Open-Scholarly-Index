@@ -59,7 +59,7 @@ export default function CviPage() {
       {/* Pointer to real citation-impact numbers */}
       <div className="p-4 text-xs leading-relaxed flex items-start justify-between gap-3 flex-wrap" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
         <span style={{ color: '#166534' }}>
-          Looking for citation impact numbers? See <strong>PCI</strong> (POSI Citation Impact), h-index, and total citations. CVI does not measure these by design (see notice below).
+          Looking for citation impact numbers? See <Link href="/pci" className="underline font-semibold">PCI</Link> (POSI Citation Impact), h-index, and total citations. CVI does not measure these by design (see notice below).
         </span>
         <Link href="/citation-reports" className="font-medium shrink-0 hover:underline" style={{ color: '#1F7A4D' }}>
           POSI Citation Reports →
@@ -145,6 +145,7 @@ export default function CviPage() {
       </section>
 
       <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/pci" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Impact (PCI) →</Link>
         <Link href="/citation-reports" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Reports →</Link>
         <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
         <Link href="/mqs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Metadata Quality Score →</Link>

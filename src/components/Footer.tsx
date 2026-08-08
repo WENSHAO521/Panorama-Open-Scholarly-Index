@@ -17,6 +17,7 @@ const NAV_COLUMNS = [
       { href: '/pqf',      label: 'PQF Methodology' },
       { href: '/mqs',      label: 'Metadata Quality Score' },
       { href: '/cvi',      label: 'Citation Visibility Index' },
+      { href: '/pci',      label: 'POSI Citation Impact (PCI)' },
       { href: '/irs',      label: 'Indexing Readiness Score' },
       { href: '/evidence', label: 'Evidence Registry' },
     ],
@@ -24,6 +25,8 @@ const NAV_COLUMNS = [
   {
     heading: 'Data & Resources',
     links: [
+      { href: '/citation-reports',    label: 'Citation Reports' },
+      { href: '/badges',              label: 'POSI Badges' },
       { href: '/data-sources',        label: 'Data Sources' },
       { href: '/api',                 label: 'API Roadmap' },
       { href: '/api#export-formats',  label: 'Export Formats' },

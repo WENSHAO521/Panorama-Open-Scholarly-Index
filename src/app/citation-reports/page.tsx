@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
-import { openAlexGetSourceStats } from '@/lib/api'
+import { openAlexGetSourceStats, crossrefGetCitationScore } from '@/lib/api'
 import { primarySubject } from '@/lib/subject-keywords'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
@@ -28,6 +28,10 @@ const METHODOLOGY_PRINCIPLES = [
     title: 'No proprietary blending',
     body: 'POSI does not run its own citation-counting pipeline or combine raw counts into a custom formula. It displays OpenAlex\'s published metric with full source attribution — the same open-data-only stance applied to CVI.',
   },
+  {
+    title: 'PCS is Crossref-sourced, not a PCI recomputation',
+    body: 'PCS (mean citations per article across a trailing 4-year publication window, capped at a 200-article sample) is computed directly from Crossref\'s own is-referenced-by-count — a different database and a different window than PCI\'s OpenAlex figure. The two are published side by side, not averaged together.',
+  },
 ]
 
 // A single slow/hanging OpenAlex lookup must never block static generation.
@@ -45,7 +49,10 @@ export default async function CitationReportsPage() {
   const withStats = await Promise.all(
     journals.map(async j => {
       const issn = j.issn_online ?? j.issn_print
-      const stats = issn ? await withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null
+      const [stats, pcs] = await Promise.all([
+        issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
+        issn ? withTimeout(crossrefGetCitationScore(issn).catch(() => null), TIMEOUT_MS, null) : null,
+      ])
       return {
         title: j.title,
         short_title: j.short_title,
@@ -54,6 +61,8 @@ export default async function CitationReportsPage() {
         two_yr_mean_citedness: stats?.two_yr_mean_citedness ?? null,
         h_index: stats?.h_index ?? null,
         cited_by_count: stats?.cited_by_count ?? null,
+        pcs_ratio: pcs?.ratio ?? null,
+        pcs_window: pcs?.window ?? null,
       }
     })
   )
@@ -100,25 +109,31 @@ export default async function CitationReportsPage() {
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Reports</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          <strong style={{ color: 'var(--posi-text)' }}>POSI Citation Impact (PCI)</strong>, h-index, total citations, and subject percentile —
-          for POSI's manually-reviewed Core Collection, ranked within subject.
+          Two independently-sourced citation metrics — <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link> (OpenAlex, JIF-style)
+          and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref, CiteScore-style) — plus h-index, total citations,
+          and subject percentile, for POSI's manually-reviewed Core Collection, ranked within subject.
         </p>
       </div>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
-          <strong>PCI</strong> is POSI's name for OpenAlex's 2-year mean citedness — an openly computed,
-          fully attributed stand-in for a Journal Impact Factor. POSI does not license or use Web of Science
-          or Scopus data. {withData} of {rows.length} journals have a resolvable OpenAlex source record;
-          journals without one show as unranked. See <Link href="/cvi" className="underline">Citation Visibility Index →</Link>{' '}
-          for how POSI treats citation infrastructure separately from citation volume.
+          <strong>PCI</strong> (OpenAlex 2yr mean citedness) and <strong>PCS</strong> (Crossref mean citations per article,
+          trailing 4-year window) are POSI's open stand-ins for a Journal Impact Factor and a CiteScore, respectively —
+          two separately-sourced numbers, not one blended score, the same way WoS and Scopus report independently of
+          each other. POSI does not license or use Web of Science or Scopus data. {withData} of {rows.length} journals
+          have a resolvable OpenAlex source record; journals without one show as unranked. See{' '}
+          <Link href="/cvi" className="underline">Citation Visibility Index →</Link> for how POSI treats citation
+          infrastructure separately from citation volume.
         </span>
       </div>
 
       {/* Methodology */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>How PCI Is Computed</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>How PCI Is Computed</h2>
+          <Link href="/pci" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>Full positioning statement →</Link>
+        </div>
         <div className="grid sm:grid-cols-2 gap-4">
           {METHODOLOGY_PRINCIPLES.map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
