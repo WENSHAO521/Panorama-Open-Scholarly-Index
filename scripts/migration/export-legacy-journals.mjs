@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 /**
- * export-for-posi-migration.mjs
+ * export-legacy-journals.mjs
  *
  * Legacy Export Adapter — the ONLY thing in this repo that posi-engine's
  * migration pipeline should ever need to know about. Reads this site's
  * TypeScript data files (data.ts, discovered-journals.ts) and writes a
  * stable, documented, engine-agnostic intermediate format:
- * `migration-source.jsonl` (one JSON object per line, schema below).
+ * `migration-source.jsonl` (one JSON object per line, schema below), plus a
+ * `<out>.manifest.json` recording this repo's commit and the run's provenance.
  *
  * This isolates posi-engine from this repo's internal file format. If
  * data.ts's shape changes later, only this adapter needs to change — the
  * migration pipeline in posi-engine never reads a .ts file directly.
+ *
+ * Contract (see posi-data/PJR-SPEC.md § 12):
+ *   - Read-only. Never modifies data.ts/discovered-journals.ts.
+ *   - Deterministic: the same commit run twice produces byte-identical
+ *     migration-source.jsonl (manifest.json's generated_at is the only
+ *     field allowed to differ between runs).
+ *   - Every output record carries its legacy_id.
+ *   - The manifest records this repo's source_commit.
  *
  * Output record shape (one line per journal):
  *   {
@@ -31,7 +40,7 @@
  *   }
  *
  * Usage:
- *   node scripts/export-for-posi-migration.mjs [--out migration-source.jsonl]
+ *   node scripts/migration/export-legacy-journals.mjs [--out migration-source.jsonl]
  */
 
 import { execFileSync } from 'child_process'
@@ -44,6 +53,15 @@ const require = createRequire(import.meta.url)
 
 const outIdx = process.argv.indexOf('--out')
 const OUT_PATH = resolve(outIdx !== -1 ? process.argv[outIdx + 1] : 'migration-source.jsonl')
+const MANIFEST_PATH = `${OUT_PATH}.manifest.json`
+
+function currentCommit() {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD']).toString().trim()
+  } catch {
+    return 'unknown'
+  }
+}
 
 function compileDataFiles() {
   const tmp = mkdtempSync(join(tmpdir(), 'posi-export-'))
@@ -92,16 +110,32 @@ function main() {
   try {
     const mod = require(join(tmp, 'data.js'))
 
-    const lines = [
-      ...mod.PSG_JOURNALS.map(j => toRecord(j, 'psg')),
-      ...mod.INDEXED_JOURNALS.map(j => toRecord(j, 'indexed')),
-      ...mod.SHIHARR_JOURNALS.map(j => toRecord(j, 'shiharr')),
-      ...mod.OTHER_INDEXED_JOURNALS.map(j => toRecord(j, 'other_indexed')),
-      ...mod.DISCOVERED_JOURNALS.map(j => toRecord(j, 'discovered')),
-    ]
+    const collections = {
+      psg: mod.PSG_JOURNALS,
+      indexed: mod.INDEXED_JOURNALS,
+      shiharr: mod.SHIHARR_JOURNALS,
+      other_indexed: mod.OTHER_INDEXED_JOURNALS,
+      discovered: mod.DISCOVERED_JOURNALS,
+    }
+    const lines = Object.entries(collections).flatMap(
+      ([name, journals]) => journals.map(j => toRecord(j, name))
+    )
 
     writeFileSync(OUT_PATH, lines.map(r => JSON.stringify(r)).join('\n') + '\n', 'utf-8')
+
+    const manifest = {
+      source_repository: 'WENSHAO521/Panorama-Open-Scholarly-Index',
+      source_commit: currentCommit(),
+      generated_at: new Date().toISOString(),
+      record_count: lines.length,
+      records_by_source_collection: Object.fromEntries(
+        Object.entries(collections).map(([name, journals]) => [name, journals.length])
+      ),
+    }
+    writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf-8')
+
     console.log(`Wrote ${lines.length} records to ${OUT_PATH}`)
+    console.log(`Wrote manifest to ${MANIFEST_PATH}`)
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
