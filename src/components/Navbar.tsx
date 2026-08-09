@@ -6,7 +6,7 @@ import { useState, FormEvent, Suspense } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi, extractIsbn } from '@/lib/utils'
 
-type SubItem = { label: string; href: string }
+type SubItem = { label: string; href: string; external?: boolean }
 type NavItem = { label: string; href?: string; children?: SubItem[] }
 
 const navItems: NavItem[] = [
@@ -35,17 +35,13 @@ const navItems: NavItem[] = [
     children: [
       { label: 'POSI Core Collection',        href: '/core-collection' },
       { label: 'Global Benchmark Collection', href: '/coverage/global-benchmark' },
-      { label: 'All Journal Records',         href: '/journals' },
     ],
   },
   {
     label: 'Methodology',
     children: [
-      { label: 'AJR Overview',                href: '/ratings' },
-      { label: 'Early-Stage Rating — AJR-E',  href: '/ratings/early-stage' },
-      { label: 'Mature Journal Rating — AJR-M', href: '/ratings/mature' },
+      { label: 'AJR Methodology (AJR-SPEC.md)', href: 'https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md', external: true },
       { label: 'Citation Impact — PCI',       href: '/pci' },
-      { label: 'PSC Classification',          href: '/subjects' },
       { label: 'Editorial Selection',         href: '/pqf' },
       { label: 'Evidence Methodology',        href: '/evidence' },
     ],
@@ -227,23 +223,37 @@ export function Navbar() {
                       }}
                     >
                       {item.children.map(child => (
-                        <Link
-                          key={child.label}
-                          href={child.href}
-                          className="block px-4 py-2 text-[10px] uppercase tracking-[0.1em] whitespace-nowrap transition-colors hover:text-white"
-                          style={
-                            isChildActive(child.href)
-                              ? {
-                                  color: 'var(--posi-accent)',
-                                  fontFamily: 'var(--font-mono)',
-                                  background: 'rgba(255,255,255,0.04)',
-                                }
-                              : { color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)' }
-                          }
-                          onClick={() => setOpenDropdown(null)}
-                        >
-                          {child.label}
-                        </Link>
+                        child.external ? (
+                          <a
+                            key={child.label}
+                            href={child.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block px-4 py-2 text-[10px] uppercase tracking-[0.1em] whitespace-nowrap transition-colors hover:text-white"
+                            style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)' }}
+                            onClick={() => setOpenDropdown(null)}
+                          >
+                            {child.label} ↗
+                          </a>
+                        ) : (
+                          <Link
+                            key={child.label}
+                            href={child.href}
+                            className="block px-4 py-2 text-[10px] uppercase tracking-[0.1em] whitespace-nowrap transition-colors hover:text-white"
+                            style={
+                              isChildActive(child.href)
+                                ? {
+                                    color: 'var(--posi-accent)',
+                                    fontFamily: 'var(--font-mono)',
+                                    background: 'rgba(255,255,255,0.04)',
+                                  }
+                                : { color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)' }
+                            }
+                            onClick={() => setOpenDropdown(null)}
+                          >
+                            {child.label}
+                          </Link>
+                        )
                       ))}
                     </div>
                   )}
@@ -327,19 +337,33 @@ export function Navbar() {
                 {expanded && (
                   <div className="ml-3 mb-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
                     {item.children.map(child => (
-                      <Link
-                        key={child.label}
-                        href={child.href}
-                        className="block px-4 py-3 text-[11px] uppercase tracking-[0.08em] transition-colors"
-                        style={
-                          isChildActive(child.href)
-                            ? { color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }
-                            : { color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }
-                        }
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {child.label}
-                      </Link>
+                      child.external ? (
+                        <a
+                          key={child.label}
+                          href={child.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-4 py-3 text-[11px] uppercase tracking-[0.08em] transition-colors"
+                          style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {child.label} ↗
+                        </a>
+                      ) : (
+                        <Link
+                          key={child.label}
+                          href={child.href}
+                          className="block px-4 py-3 text-[11px] uppercase tracking-[0.08em] transition-colors"
+                          style={
+                            isChildActive(child.href)
+                              ? { color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }
+                              : { color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }
+                          }
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {child.label}
+                        </Link>
+                      )
                     ))}
                   </div>
                 )}

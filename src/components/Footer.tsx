@@ -16,18 +16,17 @@ const NAV_COLUMNS = [
     links: [
       { href: '/core-collection',           label: 'Core Collection' },
       { href: '/coverage/global-benchmark', label: 'Global Benchmark Collection' },
-      { href: '/journals',                  label: 'All Journal Records' },
       { href: '/submit-journal',            label: 'Submit Journal' },
     ],
   },
   {
     heading: 'Methodology & Data',
     links: [
-      { href: '/ratings',      label: 'AJR Methodology' },
       { href: '/pci',          label: 'PCI Methodology' },
       { href: '/pqf',          label: 'Editorial Selection' },
       { href: '/evidence',     label: 'Evidence' },
       { href: '/open-data',    label: 'Open Data' },
+      { href: '/journals',     label: 'All Journal Records' },
     ],
   },
   {
