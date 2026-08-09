@@ -30,7 +30,7 @@
  * admission. It exists purely as an AJR-1.0 validation/reference set.
  *
  * Usage:
- *   node scripts/discover-benchmark-journals.mjs --write [--per-domain 50]
+ *   node scripts/discover-benchmark-journals.mjs --write [--per-domain 50] [--max-pages 10]
  */
 
 import { writeFileSync } from 'fs'
@@ -41,6 +41,10 @@ const WRITE = process.argv.includes('--write')
 const PER_DOMAIN = (() => {
   const i = process.argv.indexOf('--per-domain')
   return i !== -1 ? parseInt(process.argv[i + 1], 10) : 50
+})()
+const MAX_PAGES = (() => {
+  const i = process.argv.indexOf('--max-pages')
+  return i !== -1 ? parseInt(process.argv[i + 1], 10) : 10
 })()
 
 const UA = 'POSI-BenchmarkDiscovery/0.1 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
@@ -131,7 +135,7 @@ function serializeJournal(j) {
 
 async function main() {
   console.log('Fetching candidate pool from OpenAlex (is_core=true, 2yr_mean_citedness>1, type=journal)...')
-  const candidates = await collectCandidates()
+  const candidates = await collectCandidates(MAX_PAGES)
   console.log(`Fetched ${candidates.length} candidates.`)
 
   const byDomain = new Map(DOMAINS.map(d => [d, []]))
