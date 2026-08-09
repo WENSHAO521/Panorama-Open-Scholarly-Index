@@ -194,18 +194,25 @@ export interface EarlyStageRating {
   // 'observation' (0-11mo since first publication): too early to evaluate,
   // no score computed. 'early_stage' (12-59mo) and 'mature' (60mo+) both
   // carry a real AJR score (subfactors/total) once the minimum evidence bar
-  // is cleared — 'early_stage' is eligible for a future E-Q1-E-Q4 once a
-  // real PSC peer cohort exists; 'mature' journals are scored with AJR-E for
-  // now (AJR-M not yet implemented) but rank via Citation Q (PCI-based)
-  // instead of E-Q. 'not_yet_rateable': below the minimum evidence bar
-  // regardless of age (see spec §3). 'unknown': first-published date could
-  // not be determined (e.g. no Crossref records).
+  // is cleared — 'early_stage' journals rank via E-Q1-E-Q4, 'mature'
+  // journals via M-Q1-M-Q4 (scored with AJR-E for now — AJR-M's
+  // citation-weighted model is not yet implemented, see AJR-SPEC.md § 13).
+  // Citation Q (PCI-based) is a fully independent third track computed
+  // separately (see /citation-reports) — a mature journal can carry both an
+  // M-Q and a Citation Q at once, they are not mutually exclusive.
+  // 'not_yet_rateable': below the minimum evidence bar regardless of age
+  // (see spec §3). 'unknown': first-published date could not be determined
+  // (e.g. no Crossref records).
   eligibility: 'observation' | 'early_stage' | 'mature' | 'not_yet_rateable' | 'unknown'
   first_published: string | null   // earliest Crossref-registered work date for this ISSN
   months_since_launch: number | null
   subfactors: EarlyStageSubfactors | null
   total: number | null   // sum of subfactors, out of 100
-  provisional_quartile: null             // always null until PSC classification + cohort data exist
+  // E-Q1-E-Q4 (eligibility === 'early_stage') or M-Q1-M-Q4 (eligibility ===
+  // 'mature') — see scripts/rank-lifecycle.mjs. null until a same-category
+  // (or same-domain fallback) PSC peer cohort clears the minimum size gate
+  // (RANK-1.0, posi-engine's ranking.mjs).
+  provisional_quartile: 'E-Q1' | 'E-Q2' | 'E-Q3' | 'E-Q4' | 'M-Q1' | 'M-Q2' | 'M-Q3' | 'M-Q4' | null
   rated_at: string    // ISO date
   version: string     // e.g. "EARLY-STAGE-AUTO-0.1"
 }
