@@ -1,0 +1,7 @@
+# POSI Badge SVGs are static-exported Route Handler output with no file
+# extension (out/api/badge/<code>/<variant>) — without this, Cloudflare
+# Pages' default MIME-type-by-extension lookup falls back to a generic
+# content type and browsers refuse to render them inside <img> tags.
+/api/badge/*
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=86400

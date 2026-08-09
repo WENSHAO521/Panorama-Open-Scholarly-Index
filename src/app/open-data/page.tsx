@@ -33,9 +33,9 @@ const AUDITS = [
   },
   {
     name: 'OpenAlex Enrichment Audit v0.2',
-    status: 'In progress',
-    desc: 'OpenAlex Source ID / ISSN-L enrichment over the v0.1 candidate entities, and re-scoring of possible-duplicate groups using that evidence.',
-    href: null,
+    status: 'Published',
+    desc: 'OpenAlex Source ID / ISSN-L enrichment over all 23,819 v0.1 candidate entities (23,674 verified) and re-scoring of the 171 possible-duplicate groups using that evidence (164 confirmed same, 5 confirmed distinct, 2 still manual review). No merging or POSI-J id assignment yet.',
+    href: 'https://github.com/WENSHAO521/posi-data/tree/master/audits/migrations/openalex-enrichment',
   },
 ]
 
