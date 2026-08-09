@@ -77,17 +77,13 @@ export default async function JournalsPage() {
     ),
   ])
 
-  // Trust doaj_status from data.ts — skips live DOAJ check for faster builds.
-  const doajConfirmedRows = DISCOVERED_JOURNALS
-    .filter(j => j.doaj_status === 'listed')
+  // DOAJ listing is external reference metadata, not a POSI admission signal —
+  // it never promotes a record out of the auto-discovered tier. Verified Records
+  // is exactly POSI's own manually-reviewed collection.
+  const discoveredRows = DISCOVERED_JOURNALS
     .map(j => slim(j, null, j.registration_country ?? (j.country || null)))
 
-  const nonDoajDiscoveredRows = DISCOVERED_JOURNALS
-    .filter(j => j.doaj_status !== 'listed')
-    .map(j => slim(j, null, j.registration_country ?? (j.country || null)))
-
-  // Verified Records = manual indexed + DOAJ-confirmed discovered
-  const allIndexedRows = [...manualIndexedRows, ...doajConfirmedRows]
+  const allIndexedRows = manualIndexedRows
 
   const total = PSG_JOURNALS.length + INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length + DISCOVERED_JOURNALS.length
   const totalArticles = [...psgRows, ...manualIndexedRows].reduce(
@@ -120,7 +116,7 @@ export default async function JournalsPage() {
       </div>
 
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading journals…</div>}>
-        <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={nonDoajDiscoveredRows} />
+        <JournalTabs psgRows={psgRows} indexedRows={allIndexedRows} discoveredRows={discoveredRows} />
       </Suspense>
 
       {/* Column legend */}

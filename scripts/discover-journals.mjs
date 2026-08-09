@@ -660,10 +660,10 @@ async function discoverOpenAlexDoaj() {
       const has_dual     = issns.length >= 2
       const jtf = Math.min(8 + (has_apc ? 4 : 5), 25)
       const mqf = Math.min(8 + (has_dual ? 3 : 1), 25)
-      const egf = 6   // peer review assumed (DOAJ requires it) but no detail
+      const egf = 6   // base only — no peer-review detail available from OpenAlex, not assumed
       const tdf = 5   // base only
       const cvf = 3   // base only
-      const rif = 3   // DOAJ-indexed = peer reviewed
+      const rif = 2   // base only — DOAJ/OpenAlex listing is not treated as peer-review evidence
 
       journals.push({
         code,

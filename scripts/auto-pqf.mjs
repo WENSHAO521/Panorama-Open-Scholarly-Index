@@ -2,10 +2,11 @@
 /**
  * auto-pqf.mjs
  *
- * Computes automated PQF scores for DISCOVERED_JOURNALS with doaj_status='listed'.
- * DOAJ listing is used as the discovery-time eligibility gate (a minimal "this
- * is a real, registered journal" bar) — that part is unchanged. Scoring itself
- * is POSI's own standard, not DOAJ's: every subfactor is computed primarily
+ * Computes automated PQF scores for all of DISCOVERED_JOURNALS. DOAJ listing is
+ * NOT an eligibility gate — every discovered journal is scored regardless of
+ * doaj_status, since DOAJ is external reference metadata, not a POSI admission
+ * signal. Scoring itself is POSI's own standard, not DOAJ's: every subfactor is
+ * computed primarily
  * from POSI's own direct verification, not from trusting a third party's
  * self-reported bibjson:
  *   - JTF/EGF/RIF: crawled directly from the journal's own website for the same
@@ -336,8 +337,8 @@ function computeAutoPqf({ site, journal, crSample, sitemapOk, robotsOk, doiResol
   return { jtf, mqf, egf, tdf, cvf, rif, total, grade: grade(total) }
 }
 
-// ─── Parse discovered journals with doaj_status='listed' ─────────────────────
-// DOAJ status is used only as the eligibility gate here (see file header) —
+// ─── Parse all discovered journals ─────────────────────────────────────────
+// No DOAJ-based eligibility filter — every discovered journal is scored, and
 // no DOAJ field is read into the scoring functions above.
 
 function parseDiscoveredListed(src) {
@@ -352,7 +353,7 @@ function parseDiscoveredListed(src) {
   let current = null
 
   const flush = () => {
-    if (current?.id && current.doajStatus === 'listed') {
+    if (current?.id) {
       journals.push({
         id: current.id,
         code: current.code,
@@ -439,7 +440,7 @@ async function main() {
   const src = readFileSync(DATA_PATH, 'utf-8')
   const allListed = parseDiscoveredListed(src)
   const listed = LIMIT ? allListed.slice(0, LIMIT) : allListed
-  console.log(`Found ${allListed.length} DISCOVERED_JOURNALS with doaj_status='listed' (eligibility gate; scoring prioritizes direct verification, DOAJ used only as a fallback when a site can't be crawled)${LIMIT ? ` — processing first ${listed.length}` : ''}\n`)
+  console.log(`Found ${allListed.length} DISCOVERED_JOURNALS (scoring prioritizes direct verification; DOAJ used only as a disclosed fallback when a site can't be crawled, never as an eligibility filter)${LIMIT ? ` — processing first ${listed.length}` : ''}\n`)
 
   const results = await runBatch(listed, async (j) => {
     const issn = j.issnOnline ?? j.issnPrint

@@ -429,7 +429,8 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
           <span className="font-bold shrink-0 mt-px">i</span>
           <span>
             <Badge label="Core Collection" variant="core-collection" className="mr-1.5 align-middle" /> journals have undergone manual PQF review.
-            Rows marked PQF* are auto-assessed from DOAJ/OpenAlex signals and have not been manually reviewed — see{' '}
+            Rows marked PQF* are auto-assessed from direct site crawling (DOAJ used only as a disclosed
+            fallback when a site can't be crawled) and have not been manually reviewed — see{' '}
             <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>. Citation-impact metrics for this collection are ranked in{' '}
             <Link href="/citation-reports" className="underline">POSI Citation Reports →</Link>
           </span>
@@ -498,8 +499,9 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
             <span className="font-bold shrink-0 mt-px">!</span>
             <span>
               These records are <strong>pending manual verification</strong> by the POSI team and may contain inaccuracies.
-              DOAJ-confirmed journals are automatically promoted to Verified Records.
-              PQF* grades are auto-assessed from DOAJ/OpenAlex signals and have not been manually reviewed.
+              A DOAJ listing, where shown, is external reference metadata only — it does not promote a
+              record to Verified Records. PQF* grades are auto-assessed from OpenAlex and direct site
+              signals and have not been manually reviewed.
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">

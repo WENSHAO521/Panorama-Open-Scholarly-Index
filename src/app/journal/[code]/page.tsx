@@ -27,7 +27,7 @@ export async function generateMetadata(props: { params: Promise<{ code: string }
   if (!journal) return { title: 'Journal Not Found' }
   const isPsg = journal.publisher?.toLowerCase().includes('panorama')
   const recordType = journal.id.startsWith('j-disc-')
-    ? (journal.doaj_status === 'listed' ? 'DOAJ-listed Journal Record' : 'Auto-discovered Journal Record')
+    ? 'Auto-discovered Journal Record'
     : 'POSI Verified Journal Record'
   return {
     title: `${journal.title} | POSI Journal Record`,
@@ -93,9 +93,10 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
 
   // Discovered journals already have metadata from data.ts — skip redundant API calls
   const isDiscovered = journal.id.startsWith('j-disc-')
-  // Citation impact display is a Core Collection feature: shown for all manually-indexed
-  // journals, and for auto-discovered journals only once DOAJ-confirmed.
-  const showCitationImpact = !isDiscovered || journal.doaj_status === 'listed'
+  // Citation impact display is a Core Collection feature: shown only for the manually
+  // curated collection (PSG/indexed), never inferred from DOAJ listing status —
+  // DOAJ is external metadata, not a POSI admission or ranking signal.
+  const showCitationImpact = !isDiscovered
   const citationIssn = journal.issn_online ?? journal.issn_print
 
   const [doajResult, crMeta, issnCountry, citationStats, citationScore] = await Promise.all([
@@ -148,16 +149,16 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
       {(() => {
         const isDiscovered = journal.id.startsWith('j-disc-')
         const isPsg = journal.id.startsWith('j-') && !isDiscovered && journal.publisher?.toLowerCase().includes('panorama')
-        const recordType = isPsg ? 'POSI Verified Journal Record'
-          : !isDiscovered ? 'POSI Verified Journal Record'
-          : journal.doaj_status === 'listed' ? 'DOAJ-listed Journal Record'
-          : 'Auto-discovered Journal Record'
-        const verStatus = !isDiscovered ? 'Verified' : journal.doaj_status === 'listed' ? 'DOAJ-confirmed' : 'Not verified'
+        const recordType = !isDiscovered ? 'POSI Verified Journal Record' : 'Auto-discovered Journal Record'
+        // Verification status reflects POSI's own review tier only — DOAJ listing
+        // is external metadata (see the DOAJ Status panel below) and never promotes
+        // a record's status here.
+        const verStatus = !isDiscovered ? 'Verified' : 'Not verified'
         const pqfStatus = (journal.pqf ?? journal.ojqf) ? 'Official' : journal.auto_pqf ? 'Automated' : 'Pending'
         const policyStatus = journal.transparency_score >= 70 ? 'Partial' : 'Not checked'
         const lastReviewed = (journal.pqf ?? journal.ojqf)?.evaluated_at ?? journal.updated_at?.slice(0, 10) ?? '—'
         const statusColor = (s: string) =>
-          s === 'Verified' || s === 'Official' || s === 'DOAJ-confirmed' ? '#1F7A4D'
+          s === 'Verified' || s === 'Official' ? '#1F7A4D'
           : s === 'Partial' || s === 'Automated' ? '#B7791F'
           : '#6B7280'
         return (
@@ -191,8 +192,10 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         >
           <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>
           <span style={{ color: '#78350f' }}>
-            This journal is published by Panorama Scholarly Group, which also operates POSI.
-            PQF scores are based on publicly verifiable criteria; independent verification is encouraged.
+            This journal is published by Panorama Scholarly Group, which also operates POSI. PQF scores and
+            citation metrics (PCI/PCS) shown here are computed using the same published methodology and
+            versioned calculation engine applied to every eligible journal, with no manual adjustment for
+            PSG-affiliated titles; independent verification is encouraged.
           </span>{' '}
           <Link href="/about" className="underline" style={{ color: '#92400e' }}>Governance disclosure →</Link>
         </div>
@@ -433,11 +436,15 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           )}
 
-          {/* DOAJ */}
+          {/* DOAJ — shown as external reference metadata only; does not affect
+              POSI's own record status, PQF grade, or citation-ranking eligibility. */}
           <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-              DOAJ Status
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-0.5 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
+              DOAJ (External Reference)
             </h2>
+            <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
+              An independent, third-party open-access directory — not part of POSI's own review or ranking.
+            </p>
             {doaj ? (
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center">

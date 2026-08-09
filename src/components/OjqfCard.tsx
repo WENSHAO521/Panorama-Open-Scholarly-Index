@@ -26,7 +26,7 @@ function getSuggestions(score: PqfScore): string[] {
   if (s.tdf < 10) tips.push('Enable OAI-PMH endpoint; add Schema.org JSON-LD and Google Scholar citation tags to article pages.')
   if (s.cvf < 5)  tips.push('Register reference lists with Crossref (I4OC) to enable open citation tracking via OpenCitations.')
   if (s.rif < 3)  tips.push('Publish a data availability policy, plagiarism detection statement, and ethics/informed consent policy.')
-  if (score.total < 60) tips.push('Apply to DOAJ after meeting transparency criteria — this raises both TDF and JTF scores.')
+  if (score.total < 60) tips.push('Publish the transparency, licensing, and editorial disclosures that raise TDF and JTF directly — DOAJ listing itself is not a PQF scoring input.')
   return tips.slice(0, 3)
 }
 

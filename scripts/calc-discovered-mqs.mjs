@@ -14,19 +14,21 @@ import { fileURLToPath } from 'url'
 const __dir = dirname(fileURLToPath(import.meta.url))
 const FILE = join(__dir, '../src/lib/discovered-journals.ts')
 
-// MQS formula for discovered journals
-// Max = 20 + 15 + 8 + 10 + 10 + 10 + 12 + 5 + 5 + 5 = 100
+// MQS formula for discovered journals — scores field completeness only.
+// DOAJ listing is not a completeness signal and no longer contributes points
+// (previously an unconditional +12 for every discovered journal, regardless of
+// whether it was actually DOAJ-listed).
+// Max = 20 + 20 + 10 + 12 + 12 + 12 + 8 + 6 = 100
 function calcMqs({ eissn, pissn, pub, country, web, arts, freq, lic }) {
   let s = 20                 // base
-  if (eissn)   s += 15      // has electronic ISSN (primary identifier)
-  if (pissn)   s += 8       // has print ISSN
-  if (pub)     s += 10      // publisher name present
-  if (country) s += 10      // registration country known
-  if (web)     s += 10      // homepage URL present
-  s += 12                   // DOAJ listed (all discovered journals qualify)
-  if (arts > 0) s += 5      // has tracked publications
-  if (freq)    s += 5       // publication frequency known
-  if (lic)     s += 5       // specific license (not generic 'Open Access')
+  if (eissn)   s += 20      // has electronic ISSN (primary identifier)
+  if (pissn)   s += 10      // has print ISSN
+  if (pub)     s += 12      // publisher name present
+  if (country) s += 12      // registration country known
+  if (web)     s += 12      // homepage URL present
+  if (arts > 0) s += 8      // has tracked publications
+  if (freq)    s += 6       // publication frequency known
+  if (lic)     s += 6       // specific license (not generic 'Open Access')
   return Math.min(s, 100)
 }
 
