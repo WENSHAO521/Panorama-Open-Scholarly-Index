@@ -49,21 +49,22 @@ export function badgeDarkSvg(journal: Journal): string {
 }
 
 export function badgeCompactSvg(journal: Journal): string {
-  // The grade used to be appended as "INDEXED · A+" text at font-size 6 with
-  // letter-spacing 1.2 — wide enough to overflow past the inner ring's chord
-  // width at that height (the circle narrows quickly away from center), which
-  // rendered as visibly misaligned/clipped text. Grade is now conveyed by the
-  // ring color instead, so both lines of text stay short and safely centered.
+  // A circle only has full width at its exact vertical center — text placed
+  // anywhere else (like a second line below the logo mark) hits a shrinking
+  // chord width and can overflow the ring. An ellipse (wider than tall) keeps
+  // most of its width across a much larger vertical band, so both text lines
+  // sit comfortably inside it with room to spare. Grade is conveyed by the
+  // ring color rather than appended text, for the same reason.
   const grade = pqfGrade(journal)
   const title = esc(journal.short_title || journal.title)
   const ringColor = grade ? (GRADE_COLOR[grade] ?? '#E30613') : '#E30613'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90" role="img" aria-label="POSI Verified — ${title}${grade ? ` — PQF ${esc(grade)}` : ''}">
-  <circle cx="45" cy="45" r="43" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <circle cx="45" cy="45" r="36" fill="none" stroke="${ringColor}" stroke-width="1.5"/>
-  <rect x="33" y="24" width="10" height="10" fill="#111111"/>
-  <rect x="47" y="24" width="10" height="10" fill="#E30613"/>
-  <rect x="33" y="38" width="10" height="10" fill="#111111"/>
-  <text x="45" y="61" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" text-anchor="middle" fill="#111111">POSI</text>
-  <text x="45" y="71" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="6.5" letter-spacing="0.6" text-anchor="middle" fill="#666666">VERIFIED</text>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="90" viewBox="0 0 140 90" role="img" aria-label="POSI Verified — ${title}${grade ? ` — PQF ${esc(grade)}` : ''}">
+  <ellipse cx="70" cy="45" rx="68" ry="43" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+  <ellipse cx="70" cy="45" rx="59" ry="36" fill="none" stroke="${ringColor}" stroke-width="1.5"/>
+  <rect x="58" y="22" width="10" height="10" fill="#111111"/>
+  <rect x="72" y="22" width="10" height="10" fill="#E30613"/>
+  <rect x="58" y="36" width="10" height="10" fill="#111111"/>
+  <text x="70" y="63" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="13" letter-spacing="0.5" text-anchor="middle" fill="#111111">POSI</text>
+  <text x="70" y="75" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">VERIFIED</text>
 </svg>`
 }

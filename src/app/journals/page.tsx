@@ -125,7 +125,7 @@ export default async function JournalsPage() {
           <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: 'var(--posi-muted)' }} />
           <p className="leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
             <strong style={{ color: 'var(--posi-text)' }}>MQS</strong> = Metadata Quality Score (0–100).{' '}
-            <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Framework (Grade A+→E); <strong style={{ color: '#B45309' }}>PQF*</strong> = auto-assessed from DOAJ signals (pending manual review).{' '}
+            <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Framework (Grade A+→E); <strong style={{ color: '#B45309' }}>PQF*</strong> = auto-assessed from direct site verification (pending manual review).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>IRS</strong> = Discoverability Score (A–D).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>PCI</strong> = POSI Citation Impact (OpenAlex 2yr mean citedness) / <strong style={{ color: 'var(--posi-text)' }}>h-index</strong>, ranked by subject in{' '}
             <Link href="/citation-reports" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>POSI Citation Reports</Link>.{' '}

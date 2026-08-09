@@ -6,6 +6,14 @@ import { BadgeLookupForm } from '@/components/BadgeLookupForm'
 
 const SITE_URL = 'https://posi.panorama-sg.com'
 
+// Badge responses are cached 24h (see public/_headers). The on-page EXAMPLE
+// previews always hit the same fixed journal code, so a browser (or an edge
+// cache) that fetched a stale/broken response before a fix ships can keep
+// serving it long after the fix is live. A build-time cache-buster forces a
+// fresh fetch on every new deploy — the copyable embed snippet below is left
+// untouched since third-party sites should get normal caching behavior.
+const BUILD_CACHE_BUST = Date.now()
+
 export const metadata = {
   title: 'POSI Badges',
   description: 'Embeddable "POSI Verified" badges for Core Collection journals — journals that have undergone POSI review.',
@@ -58,12 +66,12 @@ export default function BadgesPage() {
                 The copyable embed snippets below use the absolute SITE_URL instead, since those
                 are meant to be pasted onto a third-party site. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/badge/${example.journal_code}/standard`} alt="POSI badge example — standard" width={220} height={64} />
+            <img src={`/api/badge/${example.journal_code}/standard?v=${BUILD_CACHE_BUST}`} alt="POSI badge example — standard" width={220} height={64} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/badge/${example.journal_code}/compact`} alt="POSI badge example — compact seal" width={90} height={90} />
+            <img src={`/api/badge/${example.journal_code}/compact?v=${BUILD_CACHE_BUST}`} alt="POSI badge example — compact seal" width={140} height={90} />
             <div className="p-3" style={{ background: '#111111' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/badge/${example.journal_code}/dark`} alt="POSI badge example — dark" width={220} height={64} />
+              <img src={`/api/badge/${example.journal_code}/dark?v=${BUILD_CACHE_BUST}`} alt="POSI badge example — dark" width={220} height={64} />
             </div>
           </div>
           <p className="text-[10px] mt-2" style={{ color: 'var(--posi-muted)' }}>Live example: {example.title}</p>

@@ -98,7 +98,7 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
                 </div>
                 <div className="flex items-center gap-4 p-3 mb-2" style={{ background: v.id === 'dark' ? '#111111' : 'var(--posi-bg)' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={previewUrl} alt={`POSI badge preview (${v.label})`} width={v.id === 'compact' ? 90 : 220} height={v.id === 'compact' ? 90 : 64} />
+                  <img src={previewUrl} alt={`POSI badge preview (${v.label})`} width={v.id === 'compact' ? 140 : 220} height={v.id === 'compact' ? 90 : 64} />
                 </div>
                 <CopyBox text={html} />
               </div>

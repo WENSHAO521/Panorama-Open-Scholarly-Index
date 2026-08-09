@@ -40,12 +40,6 @@ const INDEXING_VARIANT = {
   'Internal Review': 'default' as const,
 }
 
-const DOAJ_VARIANT: Record<string, 'doaj-listed' | 'doaj-pending' | 'doaj-not'> = {
-  listed: 'doaj-listed',
-  application_submitted: 'doaj-pending',
-  not_listed: 'doaj-not',
-}
-
 interface JournalWithCr {
   journal: SlimJournal
   cr_total_dois?: number | null
@@ -70,7 +64,6 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>MQS</th>
                 {showOjqf && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PQF</th>}
                 <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>IRS</th>
-                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>DOAJ</th>
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>ISSN Centre</th>
               </tr>
             </thead>
@@ -165,14 +158,6 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                         variant={INDEXING_VARIANT[journal.indexing_readiness] || 'default'}
                       />
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      {journal.doaj_status ? (
-                        <Badge
-                          label={journal.doaj_status.replace('_', ' ')}
-                          variant={DOAJ_VARIANT[journal.doaj_status] ?? 'default'}
-                        />
-                      ) : '—'}
-                    </td>
                     <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{journal.registration_country || issnCountry || '—'}</td>
                   </tr>
                 )
@@ -251,12 +236,6 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 
               <div className="flex flex-wrap gap-1 mt-2">
                 <Badge label="OA" variant="oa" />
-                {journal.doaj_status && (
-                  <Badge
-                    label={`DOAJ: ${journal.doaj_status.replace('_', ' ')}`}
-                    variant={DOAJ_VARIANT[journal.doaj_status] ?? 'default'}
-                  />
-                )}
                 {journal.pqf_grade && !journal.pqf_is_auto && (
                   <Badge label="Core Collection" variant="core-collection" />
                 )}
