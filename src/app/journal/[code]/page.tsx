@@ -145,45 +145,6 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         <span style={{ color: 'var(--posi-text)' }}>{journal.short_title}</span>
       </nav>
 
-      {/* Record Status panel */}
-      {(() => {
-        const isDiscovered = journal.id.startsWith('j-disc-')
-        const isPsg = journal.id.startsWith('j-') && !isDiscovered && journal.publisher?.toLowerCase().includes('panorama')
-        const recordType = !isDiscovered ? 'POSI Verified Journal Record' : 'Auto-discovered Journal Record'
-        // Verification status reflects POSI's own review tier only — DOAJ listing
-        // is external metadata (see the DOAJ Status panel below) and never promotes
-        // a record's status here.
-        const verStatus = !isDiscovered ? 'Verified' : 'Not verified'
-        const pqfStatus = (journal.pqf ?? journal.ojqf) ? 'Official' : journal.auto_pqf ? 'Automated' : 'Pending'
-        const policyStatus = journal.transparency_score >= 70 ? 'Partial' : 'Not checked'
-        const lastReviewed = (journal.pqf ?? journal.ojqf)?.evaluated_at ?? journal.updated_at?.slice(0, 10) ?? '—'
-        const statusColor = (s: string) =>
-          s === 'Verified' || s === 'Official' ? '#1F7A4D'
-          : s === 'Partial' || s === 'Automated' ? '#B7791F'
-          : '#6B7280'
-        return (
-          <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-            <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-              <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Record Status</span>
-              <span className="text-[9px] font-mono" style={{ color: 'var(--posi-muted)' }}>Last reviewed: {lastReviewed}</span>
-            </div>
-            <div className="px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: 'Record Type', value: recordType },
-                { label: 'Verification', value: verStatus },
-                { label: 'PQF Status', value: pqfStatus },
-                { label: 'Policy Evidence', value: policyStatus },
-              ].map(item => (
-                <div key={item.label}>
-                  <p className="text-[9px] uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>{item.label}</p>
-                  <p className="text-xs font-semibold" style={{ color: statusColor(item.value) }}>{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )
-      })()}
-
       {/* COI notice — PSG journals only */}
       {journal.publisher?.toLowerCase().includes('panorama') && !journal.id.startsWith('j-disc-') && (
         <div
@@ -272,123 +233,41 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         )}
       </div>
 
-      {/* PQF — official first, auto-assessed as fallback */}
-      {(journal.pqf ?? journal.ojqf)
-        ? <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />
-        : journal.auto_pqf
-          ? <OjqfCard score={journal.auto_pqf} journalCode={journal.journal_code} isAuto />
-          : null
-      }
-
-      {/* Policy Evidence Summary */}
-      {!journal.id.startsWith('j-disc-') && (() => {
-        const pqf = journal.pqf ?? journal.ojqf
-        const jtf = pqf?.subfactors.jtf ?? 0
-        const score = journal.transparency_score ?? 0
-        const policies: { label: string; status: 'verified' | 'partial' | 'candidate' | 'missing' | 'not_checked' }[] = [
-          { label: 'Aim & Scope',           status: score >= 70 ? 'verified' : 'partial' },
-          { label: 'Editorial Board',       status: jtf >= 15 ? 'partial' : 'candidate' },
-          { label: 'Peer Review Policy',    status: jtf >= 15 ? 'partial' : 'candidate' },
-          { label: 'APC Policy',            status: score >= 60 ? 'verified' : 'partial' },
-          { label: 'Open Access Policy',    status: score >= 70 ? 'verified' : 'partial' },
-          { label: 'Copyright / License',   status: score >= 65 ? 'verified' : 'partial' },
-          { label: 'Publication Ethics',    status: jtf >= 12 ? 'partial' : 'candidate' },
-          { label: 'Corrections Policy',    status: jtf >= 10 ? 'candidate' : 'missing' },
-          { label: 'AI Use Policy',         status: 'not_checked' },
-        ]
-        const STATUS_CFG = {
-          verified:   { label: 'Verified',     color: '#1F7A4D', bg: '#f0fdf4', border: '#bbf7d0' },
-          partial:    { label: 'Partial',       color: '#B7791F', bg: '#fffbeb', border: '#fde68a' },
-          candidate:  { label: 'Candidate',    color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
-          missing:    { label: 'Missing',       color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
-          not_checked:{ label: 'Not checked',  color: '#6B7280', bg: '#f9fafb', border: '#e5e7eb' },
-        }
-        return (
-          <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-            <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-              <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Evidence</span>
-              <Link href="/policies" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-                Full directory →
-              </Link>
-            </div>
-            <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5">
-              {policies.map(p => {
-                const cfg = STATUS_CFG[p.status]
-                return (
-                  <div key={p.label} className="px-2 py-1.5" style={{ border: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-                    <p className="text-[10px] leading-snug mb-1" style={{ color: 'var(--posi-muted)' }}>{p.label}</p>
-                    <span className="text-[10px] font-medium px-1 py-0.5" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
-              Policy evidence is based on publicly available information at the time of assessment.{' '}
-              <a href={`mailto:posi@panorama-sg.com?subject=Policy correction: ${journal.short_title}`} className="underline" style={{ color: 'var(--posi-accent)' }}>
-                Report a correction
-              </a>
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* Two-column: sidebar + articles */}
+      {/* Three-layer main content + articles */}
       <div className="grid md:grid-cols-3 gap-5">
         <div className="space-y-4">
-          {/* Quality scores */}
+          {/* LAYER 1: Coverage — what POSI has and how it got here.
+              Replaces the old Record Status panel + Collection card, merged
+              since both answered the same underlying question. */}
           <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-              <ChartBar className="h-3.5 w-3.5" />
-              Quality Scores
-            </h2>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
-                  <span>Metadata Quality (MQS)</span>
-                  <span className="font-mono font-medium">{journal.metadata_quality_score}/100</span>
-                </div>
-                <MetadataQualityBar score={journal.metadata_quality_score} showLabel={false} />
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
-                  <span>Transparency Score (JTS)</span>
-                  <span className="font-mono font-medium">{journal.transparency_score}/100</span>
-                </div>
-                <div className="w-full h-1.5" style={{ background: 'var(--posi-bg)' }}>
-                  <div className="h-1.5" style={{ width: `${journal.transparency_score}%`, background: 'var(--posi-accent)' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Discoverability Score */}
-          <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>
-              Discoverability Score
-            </h2>
-            <div className="text-center py-1">
-              <span className="text-5xl font-bold font-mono" style={{ color: 'var(--posi-text)' }}>{journal.indexing_readiness}</span>
-            </div>
-            <div className="mt-2 text-center">
-              <Badge
-                label={INDEXING_LABEL[journal.indexing_readiness]}
-                variant={INDEXING_VARIANT[journal.indexing_readiness] || 'default'}
-              />
-            </div>
-            <p className="text-[10px] mt-2 text-center leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-              Technical readiness for OAI-PMH, sitemap, DOI resolution, and Schema.org
-            </p>
-          </div>
-
-          {/* Collection */}
-          <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Collection</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Coverage</h2>
             <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--posi-muted)' }}>POSI Journal Code</span>
+                <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{journal.journal_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--posi-muted)' }}>Core Collection</span>
+                <span className="font-semibold" style={{ color: !isDiscovered ? '#1F7A4D' : '#6B7280' }}>{!isDiscovered ? 'Yes' : 'No'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--posi-muted)' }}>PSC Category</span>
+                <span style={{ color: 'var(--posi-muted)' }}>Not yet classified</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--posi-muted)' }}>Coverage Since</span>
+                <span style={{ color: 'var(--posi-text)' }}>{journal.created_at?.slice(0, 10) ?? '—'}</span>
+              </div>
               <div className="flex justify-between">
                 <span style={{ color: 'var(--posi-muted)' }}>Total Articles</span>
                 <ArticleCountBadge issn={journal.issn_online ?? null} fallback={total || journal.article_count} />
+              </div>
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--posi-muted)' }}>DOAJ</span>
+                <span style={{ color: 'var(--posi-muted)' }}>
+                  {doaj ? (doaj.in_doaj ? 'Listed' : 'Not listed') : journal.doaj_status === 'listed' ? 'Listed' : journal.doaj_status === 'application_submitted' ? 'Applied' : 'Not listed'}
+                  <span className="text-[9px] ml-1">(external ref.)</span>
+                </span>
               </div>
               {journal.openalex_source_id && (
                 <a
@@ -413,10 +292,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           </div>
 
-          {/* Citation Impact — Core Collection feature, see showCitationImpact above */}
-          {citationStats && <CitationImpactCard stats={citationStats} pcs={citationScore} />}
-
-          {/* POSI Automated Journal Rating (AJR) — 100% automated (see
+          {/* LAYER 2: Automated Rating (AJR) — 100% automated (see
               EARLY-STAGE-RATING-SPEC.md §5): no reviewer, editor, publisher,
               or POSI staff has a way to directly set this score — only the
               underlying evidence can be corrected, which triggers a
@@ -476,103 +352,19 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           )}
 
-          {/* Subject Classification */}
-          {(journal.subjects?.length ?? 0) > 0 && (
+          {/* LAYER 3: Citation Analytics — Core Collection feature, see
+              showCitationImpact above. PCS/OpenAlex citedness are provisional
+              previews (see /citation-reports), not official PJR PCI values. */}
+          {citationStats ? (
+            <CitationImpactCard stats={citationStats} pcs={citationScore} />
+          ) : showCitationImpact ? (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-2.5" style={{ color: 'var(--posi-muted)' }}>
-                Subject Classification
-              </h2>
-              <div className="flex flex-wrap gap-1.5">
-                {journal.subjects!.map(s => (
-                  <span
-                    key={s}
-                    className="text-[10px] px-1.5 py-0.5 leading-snug"
-                    style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[9px] mt-2" style={{ color: 'var(--posi-muted)' }}>LCC via DOAJ</p>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>
+              <p className="text-[10px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+                No resolvable OpenAlex source record for this journal's ISSN — citation figures unavailable.
+              </p>
             </div>
-          )}
-
-          {/* DOAJ — shown as external reference metadata only; does not affect
-              POSI's own record status, PQF grade, or citation-ranking eligibility. */}
-          <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-0.5 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-              DOAJ (External Reference)
-            </h2>
-            <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
-              An independent, third-party open-access directory — not part of POSI's own review or ranking.
-            </p>
-            {doaj ? (
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--posi-muted)' }}>Listed</span>
-                  <span
-                    className="font-semibold"
-                    style={{ color: doaj.in_doaj ? '#1F7A4D' : '#6B7280' }}
-                  >
-                    {doaj.in_doaj ? 'Yes' : 'No'}
-                  </span>
-                </div>
-                {doaj.has_seal && (
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: 'var(--posi-muted)' }}>DOAJ Seal</span>
-                    <span className="font-semibold" style={{ color: '#1F7A4D' }}>✓</span>
-                  </div>
-                )}
-                {doaj.license && (
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: 'var(--posi-muted)' }}>License</span>
-                    <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{doaj.license}</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--posi-muted)' }}>APC</span>
-                  <span style={{ color: 'var(--posi-text)' }}>
-                    {doaj.has_apc
-                      ? doaj.apc_max.length
-                        ? doaj.apc_max.map(a => `${a.currency} ${a.price}`).join(', ')
-                        : 'Yes'
-                      : 'No charge'}
-                  </span>
-                </div>
-                {doaj.doaj_id && (
-                  <a
-                    href={`https://doaj.org/toc/${doaj.doaj_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-[11px] hover:underline mt-1 transition-colors"
-                    style={{ color: 'var(--posi-accent)' }}
-                  >
-                    View on DOAJ →
-                  </a>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span style={{ color: 'var(--posi-muted)' }}>Status</span>
-                  <span style={{ color: 'var(--posi-muted)' }}>
-                    {journal.doaj_status === 'listed' ? 'Listed'
-                      : journal.doaj_status === 'application_submitted' ? 'Application submitted'
-                      : 'Not listed'}
-                  </span>
-                </div>
-                <a
-                  href={`https://doaj.org/search/journals?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${journal.issn_online}%22%7D%7D%7D`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-[11px] hover:underline mt-1 transition-colors"
-                  style={{ color: 'var(--posi-accent)' }}
-                >
-                  Search on DOAJ →
-                </a>
-              </div>
-            )}
-          </div>
+          ) : null}
         </div>
 
         {/* Articles */}
@@ -585,6 +377,202 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           />
         </div>
       </div>
+
+      {/* METHODOLOGY & EVIDENCE — supporting detail behind Core Collection
+          admission (PQF, MQS, Discoverability, Policy Evidence, legacy DOAJ
+          subject tags). Deliberately below Coverage/Automated Rating/
+          Citation Analytics, not competing with them for primary attention —
+          these are inputs to editorial selection, not journal rankings. */}
+      {!journal.id.startsWith('j-disc-') && (
+        <section className="pt-2">
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>Methodology &amp; Evidence</h2>
+            <span className="text-[9px]" style={{ color: 'var(--posi-muted)' }}>— PQF / MQS / IRS: inputs to editorial selection, not journal rankings</span>
+          </div>
+          <div className="space-y-4" style={{ opacity: 0.92 }}>
+            {(journal.pqf ?? journal.ojqf)
+              ? <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />
+              : journal.auto_pqf
+                ? <OjqfCard score={journal.auto_pqf} journalCode={journal.journal_code} isAuto />
+                : null
+            }
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Quality scores */}
+              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
+                  <ChartBar className="h-3.5 w-3.5" />
+                  Quality Scores
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
+                      <span>Metadata Quality (MQS)</span>
+                      <span className="font-mono font-medium">{journal.metadata_quality_score}/100</span>
+                    </div>
+                    <MetadataQualityBar score={journal.metadata_quality_score} showLabel={false} />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
+                      <span>Transparency Score (JTS)</span>
+                      <span className="font-mono font-medium">{journal.transparency_score}/100</span>
+                    </div>
+                    <div className="w-full h-1.5" style={{ background: 'var(--posi-bg)' }}>
+                      <div className="h-1.5" style={{ width: `${journal.transparency_score}%`, background: 'var(--posi-accent)' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Discoverability Score */}
+              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>
+                  Discoverability Score
+                </h3>
+                <div className="text-center py-1">
+                  <span className="text-5xl font-bold font-mono" style={{ color: 'var(--posi-text)' }}>{journal.indexing_readiness}</span>
+                </div>
+                <div className="mt-2 text-center">
+                  <Badge
+                    label={INDEXING_LABEL[journal.indexing_readiness]}
+                    variant={INDEXING_VARIANT[journal.indexing_readiness] || 'default'}
+                  />
+                </div>
+                <p className="text-[10px] mt-2 text-center leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+                  Technical readiness for OAI-PMH, sitemap, DOI resolution, and Schema.org
+                </p>
+              </div>
+
+              {/* DOAJ detail — condensed summary already shown in Coverage above */}
+              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-0.5" style={{ color: 'var(--posi-muted)' }}>
+                  DOAJ (External Reference)
+                </h3>
+                <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
+                  Independent OA directory — not part of POSI's own review, admission, or ranking.
+                </p>
+                {doaj ? (
+                  <div className="space-y-2 text-xs">
+                    {doaj.has_seal && (
+                      <div className="flex justify-between items-center">
+                        <span style={{ color: 'var(--posi-muted)' }}>DOAJ Seal</span>
+                        <span className="font-semibold" style={{ color: '#1F7A4D' }}>✓</span>
+                      </div>
+                    )}
+                    {doaj.license && (
+                      <div className="flex justify-between items-center">
+                        <span style={{ color: 'var(--posi-muted)' }}>License</span>
+                        <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{doaj.license}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: 'var(--posi-muted)' }}>APC</span>
+                      <span style={{ color: 'var(--posi-text)' }}>
+                        {doaj.has_apc
+                          ? doaj.apc_max.length
+                            ? doaj.apc_max.map(a => `${a.currency} ${a.price}`).join(', ')
+                            : 'Yes'
+                          : 'No charge'}
+                      </span>
+                    </div>
+                    {doaj.doaj_id && (
+                      <a
+                        href={`https://doaj.org/toc/${doaj.doaj_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-[11px] hover:underline mt-1 transition-colors"
+                        style={{ color: 'var(--posi-accent)' }}
+                      >
+                        View on DOAJ →
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <a
+                    href={`https://doaj.org/search/journals?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${journal.issn_online}%22%7D%7D%7D`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-[11px] hover:underline transition-colors"
+                    style={{ color: 'var(--posi-accent)' }}
+                  >
+                    Search on DOAJ →
+                  </a>
+                )}
+                {(journal.subjects?.length ?? 0) > 0 && (
+                  <>
+                    <p className="text-[9px] uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)' }}>Legacy Subject Tags (LCC via DOAJ)</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {journal.subjects!.map(s => (
+                        <span
+                          key={s}
+                          className="text-[10px] px-1.5 py-0.5 leading-snug"
+                          style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Policy Evidence Summary */}
+            {(() => {
+              const pqf = journal.pqf ?? journal.ojqf
+              const jtf = pqf?.subfactors.jtf ?? 0
+              const score = journal.transparency_score ?? 0
+              const policies: { label: string; status: 'verified' | 'partial' | 'candidate' | 'missing' | 'not_checked' }[] = [
+                { label: 'Aim & Scope',           status: score >= 70 ? 'verified' : 'partial' },
+                { label: 'Editorial Board',       status: jtf >= 15 ? 'partial' : 'candidate' },
+                { label: 'Peer Review Policy',    status: jtf >= 15 ? 'partial' : 'candidate' },
+                { label: 'APC Policy',            status: score >= 60 ? 'verified' : 'partial' },
+                { label: 'Open Access Policy',    status: score >= 70 ? 'verified' : 'partial' },
+                { label: 'Copyright / License',   status: score >= 65 ? 'verified' : 'partial' },
+                { label: 'Publication Ethics',    status: jtf >= 12 ? 'partial' : 'candidate' },
+                { label: 'Corrections Policy',    status: jtf >= 10 ? 'candidate' : 'missing' },
+                { label: 'AI Use Policy',         status: 'not_checked' },
+              ]
+              const STATUS_CFG = {
+                verified:   { label: 'Verified',     color: '#1F7A4D', bg: '#f0fdf4', border: '#bbf7d0' },
+                partial:    { label: 'Partial',       color: '#B7791F', bg: '#fffbeb', border: '#fde68a' },
+                candidate:  { label: 'Candidate',    color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
+                missing:    { label: 'Missing',       color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
+                not_checked:{ label: 'Not checked',  color: '#6B7280', bg: '#f9fafb', border: '#e5e7eb' },
+              }
+              return (
+                <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+                  <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Evidence</span>
+                    <Link href="/policies" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
+                      Full directory →
+                    </Link>
+                  </div>
+                  <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5">
+                    {policies.map(p => {
+                      const cfg = STATUS_CFG[p.status]
+                      return (
+                        <div key={p.label} className="px-2 py-1.5" style={{ border: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+                          <p className="text-[10px] leading-snug mb-1" style={{ color: 'var(--posi-muted)' }}>{p.label}</p>
+                          <span className="text-[10px] font-medium px-1 py-0.5" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
+                    Policy evidence is based on publicly available information at the time of assessment.{' '}
+                    <a href={`mailto:posi@panorama-sg.com?subject=Policy correction: ${journal.short_title}`} className="underline" style={{ color: 'var(--posi-accent)' }}>
+                      Report a correction
+                    </a>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
