@@ -117,6 +117,27 @@ export default function AboutPage() {
         </div>
       </div>
 
+      {/* Research & Development */}
+      <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
+        <h2 className="text-base font-bold mb-4" style={{ color: 'var(--posi-text)' }}>Research &amp; Development</h2>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>
+          POSI is developed under Panorama Research Institute, PSG's internal research and academic
+          development division — not a separate legal entity from Panorama Scholarly Group Ltd. The
+          Institute's stated focus includes scholarly publishing studies, journal indexing and evaluation,
+          and the development of global scholarly communication infrastructure; POSI is listed among its
+          active projects.
+        </p>
+        <a
+          href="https://research.panorama-sg.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs hover:underline inline-flex items-center gap-1"
+          style={{ color: 'var(--posi-accent)' }}
+        >
+          research.panorama-sg.com →
+        </a>
+      </div>
+
       {/* Data & Methodology */}
       <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Data &amp; Methodology</h2>

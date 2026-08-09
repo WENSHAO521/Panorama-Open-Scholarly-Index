@@ -239,6 +239,15 @@ export function Footer() {
             >
               panorama-sg.com
             </a>
+            <a
+              href="https://research.panorama-sg.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] transition-colors hover:text-white"
+              style={{ color: 'rgba(255,255,255,0.16)', fontFamily: 'var(--font-mono)' }}
+            >
+              research.panorama-sg.com
+            </a>
           </div>
         </div>
 

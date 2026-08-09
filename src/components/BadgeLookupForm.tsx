@@ -8,10 +8,16 @@ interface EligibleJournal {
   title: string
 }
 
-const VARIANTS: { id: 'standard' | 'compact' | 'dark'; label: string }[] = [
-  { id: 'standard', label: 'Standard' },
-  { id: 'compact', label: 'Compact Seal' },
-  { id: 'dark', label: 'Dark' },
+const VARIANTS: { id: string; label: string; width: number; height: number; dark?: boolean }[] = [
+  { id: 'standard', label: 'Standard', width: 220, height: 64 },
+  { id: 'dark', label: 'Dark', width: 220, height: 64, dark: true },
+  { id: 'compact', label: 'Compact Seal', width: 140, height: 90 },
+  { id: 'micro', label: 'Micro', width: 130, height: 20 },
+  { id: 'icon', label: 'Icon', width: 40, height: 40 },
+  { id: 'vertical', label: 'Vertical Seal', width: 90, height: 140 },
+  { id: 'banner', label: 'Banner', width: 400, height: 48 },
+  { id: 'mono', label: 'Monochrome', width: 220, height: 64 },
+  { id: 'detailed', label: 'Detailed', width: 260, height: 100 },
 ]
 
 function CopyBox({ text }: { text: string }) {
@@ -96,9 +102,9 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-text)' }}>{v.label}</span>
                 </div>
-                <div className="flex items-center gap-4 p-3 mb-2" style={{ background: v.id === 'dark' ? '#111111' : 'var(--posi-bg)' }}>
+                <div className="flex items-center gap-4 p-3 mb-2" style={{ background: v.dark ? '#111111' : 'var(--posi-bg)' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={previewUrl} alt={`POSI badge preview (${v.label})`} width={v.id === 'compact' ? 140 : 220} height={v.id === 'compact' ? 90 : 64} />
+                  <img src={previewUrl} alt={`POSI badge preview (${v.label})`} width={v.width} height={v.height} />
                 </div>
                 <CopyBox text={html} />
               </div>
