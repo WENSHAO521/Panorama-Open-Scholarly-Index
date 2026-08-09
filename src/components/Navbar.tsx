@@ -24,7 +24,8 @@ const navItems: NavItem[] = [
   {
     label: 'Rankings',
     children: [
-      { label: 'Citation Reports',              href: '/citation-reports' },
+      { label: 'Automated Journal Ratings',     href: '/ratings' },
+      { label: 'Citation Analytics (Preview)',  href: '/citation-reports' },
       { label: 'POSI Citation Impact (PCI/PCS)', href: '/pci' },
       { label: 'PSC Subject Classification',    href: '/subjects' },
     ],

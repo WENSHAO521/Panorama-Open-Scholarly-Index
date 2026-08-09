@@ -192,11 +192,11 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         >
           <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>
           <span style={{ color: '#78350f' }}>
-            This journal is published by Panorama Scholarly Group, which also operates POSI. PQF scores,
-            citation metrics (PCI/PCS), and the Early-Stage Rating shown here are computed using the same
-            published methodology and versioned calculation engine applied to every eligible journal, with
-            no manual score, percentile, or quartile adjustment possible for PSG-affiliated titles or any
-            other journal; independent verification is encouraged.
+            This journal is affiliated with the organization that operates POSI. Its PQF score, citation
+            metrics (PCI/PCS), and Automated Rating are nevertheless calculated by the same published
+            methodology and versioned calculation engine applied to every eligible journal. No publisher,
+            editor, reviewer, sponsor, or POSI administrator can directly alter its numerical score,
+            percentile, or quartile; independent verification is encouraged.
           </span>{' '}
           <Link href="/about" className="underline" style={{ color: '#92400e' }}>Governance disclosure →</Link>
         </div>

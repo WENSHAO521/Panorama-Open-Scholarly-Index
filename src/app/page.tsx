@@ -100,10 +100,10 @@ export default async function HomePage() {
                 aria-label="Quick links"
               >
                 {[
+                  { href: '/ratings',          label: 'Automated Ratings' },
                   { href: '/citation-reports', label: 'Journal Rankings' },
                   { href: '/core-collection',  label: 'Core Collection' },
                   { href: '/open-data',        label: 'Open Data' },
-                  { href: '/doi-lookup',       label: 'DOI Lookup' },
                 ].map(link => (
                   <Link
                     key={link.href}
@@ -185,28 +185,28 @@ export default async function HomePage() {
             {[
               {
                 abbr: '01',
-                label: 'Journal Rankings',
-                desc: 'PCI (2-year), PCI-5, and PNCI citation-impact metrics for the Core Collection, ranked within subject. An open, reproducible alternative to proprietary impact factors.',
+                label: 'Automated Journal Ratings',
+                desc: '100-point, evidence-based automated rating for the Core Collection — crawled site evidence and sampled Crossref articles, no manual score, percentile, or quartile adjustment for any journal. Pilot 2026.',
+                href: '/ratings',
+                cta: 'View Ratings →',
+              },
+              {
+                abbr: '02',
+                label: 'Journal & Subject Rankings',
+                desc: 'PCI (2-year), PCI-5, and PNCI citation-impact metrics, ranked within POSI\'s own subject classification (PSC). An open, reproducible alternative to proprietary impact factors.',
                 href: '/citation-reports',
                 cta: 'View Rankings →',
               },
               {
-                abbr: '02',
+                abbr: '03',
                 label: 'POSI Core Collection',
                 desc: 'Discovered, Indexed, and Metric Eligible are three different things. See exactly which journals have passed editorial selection — and which have not.',
                 href: '/core-collection',
                 cta: 'Browse Coverage →',
               },
               {
-                abbr: '03',
-                label: 'PSC Subject Classification',
-                desc: 'A versioned, PR-reviewed subject taxonomy — based on the OECD Frascati Manual at the top level — that every ranking is computed within.',
-                href: '/subjects',
-                cta: 'Browse Subjects →',
-              },
-              {
                 abbr: '04',
-                label: 'Open Data',
+                label: 'Open Data & Methodology',
                 desc: 'Every journal record, formula, and dataset behind POSI is public on GitHub — versioned, PR-reviewed, and reproducible from a pinned commit.',
                 href: '/open-data',
                 cta: 'View Open Data →',
