@@ -416,19 +416,22 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           {/* Citation Impact — Core Collection feature, see showCitationImpact above */}
           {citationStats && <CitationImpactCard stats={citationStats} pcs={citationScore} />}
 
-          {/* Early-Stage Rating — a separate track from Citation Quartiles for
-              journals too young to have a real PCI citation window. 100%
-              automated (see EARLY-STAGE-RATING-SPEC.md §5): no reviewer,
-              editor, publisher, or POSI staff has a way to directly set this
-              score — only the underlying evidence can be corrected, which
-              triggers a recompute. Only shown once eligibility clears the
-              minimum evidence bar; "not_yet_rateable"/"unknown"/"graduated"
-              journals show nothing here rather than a misleading card. */}
-          {journal.early_stage_rating?.eligibility === 'rated' && journal.early_stage_rating.subfactors && (
+          {/* POSI Automated Journal Rating (AJR) — 100% automated (see
+              EARLY-STAGE-RATING-SPEC.md §5): no reviewer, editor, publisher,
+              or POSI staff has a way to directly set this score — only the
+              underlying evidence can be corrected, which triggers a
+              recompute. Applies to any journal that clears the minimum
+              evidence bar regardless of age; only "not_yet_rateable"/
+              "unknown" journals show nothing here. Age decides the quartile
+              track, not whether a score exists: 'rated' journals (within 36
+              months of first publication) are eligible for a future
+              P-Q1-P-Q4 once a real PSC peer cohort exists; 'rated_mature'
+              journals get the same score but rely on Citation Q instead. */}
+          {(journal.early_stage_rating?.eligibility === 'rated' || journal.early_stage_rating?.eligibility === 'rated_mature') && journal.early_stage_rating.subfactors && (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-                  Early-Stage Rating
+                  POSI Automated Rating (AJR)
                 </h2>
                 <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
                   100% AUTOMATED
@@ -440,8 +443,10 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
                 {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
                 from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
-                or quartile adjustment is possible for this or any journal. No P-Q1–P-Q4 quartile is assigned yet
-                (needs a same-cohort PSC peer group, not yet built).
+                or quartile adjustment is possible for this or any journal.{' '}
+                {journal.early_stage_rating.eligibility === 'rated'
+                  ? 'No P-Q1–P-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
+                  : 'This journal is outside the 36-month early-stage window — its ranking track is Citation Q (PCI-based), not P-Q.'}
               </p>
               <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
                 {[

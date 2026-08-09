@@ -27,6 +27,11 @@ export interface Journal {
   /** @deprecated use pqf */
   ojqf?: PqfScore
   early_stage_rating?: EarlyStageRating | null
+  // True only for BENCHMARK_JOURNALS — an external reference corpus used to
+  // validate AJR against internationally established journals. Never part
+  // of the Core Collection, never a POSI admission candidate, never counted
+  // in Indexed/Metric Eligible stats.
+  is_external_benchmark?: boolean
   article_count: number
   created_at: string
   updated_at: string
@@ -175,11 +180,15 @@ export interface EarlyStageSubfactors {
 }
 
 export interface EarlyStageRating {
-  // 'rated': within the 36-month window and meets the minimum evidence bar.
-  // 'not_yet_rateable': within the window but below the minimum bar (see spec §3).
-  // 'graduated': more than 36 months since first published — outside this track.
+  // The AJR score (subfactors/total) is computed for any journal that clears
+  // the minimum evidence bar, regardless of age — 'rated' and 'rated_mature'
+  // both carry a real score. Age only decides the quartile track: 'rated'
+  // (within 36 months of first publication) is eligible for a future
+  // P-Q1-P-Q4 once a real PSC peer cohort exists; 'rated_mature' journals
+  // are scored the same way but rely on Citation Q (PCI-based) instead.
+  // 'not_yet_rateable': below the minimum evidence bar regardless of age (see spec §3).
   // 'unknown': first-published date could not be determined (e.g. no Crossref records).
-  eligibility: 'rated' | 'not_yet_rateable' | 'graduated' | 'unknown'
+  eligibility: 'rated' | 'rated_mature' | 'not_yet_rateable' | 'unknown'
   first_published: string | null   // earliest Crossref-registered work date for this ISSN
   months_since_launch: number | null
   subfactors: EarlyStageSubfactors | null

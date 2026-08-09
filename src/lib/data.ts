@@ -133,7 +133,7 @@ export const PSG_JOURNALS: Journal[] = [
     // CC BY 4.0; OAI-PMH confirmed; COPE; double-blind; plagiarism + data policies; Crossref DOI
     pqf: pqf(15, 15, 11, 11, 4, 3),  // total: 59, Grade C
     article_count: 20,
-      early_stage_rating: { eligibility: 'rated', first_published: '2025-07-22', months_since_launch: 13, subfactors: { egf: 15, rif: 15, inf: 8, pub: 15, soc: 16, rdc: 5, trn: 10 }, total: 84, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'rated', first_published: '2025-07-22', months_since_launch: 13, subfactors: { egf: 15, rif: 15, inf: 4, pub: 11, soc: 0, rdc: 5, trn: 10 }, total: 60, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2024-06-01T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -163,7 +163,7 @@ export const PSG_JOURNALS: Journal[] = [
     // CC BY 4.0; COPE; medical ethics requirement; annual frequency limits metadata volume
     pqf: pqf(16, 13, 11, 9, 3, 4),  // total: 56, Grade C
     article_count: 15,
-      early_stage_rating: { eligibility: 'rated', first_published: '2025-10-15', months_since_launch: 10, subfactors: { egf: 15, rif: 12, inf: 4, pub: 11, soc: 0, rdc: 5, trn: 10 }, total: 57, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'rated', first_published: '2025-10-15', months_since_launch: 10, subfactors: { egf: 15, rif: 12, inf: 8, pub: 15, soc: 18, rdc: 10, trn: 10 }, total: 88, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2024-09-01T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -283,7 +283,7 @@ export const PSG_JOURNALS: Journal[] = [
     // CC BY 4.0; COPE; plagiarism policy; annual publication; limited board disclosure
     pqf: pqf(15, 12, 10, 9, 3, 3),  // total: 52, Grade C
     article_count: 8,
-      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'not_yet_rateable', first_published: '2025-11-28', months_since_launch: 9, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2025-01-01T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -313,7 +313,7 @@ export const PSG_JOURNALS: Journal[] = [
     // OpenAlex indexed (S5407051440); OAI-PMH active; 13-member board (2 ORCID); DOAJ applied; fieldwork ethics policy
     pqf: pqf(17, 16, 15, 13, 5, 4),  // total: 70, Grade B+
     article_count: 14,
-      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'rated', first_published: '2025-08-24', months_since_launch: 12, subfactors: { egf: 15, rif: 12, inf: 8, pub: 15, soc: 17, rdc: 10, trn: 10 }, total: 87, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2025-03-01T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -403,7 +403,7 @@ export const PSG_JOURNALS: Journal[] = [
     // CC BY 4.0; Crossref DOI confirmed; COPE; experimental/irregular format limits TDF/CVF
     pqf: pqf(14, 12, 10, 9, 3, 3),  // total: 51, Grade C
     article_count: 5,
-      early_stage_rating: { eligibility: 'not_yet_rateable', first_published: '2026-02-25', months_since_launch: 6, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2025-06-01T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -533,7 +533,7 @@ export const SHIHARR_JOURNALS: Journal[] = [
     indexing_readiness: 'B',
     pqf: pqf(17, 14, 12, 12, 5, 3),  // total: 63, Grade B
     article_count: 0,
-      early_stage_rating: { eligibility: 'not_yet_rateable', first_published: '2025-06-06', months_since_launch: 14, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -623,7 +623,7 @@ export const SHIHARR_JOURNALS: Journal[] = [
     indexing_readiness: 'C',
     pqf: pqf(15, 13, 11, 11, 4, 3),  // total: 57, Grade C
     article_count: 0,
-      early_stage_rating: { eligibility: 'not_yet_rateable', first_published: '2025-10-25', months_since_launch: 10, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },
@@ -865,7 +865,7 @@ export const SHIHARR_JOURNALS: Journal[] = [
     indexing_readiness: 'C',
     pqf: pqf(13, 11, 9, 10, 3, 2),  // total: 48, Grade D
     article_count: 0,
-      early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
+      early_stage_rating: { eligibility: 'not_yet_rateable', first_published: '2025-12-17', months_since_launch: 8, subfactors: null, total: null, provisional_quartile: null, rated_at: '2026-08-09', version: 'EARLY-STAGE-AUTO-0.2' },
   created_at: '2026-06-22T00:00:00Z',
     updated_at: '2026-06-22T00:00:00Z',
   },

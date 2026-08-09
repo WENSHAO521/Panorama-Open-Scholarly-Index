@@ -32,11 +32,22 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 
-const DATA_PATH = resolve('src/lib/data.ts')
 const WRITE = process.argv.includes('--write')
 const LIMIT = (() => {
   const i = process.argv.indexOf('--limit')
   return i !== -1 ? parseInt(process.argv[i + 1], 10) : null
+})()
+// --file/--arrays let this same script rate BENCHMARK_JOURNALS (in
+// benchmark-journals.ts) as well as the default Core Collection — same
+// methodology, same scoring functions, just a different source array. See
+// scripts/discover-benchmark-journals.mjs for what the benchmark file is.
+const DATA_PATH = resolve((() => {
+  const i = process.argv.indexOf('--file')
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/data.ts'
+})())
+const TARGET_ARRAYS = (() => {
+  const i = process.argv.indexOf('--arrays')
+  return i !== -1 ? process.argv[i + 1].split(',') : ['PSG_JOURNALS', 'INDEXED_JOURNALS', 'SHIHARR_JOURNALS', 'OTHER_INDEXED_JOURNALS']
 })()
 
 const UA = 'POSI-EarlyStageRating/0.2 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
@@ -69,24 +80,55 @@ function hasAny(text, patterns) {
   return patterns.some(p => lower.includes(p))
 }
 
+function extractSignals(html) {
+  return {
+    aimScope: hasAny(html, ['aim and scope', 'aims and scope', 'about the journal', 'journal focus', 'focus and scope']),
+    peerReview: hasAny(html, ['peer review', 'peer-review', 'peer reviewed', 'double-blind', 'single-blind', 'double blind review']),
+    editorialBoard: hasAny(html, ['editorial board', 'editorial team', 'board of editors']),
+    apc: hasAny(html, ['article processing charge', 'apc', 'publication fee', 'processing fee']),
+    waiver: hasAny(html, ['waiver', 'fee waiver', 'fee discount', 'no charge']),
+    openAccess: hasAny(html, ['open access']),
+    license: hasAny(html, ['creative commons', 'cc by', 'copyright notice']),
+    ethics: hasAny(html, ['publication ethics', 'committee on publication ethics', 'cope guidelines', 'research ethics', 'research integrity', 'ethical guidelines', 'code of conduct']),
+    corrections: hasAny(html, ['retraction', 'correction policy', 'errata']),
+    plagiarism: hasAny(html, ['plagiarism', 'similarity check', 'turnitin', 'ithenticate', 'similarity index']),
+    dataAvailability: hasAny(html, ['data availability', 'data sharing', 'data accessibility']),
+    frequencyStated: hasAny(html, ['monthly', 'bimonthly', 'quarterly', 'biannual', 'annual', 'issues per year', 'continuous publication', 'rolling publication']),
+  }
+}
+
+// Large traditional-publisher platforms (Elsevier, Wiley, ACS, APS, IOP,
+// OUP, ...) put policy content on dedicated subpages rather than the
+// journal homepage — a homepage-only crawl systematically misread this as
+// "no ethics policy"/"no editorial board" for journals that plainly have
+// both, which a benchmark run against established journals (Nature, etc.)
+// surfaced directly. OA-native platforms (Frontiers, most small/POSI
+// journals) tend to put everything on the homepage already, so this only
+// fires — and only spends the extra fetches — when the homepage alone
+// left a gap.
+const POLICY_SUBPATHS = ['/about', '/for-authors', '/editorial-policies', '/ethics']
+
 async function crawlJournalSite(websiteUrl) {
   if (!websiteUrl) return null
   const home = await fetchText(websiteUrl)
   if (!home) return null
-  return {
-    aimScope: hasAny(home, ['aim and scope', 'aims and scope', 'about the journal', 'journal focus', 'focus and scope']),
-    peerReview: hasAny(home, ['peer review', 'peer-review', 'peer reviewed', 'double-blind', 'single-blind', 'double blind review']),
-    editorialBoard: hasAny(home, ['editorial board', 'editorial team', 'board of editors']),
-    apc: hasAny(home, ['article processing charge', 'apc', 'publication fee', 'processing fee']),
-    waiver: hasAny(home, ['waiver', 'fee waiver', 'fee discount', 'no charge']),
-    openAccess: hasAny(home, ['open access']),
-    license: hasAny(home, ['creative commons', 'cc by', 'copyright notice']),
-    ethics: hasAny(home, ['publication ethics', 'committee on publication ethics', 'cope guidelines']),
-    corrections: hasAny(home, ['retraction', 'correction policy', 'errata']),
-    plagiarism: hasAny(home, ['plagiarism', 'similarity check', 'turnitin', 'ithenticate', 'similarity index']),
-    dataAvailability: hasAny(home, ['data availability', 'data sharing', 'data accessibility']),
-    frequencyStated: hasAny(home, ['monthly', 'bimonthly', 'quarterly', 'biannual', 'annual', 'issues per year', 'continuous publication', 'rolling publication']),
+  const signals = extractSignals(home)
+
+  const stillMissing = !signals.peerReview || !signals.editorialBoard || !signals.ethics
+  if (!stillMissing) return signals
+
+  const base = websiteUrl.replace(/\/+$/, '')
+  const subpages = await Promise.all(
+    POLICY_SUBPATHS.map(p => fetchText(`${base}${p}`, 8000))
+  )
+  for (const html of subpages) {
+    if (!html) continue
+    const found = extractSignals(html)
+    for (const key of Object.keys(signals)) {
+      if (!signals[key] && found[key]) signals[key] = true
+    }
   }
+  return signals
 }
 
 async function checkSitemap(websiteUrl) {
@@ -346,16 +388,26 @@ function scoreReachConcentration(articles) {
   return clamp(s, 10)
 }
 
+// The AJR score itself (§4's 100-point rubric) applies to any journal that
+// clears the minimum evidence bar, regardless of age — a 40-year-old
+// journal's editorial governance/integrity/infrastructure evidence is just
+// as computable as a new one's. Age only decides which *quartile track* a
+// score feeds into: 'rated' (within the 36-month early-stage window) is
+// eligible for a future P-Q1-P-Q4 once a real peer cohort exists;
+// 'rated_mature' journals get the same AJR score but are outside that
+// window — their eventual quartile comes from Citation Q (PCI-based), not
+// P-Q. Neither status is a judgment about quality, only about which
+// ranking track applies.
 function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, site }) {
   if (!firstPublished) return 'unknown'
-  if (monthsSinceLaunch > EARLY_STAGE_WINDOW_MONTHS) return 'graduated'
   const meetsBar =
     monthsSinceLaunch >= MIN_OPERATING_MONTHS &&
     articleCount >= MIN_ARTICLES &&
     !!site?.peerReview &&
     !!site?.editorialBoard &&
     !!site?.ethics
-  return meetsBar ? 'rated' : 'not_yet_rateable'
+  if (!meetsBar) return 'not_yet_rateable'
+  return monthsSinceLaunch > EARLY_STAGE_WINDOW_MONTHS ? 'rated_mature' : 'rated'
 }
 
 async function rateJournal(journal) {
@@ -377,7 +429,7 @@ async function rateJournal(journal) {
   const monthsSinceLaunch = firstPublished ? monthsBetween(firstPublished, RATING_CUTOFF) : null
   const eligibility = computeEligibility({ firstPublished, monthsSinceLaunch, articleCount: journal.article_count, site })
 
-  if (eligibility !== 'rated') {
+  if (eligibility !== 'rated' && eligibility !== 'rated_mature') {
     return {
       id: journal.id,
       rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, subfactors: null, total: null },
@@ -402,9 +454,9 @@ async function rateJournal(journal) {
   }
 }
 
-// ─── Parse the Core Collection arrays from data.ts ─────────────────────────
+// ─── Parse the target arrays from the target file ──────────────────────────
 
-const CORE_ARRAYS = ['PSG_JOURNALS', 'INDEXED_JOURNALS', 'SHIHARR_JOURNALS', 'OTHER_INDEXED_JOURNALS']
+const CORE_ARRAYS = TARGET_ARRAYS
 
 function parseCoreCollection(src) {
   const journals = []
@@ -423,7 +475,11 @@ function parseCoreCollection(src) {
     let current = null
     const flush = () => { if (current?.id) journals.push(current) }
     for (const line of lines) {
-      const idM = /id:\s*'([^']+)'/.exec(line)
+      // Anchored to line start — an unanchored /id:/ also matches inside
+      // "openalex_source_id: '...'", which is always a real string for
+      // benchmark journals (unlike Core Collection, where it's usually
+      // null) and was silently creating phantom duplicate entries.
+      const idM = /^\s*id:\s*'([^']+)'/.exec(line)
       if (idM) { flush(); current = { id: idM[1], code: null, issnOnline: null, issnPrint: null, websiteUrl: null, articleCount: 0 }; continue }
       if (!current) continue
       const codeM = /journal_code:\s*'([^']+)'/.exec(line); if (codeM) { current.code = codeM[1]; continue }
@@ -483,11 +539,11 @@ async function main() {
   const src = readFileSync(DATA_PATH, 'utf-8')
   const all = parseCoreCollection(src)
   const journals = LIMIT ? all.slice(0, LIMIT) : all
-  console.log(`Found ${all.length} Core Collection journals${LIMIT ? ` — processing first ${journals.length}` : ''}\n`)
+  console.log(`Found ${all.length} journals in ${TARGET_ARRAYS.join('/')} (${DATA_PATH})${LIMIT ? ` — processing first ${journals.length}` : ''}\n`)
 
   const results = await runBatch(journals, rateJournal, CONCURRENCY)
 
-  const counts = { rated: 0, not_yet_rateable: 0, graduated: 0, unknown: 0 }
+  const counts = { rated: 0, rated_mature: 0, not_yet_rateable: 0, unknown: 0 }
   for (const r of results) counts[r.rating.eligibility]++
   console.log('Eligibility breakdown:', counts)
 
