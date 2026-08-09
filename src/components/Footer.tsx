@@ -2,30 +2,29 @@ import Link from 'next/link'
 
 const NAV_COLUMNS = [
   {
-    heading: 'Platform',
+    heading: 'Rankings & Coverage',
     links: [
-      { href: '/search',           label: 'Search' },
-      { href: '/journals',         label: 'Journal Records' },
-      { href: '/doi-lookup',       label: 'DOI Lookup' },
-      { href: '/cite',             label: 'Citation Generator' },
-      { href: '/journals?tab=psg', label: 'POSI Verified Journals' },
+      { href: '/citation-reports',      label: 'Citation Reports' },
+      { href: '/pci',                   label: 'POSI Citation Impact (PCI/PCS)' },
+      { href: '/subjects',              label: 'PSC Subject Classification' },
+      { href: '/core-collection',       label: 'POSI Core Collection' },
+      { href: '/journals?tab=discovered', label: 'Auto-discovered Records' },
     ],
   },
   {
-    heading: 'Assessment',
+    heading: 'Methodology',
     links: [
-      { href: '/pqf',      label: 'PQF Methodology' },
+      { href: '/pqf',      label: 'Editorial Selection (PQF)' },
       { href: '/mqs',      label: 'Metadata Quality Score' },
       { href: '/cvi',      label: 'Citation Visibility Index' },
-      { href: '/pci',      label: 'POSI Citation Impact (PCI)' },
       { href: '/irs',      label: 'Indexing Readiness Score' },
       { href: '/evidence', label: 'Evidence Registry' },
     ],
   },
   {
-    heading: 'Data & Resources',
+    heading: 'Open Data',
     links: [
-      { href: '/citation-reports',    label: 'Citation Reports' },
+      { href: '/open-data',           label: 'Open Data Overview' },
       { href: '/badges',              label: 'POSI Badges' },
       { href: '/data-sources',        label: 'Data Sources' },
       { href: '/api',                 label: 'API Roadmap' },
@@ -52,6 +51,11 @@ const OPEN_INFRA = [
   { label: 'ROR',           href: 'https://ror.org' },
   { label: 'ORCID',         href: 'https://orcid.org' },
   { label: 'OpenCitations', href: 'https://opencitations.net' },
+]
+
+const POSI_REPOS = [
+  { label: 'posi-data',   href: 'https://github.com/WENSHAO521/posi-data' },
+  { label: 'posi-engine', href: 'https://github.com/WENSHAO521/posi-engine' },
 ]
 
 export function Footer() {
@@ -82,7 +86,7 @@ export function Footer() {
               className="text-[11px] leading-relaxed hidden md:block max-w-[260px]"
               style={{ color: 'rgba(255,255,255,0.3)' }}
             >
-              Open scholarly metadata platform for journal transparency and citation visibility.
+              Open scholarly citation index: journal coverage, citation analytics, and subject rankings — reproducible from public data.
             </p>
           </div>
 
@@ -180,6 +184,32 @@ export function Footer() {
               }}
             >
               {src.label}
+            </a>
+          ))}
+          <span
+            className="text-[9px] uppercase shrink-0 ml-4 mr-1"
+            style={{
+              color: 'rgba(255,255,255,0.18)',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.18em',
+            }}
+          >
+            POSI Open Data
+          </span>
+          {POSI_REPOS.map(repo => (
+            <a
+              key={repo.label}
+              href={repo.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] px-2 py-0.5 transition-all hover:text-white"
+              style={{
+                color: 'var(--posi-accent)',
+                border: '1px solid rgba(196,30,58,0.3)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {repo.label} ↗
             </a>
           ))}
         </div>

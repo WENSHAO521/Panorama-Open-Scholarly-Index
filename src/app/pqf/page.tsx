@@ -119,16 +119,28 @@ export default function PqfPage() {
           <span className="text-[10px] font-mono font-bold text-[#c41e3a] border border-[#c41e3a] px-1.5 py-0.5">PQF</span>
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">2026</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">POSI Quality Framework Methodology</h1>
+        <h1 className="text-2xl font-bold text-gray-900 leading-tight">Editorial Selection Framework (PQF)</h1>
         <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
-          The POSI Quality Framework (PQF) is a composite, evidence-based framework designed to assess journal transparency,
-          metadata quality, editorial governance, technical discoverability, open citation visibility,
-          and research integrity readiness through publicly auditable evidence.
+          The POSI Quality Framework (PQF) is a composite, evidence-based framework assessing journal
+          transparency, metadata quality, editorial governance, technical discoverability, open citation
+          visibility, and research integrity readiness through publicly auditable evidence.
         </p>
       </div>
 
       {/* Official definition */}
       <section className="bg-white border border-gray-200 mb-6 p-5">
+        <p className="text-xs leading-relaxed text-gray-700 mb-3">
+          <strong>PQF supports editorial selection and Core Collection admission.</strong> PQF is the
+          criteria a journal must meet to enter the{' '}
+          <Link href="/core-collection" className="underline">POSI Core Collection</Link> — it answers
+          "can this journal be indexed," not "how good is this journal compared to others." Journal{' '}
+          <strong>rankings and quartiles are derived from PCI</strong>, computed within{' '}
+          <Link href="/subjects" className="underline">POSI Subject Classification (PSC)</Link> categories —
+          not from PQF, and not from a blend of PQF with anything else.{' '}
+          <Link href="/pci" className="underline">PCS</Link> is published alongside PCI as a second,
+          independently-sourced citation indicator, but it does not feed the Q1–Q4 quartile calculation —
+          a journal is never shown two competing "quality numbers" answering the same question.
+        </p>
         <p className="text-xs leading-relaxed text-gray-700 mb-3">
           <strong>PQF is not a Journal Impact Factor.</strong> It is not a citation impact metric and is not a
           substitute for Web of Science, Scopus, DOAJ, or any other indexing or accreditation service.

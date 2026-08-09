@@ -14,27 +14,48 @@ const navItems: NavItem[] = [
   {
     label: 'Search',
     children: [
-      { label: 'Advanced Search', href: '/advanced-search' },
-      { label: 'DOI Lookup',      href: '/doi-lookup' },
-      { label: 'Book Search',     href: '/isbn-lookup' },
+      { label: 'Advanced Search',    href: '/advanced-search' },
+      { label: 'DOI Lookup',         href: '/doi-lookup' },
+      { label: 'Book Search',        href: '/isbn-lookup' },
+      { label: 'Citation Generator', href: '/cite' },
+      { label: 'PSG Format',         href: '/psg-format' },
     ],
   },
   {
-    label: 'Records',
+    label: 'Rankings',
     children: [
-      { label: 'Journal Records',          href: '/journals' },
+      { label: 'Citation Reports',              href: '/citation-reports' },
+      { label: 'POSI Citation Impact (PCI/PCS)', href: '/pci' },
+      { label: 'PSC Subject Classification',    href: '/subjects' },
+    ],
+  },
+  {
+    label: 'Coverage',
+    children: [
+      { label: 'POSI Core Collection',     href: '/core-collection' },
+      { label: 'All Journal Records',      href: '/journals' },
       { label: 'POSI Verified Journals',   href: '/journals?tab=psg' },
       { label: 'Auto-discovered Records',  href: '/journals?tab=discovered' },
     ],
   },
   {
-    label: 'Assessment',
+    label: 'Open Data',
     children: [
-      { label: 'PQF Methodology',          href: '/pqf' },
-      { label: 'PQF Scores',               href: '/pqf-scores' },
-      { label: 'Metadata Quality Score',   href: '/mqs' },
+      { label: 'Open Data Overview',   href: '/open-data' },
+      { label: 'Data Sources',         href: '/data-sources' },
+      { label: 'Source Status',        href: '/source-status' },
+      { label: 'API Roadmap',          href: '/api' },
+      { label: 'Export Formats',       href: '/export-formats' },
+    ],
+  },
+  {
+    label: 'Methodology',
+    children: [
+      { label: 'Editorial Selection (PQF)', href: '/pqf' },
+      { label: 'PQF Scores',                href: '/pqf-scores' },
+      { label: 'Metadata Quality Score',    href: '/mqs' },
       { label: 'Citation Visibility Index', href: '/cvi' },
-      { label: 'Indexing Readiness Score', href: '/irs' },
+      { label: 'Indexing Readiness Score',  href: '/irs' },
     ],
   },
   {
@@ -45,17 +66,6 @@ const navItems: NavItem[] = [
       { label: 'Journal Evidence Records',         href: '/journal-evidence' },
       { label: 'Conflict of Interest Disclosure',  href: '/coi' },
       { label: 'Responsible Use Notice',           href: '/responsible-use' },
-    ],
-  },
-  {
-    label: 'Data',
-    children: [
-      { label: 'Citation Generator', href: '/cite' },
-      { label: 'PSG Format',         href: '/psg-format' },
-      { label: 'Data Sources',       href: '/data-sources' },
-      { label: 'Source Status',      href: '/source-status' },
-      { label: 'API Roadmap',        href: '/api' },
-      { label: 'Export Formats',     href: '/export-formats' },
     ],
   },
   {

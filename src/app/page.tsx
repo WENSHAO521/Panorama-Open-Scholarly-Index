@@ -5,9 +5,9 @@ import { getStats } from '@/lib/data'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Panorama Open Scholarly Index | POSI',
+  title: 'POSI — Open Scholarly Citation Index',
   description:
-    'POSI is an open scholarly metadata platform that evaluates journal transparency, metadata quality, technical discoverability, and open citation visibility through publicly auditable evidence.',
+    'POSI is an open scholarly citation index: journal coverage, citation analytics (PCI/PCS), and subject rankings, reproducible from public data and open-source methodology.',
 }
 
 export default async function HomePage() {
@@ -81,7 +81,7 @@ export default async function HomePage() {
                   letterSpacing: '0.01em',
                 }}
               >
-                Panorama Open Scholarly Index
+                Open Scholarly Citation Index
               </h1>
               <p
                 className="mb-8 leading-relaxed"
@@ -91,9 +91,8 @@ export default async function HomePage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Open journal metadata and policy evidence platform. Evaluate journal transparency,
-                metadata quality, technical discoverability, and policy compliance through
-                publicly auditable evidence.
+                Journal coverage, citation analytics, and subject rankings — reproducible from
+                open data and open-source methodology, not a proprietary black box.
               </p>
               <SearchBar />
               <nav
@@ -101,10 +100,10 @@ export default async function HomePage() {
                 aria-label="Quick links"
               >
                 {[
-                  { href: '/journals',   label: 'Journals' },
-                  { href: '/doi-lookup', label: 'DOI Lookup' },
-                  { href: '/pqf',        label: 'PQF Methodology' },
-                  { href: '/evidence',   label: 'Evidence Registry' },
+                  { href: '/citation-reports', label: 'Journal Rankings' },
+                  { href: '/core-collection',  label: 'Core Collection' },
+                  { href: '/open-data',        label: 'Open Data' },
+                  { href: '/doi-lookup',       label: 'DOI Lookup' },
                 ].map(link => (
                   <Link
                     key={link.href}
@@ -123,10 +122,10 @@ export default async function HomePage() {
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
               {[
-                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'POSI Verified Journal Records',   note: 'Manually reviewed & evidence-checked' },
-                { value: stats.discovered_journals.toLocaleString(),                     label: 'Auto-discovered Journal Records', note: 'From DOAJ, Crossref & OpenAlex' },
-                { value: stats.total_doi_records.toLocaleString(),                       label: 'DOI Metadata Records',            note: 'DOI-registered articles via Crossref' },
-                { value: '250M+',                                                         label: 'External Searchable Records',     note: 'Search scope via OpenAlex' },
+                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'POSI Core Collection',        note: 'Current verified records — migration in progress' },
+                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Metric Eligible Journals',    note: 'Current verified records — migration in progress' },
+                { value: '48',                                                            label: 'PSC Subject Categories',      note: 'v1.0 taxonomy — journal classification not yet run' },
+                { value: stats.discovered_journals.toLocaleString(),                      label: 'Discovered Journal Records',  note: 'Not yet Core Collection — see Coverage' },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -154,52 +153,69 @@ export default async function HomePage() {
               ))}
             </div>
             <p
-              className="pb-2 px-6 text-[9px]"
+              className="pb-2 px-6 text-[9px] flex flex-wrap items-center gap-2"
               style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font-mono)' }}
             >
-              Updated {stats.last_updated}
+              <span>Updated {stats.last_updated}</span>
+              <span
+                className="px-1.5 py-0.5"
+                style={{ background: 'rgba(196,30,58,0.15)', border: '1px solid rgba(196,30,58,0.3)', color: 'rgba(255,255,255,0.45)' }}
+              >
+                Migration to POSI 2.0 identity corpus in progress — see Open Data
+              </span>
             </p>
             <p
               className="pb-4 px-6 text-[9px] leading-relaxed max-w-3xl"
               style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font-mono)' }}
             >
-              POSI Verified and Auto-discovered records are maintained by POSI. DOI Metadata Records are
-              DOI-registered articles indexed via Crossref. External Searchable Records represent the
-              search scope via OpenAlex and are not equivalent to POSI-reviewed records.
+              POSI Core Collection = journals admitted through POSI's published editorial selection
+              criteria (see Methodology). Discovered Journal Records are found via DOAJ/Crossref/OpenAlex
+              but not yet reviewed — POSI has a record of them, that is not the same as POSI indexing
+              them. Search itself additionally reaches Crossref/OpenAlex's much larger open corpus beyond
+              either count; that external search scope is not a POSI-reviewed figure and isn't reported here.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── CORE INDICATORS ── */}
+      {/* ── FOUR PRODUCT ENTRY POINTS ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
         <div className="max-w-[1400px] mx-auto">
           <div className="indicators-grid grid md:grid-cols-4">
             {[
               {
-                abbr: 'PQF',
-                label: 'POSI Quality Framework',
-                desc: 'Composite indicator (0-100) assessing journal transparency, metadata quality, editorial governance, technical discoverability, open citation visibility, and research integrity readiness.',
+                abbr: '01',
+                label: 'Journal Rankings',
+                desc: 'PCI (2-year), PCI-5, and PNCI citation-impact metrics for the Core Collection, ranked within subject. An open, reproducible alternative to proprietary impact factors.',
+                href: '/citation-reports',
+                cta: 'View Rankings →',
               },
               {
-                abbr: 'MQS',
-                label: 'Metadata Quality Score',
-                desc: 'Article-level metadata score (0-100) based on DOI registration, abstract completeness, ORCID/ROR identifiers, reference lists, license URI, and open access status.',
+                abbr: '02',
+                label: 'POSI Core Collection',
+                desc: 'Discovered, Indexed, and Metric Eligible are three different things. See exactly which journals have passed editorial selection — and which have not.',
+                href: '/core-collection',
+                cta: 'Browse Coverage →',
               },
               {
-                abbr: 'CVI',
-                label: 'Citation Visibility Index',
-                desc: 'Open citation visibility currently derived from Crossref and OpenAlex. OpenCitations integration is planned. Only open, attributed, machine-readable citation data.',
+                abbr: '03',
+                label: 'PSC Subject Classification',
+                desc: 'A versioned, PR-reviewed subject taxonomy — based on the OECD Frascati Manual at the top level — that every ranking is computed within.',
+                href: '/subjects',
+                cta: 'Browse Subjects →',
               },
               {
-                abbr: 'IRS',
-                label: 'Indexing Readiness Score',
-                desc: 'Technical readiness assessment for common scholarly indexing: OAI-PMH, sitemap, DOI resolution, Schema.org, and Google Scholar discoverability.',
+                abbr: '04',
+                label: 'Open Data',
+                desc: 'Every journal record, formula, and dataset behind POSI is public on GitHub — versioned, PR-reviewed, and reproducible from a pinned commit.',
+                href: '/open-data',
+                cta: 'View Open Data →',
               },
             ].map((f) => (
-              <div
+              <Link
                 key={f.abbr}
-                className="p-7"
+                href={f.href}
+                className="p-7 block transition-colors hover:bg-black/[0.015] group"
               >
                 {/* DIN-style: mono abbreviation + rule divider */}
                 <div className="mb-5">
@@ -225,16 +241,22 @@ export default async function HomePage() {
                 >
                   {f.label}
                 </h2>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+                <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>
                   {f.desc}
                 </p>
-              </div>
+                <span
+                  className="text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100"
+                  style={{ color: 'var(--posi-accent)' }}
+                >
+                  {f.cta}
+                </span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── PQF METHODOLOGY CTA ── */}
+      {/* ── REPRODUCIBILITY CTA ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
           <div
@@ -251,26 +273,22 @@ export default async function HomePage() {
                   letterSpacing: '0.01em',
                 }}
               >
-                Evidence-based Journal Quality Assessment
+                Every metric is reproducible
               </h2>
               <p
                 className="text-sm leading-relaxed mb-5"
                 style={{ color: 'var(--posi-muted)', maxWidth: '60ch' }}
               >
-                PQF evaluates journal transparency, metadata quality, editorial governance,
-                technical discoverability, open citation visibility, and research integrity
-                readiness through publicly auditable evidence.
-                PQF is not an Impact Factor and must not be used for researcher evaluation,
-                hiring, promotion, or funding decisions.
+                POSI does not compute rankings behind closed doors. The journal data, the PCI/PNCI
+                formulas, the subject taxonomy, and the ranking engine are all public on GitHub —
+                pin a commit, re-run the calculation, and you should get the same number POSI published.
               </p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { code: 'JTF', pct: '25%', label: 'Transparency' },
-                  { code: 'MQF', pct: '25%', label: 'Metadata' },
-                  { code: 'EGF', pct: '20%', label: 'Governance' },
-                  { code: 'TDF', pct: '15%', label: 'Discoverability' },
-                  { code: 'CVF', pct: '10%', label: 'Citations' },
-                  { code: 'RIF', pct: '5%',  label: 'Integrity' },
+                  { code: 'DATA',   label: 'Open journal & metric records' },
+                  { code: 'CODE',   label: 'Open calculation engine' },
+                  { code: 'AUDIT',  label: 'Published migration audits' },
+                  { code: 'VERSION',label: 'Every result pinned to a commit' },
                 ].map(d => (
                   <div
                     key={d.code}
@@ -283,12 +301,6 @@ export default async function HomePage() {
                     >
                       {d.code}
                     </span>
-                    <span
-                      className="text-[9px] font-bold"
-                      style={{ color: 'var(--posi-text)', fontFamily: 'var(--font-mono)' }}
-                    >
-                      {d.pct}
-                    </span>
                     <span className="text-[9px]" style={{ color: 'var(--posi-muted)' }}>
                       {d.label}
                     </span>
@@ -297,11 +309,11 @@ export default async function HomePage() {
               </div>
             </div>
             <Link
-              href="/pqf"
+              href="/open-data"
               className="shrink-0 px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-body)' }}
             >
-              View Methodology
+              View Open Data
             </Link>
           </div>
         </div>
@@ -313,11 +325,11 @@ export default async function HomePage() {
           <div className="coverage-grid grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
             {[
               {
-                title: 'Journal Records',
+                title: 'Coverage',
                 items: [
-                  { label: 'PSG Verified',   value: stats.psg_journals },
-                  { label: 'Other Verified', value: stats.indexed_journals },
-                  { label: 'Auto-discovered', value: stats.discovered_journals },
+                  { label: 'PSG (Core Collection)',        value: stats.psg_journals },
+                  { label: 'Other Core Collection',        value: stats.indexed_journals },
+                  { label: 'Discovered (not yet reviewed)', value: stats.discovered_journals },
                 ],
               },
               {
@@ -391,11 +403,11 @@ export default async function HomePage() {
               ))}
             </div>
             <Link
-              href="/data-sources"
+              href="/open-data"
               className="sm:ml-auto shrink-0 text-xs hover:underline transition-colors"
               style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
             >
-              Data Sources & Provenance →
+              Open Data & Provenance →
             </Link>
           </div>
         </div>
@@ -417,12 +429,13 @@ export default async function HomePage() {
               <strong style={{ color: 'var(--posi-text)', fontWeight: 600 }}>
                 Responsible Use Notice:{' '}
               </strong>
-              POSI is an open scholarly metadata platform. PQF scores indicate metadata completeness,
-              transparency, and technical discoverability only. POSI is not a replacement for Web of
-              Science, Scopus, DOAJ, or any official indexing service. PQF must not be used for
-              individual researcher evaluation, hiring, promotion, funding decisions, or institutional
-              ranking. Some journals in POSI are published by Panorama Scholarly Group, which also
-              operates this platform.{' '}
+              POSI is an open scholarly citation index. PQF indicates a journal's transparency,
+              metadata quality, and technical discoverability — it supports Core Collection admission,
+              it is not a citation-impact score. PCI/PCS indicate citation volume — they are not
+              quality certifications. Neither should be used as the sole or primary basis for
+              individual researcher evaluation, hiring, promotion, or funding decisions. POSI is not
+              affiliated with Web of Science, Scopus, or DOAJ. Some journals in POSI are published by
+              Panorama Scholarly Group, which also operates this platform.{' '}
               <Link href="/coi" style={{ color: 'var(--posi-accent)' }}>
                 Read our conflict of interest disclosure.
               </Link>

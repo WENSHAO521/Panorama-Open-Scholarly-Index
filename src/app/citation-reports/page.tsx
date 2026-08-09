@@ -110,8 +110,9 @@ export default async function CitationReportsPage() {
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Reports</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Two independently-sourced citation metrics — <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link> (OpenAlex, JIF-style)
-          and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref, CiteScore-style) — plus h-index, total citations,
-          and subject percentile, for POSI's manually-reviewed Core Collection, ranked within subject.
+          and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref, CiteScore-style) — plus h-index and total citations,
+          for POSI's manually-reviewed Core Collection. <strong style={{ color: 'var(--posi-text)' }}>Subject percentile is derived
+          from PCI only</strong> — PCS is not blended into it.
         </p>
       </div>
 
