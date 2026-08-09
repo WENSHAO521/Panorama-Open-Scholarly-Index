@@ -159,14 +159,20 @@ async function checkDoiResolves(doi) {
 }
 
 async function fetchOpenAlexStats(issn) {
+  // Singleton lookup (/sources/issn:{issn}), not the filtered list endpoint
+  // (/sources?filter=issn:...) — the filter/list form is metered against
+  // OpenAlex's daily request budget and this script exhausted it earlier by
+  // using that form here; singleton lookups are free. Same lesson already
+  // applied correctly in posi-engine's openalex-enrich.mjs — this was a
+  // regression specific to this newer script.
   try {
-    const params = new URLSearchParams({ filter: `issn:${issn}`, select: 'summary_stats', mailto: 'posi@panoramagroup.org' })
-    const res = await fetch(`https://api.openalex.org/sources?${params.toString()}`, {
+    const params = new URLSearchParams({ select: 'id,summary_stats,topics', mailto: 'posi@panoramagroup.org' })
+    const res = await fetch(`https://api.openalex.org/sources/issn:${issn}?${params.toString()}`, {
       headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return null
     const data = await res.json()
-    return data.results?.[0] ? true : null
+    return data?.id ? true : null
   } catch {
     return null
   }

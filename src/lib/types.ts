@@ -32,6 +32,15 @@ export interface Journal {
   // of the Core Collection, never a POSI admission candidate, never counted
   // in Indexed/Metric Eligible stats.
   is_external_benchmark?: boolean
+  // PSC (POSI Subject Classification) — see posi-data's PSC-CROSSWALK.md.
+  // Derived from OpenAlex's topic-aggregation data for the journal's ISSN,
+  // mapped through an OpenAlex-field-to-PSC crosswalk. 'low' confidence
+  // means the journal's top topic didn't dominate its topic distribution
+  // (a real signal for multidisciplinary/generalist journals like Nature or
+  // The Lancet, not a data error) — psc_category may still be set as a
+  // best-guess in that case, but should be treated as unreliable.
+  psc_category?: string | null
+  psc_confidence?: 'high' | 'low' | null
   article_count: number
   created_at: string
   updated_at: string
