@@ -143,6 +143,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   const facts: [string, string][] = [
     ['POSI Journal Code', journal.journal_code.toUpperCase()],
     ['ISSN', issnLine(journal)],
+    ['ISSN Registration', journal.registration_country || '—'],
     ['Country', journal.country || '—'],
     ['Coverage Since', journal.created_at ? journal.created_at.slice(0, 10) : '—'],
   ]
