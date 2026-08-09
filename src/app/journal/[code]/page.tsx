@@ -252,7 +252,16 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               </div>
               <div className="flex justify-between">
                 <span style={{ color: 'var(--posi-muted)' }}>PSC Category</span>
-                <span style={{ color: 'var(--posi-muted)' }}>Not yet classified</span>
+                <span style={{ color: 'var(--posi-text)' }}>
+                  {journal.psc_category ? (
+                    <>
+                      {journal.psc_category}
+                      {journal.psc_confidence === 'low' && <span className="ml-1 opacity-60" title="Low-confidence classification">*</span>}
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--posi-muted)' }}>Not yet classified</span>
+                  )}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span style={{ color: 'var(--posi-muted)' }}>Coverage Since</span>
@@ -350,6 +359,27 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               >
                 Methodology →
               </a>
+            </div>
+          )}
+
+          {!isDiscovered && journal.early_stage_rating && journal.early_stage_rating.eligibility !== 'early_stage' && journal.early_stage_rating.eligibility !== 'mature' && (
+            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>
+                POSI Automated Rating (AJR)
+              </h2>
+              <p className="text-xs font-semibold" style={{ color: journal.early_stage_rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
+                {journal.early_stage_rating.eligibility === 'observation' && 'Observation Stage'}
+                {journal.early_stage_rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
+                {journal.early_stage_rating.eligibility === 'unknown' && 'Unknown'}
+              </p>
+              <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+                {journal.early_stage_rating.eligibility === 'observation' &&
+                  `This journal is ${journal.early_stage_rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
+                {journal.early_stage_rating.eligibility === 'not_yet_rateable' &&
+                  'Below the minimum evidence bar for AJR — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. Unknown evidence is not equivalent to failed criteria.'}
+                {journal.early_stage_rating.eligibility === 'unknown' &&
+                  'First-publication date could not be determined (e.g. no Crossref records) — AJR cannot run without it.'}
+              </p>
             </div>
           )}
 
