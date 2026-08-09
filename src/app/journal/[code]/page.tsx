@@ -298,6 +298,16 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
                   Get POSI Badge →
                 </Link>
               )}
+              {!isDiscovered && (
+                <a
+                  href={`/api/certificate/${journal.journal_code}/pdf`}
+                  download={`POSI-Core-Collection-Certificate-${journal.journal_code}.pdf`}
+                  className="block text-[11px] hover:underline mt-1 transition-colors"
+                  style={{ color: 'var(--posi-accent)' }}
+                >
+                  Download Certificate (PDF) →
+                </a>
+              )}
             </div>
           </div>
 

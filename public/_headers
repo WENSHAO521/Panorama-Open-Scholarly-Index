@@ -10,3 +10,9 @@
 /api/badge/*
   Content-Type: image/svg+xml; charset=utf-8
   Cache-Control: public, max-age=86400
+
+# POSI Core Collection certificate PDFs — same extension-less static Route
+# Handler output as the badges above, same fix required.
+/api/certificate/*
+  Content-Type: application/pdf
+  Cache-Control: public, max-age=86400
