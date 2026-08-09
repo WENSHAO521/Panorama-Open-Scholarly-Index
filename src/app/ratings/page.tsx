@@ -60,7 +60,11 @@ function RatingsTable({ journals, showPQ }: { journals: Journal[]; showPQ: boole
                   {r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                 </td>
                 <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-[10px] font-semibold" style={{ color: ELIGIBILITY_COLOR[eligibility] }}>
+                  <span
+                    className="font-mono text-[10px] font-semibold"
+                    style={{ color: ELIGIBILITY_COLOR[eligibility] }}
+                    title={eligibility === 'not_yet_rateable' ? 'Below the minimum evidence bar — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. See the validation finding above.' : undefined}
+                  >
                     {ELIGIBILITY_LABEL[eligibility]}
                   </span>
                 </td>
@@ -162,15 +166,16 @@ export default function RatingsPage() {
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
         <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
         <span style={{ color: '#92400e' }}>
-          <strong>Validation finding:</strong> the first benchmark run scored only 5 of 200 journals — AJR's
-          evidence crawl initially checked only a journal's homepage, which systematically failed traditional
-          publisher platforms (Elsevier, Wiley, ACS, APS, IOP) whose policy content lives on separate subpages,
-          even though those journals plainly have rigorous governance. Extending the crawl to check a few
-          common policy subpages when the homepage alone leaves a gap raised this to 22 of 200 (e.g. Nature
-          now scores 71/100) — a real improvement, not a full fix: many large publisher platforms (Science/AAAS
-          among them) still fail, likely due to site structures the current guessed subpaths don't match. This
-          is exactly the kind of methodology gap the benchmark exists to surface — published here rather than
-          quietly patched, per POSI's own no-hidden-adjustment principle.
+          <strong>Validation finding:</strong> the first benchmark run scored only 5 of 200 journals. Extending
+          the evidence crawl to check policy subpages (not just the homepage) and widening the ethics-keyword
+          set raised this to 22 of 200 (Nature now scores 71/100) — a real improvement. Expanding the corpus to
+          600 journals held at the same ~9% rate, ruling out sample size as the cause. A direct investigation
+          found the real bottleneck: <strong>73% of a sampled batch of still-failing journals return HTTP 403 on
+          the first request</strong> — Elsevier, Wiley, ACS, APS, AIP, Oxford, and IOP platforms among them.
+          No amount of subpage-guessing or keyword-widening can fix that; it's a structural ceiling of a
+          plain-HTTP-only crawl, not evidence those journals lack real governance. <strong>"Not Yet Rateable" on a
+          bot-protected platform means POSI's crawl was blocked — not that no evidence of governance exists.</strong>{' '}
+          Published here rather than quietly smoothed over, per POSI's own no-hidden-adjustment principle.
         </span>
       </div>
 
