@@ -169,15 +169,16 @@ export type OjqfSubfactors = PqfSubfactors
 /** @deprecated use PqfScore */
 export type OjqfScore = PqfScore
 
-// POSI Early-Stage Journal Rating — a separate track from Citation Quartiles
-// (Q1-Q4), for journals too young to have a real PCI citation window. See
-// posi-data's EARLY-STAGE-RATING-SPEC.md (v0.2). 100% automated: no person
-// has a code path to directly set a score, percentile, or quartile — only
-// the underlying evidence can be corrected, which triggers a recompute. No
-// P-Q1-P-Q4 quartile is assigned yet: that needs a same-cohort peer group
-// within a PSC category, and PSC classification hasn't been run on any
-// journal yet — subfactors/total are populated once a journal clears
-// eligibility, but provisional_quartile stays null until then.
+// POSI Automated Journal Rating, Early-Stage model (AJR-E) — a separate
+// track from Citation Quartiles (Q1-Q4), for early-stage/mature journals per
+// the AJR 1.0 Lifecycle Framework. See posi-data's AJR-SPEC.md. 100%
+// automated: no person has a code path to directly set a score, percentile,
+// or quartile — only the underlying evidence can be corrected, which
+// triggers a recompute. No E-Q1-E-Q4 quartile is assigned yet: that needs a
+// same-cohort peer group within a PSC category, and PSC classification
+// hasn't been wired into ranking yet — subfactors/total are populated once
+// a journal clears eligibility, but provisional_quartile stays null until
+// then.
 export interface EarlyStageSubfactors {
   egf: number  // Editorial Governance & Peer Review              /15
   rif: number  // Research Integrity & Publication Ethics          /15
@@ -189,15 +190,17 @@ export interface EarlyStageSubfactors {
 }
 
 export interface EarlyStageRating {
-  // The AJR score (subfactors/total) is computed for any journal that clears
-  // the minimum evidence bar, regardless of age — 'rated' and 'rated_mature'
-  // both carry a real score. Age only decides the quartile track: 'rated'
-  // (within 36 months of first publication) is eligible for a future
-  // P-Q1-P-Q4 once a real PSC peer cohort exists; 'rated_mature' journals
-  // are scored the same way but rely on Citation Q (PCI-based) instead.
-  // 'not_yet_rateable': below the minimum evidence bar regardless of age (see spec §3).
-  // 'unknown': first-published date could not be determined (e.g. no Crossref records).
-  eligibility: 'rated' | 'rated_mature' | 'not_yet_rateable' | 'unknown'
+  // Lifecycle stage per AJR-SPEC.md § 1 (AJR 1.0 Lifecycle Framework).
+  // 'observation' (0-11mo since first publication): too early to evaluate,
+  // no score computed. 'early_stage' (12-59mo) and 'mature' (60mo+) both
+  // carry a real AJR score (subfactors/total) once the minimum evidence bar
+  // is cleared — 'early_stage' is eligible for a future E-Q1-E-Q4 once a
+  // real PSC peer cohort exists; 'mature' journals are scored with AJR-E for
+  // now (AJR-M not yet implemented) but rank via Citation Q (PCI-based)
+  // instead of E-Q. 'not_yet_rateable': below the minimum evidence bar
+  // regardless of age (see spec §3). 'unknown': first-published date could
+  // not be determined (e.g. no Crossref records).
+  eligibility: 'observation' | 'early_stage' | 'mature' | 'not_yet_rateable' | 'unknown'
   first_published: string | null   // earliest Crossref-registered work date for this ISSN
   months_since_launch: number | null
   subfactors: EarlyStageSubfactors | null

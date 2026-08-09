@@ -10,15 +10,17 @@ export const metadata = {
 }
 
 const ELIGIBILITY_LABEL: Record<string, string> = {
-  rated: 'Evaluated',
-  rated_mature: 'Evaluated (mature)',
+  observation: 'Observation Stage',
+  early_stage: 'Evaluated',
+  mature: 'Evaluated (mature)',
   not_yet_rateable: 'Not Yet Rateable',
   unknown: 'Unknown',
 }
 
 const ELIGIBILITY_COLOR: Record<string, string> = {
-  rated: '#1F7A4D',
-  rated_mature: '#1F7A4D',
+  observation: '#6B7280',
+  early_stage: '#1F7A4D',
+  mature: '#1F7A4D',
   not_yet_rateable: '#B45309',
   unknown: '#6B7280',
 }
@@ -34,7 +36,7 @@ function RatingsTable({ journals, showPQ }: { journals: Journal[]; showPQ: boole
             <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PSC</th>
             <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Score</th>
             <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Status</th>
-            {showPQ && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>P-Q</th>}
+            {showPQ && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>E-Q</th>}
           </tr>
         </thead>
         <tbody>
@@ -72,9 +74,9 @@ function RatingsTable({ journals, showPQ }: { journals: Journal[]; showPQ: boole
                   <td
                     className="px-3 py-3 text-center text-[10px]"
                     style={{ color: 'var(--posi-muted)' }}
-                    title={eligibility === 'rated_mature' ? 'Not applicable — mature journals are ranked by Citation Q (PCI-based), not P-Q' : 'Not assigned — insufficient peer cohort'}
+                    title={eligibility === 'mature' ? 'Not applicable — mature journals are ranked by Citation Q (PCI-based), not E-Q' : 'Not assigned — insufficient peer cohort'}
                   >
-                    {eligibility === 'rated_mature' ? 'N/A' : '—'}
+                    {eligibility === 'mature' ? 'N/A' : '—'}
                   </td>
                 )}
               </tr>
@@ -116,9 +118,9 @@ export default function RatingsPage() {
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Automated Journal Ratings (AJR)</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Evidence-based, rules-driven, and reproducible journal evaluation. Published as a <strong style={{ color: 'var(--posi-text)' }}>pilot</strong>,
-          not a final release. The same AJR-1.0 score applies to any journal regardless of age — age only
-          decides whether a journal's quartile track is the early-stage P-Q system (below) or Citation Q
-          (PCI-based, for journals with a real citation window).
+          not a final release. The same AJR score applies to any early-stage or mature journal — lifecycle stage
+          only decides whether a journal's quartile track is the early-stage E-Q system (below) or Citation Q
+          (PCI-based, for mature journals with a real citation window).
         </p>
       </div>
 
@@ -143,9 +145,9 @@ export default function RatingsPage() {
         </div>
         <RatingsTable journals={coreCollection} showPQ />
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          {evaluatedCount} of {coreCollection.length} scored to date. P-Q (Provisional Quartile) is not assigned
-          to any journal yet — insufficient peer cohort. It requires PSC subject classification (not yet run on
-          any journal) and a minimum same-category, same-cohort peer group per EARLY-STAGE-RATING-SPEC.md § 7.
+          {evaluatedCount} of {coreCollection.length} scored to date. E-Q (Early-Stage Quartile) is not assigned
+          to any journal yet — insufficient peer cohort. It requires PSC subject classification (not yet wired
+          into ranking) and a minimum same-category, same-cohort peer group per AJR-SPEC.md § 5.
           This is expected at this stage, not an error.
         </p>
       </section>
@@ -190,7 +192,7 @@ export default function RatingsPage() {
         </div>
         <RatingsTable journals={benchmarkTop} showPQ={false} />
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          Showing the top {benchmarkTop.length} by score. Benchmark journals never receive a P-Q — as
+          Showing the top {benchmarkTop.length} by score. Benchmark journals never receive an E-Q — as
           established journals, their eventual quartile track is Citation Q (PCI-based), not the early-stage
           system. Full corpus and per-journal evidence: see{' '}
           <a href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/blob/master/src/lib/benchmark-journals.ts" target="_blank" rel="noopener noreferrer" className="underline">benchmark-journals.ts →</a>

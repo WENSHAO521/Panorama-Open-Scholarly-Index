@@ -293,17 +293,18 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           </div>
 
           {/* LAYER 2: Automated Rating (AJR) — 100% automated (see
-              EARLY-STAGE-RATING-SPEC.md §5): no reviewer, editor, publisher,
-              or POSI staff has a way to directly set this score — only the
+              posi-data/AJR-SPEC.md §11): no reviewer, editor, publisher, or
+              POSI staff has a way to directly set this score — only the
               underlying evidence can be corrected, which triggers a
               recompute. Applies to any journal that clears the minimum
               evidence bar regardless of age; only "not_yet_rateable"/
-              "unknown" journals show nothing here. Age decides the quartile
-              track, not whether a score exists: 'rated' journals (within 36
-              months of first publication) are eligible for a future
-              P-Q1-P-Q4 once a real PSC peer cohort exists; 'rated_mature'
-              journals get the same score but rely on Citation Q instead. */}
-          {(journal.early_stage_rating?.eligibility === 'rated' || journal.early_stage_rating?.eligibility === 'rated_mature') && journal.early_stage_rating.subfactors && (
+              "unknown"/"observation" journals show nothing here. Lifecycle
+              stage decides the quartile track, not whether a score exists:
+              'early_stage' journals (12-59 months since first publication)
+              are eligible for a future E-Q1-E-Q4 once a real PSC peer cohort
+              exists; 'mature' journals get the same AJR-E score but rely on
+              Citation Q instead (see AJR-SPEC.md §1, §4). */}
+          {(journal.early_stage_rating?.eligibility === 'early_stage' || journal.early_stage_rating?.eligibility === 'mature') && journal.early_stage_rating.subfactors && (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
@@ -320,9 +321,9 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
                 {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
                 from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
                 or quartile adjustment is possible for this or any journal.{' '}
-                {journal.early_stage_rating.eligibility === 'rated'
-                  ? 'No P-Q1–P-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
-                  : 'This journal is outside the 36-month early-stage window — its ranking track is Citation Q (PCI-based), not P-Q.'}
+                {journal.early_stage_rating.eligibility === 'early_stage'
+                  ? 'No E-Q1–E-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
+                  : 'This journal is in its mature stage (60+ months since first publication) — its ranking track is Citation Q (PCI-based), not E-Q.'}
               </p>
               <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
                 {[

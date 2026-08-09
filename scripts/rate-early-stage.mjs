@@ -19,9 +19,9 @@
  * "external metadata, zero weight" rule as everywhere else in POSI (see
  * EARLY-STAGE-RATING-SPEC.md § 5).
  *
- * No P-Q1-P-Q4 quartile is computed: that needs a same-cohort peer group
- * within a PSC category, and PSC classification hasn't run on any journal
- * yet (see spec status note).
+ * No E-Q1-E-Q4 quartile is computed: that needs a same-cohort peer group
+ * within a PSC category, and PSC classification hasn't been wired into
+ * ranking yet (see AJR-SPEC.md § 5 and spec status note).
  *
  * Usage:
  *   node scripts/rate-early-stage.mjs                 # dry run — print ratings
@@ -56,8 +56,14 @@ const DELAY_MS = 500
 const ARTICLE_SAMPLE_SIZE = 10
 
 const RATING_CUTOFF = new Date()
-const EARLY_STAGE_WINDOW_MONTHS = 36
-const MIN_OPERATING_MONTHS = 6
+// AJR-SPEC.md § 1's three-stage lifecycle model (posi-engine's
+// lifecycle.mjs is the authoritative version of this boundary logic going
+// forward — mirrored here until this script is wired to actually import
+// from posi-engine, see AJR-SPEC.md § 10). Supersedes the old two-way
+// rated/rated_mature split (a single 36-month boundary, no distinct
+// "too young to evaluate" stage).
+const OBSERVATION_MAX_MONTHS = 11   // 0-11mo: too early to evaluate at all
+const EARLY_STAGE_MAX_MONTHS = 59   // 12-59mo: early_stage; 60mo+: mature
 const MIN_ARTICLES = 10
 
 // ─── Low-level fetch helpers (duplicated from auto-pqf.mjs — scripts in this
@@ -397,23 +403,23 @@ function scoreReachConcentration(articles) {
 // The AJR score itself (§4's 100-point rubric) applies to any journal that
 // clears the minimum evidence bar, regardless of age — a 40-year-old
 // journal's editorial governance/integrity/infrastructure evidence is just
-// as computable as a new one's. Age only decides which *quartile track* a
-// score feeds into: 'rated' (within the 36-month early-stage window) is
-// eligible for a future P-Q1-P-Q4 once a real peer cohort exists;
-// 'rated_mature' journals get the same AJR score but are outside that
-// window — their eventual quartile comes from Citation Q (PCI-based), not
-// P-Q. Neither status is a judgment about quality, only about which
-// ranking track applies.
+// as computable as a new one's. Age decides two things: whether a journal
+// is evaluated at all (0-11 months: 'observation', too early to mean
+// anything), and which quartile track a score feeds into once it is
+// ('early_stage', 12-59 months, eligible for a future E-Q1-E-Q4 once a
+// real peer cohort exists; 'mature', 60+ months, whose quartile track is
+// Citation Q — PCI-based — not E-Q). Neither status is a judgment about
+// quality, only about which evaluation applies.
 function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, site }) {
   if (!firstPublished) return 'unknown'
+  if (monthsSinceLaunch <= OBSERVATION_MAX_MONTHS) return 'observation'
   const meetsBar =
-    monthsSinceLaunch >= MIN_OPERATING_MONTHS &&
     articleCount >= MIN_ARTICLES &&
     !!site?.peerReview &&
     !!site?.editorialBoard &&
     !!site?.ethics
   if (!meetsBar) return 'not_yet_rateable'
-  return monthsSinceLaunch > EARLY_STAGE_WINDOW_MONTHS ? 'rated_mature' : 'rated'
+  return monthsSinceLaunch <= EARLY_STAGE_MAX_MONTHS ? 'early_stage' : 'mature'
 }
 
 async function rateJournal(journal) {
@@ -435,7 +441,7 @@ async function rateJournal(journal) {
   const monthsSinceLaunch = firstPublished ? monthsBetween(firstPublished, RATING_CUTOFF) : null
   const eligibility = computeEligibility({ firstPublished, monthsSinceLaunch, articleCount: journal.article_count, site })
 
-  if (eligibility !== 'rated' && eligibility !== 'rated_mature') {
+  if (eligibility !== 'early_stage' && eligibility !== 'mature') {
     return {
       id: journal.id,
       rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, subfactors: null, total: null },
@@ -514,7 +520,7 @@ function injectRating(src, id, rating) {
   const subfactorsLit = rating.subfactors
     ? `{ egf: ${rating.subfactors.egf}, rif: ${rating.subfactors.rif}, inf: ${rating.subfactors.inf}, pub: ${rating.subfactors.pub}, soc: ${rating.subfactors.soc}, rdc: ${rating.subfactors.rdc}, trn: ${rating.subfactors.trn} }`
     : 'null'
-  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'EARLY-STAGE-AUTO-0.2' },\n`
+  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'AJR-E-1.0' },\n`
 
   const blockContent = src.slice(idIdx, blockEnd)
   if (blockContent.includes('early_stage_rating:')) {
@@ -549,7 +555,7 @@ async function main() {
 
   const results = await runBatch(journals, rateJournal, CONCURRENCY)
 
-  const counts = { rated: 0, rated_mature: 0, not_yet_rateable: 0, unknown: 0 }
+  const counts = { observation: 0, early_stage: 0, mature: 0, not_yet_rateable: 0, unknown: 0 }
   for (const r of results) counts[r.rating.eligibility]++
   console.log('Eligibility breakdown:', counts)
 
