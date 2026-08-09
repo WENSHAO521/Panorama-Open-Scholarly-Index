@@ -22,7 +22,7 @@ const STATES = [
   {
     name: 'Metric Eligible',
     color: '#1F7A4D',
-    body: 'An Indexed journal with enough continuous coverage and citation history to receive PCI/PCS citation-impact metrics and — once PSC classification and enough same-category peers exist — a subject ranking and quartile.',
+    body: 'An Indexed journal with a resolvable PCI/PCS citation-impact figure today. Coverage-history and citable-item-window eligibility requirements (see PJR-SPEC.md) are not yet enforced as a separate gate — every Indexed journal currently qualifies by that narrower definition. Once enforced, this count will diverge from Indexed.',
   },
 ]
 
@@ -75,13 +75,14 @@ export default function CoreCollectionPage() {
 
       <div className="grid grid-cols-3 gap-px" style={{ background: 'var(--posi-border)', border: '1px solid var(--posi-border)' }}>
         {[
-          { label: 'Discovered', value: discoveredCount },
-          { label: 'Indexed (Core Collection)', value: coreCollection.length },
-          { label: 'Metric Eligible', value: metricEligibleCount },
+          { label: 'Discovered', value: discoveredCount, note: null },
+          { label: 'Indexed (Core Collection)', value: coreCollection.length, note: null },
+          { label: 'Metric Eligible', value: metricEligibleCount, note: 'Coverage-history gate not yet enforced' },
         ].map(s => (
           <div key={s.label} className="bg-white px-5 py-4 text-center">
             <p className="text-2xl font-bold font-mono" style={{ color: 'var(--posi-text)' }}>{s.value.toLocaleString()}</p>
             <p className="text-[10px] uppercase tracking-[0.12em] mt-0.5" style={{ color: 'var(--posi-muted)' }}>{s.label}</p>
+            {s.note && <p className="text-[9px] mt-1" style={{ color: '#B45309' }}>{s.note}</p>}
           </div>
         ))}
       </div>

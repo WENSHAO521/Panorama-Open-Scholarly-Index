@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'About POSI | Panorama Open Scholarly Index',
-  description: 'About the Panorama Open Scholarly Index (POSI) — an open scholarly metadata platform for journal transparency and metadata quality.',
+  description: 'About the Panorama Open Scholarly Index (POSI) — an open scholarly indexing, journal analytics, and automated evaluation infrastructure.',
 }
 
 export default function AboutPage() {
@@ -22,8 +22,12 @@ export default function AboutPage() {
           </span>
         </div>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          The Panorama Open Scholarly Index (POSI) is an open scholarly metadata platform
-          for journal transparency, metadata quality, technical discoverability, and open citation visibility.
+          The Panorama Open Scholarly Index (POSI) is an open scholarly indexing, journal analytics, and
+          automated evaluation infrastructure. It provides transparent journal coverage, evidence-based
+          automated ratings, open citation metrics, subject classification, and reproducible journal
+          rankings. POSI's data, methodology, and calculation code are openly documented and versioned.
+          External database inclusion (DOAJ, Scopus, Web of Science, PubMed) does not determine POSI
+          admission, scores, rankings, or quartiles.
         </p>
       </div>
 
@@ -31,11 +35,12 @@ export default function AboutPage() {
       <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Mission</h2>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-          POSI exists to make scholarly publishing infrastructure more transparent and machine-readable.
-          We aggregate openly licensed metadata from multiple sources, apply structured quality assessments,
-          and publish the results freely under CC BY 4.0. Our goal is to help researchers, librarians,
-          and institutions make better-informed decisions about where to publish and what to cite —
-          without replacing or competing with established indexing services.
+          POSI exists to make scholarly publishing infrastructure more transparent, reproducible, and
+          machine-readable. We aggregate openly licensed metadata from multiple sources, apply automated
+          evaluation methodology that no person can hand-adjust, and publish the results — data, engine,
+          and methodology alike — as versioned open infrastructure. Our goal is to help researchers,
+          librarians, and institutions make better-informed decisions about where to publish and what to
+          cite, without replacing or competing with established indexing services.
         </p>
       </div>
 
@@ -45,11 +50,12 @@ export default function AboutPage() {
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is</h2>
           <ul className="space-y-2">
             {[
-              'An open metadata aggregation platform',
-              'A metadata quality assessment tool (PQF)',
-              'A discoverability layer for PSG-affiliated journals',
-              'A freely reusable dataset under CC BY 4.0',
-              'A research transparency initiative',
+              'An open journal discovery and indexing infrastructure',
+              'The POSI Core Collection — editorially admitted, reviewed journal coverage',
+              'An automated, evidence-based journal rating system (see Early-Stage Rating)',
+              'Open citation metrics (PCI/PCS) and subject-based journal rankings',
+              'Open data, open methodology, and an open-source calculation engine',
+              'Versioned and auditable — every figure traces to a pinned commit',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
@@ -62,11 +68,11 @@ export default function AboutPage() {
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
           <ul className="space-y-2">
             {[
-              'A replacement for Web of Science or Scopus',
-              'An Impact Factor or citation ranking service',
-              'A DOAJ-equivalent accreditation body',
-              'A peer review certifier or article validator',
-              'An endorsement of any journal\'s scientific content',
+              'An accreditation authority — a POSI record is not a certification',
+              'A seller of rankings or guaranteed inclusion',
+              'A substitute for evaluating individual researchers, hiring, or funding decisions',
+              'Influenced by external database inclusion — DOAJ/Scopus/WoS listing affects no POSI score, ranking, or quartile',
+              'A certifier of any individual article\'s scientific validity',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#c41e3a' }}>✗</span>
@@ -165,22 +171,24 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* License */}
+      {/* License — mirrors /open-data's three-way split exactly */}
       <div className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-        <p>
-          All curated metadata published by POSI is freely available for reuse under{' '}
-          <a
+        <p className="mb-2">
+          <strong style={{ color: 'var(--posi-text)' }}>POSI Engine</strong> (calculation code): MIT.{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>POSI-produced data</strong> (taxonomy, metric
+          snapshots, rankings): <a
             href="https://creativecommons.org/licenses/by/4.0/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"
             style={{ color: 'var(--posi-accent)' }}
-          >
-            Creative Commons Attribution 4.0 International (CC BY 4.0)
-          </a>
-          . Third-party metadata remains attributed to its original source.
-          POSI is not affiliated with Web of Science, Scopus, Clarivate, Elsevier, or DOAJ.
+          >CC BY 4.0</a>.{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>Aggregated upstream metadata</strong> (Crossref,
+          OpenAlex, DOAJ, ROR, etc.): source-specific — see{' '}
+          <Link href="/open-data" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Open Data →</Link>{' '}
+          for the full, authoritative breakdown.
         </p>
+        <p>POSI is not affiliated with Web of Science, Scopus, Clarivate, Elsevier, or DOAJ.</p>
       </div>
     </div>
   )

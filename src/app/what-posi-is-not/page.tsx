@@ -3,33 +3,29 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'What POSI Is Not | POSI',
-  description: 'POSI is not a replacement for Web of Science, Scopus, or DOAJ. It does not provide Impact Factors, citation rankings, or peer review certification.',
+  description: 'POSI is not licensed from or affiliated with Web of Science, Scopus, or DOAJ, not an accreditation authority, and not a substitute for evaluating individual researchers.',
 }
 
 const WHAT_IT_IS_NOT = [
   {
-    claim: 'A replacement for Web of Science or Scopus',
-    why: 'WoS and Scopus are commercial citation databases covering tens of millions of articles across thousands of journals worldwide. POSI is a transparency and metadata quality platform focused on a much smaller set of verified journals. PQF scores are not citation impact metrics.',
+    claim: 'Licensed from or affiliated with Web of Science or Scopus',
+    why: 'WoS and Scopus are commercial, proprietary citation databases. POSI does not license their data, reproduce their metrics, or claim equivalence — PCI, PCS, and POSI\'s subject rankings are POSI\'s own openly-defined, reproducible metrics, computed from open data (OpenAlex, Crossref), not a free substitute for Journal Impact Factor or CiteScore.',
   },
   {
-    claim: 'An Impact Factor or citation ranking service',
-    why: 'POSI does not calculate, publish, or approximate Journal Impact Factors, CiteScores, or any citation-based prestige metrics. The Citation Visibility Factor (CVF) in the PQF measures whether a journal\'s citations are openly machine-readable, not how many times it is cited.',
+    claim: 'An accreditation authority',
+    why: 'A POSI record — Discovered, Indexed, or Metric Eligible — is not a certification. It does not constitute DOAJ listing, COPE membership, peer-review verification, or any other external accreditation.',
   },
   {
-    claim: 'A DOAJ-equivalent accreditation body',
-    why: 'DOAJ is an independent, community-curated directory that certifies journals against a set of editorial and publishing standards. POSI is not an accreditation service. A POSI record does not constitute DOAJ listing, COPE membership, or any other external certification.',
+    claim: 'A seller of rankings or guaranteed inclusion',
+    why: 'Admission, scores, rankings, and quartiles are computed by open, versioned methodology and code. No payment, sponsorship, or relationship with POSI or Panorama Scholarly Group changes a journal\'s evidence, score, or rank.',
   },
   {
     claim: 'A peer review certifier or article validator',
-    why: 'POSI does not assess the scientific quality of individual articles, verify reviewer credentials, or certify that peer review occurred for any given article. PQF criteria assess the existence of publicly stated policies, not their execution.',
+    why: 'POSI does not assess the scientific quality of individual articles, verify reviewer credentials, or certify that peer review occurred for any given article. Automated evidence checks assess the existence of publicly stated policies and structural signals in published output, not scientific correctness.',
   },
   {
-    claim: 'An endorsement of any journal\'s scientific content',
-    why: 'A high PQF score means a journal has strong metadata transparency and technical discoverability. It says nothing about the quality of the science published, the rigor of editorial decisions, or the expertise of the editorial board.',
-  },
-  {
-    claim: 'An independent third-party evaluation of PSG journals',
-    why: 'POSI is operated by Panorama Scholarly Group Ltd. (PSG). PSG also publishes the majority of journals currently evaluated. This is a structural conflict of interest. PQF scores for PSG journals should not be cited as independent third-party assessments.',
+    claim: 'A substitute for evaluating individual researchers, hiring, or funding decisions',
+    why: 'PQF, PCI/PCS, and Early-Stage Rating are journal-level and infrastructure-level metrics. None of them are designed or validated for assessing an individual researcher\'s output, and POSI explicitly asks users not to use them that way — see Responsible Use.',
   },
 ]
 
@@ -53,7 +49,7 @@ const COMPARISONS = [
     operator: 'Infrastructure Services for Open Access (IS4OA)',
     scope: 'OA journal directory, ~21,000 journals',
     whatItDoes: 'OA certification, editorial standards',
-    posiRelation: 'Complementary. POSI uses DOAJ status as one input signal.',
+    posiRelation: 'External metadata only. DOAJ listing status contributes zero weight to POSI admission, scores, rankings, or quartiles.',
   },
   {
     service: 'Crossref',

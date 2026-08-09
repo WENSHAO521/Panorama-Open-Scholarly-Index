@@ -52,7 +52,7 @@ const SOURCES = [
     name: 'DOAJ',
     abbr: 'DOAJ',
     purpose: 'Directory of Open Access Journals for OA verification, license data, and journal indexing status',
-    dataTypes: ['OA status', 'License type', 'Journal quality indicators', 'Article-level records'],
+    dataTypes: ['OA status (external reference only)', 'License type', 'Article-level records'],
     updateFrequency: 'Periodic (API)',
     license: 'CC BY-SA',
     url: 'https://doaj.org',

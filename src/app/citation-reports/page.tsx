@@ -7,14 +7,14 @@ import { primarySubject } from '@/lib/subject-keywords'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
 export const metadata = {
-  title: 'Citation Reports',
-  description: 'POSI Citation Impact (PCI): journal-level citation impact metrics computed from open citation data for the POSI-reviewed collection.',
+  title: 'Citation Analytics — Preview',
+  description: 'Provisional open citation indicators for the POSI Core Collection — not yet official PJR PCI values or POSI Quartiles. See PJR-SPEC.md for the official methodology.',
 }
 
 const METHODOLOGY_PRINCIPLES = [
   {
-    title: 'One source for citation counts',
-    body: 'PCI is OpenAlex\'s 2-year mean citedness, taken as-is. OpenAlex already aggregates and deduplicates citation data from Crossref and other registries into a single graph — POSI does not separately re-count Crossref citations and add them on top, which would double-count the same citation event.',
+    title: 'This preview is not yet official PCI',
+    body: 'The figure shown here is OpenAlex\'s 2-year mean citedness, taken as-is, over all of a source\'s indexed works. POSI\'s official PCI (see PJR-SPEC.md) restricts the same calculation to a specific set of citable document types — the two can differ, and only the PJR-computed figure is "PCI." Until the first PJR release, this page is a provisional preview, not the official metric.',
   },
   {
     title: 'DOI/Crossref = article inventory, not citation count',
@@ -98,29 +98,31 @@ export default async function CitationReportsPage() {
         <span style={{ color: 'var(--posi-text)' }}>Citation Reports</span>
       </nav>
 
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
+      <div className="border-l-4 pl-5" style={{ borderColor: '#B45309' }}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-            PCI
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fefce8' }}>
+            PREVIEW
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
             {rows.length} journals · Core Collection
           </span>
         </div>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Reports</h1>
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Analytics — Preview</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Two independently-sourced citation metrics — <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link> (OpenAlex, JIF-style)
-          and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref, CiteScore-style) — plus h-index and total citations,
-          for POSI's manually-reviewed Core Collection. <strong style={{ color: 'var(--posi-text)' }}>Subject percentile is derived
-          from PCI only</strong> — PCS is not blended into it.
+          Two independently-sourced, provisional citation indicators — OpenAlex 2-Year Citedness (a preview of{' '}
+          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>, not
+          yet the official PJR-computed value) and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref-sourced) —
+          plus h-index and total citations, for POSI's manually-reviewed Core Collection. <strong style={{ color: 'var(--posi-text)' }}>Subject
+          percentile is derived from the citedness figure only</strong> — PCS is not blended into it. These are not
+          yet POSI Quartiles (Q1–Q4); see PJR-SPEC.md for when the official methodology takes effect.
         </p>
       </div>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
-          <strong>PCI</strong> (OpenAlex 2yr mean citedness) and <strong>PCS</strong> (Crossref mean citations per article,
-          trailing 4-year window) are POSI's open stand-ins for a Journal Impact Factor and a CiteScore, respectively —
+          <strong>OpenAlex 2-Year Citedness</strong> and <strong>PCS</strong> (Crossref mean citations per article,
+          trailing 4-year window) are POSI's own independently-defined, reproducible citation indicators —
           two separately-sourced numbers, not one blended score, the same way WoS and Scopus report independently of
           each other. POSI does not license or use Web of Science or Scopus data. {withData} of {rows.length} journals
           have a resolvable OpenAlex source record; journals without one show as unranked. See{' '}
@@ -132,7 +134,7 @@ export default async function CitationReportsPage() {
       {/* Methodology */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>How PCI Is Computed</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>How This Preview Is Computed</h2>
           <Link href="/pci" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>Full positioning statement →</Link>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">

@@ -21,12 +21,21 @@ function pqfGrade(journal: Journal): string | null {
   return pqfScore(journal)?.grade ?? null
 }
 
-// The 3-square POSI mark, reused across every variant at whatever size/
-// position a given badge needs. `primary` is black (or white on dark
-// backgrounds) for the two non-red squares; the top-right square is always
-// brand red — that's the fixed logo mark, unrelated to grade color.
+// The official POSI mark (see public/posi-logo.svg): three squares — black
+// top-left, red top-right, black bottom-left — spaced apart (not touching),
+// plus a fourth short black stub bottom-right (same width, 1/3 height) that
+// gives the mark its distinctive silhouette. The gap is size/4 and the stub
+// height is size/3, matching the reference logo's 24px-square/6px-gap/8px-
+// stub proportions exactly. `primary` is black (or white on dark
+// backgrounds); the top-right square is always brand red regardless of
+// grade color. Bounding box is size*2.25 square (used by callers to leave
+// enough clearance before placing text/other elements after the mark).
 function mark(x: number, y: number, size: number, primary: string): string {
-  return `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${primary}"/><rect x="${x + size}" y="${y}" width="${size}" height="${size}" fill="#E30613"/><rect x="${x}" y="${y + size}" width="${size}" height="${size}" fill="${primary}"/>`
+  const gap = size / 4
+  const stub = size / 3
+  const x2 = x + size + gap
+  const y2 = y + size + gap
+  return `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${primary}"/><rect x="${x2}" y="${y}" width="${size}" height="${size}" fill="#E30613"/><rect x="${x}" y="${y2}" width="${size}" height="${size}" fill="${primary}"/><rect x="${x2}" y="${y2}" width="${size}" height="${stub}" fill="${primary}"/>`
 }
 
 export function badgeStandardSvg(journal: Journal): string {
@@ -83,8 +92,7 @@ export function badgeMicroSvg(journal: Journal): string {
   const gradeColor = grade ? (GRADE_COLOR[grade] ?? '#666666') : '#666666'
   return `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="20" viewBox="0 0 130 20" role="img" aria-label="POSI Verified — ${title}">
   <rect x="0.5" y="0.5" width="129" height="19" rx="3" fill="#ffffff" stroke="#c4c4c4"/>
-  <rect x="6" y="5" width="6" height="6" fill="#111111"/>
-  <rect x="13" y="5" width="6" height="6" fill="#E30613"/>
+  ${mark(6, 3, 6, '#111111')}
   <text x="24" y="14" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" letter-spacing="0.3" fill="#111111">POSI VERIFIED</text>
   ${grade ? `<rect x="104" y="4" width="20" height="12" rx="2" fill="${gradeColor}"/><text x="114" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">${esc(grade)}</text>` : ''}
 </svg>`
@@ -100,7 +108,7 @@ export function badgeIconSvg(journal: Journal): string {
   const dotColor = grade ? (GRADE_COLOR[grade] ?? '#E30613') : '#cccccc'
   return `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="POSI Verified — ${title}${grade ? ` — PQF ${esc(grade)}` : ''}">
   <rect x="0.5" y="0.5" width="39" height="39" fill="#ffffff" stroke="#c4c4c4"/>
-  ${mark(9, 9, 8, '#111111')}
+  ${mark(9, 9, 7, '#111111')}
   <circle cx="32" cy="32" r="5" fill="${dotColor}" stroke="#ffffff" stroke-width="1.5"/>
 </svg>`
 }
@@ -112,7 +120,7 @@ export function badgeVerticalSvg(journal: Journal): string {
   const gradeColor = grade ? (GRADE_COLOR[grade] ?? '#666666') : '#666666'
   return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="140" viewBox="0 0 90 140" role="img" aria-label="POSI Verified — ${title}">
   <rect x="0.5" y="0.5" width="89" height="139" fill="#ffffff" stroke="#c4c4c4"/>
-  ${mark(33, 18, 12, '#111111')}
+  ${mark(32, 18, 12, '#111111')}
   <text x="45" y="58" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="14" letter-spacing="0.5" text-anchor="middle" fill="#111111">POSI</text>
   <text x="45" y="70" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">VERIFIED</text>
   <text x="45" y="87" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="8" text-anchor="middle" fill="#666666">${title}</text>
@@ -144,8 +152,9 @@ export function badgeMonoSvg(journal: Journal): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="POSI Verified — ${title}">
   <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
   <rect x="12" y="12" width="14" height="14" fill="#111111"/>
-  <rect x="28" y="12" width="14" height="14" fill="#111111" fill-opacity="0.5"/>
-  <rect x="12" y="28" width="14" height="14" fill="#111111"/>
+  <rect x="29.5" y="12" width="14" height="14" fill="#111111" fill-opacity="0.5"/>
+  <rect x="12" y="29.5" width="14" height="14" fill="#111111"/>
+  <rect x="29.5" y="29.5" width="14" height="4.67" fill="#111111"/>
   <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">POSI VERIFIED</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#444444">${title}</text>
   ${grade ? `<rect x="52" y="45" width="28" height="14" fill="#111111"/><text x="66" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="10" fill="#ffffff" text-anchor="middle">${esc(grade)}</text>` : ''}

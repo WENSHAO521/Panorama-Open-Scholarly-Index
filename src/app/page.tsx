@@ -59,7 +59,7 @@ export default async function HomePage() {
                     letterSpacing: '0.24em',
                   }}
                 >
-                  Open Access
+                  Open Scholarly Infrastructure
                 </p>
               </div>
             </div>

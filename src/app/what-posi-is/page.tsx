@@ -3,33 +3,29 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'What POSI Is | POSI',
-  description: 'POSI is an open scholarly metadata platform for journal transparency, metadata quality assessment, and citation visibility. Learn what POSI does and how to use it.',
+  description: 'POSI is an open scholarly indexing, journal analytics, and automated evaluation infrastructure. Learn what POSI does and how to use it.',
 }
 
 const WHAT_IT_IS = [
   {
-    title: 'An open metadata aggregation platform',
-    body: 'POSI aggregates openly licensed metadata from Crossref, OpenAlex, OpenCitations, DOAJ, ROR, and ORCID into a single searchable index. All records include source attribution and provenance.',
+    title: 'An open journal discovery and indexing infrastructure',
+    body: 'POSI aggregates openly licensed metadata from Crossref, OpenAlex, OpenCitations, DOAJ, ROR, and ORCID, and distinguishes clearly between Discovered (found, unreviewed) and the POSI Core Collection (editorially admitted). See Core Collection for the full coverage model.',
   },
   {
-    title: 'A metadata quality assessment tool (PQF)',
-    body: 'The POSI Quality Framework (PQF) evaluates journals across six subfactors: transparency, metadata completeness, editorial governance, technical discoverability, citation visibility, and research integrity. All criteria are binary and publicly auditable.',
+    title: 'An automated, evidence-based journal rating system',
+    body: 'Early-Stage Rating computes a 100-point journal score entirely from crawled site evidence and sampled Crossref article metadata — no reviewer, editor, publisher, sponsor, or POSI administrator has a way to directly set a score, percentile, or quartile. Only the underlying evidence can be corrected, which triggers a recompute.',
   },
   {
-    title: 'A discoverability layer for PSG-affiliated journals',
-    body: 'POSI provides detailed journal and article records for journals published by Panorama Scholarly Group, including Crossref/OpenAlex-sourced article metadata, DOI coverage, and PQF scores. A conflict of interest disclosure accompanies all PSG-related records.',
+    title: 'Open citation metrics and subject rankings',
+    body: 'PCI and PCS are POSI\'s own openly-defined citation-impact metrics, computed from open data (OpenAlex, Crossref) — not licensed from or equivalent to Journal Impact Factor or CiteScore. Subject rankings and quartiles are computed within POSI\'s own subject classification (PSC).',
   },
   {
-    title: 'A freely reusable dataset under CC BY 4.0',
-    body: 'All curated metadata produced by POSI is published under Creative Commons Attribution 4.0. Third-party metadata is attributed to its original source. Bulk exports are planned via a public API.',
+    title: 'Open data, open methodology, and an open-source calculation engine',
+    body: 'POSI-produced data (taxonomy, metric snapshots, rankings) is published under CC BY 4.0; the calculation engine is MIT-licensed; aggregated upstream metadata retains its original source\'s license. Every figure traces to a pinned data and engine commit — see Open Data.',
   },
   {
     title: 'A research transparency initiative',
-    body: 'POSI is designed to make scholarly publishing infrastructure more transparent and machine-readable. Our goal is to help researchers, librarians, and institutions make better-informed decisions about where to publish and what to cite.',
-  },
-  {
-    title: 'A platform built on open infrastructure',
-    body: 'POSI only aggregates data from openly licensed sources: Crossref (CC0), OpenAlex (CC0), DOAJ (CC BY-SA), ROR (CC0), ORCID (CC0). No proprietary or paywalled data sources are used.',
+    body: 'POSI is designed to make scholarly publishing infrastructure more transparent, reproducible, and machine-readable. Our goal is to help researchers, librarians, and institutions make better-informed decisions about where to publish and what to cite.',
   },
 ]
 
@@ -71,8 +67,9 @@ export default function WhatPosiIsPage() {
       <div className="border-l-4 border-[#c41e3a] pl-5">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">What POSI Is</h1>
         <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
-          The Panorama Open Scholarly Index (POSI) is an open scholarly metadata platform.
-          Here is precisely what it does, what it provides, and who it is designed to serve.
+          The Panorama Open Scholarly Index (POSI) is an open scholarly indexing, journal analytics,
+          and automated evaluation infrastructure. Here is precisely what it does, what it provides,
+          and who it is designed to serve.
         </p>
       </div>
 
@@ -95,10 +92,11 @@ export default function WhatPosiIsPage() {
       <section className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Mission</h2>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-          POSI exists to make scholarly publishing infrastructure more transparent and machine-readable.
-          We aggregate openly licensed metadata from multiple sources, apply structured quality assessments,
-          and publish the results freely under CC BY 4.0. Our goal is to help the scholarly community
-          make better-informed decisions without replacing or competing with established indexing services.
+          POSI exists to make scholarly publishing infrastructure more transparent, reproducible, and
+          machine-readable. We aggregate openly licensed metadata, apply automated evaluation methodology
+          that no person can hand-adjust, and publish the results — data, engine, and methodology alike —
+          as versioned open infrastructure. Our goal is to help the scholarly community make
+          better-informed decisions without replacing or competing with established indexing services.
         </p>
       </section>
 
@@ -123,8 +121,9 @@ export default function WhatPosiIsPage() {
           <div>
             <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-              POSI is not a replacement for Web of Science, Scopus, or DOAJ. It is not an Impact Factor service,
-              a peer review certifier, or an article validator.
+              POSI is not licensed from or affiliated with Web of Science, Scopus, or DOAJ, not an
+              accreditation authority, not a peer review certifier, and not a substitute for evaluating
+              individual researchers.
             </p>
           </div>
           <Link

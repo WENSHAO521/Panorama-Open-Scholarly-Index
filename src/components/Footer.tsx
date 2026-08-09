@@ -115,7 +115,7 @@ export function Footer() {
                 letterSpacing: '0.1em',
               }}
             >
-              OPEN ACCESS
+              OPEN INFRASTRUCTURE
             </span>
           </div>
         </div>

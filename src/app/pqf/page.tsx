@@ -159,7 +159,7 @@ export default function PqfPage() {
         </div>
         <div className="p-5">
           <div className="font-mono text-sm text-gray-800 bg-gray-50 border border-gray-200 px-4 py-3 mb-4">
-            PQF = 0.25·JTF + 0.25·MQF + 0.20·EGF + 0.15·TDF + 0.10·CVF + 0.05·RIF
+            PQF = JTF + MQF + EGF + TDF + CVF + RIF
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-px bg-gray-200 border border-gray-200">
             {SUBFACTORS.map(sf => (

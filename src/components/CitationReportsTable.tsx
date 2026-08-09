@@ -21,7 +21,7 @@ type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs_ratio' | 'h_index' | 'ci
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
-  { key: 'two_yr_mean_citedness', label: 'PCI', title: 'POSI Citation Impact — OpenAlex 2-year mean citedness, comparable to a Journal Impact Factor' },
+  { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness — a provisional preview of PCI, not yet the official PJR-computed value' },
   { key: 'pcs_ratio', label: 'PCS', title: 'POSI Citation Score — Crossref mean citations per article over a trailing 4-year window, comparable to CiteScore' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
