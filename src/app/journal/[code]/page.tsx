@@ -415,6 +415,58 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           {/* Citation Impact — Core Collection feature, see showCitationImpact above */}
           {citationStats && <CitationImpactCard stats={citationStats} pcs={citationScore} />}
 
+          {/* Early-Stage Rating — a separate track from Citation Quartiles for
+              journals too young to have a real PCI citation window. Only shown
+              once eligibility clears the minimum evidence bar (see
+              scripts/rate-early-stage.mjs); "not_yet_rateable"/"unknown"/
+              "graduated" journals show nothing here rather than a misleading
+              partial card. */}
+          {journal.early_stage_rating?.eligibility === 'rated' && journal.early_stage_rating.automated_subfactors && (
+            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+                  Early-Stage Rating
+                </h2>
+                <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fefce8' }}>
+                  AUTOMATED
+                </span>
+              </div>
+              <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
+                {journal.early_stage_rating.automated_total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 65</span>
+              </p>
+              <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+                {journal.early_stage_rating.months_since_launch} months since first published. Covers 5 of 7
+                rubric dimensions (Editorial Governance, Research Integrity, Infrastructure, Publishing
+                Stability, Transparency). Scholarly Content and Scholarly Reach &amp; Diversity (35 of 100
+                points) are <strong>pending independent review</strong> — this is a partial, automated score,
+                not a final rating, and no P-Q1–P-Q4 quartile is assigned yet.
+              </p>
+              <div className="grid grid-cols-5 gap-1 mt-2.5 text-center">
+                {[
+                  ['EGF', journal.early_stage_rating.automated_subfactors.egf, 20],
+                  ['RIF', journal.early_stage_rating.automated_subfactors.rif, 15],
+                  ['INF', journal.early_stage_rating.automated_subfactors.inf, 15],
+                  ['PUB', journal.early_stage_rating.automated_subfactors.pub, 10],
+                  ['TRN', journal.early_stage_rating.automated_subfactors.trn, 5],
+                ].map(([label, val, max]) => (
+                  <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
+                    <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>
+                    <p className="text-xs font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>{val}/{max}</p>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-[10px] hover:underline mt-2"
+                style={{ color: 'var(--posi-accent)' }}
+              >
+                Methodology →
+              </a>
+            </div>
+          )}
+
           {/* Subject Classification */}
           {(journal.subjects?.length ?? 0) > 0 && (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>

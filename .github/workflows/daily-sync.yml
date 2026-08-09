@@ -39,16 +39,22 @@ jobs:
       - name: Recalculate metadata quality scores
         run: node scripts/calc-discovered-mqs.mjs
 
-      # 步骤 3：为 DOAJ 收录期刊更新 auto-PQF 评分
+      # 步骤 3：为发现的期刊更新 auto-PQF 评分（直接站点验证优先，DOAJ 仅作为披露的后备信号）
       - name: Update auto-PQF scores
         run: node scripts/auto-pqf.mjs --write
+
+      # 步骤 4：为 Core Collection（PSG/INDEXED/SHIHARR/OTHER_INDEXED）中的新刊
+      # 自动生成 Early-Stage Rating —— 任何刚被人工收录进 data.ts 的期刊，会在下一次
+      # 每日运行时自动完成评级，不需要额外手动触发。
+      - name: Update Early-Stage Journal Ratings
+        run: node scripts/rate-early-stage.mjs --write
 
       # 有变化才 commit，无变化静默退出（不产生空 commit）
       - name: Commit and push if changed
         run: |
           git config user.name  "posi-sync-bot"
           git config user.email "posi-sync-bot@users.noreply.github.com"
-          git add src/lib/discovered-journals.ts
+          git add src/lib/discovered-journals.ts src/lib/data.ts
           if git diff --staged --quiet; then
             echo "No changes — skipping commit"
           else

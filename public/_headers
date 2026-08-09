@@ -2,6 +2,11 @@
 # extension (out/api/badge/<code>/<variant>) — without this, Cloudflare
 # Pages' default MIME-type-by-extension lookup falls back to a generic
 # content type and browsers refuse to render them inside <img> tags.
+# charset=utf-8 is required, not cosmetic: badge SVGs embed the journal's own
+# title text, and any journal with a non-ASCII title (e.g. Chinese) fails to
+# render entirely in an <img> tag without an explicit charset declaration —
+# ASCII-only titles happened to work anyway, which is what made this easy to
+# miss initially.
 /api/badge/*
-  Content-Type: image/svg+xml
+  Content-Type: image/svg+xml; charset=utf-8
   Cache-Control: public, max-age=86400

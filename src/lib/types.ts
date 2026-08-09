@@ -26,6 +26,7 @@ export interface Journal {
   auto_pqf?: PqfScore | null
   /** @deprecated use pqf */
   ojqf?: PqfScore
+  early_stage_rating?: EarlyStageRating | null
   article_count: number
   created_at: string
   updated_at: string
@@ -153,6 +154,41 @@ export type OjqfSubfactors = PqfSubfactors
 
 /** @deprecated use PqfScore */
 export type OjqfScore = PqfScore
+
+// POSI Early-Stage Journal Rating — a separate track from Citation Quartiles
+// (Q1-Q4), for journals too young to have a real PCI citation window. See
+// posi-data's EARLY-STAGE-RATING-SPEC.md. Only 5 of the spec's 7 dimensions
+// are automatable from crawlable evidence; Scholarly Content (25pts, requires
+// reading actual article samples) and Scholarly Reach & Diversity (10pts,
+// requires judgment to avoid penalizing legitimately regional journals) are
+// deliberately left for human review rather than approximated from shallow
+// signals — automated_total is out of 65, not 100. No P-Q1-P-Q4 quartile is
+// assigned yet: that needs a same-cohort peer group within a PSC category,
+// and PSC classification hasn't been run on any journal yet.
+export interface EarlyStageAutomatedSubfactors {
+  egf: number  // Editorial Governance & Peer Review        /20
+  rif: number  // Research Integrity & Publication Ethics    /15
+  inf: number  // Metadata & Digital Publishing Infrastructure /15
+  pub: number  // Publishing Stability & Operational Performance /10
+  trn: number  // Openness, Data & Transparency               /5
+}
+
+export interface EarlyStageRating {
+  // 'rated': within the 36-month window and meets the minimum evidence bar.
+  // 'not_yet_rateable': within the window but below the minimum bar (see spec §3).
+  // 'graduated': more than 36 months since first published — outside this track.
+  // 'unknown': first-published date could not be determined (e.g. no Crossref records).
+  eligibility: 'rated' | 'not_yet_rateable' | 'graduated' | 'unknown'
+  first_published: string | null   // earliest Crossref-registered work date for this ISSN
+  months_since_launch: number | null
+  automated_subfactors: EarlyStageAutomatedSubfactors | null
+  automated_total: number | null   // sum of automated_subfactors, out of 65
+  content_status: 'pending_review'      // Scholarly Content (25pts) — always pending until a human review exists
+  reach_status: 'pending_review'        // Scholarly Reach & Diversity (10pts) — same
+  provisional_quartile: null             // always null until PSC classification + cohort data exist
+  rated_at: string    // ISO date
+  version: string     // e.g. "EARLY-STAGE-AUTO-0.1"
+}
 
 export interface Evidence {
   id: string
