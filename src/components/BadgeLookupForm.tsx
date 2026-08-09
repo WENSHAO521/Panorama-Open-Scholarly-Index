@@ -51,6 +51,13 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
     return journals.filter(j => j.code.toLowerCase().includes(q) || j.title.toLowerCase().includes(q)).slice(0, 8)
   }, [journals, query, match])
 
+  // Badge responses are cached 24h (see public/_headers). Without a
+  // cache-buster, a browser that previously fetched a since-fixed badge URL
+  // (broken content-type, an older logo mark revision, etc.) keeps showing
+  // the stale cached copy indefinitely — recomputed per matched journal so
+  // a fresh lookup always shows current state.
+  const cacheBust = useMemo(() => Date.now(), [match?.code])
+
   return (
     <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
       <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Get Your Badge</h2>
@@ -93,7 +100,7 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
             // Relative path for the on-page preview (works in any environment);
             // the copyable snippet below needs the absolute siteUrl since it's
             // meant to be pasted onto a third-party website.
-            const previewUrl = `/api/badge/${match.code}/${v.id}`
+            const previewUrl = `/api/badge/${match.code}/${v.id}?v=${cacheBust}`
             const imgUrl = `${siteUrl}/api/badge/${match.code}/${v.id}`
             const linkUrl = `${siteUrl}/journal/${match.code}/`
             const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer"><img src="${imgUrl}" alt="POSI Verified — ${match.title}" /></a>`

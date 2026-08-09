@@ -192,10 +192,11 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         >
           <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>
           <span style={{ color: '#78350f' }}>
-            This journal is published by Panorama Scholarly Group, which also operates POSI. PQF scores and
-            citation metrics (PCI/PCS) shown here are computed using the same published methodology and
-            versioned calculation engine applied to every eligible journal, with no manual adjustment for
-            PSG-affiliated titles; independent verification is encouraged.
+            This journal is published by Panorama Scholarly Group, which also operates POSI. PQF scores,
+            citation metrics (PCI/PCS), and the Early-Stage Rating shown here are computed using the same
+            published methodology and versioned calculation engine applied to every eligible journal, with
+            no manual score, percentile, or quartile adjustment possible for PSG-affiliated titles or any
+            other journal; independent verification is encouraged.
           </span>{' '}
           <Link href="/about" className="underline" style={{ color: '#92400e' }}>Governance disclosure →</Link>
         </div>
@@ -416,38 +417,41 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           {citationStats && <CitationImpactCard stats={citationStats} pcs={citationScore} />}
 
           {/* Early-Stage Rating — a separate track from Citation Quartiles for
-              journals too young to have a real PCI citation window. Only shown
-              once eligibility clears the minimum evidence bar (see
-              scripts/rate-early-stage.mjs); "not_yet_rateable"/"unknown"/
-              "graduated" journals show nothing here rather than a misleading
-              partial card. */}
-          {journal.early_stage_rating?.eligibility === 'rated' && journal.early_stage_rating.automated_subfactors && (
+              journals too young to have a real PCI citation window. 100%
+              automated (see EARLY-STAGE-RATING-SPEC.md §5): no reviewer,
+              editor, publisher, or POSI staff has a way to directly set this
+              score — only the underlying evidence can be corrected, which
+              triggers a recompute. Only shown once eligibility clears the
+              minimum evidence bar; "not_yet_rateable"/"unknown"/"graduated"
+              journals show nothing here rather than a misleading card. */}
+          {journal.early_stage_rating?.eligibility === 'rated' && journal.early_stage_rating.subfactors && (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
                   Early-Stage Rating
                 </h2>
-                <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fefce8' }}>
-                  AUTOMATED
+                <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
+                  100% AUTOMATED
                 </span>
               </div>
               <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
-                {journal.early_stage_rating.automated_total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 65</span>
+                {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
               </p>
               <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
-                {journal.early_stage_rating.months_since_launch} months since first published. Covers 5 of 7
-                rubric dimensions (Editorial Governance, Research Integrity, Infrastructure, Publishing
-                Stability, Transparency). Scholarly Content and Scholarly Reach &amp; Diversity (35 of 100
-                points) are <strong>pending independent review</strong> — this is a partial, automated score,
-                not a final rating, and no P-Q1–P-Q4 quartile is assigned yet.
+                {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
+                from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
+                or quartile adjustment is possible for this or any journal. No P-Q1–P-Q4 quartile is assigned yet
+                (needs a same-cohort PSC peer group, not yet built).
               </p>
-              <div className="grid grid-cols-5 gap-1 mt-2.5 text-center">
+              <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
                 {[
-                  ['EGF', journal.early_stage_rating.automated_subfactors.egf, 20],
-                  ['RIF', journal.early_stage_rating.automated_subfactors.rif, 15],
-                  ['INF', journal.early_stage_rating.automated_subfactors.inf, 15],
-                  ['PUB', journal.early_stage_rating.automated_subfactors.pub, 10],
-                  ['TRN', journal.early_stage_rating.automated_subfactors.trn, 5],
+                  ['EGF', journal.early_stage_rating.subfactors.egf, 15],
+                  ['RIF', journal.early_stage_rating.subfactors.rif, 15],
+                  ['INF', journal.early_stage_rating.subfactors.inf, 15],
+                  ['PUB', journal.early_stage_rating.subfactors.pub, 15],
+                  ['SOC', journal.early_stage_rating.subfactors.soc, 20],
+                  ['RDC', journal.early_stage_rating.subfactors.rdc, 10],
+                  ['TRN', journal.early_stage_rating.subfactors.trn, 10],
                 ].map(([label, val, max]) => (
                   <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
                     <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>

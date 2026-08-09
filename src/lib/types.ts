@@ -157,20 +157,21 @@ export type OjqfScore = PqfScore
 
 // POSI Early-Stage Journal Rating — a separate track from Citation Quartiles
 // (Q1-Q4), for journals too young to have a real PCI citation window. See
-// posi-data's EARLY-STAGE-RATING-SPEC.md. Only 5 of the spec's 7 dimensions
-// are automatable from crawlable evidence; Scholarly Content (25pts, requires
-// reading actual article samples) and Scholarly Reach & Diversity (10pts,
-// requires judgment to avoid penalizing legitimately regional journals) are
-// deliberately left for human review rather than approximated from shallow
-// signals — automated_total is out of 65, not 100. No P-Q1-P-Q4 quartile is
-// assigned yet: that needs a same-cohort peer group within a PSC category,
-// and PSC classification hasn't been run on any journal yet.
-export interface EarlyStageAutomatedSubfactors {
-  egf: number  // Editorial Governance & Peer Review        /20
-  rif: number  // Research Integrity & Publication Ethics    /15
-  inf: number  // Metadata & Digital Publishing Infrastructure /15
-  pub: number  // Publishing Stability & Operational Performance /10
-  trn: number  // Openness, Data & Transparency               /5
+// posi-data's EARLY-STAGE-RATING-SPEC.md (v0.2). 100% automated: no person
+// has a code path to directly set a score, percentile, or quartile — only
+// the underlying evidence can be corrected, which triggers a recompute. No
+// P-Q1-P-Q4 quartile is assigned yet: that needs a same-cohort peer group
+// within a PSC category, and PSC classification hasn't been run on any
+// journal yet — subfactors/total are populated once a journal clears
+// eligibility, but provisional_quartile stays null until then.
+export interface EarlyStageSubfactors {
+  egf: number  // Editorial Governance & Peer Review              /15
+  rif: number  // Research Integrity & Publication Ethics          /15
+  inf: number  // Metadata & Digital Publishing Infrastructure     /15
+  pub: number  // Publishing Stability & Operational Performance   /15
+  soc: number  // Scholarly Output Quality Signals                 /20
+  rdc: number  // Scholarly Reach & Concentration                  /10
+  trn: number  // Openness, Data & Transparency                    /10
 }
 
 export interface EarlyStageRating {
@@ -181,10 +182,8 @@ export interface EarlyStageRating {
   eligibility: 'rated' | 'not_yet_rateable' | 'graduated' | 'unknown'
   first_published: string | null   // earliest Crossref-registered work date for this ISSN
   months_since_launch: number | null
-  automated_subfactors: EarlyStageAutomatedSubfactors | null
-  automated_total: number | null   // sum of automated_subfactors, out of 65
-  content_status: 'pending_review'      // Scholarly Content (25pts) — always pending until a human review exists
-  reach_status: 'pending_review'        // Scholarly Reach & Diversity (10pts) — same
+  subfactors: EarlyStageSubfactors | null
+  total: number | null   // sum of subfactors, out of 100
   provisional_quartile: null             // always null until PSC classification + cohort data exist
   rated_at: string    // ISO date
   version: string     // e.g. "EARLY-STAGE-AUTO-0.1"

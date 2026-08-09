@@ -7,18 +7,21 @@
  * in data.ts) — the manually-curated "admitted" set, as opposed to the
  * unreviewed DISCOVERED_JOURNALS pool auto-pqf.mjs scores separately.
  *
- * This is a distinct methodology from PQF, not a PQF variant — see
- * posi-data's EARLY-STAGE-RATING-SPEC.md. Only 5 of the spec's 7 dimensions
- * are automated here (65 of 100 points): Scholarly Content (reading actual
- * article samples) and Scholarly Reach & Diversity (needs judgment, not a
- * keyword count) are deliberately left "pending_review" rather than
- * approximated — see the spec's own caution against shallow proxies for
- * those two. No P-Q1-P-Q4 quartile is computed: that needs a same-cohort
- * peer group within a PSC category, and PSC classification hasn't run yet.
+ * Fully automated 100-point methodology — see posi-data's
+ * EARLY-STAGE-RATING-SPEC.md (v0.2). No code path in this file accepts a
+ * manually-supplied score, percentile, or quartile: every point is computed
+ * from crawled site evidence or Crossref-registered article metadata. If a
+ * rating looks wrong, the fix is to correct the underlying evidence (a
+ * missed policy page, a stale Crossref record) and re-run this script — not
+ * to hand-edit the injected early_stage_rating field in data.ts.
  *
  * DOAJ listing status is not read anywhere in this file's scoring — same
  * "external metadata, zero weight" rule as everywhere else in POSI (see
  * EARLY-STAGE-RATING-SPEC.md § 5).
+ *
+ * No P-Q1-P-Q4 quartile is computed: that needs a same-cohort peer group
+ * within a PSC category, and PSC classification hasn't run on any journal
+ * yet (see spec status note).
  *
  * Usage:
  *   node scripts/rate-early-stage.mjs                 # dry run — print ratings
@@ -36,9 +39,10 @@ const LIMIT = (() => {
   return i !== -1 ? parseInt(process.argv[i + 1], 10) : null
 })()
 
-const UA = 'POSI-EarlyStageRating/0.1 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
+const UA = 'POSI-EarlyStageRating/0.2 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
 const CONCURRENCY = 4
 const DELAY_MS = 500
+const ARTICLE_SAMPLE_SIZE = 10
 
 const RATING_CUTOFF = new Date()
 const EARLY_STAGE_WINDOW_MONTHS = 36
@@ -153,16 +157,51 @@ async function fetchEarliestWork(issn) {
   }
 }
 
-async function fetchSampleDoi(issn) {
+function extractDate(w) {
+  const dp = w['published-print']?.['date-parts']?.[0]
+    ?? w['published-online']?.['date-parts']?.[0]
+    ?? w.created?.['date-parts']?.[0]
+  if (!dp) return null
+  const [y, m = 1, d = 1] = dp
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+// Up to N most recent Crossref-registered works, mapped to just the fields
+// §4.1/§4.2's scoring functions need. This is the real, published output —
+// not a policy page — that the Scholarly Output Quality Signals and
+// Scholarly Reach & Concentration dimensions are computed from.
+async function fetchArticleSample(issn, n = ARTICLE_SAMPLE_SIZE) {
   try {
-    const res = await fetch(`https://api.crossref.org/journals/${issn}/works?rows=1&select=DOI&mailto=posi@panoramagroup.org`, {
-      headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000),
+    const params = new URLSearchParams({
+      rows: String(n), sort: 'published', order: 'desc',
+      select: 'DOI,title,abstract,references-count,author,license,published-print,published-online,created',
+      mailto: 'posi@panoramagroup.org',
     })
-    if (!res.ok) return null
+    const res = await fetch(`https://api.crossref.org/journals/${issn}/works?${params.toString()}`, {
+      headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(12000),
+    })
+    if (!res.ok) return []
     const data = await res.json()
-    return data.message?.items?.[0]?.DOI ?? null
+    return (data.message?.items ?? []).map(w => ({
+      doi: w.DOI ?? null,
+      title: (Array.isArray(w.title) ? w.title[0] : w.title) ?? '',
+      hasAbstract: !!w.abstract,
+      // Crossref's /journals/{issn}/works select whitelist (and the response
+      // field itself) uses "references-count" (plural) — not the
+      // "reference-count" (singular) field used by the /works/{doi} single-
+      // record endpoint. Confirmed directly against a 400 validation error
+      // before fixing; verify against Crossref's docs again if this ever
+      // starts silently returning 0s.
+      referenceCount: w['references-count'] ?? 0,
+      authors: (w.author ?? []).map(a => ({
+        affiliation: a.affiliation?.[0]?.name ?? null,
+        orcid: a.ORCID ?? null,
+      })),
+      hasLicense: Array.isArray(w.license) && w.license.length > 0,
+      publishedDate: extractDate(w),
+    }))
   } catch {
-    return null
+    return []
   }
 }
 
@@ -171,18 +210,18 @@ function monthsBetween(fromIso, toDate) {
   return (toDate.getFullYear() - from.getFullYear()) * 12 + (toDate.getMonth() - from.getMonth())
 }
 
-// ─── Scoring — 5 automatable dimensions, 65 of 100 points ──────────────────
+// ─── Scoring — 7 dimensions, fully automated, 100 points total ─────────────
 
 function clamp(v, max) { return Math.max(0, Math.min(v, max)) }
 
 function scoreEditorialGovernance(site) {
-  // Editorial Governance & Peer Review /20
+  // Editorial Governance & Peer Review /15
   if (!site) return 0
   let s = 0
-  if (site.editorialBoard) s += 8
-  if (site.peerReview) s += 8
-  if (site.aimScope) s += 4
-  return clamp(s, 20)
+  if (site.editorialBoard) s += 6
+  if (site.peerReview) s += 6
+  if (site.aimScope) s += 3
+  return clamp(s, 15)
 }
 
 function scoreResearchIntegrity(site) {
@@ -208,22 +247,103 @@ function scoreInfrastructure(sitemapOk, robotsOk, openAlexFound, doiResolves) {
 }
 
 function scorePublishingStability(site, articleCount, monthsSinceLaunch, doiResolves) {
-  // Publishing Stability & Operational Performance /10
+  // Publishing Stability & Operational Performance /15
   let s = 0
-  if (site?.frequencyStated) s += 3
-  if (monthsSinceLaunch != null && monthsSinceLaunch > 0 && articleCount >= monthsSinceLaunch / 2) s += 4
-  if (doiResolves) s += 3
-  return clamp(s, 10)
+  if (site?.frequencyStated) s += 4
+  if (monthsSinceLaunch != null && monthsSinceLaunch > 0 && articleCount >= monthsSinceLaunch / 2) s += 7
+  if (doiResolves) s += 4
+  return clamp(s, 15)
 }
 
 function scoreTransparency(site) {
-  // Openness, Data & Transparency /5
+  // Openness, Data & Transparency /10
   if (!site) return 0
   let s = 0
-  if (site.openAccess) s += 2
-  if (site.license) s += 2
-  if (site.apc || site.waiver) s += 1
-  return clamp(s, 5)
+  if (site.openAccess) s += 4
+  if (site.license) s += 4
+  if (site.apc || site.waiver) s += 2
+  return clamp(s, 10)
+}
+
+function normalizeForDup(s) {
+  return (s ?? '').toLowerCase().replace(/[^a-z0-9一-鿿]+/g, ' ').trim()
+}
+
+function scoreOutputSignals(articles) {
+  // Scholarly Output Quality Signals /20 — see EARLY-STAGE-RATING-SPEC.md §4.1.
+  // Computed from real sampled articles, not policy pages: structural
+  // completeness, reference integrity, and publication-pattern anomalies.
+  // Not a claim of verifying scientific correctness — a check for the
+  // structural hallmarks of real, individually-reviewed scholarship.
+  if (articles.length === 0) return 0
+
+  let completenessSum = 0
+  for (const a of articles) {
+    const fields = [
+      a.hasAbstract,
+      a.referenceCount > 0,
+      a.authors.some(x => x.affiliation),
+      a.authors.some(x => x.orcid),
+      a.hasLicense,
+    ]
+    completenessSum += fields.filter(Boolean).length / fields.length
+  }
+  const completeness = (completenessSum / articles.length) * 10
+
+  const avgRefs = articles.reduce((s, a) => s + a.referenceCount, 0) / articles.length
+  const refScore = avgRefs >= 15 ? 5 : avgRefs >= 8 ? 3 : avgRefs >= 1 ? 1 : 0
+
+  let patternScore = 5
+  const normTitles = articles.map(a => normalizeForDup(a.title))
+  let dupFound = false
+  for (let i = 0; i < normTitles.length && !dupFound; i++) {
+    for (let j = i + 1; j < normTitles.length; j++) {
+      if (normTitles[i] && normTitles[i] === normTitles[j]) { dupFound = true; break }
+    }
+  }
+  if (dupFound) patternScore -= 2
+
+  const authorCounts = new Map()
+  for (const a of articles) {
+    for (const au of a.authors) {
+      const key = au.orcid ?? au.affiliation
+      if (!key) continue
+      authorCounts.set(key, (authorCounts.get(key) ?? 0) + 1)
+    }
+  }
+  const maxAuthorShare = authorCounts.size > 0 ? Math.max(...authorCounts.values()) / articles.length : 0
+  if (maxAuthorShare > 0.6) patternScore -= 2
+
+  const dates = articles.map(a => a.publishedDate).filter(Boolean)
+  if (dates.length >= 5 && new Set(dates).size === 1) patternScore -= 2
+
+  return clamp(Math.round(completeness + refScore + clamp(patternScore, 5)), 20)
+}
+
+function normalizeAffiliation(s) {
+  return s.toLowerCase().replace(/[^a-z0-9一-鿿]+/g, ' ').trim()
+}
+
+function scoreReachConcentration(articles) {
+  // Scholarly Reach & Concentration /10 — see EARLY-STAGE-RATING-SPEC.md §4.2.
+  // Deliberately NOT a nationality/diversity metric — flags over-reliance on
+  // a single institution via a coarse, string-based affiliation match.
+  const totalAuthors = articles.reduce((s, a) => s + a.authors.length, 0)
+  const affiliations = articles.flatMap(a => a.authors.map(au => au.affiliation).filter(Boolean))
+  // Sparse affiliation metadata is a completeness problem (already scored
+  // elsewhere), not evidence of concentration — neutral default here.
+  if (totalAuthors === 0 || affiliations.length / totalAuthors < 0.3) return 5
+
+  const normalized = affiliations.map(normalizeAffiliation)
+  const counts = new Map()
+  for (const n of normalized) counts.set(n, (counts.get(n) ?? 0) + 1)
+  const maxShare = Math.max(...counts.values()) / normalized.length
+  const uniqueRatio = counts.size / normalized.length
+
+  let s = 0
+  s += maxShare <= 0.4 ? 6 : maxShare <= 0.6 ? 4 : maxShare <= 0.8 ? 2 : 0
+  s += uniqueRatio >= 0.6 ? 4 : uniqueRatio >= 0.3 ? 2 : 0
+  return clamp(s, 10)
 }
 
 function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, site }) {
@@ -241,18 +361,18 @@ function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, s
 async function rateJournal(journal) {
   const issn = journal.issnOnline ?? journal.issnPrint
   if (!issn) {
-    return { id: journal.id, rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, automated_subfactors: null, automated_total: null } }
+    return { id: journal.id, rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null } }
   }
 
-  const [site, sitemapOk, robotsOk, openAlexFound, sampleDoi, firstPublished] = await Promise.all([
+  const [site, sitemapOk, robotsOk, openAlexFound, firstPublished, articles] = await Promise.all([
     crawlJournalSite(journal.website_url),
     checkSitemap(journal.website_url),
     checkRobots(journal.website_url),
     fetchOpenAlexStats(issn),
-    fetchSampleDoi(issn),
     fetchEarliestWork(issn),
+    fetchArticleSample(issn),
   ])
-  const doiResolves = await checkDoiResolves(sampleDoi)
+  const doiResolves = await checkDoiResolves(articles[0]?.doi ?? null)
 
   const monthsSinceLaunch = firstPublished ? monthsBetween(firstPublished, RATING_CUTOFF) : null
   const eligibility = computeEligibility({ firstPublished, monthsSinceLaunch, articleCount: journal.article_count, site })
@@ -260,7 +380,7 @@ async function rateJournal(journal) {
   if (eligibility !== 'rated') {
     return {
       id: journal.id,
-      rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, automated_subfactors: null, automated_total: null },
+      rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, subfactors: null, total: null },
     }
   }
 
@@ -268,14 +388,16 @@ async function rateJournal(journal) {
   const rif = scoreResearchIntegrity(site)
   const inf = scoreInfrastructure(sitemapOk, robotsOk, openAlexFound, doiResolves)
   const pub = scorePublishingStability(site, journal.article_count, monthsSinceLaunch, doiResolves)
+  const soc = scoreOutputSignals(articles)
+  const rdc = scoreReachConcentration(articles)
   const trn = scoreTransparency(site)
-  const automated_total = egf + rif + inf + pub + trn
+  const total = egf + rif + inf + pub + soc + rdc + trn
 
   return {
     id: journal.id,
     rating: {
       eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch,
-      automated_subfactors: { egf, rif, inf, pub, trn }, automated_total,
+      subfactors: { egf, rif, inf, pub, soc, rdc, trn }, total,
     },
   }
 }
@@ -290,7 +412,6 @@ function parseCoreCollection(src) {
     const startMarker = `export const ${arrayName}: Journal[] = [`
     const start = src.indexOf(startMarker)
     if (start === -1) continue
-    // Matching bracket scan — data.ts blocks are plain object literals, no nested arrays deep enough to confuse this within one journal record's top level.
     let depth = 0, i = start + startMarker.length - 1, end = -1
     for (; i < src.length; i++) {
       if (src[i] === '[') depth++
@@ -317,6 +438,10 @@ function parseCoreCollection(src) {
 }
 
 // ─── Write early_stage_rating into data.ts ─────────────────────────────────
+// Machine-generated field — same "do not hand-edit, correct evidence and
+// re-run" discipline as discovered-journals.ts. There is deliberately no
+// code path here (or anywhere in this script) that accepts a manually-
+// supplied score, percentile, or quartile as input — see spec §5.
 
 function injectRating(src, id, rating) {
   const idIdx = src.indexOf(`id: '${id}'`)
@@ -324,10 +449,10 @@ function injectRating(src, id, rating) {
   const blockEnd = src.indexOf('created_at:', idIdx)
   if (blockEnd === -1) return src
 
-  const subfactorsLit = rating.automated_subfactors
-    ? `{ egf: ${rating.automated_subfactors.egf}, rif: ${rating.automated_subfactors.rif}, inf: ${rating.automated_subfactors.inf}, pub: ${rating.automated_subfactors.pub}, trn: ${rating.automated_subfactors.trn} }`
+  const subfactorsLit = rating.subfactors
+    ? `{ egf: ${rating.subfactors.egf}, rif: ${rating.subfactors.rif}, inf: ${rating.subfactors.inf}, pub: ${rating.subfactors.pub}, soc: ${rating.subfactors.soc}, rdc: ${rating.subfactors.rdc}, trn: ${rating.subfactors.trn} }`
     : 'null'
-  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, automated_subfactors: ${subfactorsLit}, automated_total: ${rating.automated_total ?? 'null'}, content_status: 'pending_review', reach_status: 'pending_review', provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'EARLY-STAGE-AUTO-0.1' },\n`
+  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'EARLY-STAGE-AUTO-0.2' },\n`
 
   const blockContent = src.slice(idIdx, blockEnd)
   if (blockContent.includes('early_stage_rating:')) {
@@ -373,7 +498,7 @@ async function main() {
     console.log(`\nWrote early_stage_rating for ${results.length} journals to ${DATA_PATH}`)
   } else {
     console.log('\nDry run (pass --write to persist):')
-    for (const r of results) console.log(`  ${r.id}: ${r.rating.eligibility}${r.rating.automated_total != null ? ` — ${r.rating.automated_total}/65` : ''}`)
+    for (const r of results) console.log(`  ${r.id}: ${r.rating.eligibility}${r.rating.total != null ? ` — ${r.rating.total}/100` : ''}`)
   }
 }
 
