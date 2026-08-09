@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
-import { getStats } from '@/lib/data'
+import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'POSI — Open Scholarly Citation Index',
+  title: 'POSI — Open Journal Evaluation by Lifecycle',
   description:
-    'POSI is an open scholarly citation index: journal coverage, citation analytics (PCI/PCS), and subject rankings, reproducible from public data and open-source methodology.',
+    'POSI is an open journal indexing, lifecycle-based automated rating, subject ranking, and citation analytics infrastructure, reproducible from public data and open-source methodology.',
 }
 
 export default async function HomePage() {
@@ -15,6 +16,13 @@ export default async function HomePage() {
     ...getStats(),
     last_updated: new Date().toISOString().slice(0, 10),
   }
+  const coreCollection = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const lifecycleRated = coreCollection.filter(j => j.early_stage_rating?.total != null).length
+    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.total != null).length
+  const observationCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'observation').length
+  const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
+  const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
+    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
 
   return (
     <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
@@ -81,7 +89,7 @@ export default async function HomePage() {
                   letterSpacing: '0.01em',
                 }}
               >
-                Open Scholarly Citation Index
+                Open Journal Evaluation by Lifecycle
               </h1>
               <p
                 className="mb-8 leading-relaxed"
@@ -91,8 +99,8 @@ export default async function HomePage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Journal coverage, citation analytics, and subject rankings — reproducible from
-                open data and open-source methodology, not a proprietary black box.
+                Open journal indexing, lifecycle-based automated ratings, subject rankings, and
+                citation analytics — built from versioned evidence and reproducible methodology.
               </p>
               <SearchBar />
               <nav
@@ -100,10 +108,10 @@ export default async function HomePage() {
                 aria-label="Quick links"
               >
                 {[
-                  { href: '/ratings',          label: 'Automated Ratings' },
-                  { href: '/citation-reports', label: 'Journal Rankings' },
-                  { href: '/core-collection',  label: 'Core Collection' },
-                  { href: '/open-data',        label: 'Open Data' },
+                  { href: '/ratings/early-stage', label: 'Early-Stage Rankings' },
+                  { href: '/ratings/mature',      label: 'Mature Rankings' },
+                  { href: '/citation-reports',    label: 'Citation Rankings' },
+                  { href: '/core-collection',     label: 'Core Collection' },
                 ].map(link => (
                   <Link
                     key={link.href}
@@ -122,10 +130,10 @@ export default async function HomePage() {
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
               {[
-                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'POSI Core Collection',        note: 'Current verified records — migration in progress' },
-                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Metric Eligible Journals',    note: 'Current verified records — migration in progress' },
-                { value: '48',                                                            label: 'PSC Subject Categories',      note: 'v1.0 taxonomy — journal classification not yet run' },
-                { value: stats.discovered_journals.toLocaleString(),                      label: 'Discovered Journal Records',  note: 'Not yet Core Collection — see Coverage' },
+                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Core Collection',      note: 'Admitted through published editorial selection' },
+                { value: BENCHMARK_JOURNALS.length.toLocaleString(),                     label: 'Global Benchmark',     note: 'External validation corpus, not Core Collection' },
+                { value: lifecycleRated.toLocaleString(),                                label: 'Lifecycle Rated',      note: 'Early + Mature — see Ratings & Rankings' },
+                { value: '48',                                                            label: 'PSC Subject Categories', note: 'v1.0 taxonomy — see PSC Subjects' },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -185,31 +193,31 @@ export default async function HomePage() {
             {[
               {
                 abbr: '01',
-                label: 'Automated Journal Ratings',
-                desc: '100-point, evidence-based automated rating for the Core Collection — crawled site evidence and sampled Crossref articles, no manual score, percentile, or quartile adjustment for any journal. Pilot 2026.',
-                href: '/ratings',
-                cta: 'View Ratings →',
+                label: 'Early-Stage Rankings',
+                desc: 'Journals 12–59 months after first regular scholarly publication, evaluated through AJR-E and ranked within comparable PSC peer groups.',
+                href: '/ratings/early-stage',
+                cta: 'Explore E-Q Rankings →',
               },
               {
                 abbr: '02',
-                label: 'Journal & Subject Rankings',
-                desc: 'PCI (2-year), PCI-5, and PNCI citation-impact metrics, ranked within POSI\'s own subject classification (PSC). An open, reproducible alternative to proprietary impact factors.',
-                href: '/citation-reports',
-                cta: 'View Rankings →',
+                label: 'Mature Journal Rankings',
+                desc: 'Journals with at least 60 months of publishing history, evaluated through AJR-M using scholarly performance, citation impact, governance, and infrastructure.',
+                href: '/ratings/mature',
+                cta: 'Explore M-Q Rankings →',
               },
               {
                 abbr: '03',
-                label: 'POSI Core Collection',
-                desc: 'Discovered, Indexed, and Metric Eligible are three different things. See exactly which journals have passed editorial selection — and which have not.',
-                href: '/core-collection',
-                cta: 'Browse Coverage →',
+                label: 'Citation Rankings',
+                desc: 'Independent citation-impact rankings based on PCI, PCI-5, and PNCI within PSC subject categories.',
+                href: '/citation-reports',
+                cta: 'Explore Citation Rankings →',
               },
               {
                 abbr: '04',
-                label: 'Open Data & Methodology',
-                desc: 'Every journal record, formula, and dataset behind POSI is public on GitHub — versioned, PR-reviewed, and reproducible from a pinned commit.',
+                label: 'Open Methodology & Data',
+                desc: 'Every rating, evidence source, methodology version, and ranking release is documented and reproducible from a pinned commit.',
                 href: '/open-data',
-                cta: 'View Open Data →',
+                cta: 'Inspect Methodology →',
               },
             ].map((f) => (
               <Link
@@ -253,6 +261,39 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── LIFECYCLE STRIP ── */}
+      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <p
+            className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"
+            style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
+          >
+            Why POSI Has Two Rating Tracks
+          </p>
+          <div className="lifecycle-strip flex flex-col md:flex-row items-stretch gap-0" style={{ border: '1px solid var(--posi-border)' }}>
+            {[
+              { stage: 'Observation', window: '0–11 months', note: 'No quartile — too early to evaluate', accent: '#6B7280' },
+              { stage: 'Early-Stage', window: '12–59 months', note: 'AJR-E · E-Q1–E-Q4', accent: 'var(--posi-accent)' },
+              { stage: 'Mature', window: '60+ months', note: 'AJR-M · M-Q1–M-Q4', accent: '#B45309' },
+            ].map((s, i) => (
+              <div
+                key={s.stage}
+                className="flex-1 p-6"
+                style={{ background: 'var(--posi-surface)', borderLeft: i > 0 ? '1px solid var(--posi-border)' : 'none' }}
+              >
+                <p className="text-sm font-bold uppercase tracking-[0.08em]" style={{ color: s.accent }}>{s.stage}</p>
+                <p className="text-xs mt-1.5" style={{ color: 'var(--posi-muted)' }}>{s.window}</p>
+                <p className="text-[10px] font-mono mt-2" style={{ color: 'var(--posi-text)' }}>{s.note}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs leading-relaxed mt-4 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+            Citation Quartiles are reported independently through PCI once metric eligibility requirements
+            are met — regardless of which lifecycle track a journal is in.
+          </p>
         </div>
       </section>
 
@@ -327,25 +368,25 @@ export default async function HomePage() {
               {
                 title: 'Coverage',
                 items: [
-                  { label: 'PSG (Core Collection)',        value: stats.psg_journals },
-                  { label: 'Other Core Collection',        value: stats.indexed_journals },
-                  { label: 'Discovered (not yet reviewed)', value: stats.discovered_journals },
+                  { label: 'Core Collection',               value: stats.psg_journals + stats.indexed_journals },
+                  { label: 'Global Benchmark',               value: BENCHMARK_JOURNALS.length },
+                  { label: 'Discovered (not yet reviewed)',  value: stats.discovered_journals },
                 ],
               },
               {
-                title: 'External Metadata',
+                title: 'Lifecycle Evaluation',
                 items: [
-                  { label: 'DOI Metadata Records', value: stats.total_doi_records },
-                  { label: 'Crossref Verified',     value: stats.crossref_verified },
-                  { label: 'OpenAlex Matched',      value: stats.openalex_matched },
+                  { label: 'Observation (0–11mo)',   value: observationCount },
+                  { label: 'Early-Stage (12–59mo)',  value: earlyStageCount },
+                  { label: 'Mature (60mo+)',         value: matureCount },
                 ],
               },
               {
-                title: 'Open Access & Citations',
+                title: 'Citation Analytics',
                 items: [
-                  { label: 'DOAJ-listed Records',         value: stats.doaj_listed },
+                  { label: 'OpenAlex Matched',            value: stats.openalex_matched },
                   { label: 'Citation Visibility Signals', value: stats.open_citation_records },
-                  { label: 'Avg. MQS',                    value: `${stats.avg_metadata_quality}/100` },
+                  { label: 'DOAJ-listed Records',         value: stats.doaj_listed },
                 ],
               },
             ].map((group) => (

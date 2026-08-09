@@ -30,8 +30,8 @@ export const metadata: Metadata = {
     template: "%s | POSI",
   },
   description:
-    "Panorama Open Scholarly Index is an open journal metadata and policy evidence platform for journal transparency, metadata quality, technical discoverability, and policy verification. All indicators are based on publicly auditable evidence.",
-  keywords: ["open access", "scholarly index", "academic search", "citation visibility", "metadata quality", "journal quality"],
+    "Panorama Open Scholarly Index is an open journal indexing, lifecycle evaluation, subject ranking, and citation analytics infrastructure built on versioned evidence and reproducible methodology.",
+  keywords: ["journal rankings", "journal evaluation", "academic journals", "citation analytics", "journal quartiles", "scholarly index", "open citation metrics", "PSC", "AJR", "PCI"],
   icons: { icon: "/favicon.svg" },
 };
 

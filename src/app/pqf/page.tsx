@@ -90,19 +90,29 @@ const SUBFACTORS = [
   },
 ]
 
-const GRADES = [
-  { grade: 'A+', range: '90–100', desc: 'Excellent transparency and metadata quality', color: '#1F7A4D' },
-  { grade: 'A',  range: '80–89',  desc: 'Strong journal quality infrastructure',      color: '#1F7A4D' },
-  { grade: 'B+', range: '70–79',  desc: 'Good journal infrastructure',                color: '#1e3a5f' },
-  { grade: 'B',  range: '60–69',  desc: 'Satisfactory but improvable',                color: '#1e3a5f' },
-  { grade: 'C',  range: '50–59',  desc: 'Developing',                                 color: '#B7791F' },
-  { grade: 'D',  range: '40–49',  desc: 'Early stage',                                color: '#6B7280' },
-  { grade: 'E',  range: '<40',    desc: 'Insufficient public evidence',               color: '#9CA3AF' },
+// PQF answers "can this journal be indexed," not "how good is this journal
+// compared to others" — so the public result is a coarse eligibility status,
+// not a numeric grade or a ranked leaderboard (see AJR for comparative
+// evaluation). Bands re-bucket the existing 100-point score into four
+// admission-relevant states.
+const ELIGIBILITY_STATUS = [
+  { status: 'Eligible',              min: 70, desc: 'Meets the evidence bar for Core Collection admission', color: '#1F7A4D' },
+  { status: 'Review Required',       min: 50, desc: 'Partial evidence — needs manual review before admission', color: '#1e3a5f' },
+  { status: 'Insufficient Evidence', min: 40, desc: 'Below the evidence bar — not yet admission-ready', color: '#B7791F' },
+  { status: 'Not Eligible',          min: 0,  desc: 'Well below the minimum evidence bar', color: '#6B7280' },
 ]
+
+function eligibilityStatus(total: number) {
+  return ELIGIBILITY_STATUS.find(s => total >= s.min) ?? ELIGIBILITY_STATUS[ELIGIBILITY_STATUS.length - 1]
+}
 
 export default function PqfPage() {
   const journalsWithPqf = ALL_JOURNALS.filter(j => j.pqf ?? j.ojqf)
-    .sort((a, b) => ((b.pqf ?? b.ojqf)!.total) - ((a.pqf ?? a.ojqf)!.total))
+    .sort((a, b) => a.title.localeCompare(b.title))
+  const statusCounts = ELIGIBILITY_STATUS.map(s => ({
+    ...s,
+    count: journalsWithPqf.filter(j => eligibilityStatus((j.pqf ?? j.ojqf)!.total).status === s.status).length,
+  }))
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -177,63 +187,59 @@ export default function PqfPage() {
         </div>
       </section>
 
-      {/* Grade scale */}
+      {/* Eligibility status distribution */}
       <section className="bg-white border border-gray-200 mb-6">
         <div className="px-5 py-3 border-b border-gray-100">
-          <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Grade Scale</h2>
+          <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Eligibility Status</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-2 font-semibold text-gray-500 w-16">Grade</th>
-                <th className="text-left px-4 py-2 font-semibold text-gray-500 w-24">Score</th>
+                <th className="text-left px-5 py-2 font-semibold text-gray-500">Status</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-500">Description</th>
+                <th className="text-right px-5 py-2 font-semibold text-gray-500 w-24">Journals</th>
               </tr>
             </thead>
             <tbody>
-              {GRADES.map(g => (
-                <tr key={g.grade} className="border-b border-gray-50 last:border-0">
+              {statusCounts.map(s => (
+                <tr key={s.status} className="border-b border-gray-50 last:border-0">
                   <td className="px-5 py-2">
-                    <span className="font-mono font-bold text-sm" style={{ color: g.color }}>{g.grade}</span>
+                    <span className="font-mono font-bold text-sm" style={{ color: s.color }}>{s.status}</span>
                   </td>
-                  <td className="px-4 py-2 font-mono text-gray-600">{g.range}</td>
-                  <td className="px-4 py-2 text-gray-600">{g.desc}</td>
+                  <td className="px-4 py-2 text-gray-600">{s.desc}</td>
+                  <td className="px-5 py-2 text-right font-mono text-gray-600">{s.count}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="px-5 py-3 text-[10px] text-gray-400" style={{ borderTop: '1px solid #f3f4f6' }}>
+          PQF answers whether a journal can be admitted to the Core Collection — it is not a comparative
+          score. For how a journal ranks against its peers, see{' '}
+          <Link href="/ratings" className="underline">AJR Ratings &amp; Rankings →</Link>
+        </p>
       </section>
 
-      {/* Journal scores */}
+      {/* Journal eligibility list */}
       <section className="bg-white border border-gray-200 mb-6">
         <div className="px-5 py-3 border-b border-gray-100 flex items-baseline justify-between">
-          <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Journal PQF Scores — 2026</h2>
+          <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Core Collection Journals — Eligibility</h2>
           <span className="text-[10px] text-gray-400 font-mono">Assessed 2026-06-22</span>
         </div>
-
-        {/* Desktop table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left px-5 py-2 font-semibold text-gray-500">Journal</th>
                 <th className="text-left px-3 py-2 font-semibold text-gray-500">Publisher</th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">JTF<span className="font-normal text-gray-400">/25</span></th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">MQF<span className="font-normal text-gray-400">/25</span></th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">EGF<span className="font-normal text-gray-400">/20</span></th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">TDF<span className="font-normal text-gray-400">/15</span></th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">CVF<span className="font-normal text-gray-400">/10</span></th>
-                <th className="text-center px-2 py-2 font-semibold text-gray-500">RIF<span className="font-normal text-gray-400">/5</span></th>
-                <th className="text-center px-3 py-2 font-semibold text-gray-500">Total</th>
-                <th className="text-center px-3 py-2 font-semibold text-gray-500">Grade</th>
+                <th className="text-center px-3 py-2 font-semibold text-gray-500">Status</th>
               </tr>
             </thead>
             <tbody>
               {journalsWithPqf.map(j => {
                 const pqf = (j.pqf ?? j.ojqf)!
-                const gradeData = GRADES.find(g => g.grade === pqf.grade)
+                const s = eligibilityStatus(pqf.total)
                 return (
                   <tr key={j.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-2.5">
@@ -244,61 +250,14 @@ export default function PqfPage() {
                     <td className="px-3 py-2.5 text-gray-500 text-[11px]">
                       {j.publisher}
                     </td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.jtf}</td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.mqf}</td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.egf}</td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.tdf}</td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.cvf}</td>
-                    <td className="px-2 py-2.5 text-center font-mono text-gray-600">{pqf.subfactors.rif ?? 0}</td>
-                    <td className="px-3 py-2.5 text-center font-mono font-bold text-gray-800">{pqf.total}</td>
                     <td className="px-3 py-2.5 text-center">
-                      <span className="font-mono font-bold" style={{ color: gradeData?.color ?? '#6B7280' }}>{pqf.grade}</span>
+                      <span className="font-mono font-semibold" style={{ color: s.color }}>{s.status}</span>
                     </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-        </div>
-
-        {/* Mobile cards */}
-        <div className="md:hidden divide-y divide-gray-100">
-          {journalsWithPqf.map(j => {
-            const pqf = (j.pqf ?? j.ojqf)!
-            const gradeData = GRADES.find(g => g.grade === pqf.grade)
-            return (
-              <div key={j.id} className="px-4 py-4">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <Link href={`/journal/${j.journal_code}`} className="text-xs font-semibold text-gray-800 hover:text-[#c41e3a] transition-colors">
-                      {j.short_title}
-                    </Link>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{j.publisher}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-2xl font-bold font-mono leading-none" style={{ color: gradeData?.color ?? '#6B7280' }}>{pqf.total}</span>
-                    <span className="block text-xs font-mono font-bold" style={{ color: gradeData?.color ?? '#6B7280' }}>{pqf.grade}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-6 gap-1">
-                  {[
-                    { abbr: 'JTF', val: pqf.subfactors.jtf, max: 25 },
-                    { abbr: 'MQF', val: pqf.subfactors.mqf, max: 25 },
-                    { abbr: 'EGF', val: pqf.subfactors.egf, max: 20 },
-                    { abbr: 'TDF', val: pqf.subfactors.tdf, max: 15 },
-                    { abbr: 'CVF', val: pqf.subfactors.cvf, max: 10 },
-                    { abbr: 'RIF', val: pqf.subfactors.rif ?? 0, max: 5 },
-                  ].map(sf => (
-                    <div key={sf.abbr} className="text-center py-1.5" style={{ background: '#f9fafb' }}>
-                      <div className="text-[9px] font-mono font-bold" style={{ color: '#c41e3a' }}>{sf.abbr}</div>
-                      <div className="text-xs font-mono font-semibold text-gray-700">{sf.val}</div>
-                      <div className="text-[9px] text-gray-400">/{sf.max}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
         </div>
       </section>
 

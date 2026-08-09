@@ -1,0 +1,7 @@
+# /pqf-scores was a public PQF letter-grade leaderboard (A+ through E),
+# retired in favor of PQF's coarse Eligible/Review Required/Insufficient
+# Evidence/Not Eligible status (see /pqf) — a ranked leaderboard conflicts
+# with AJR (Ratings & Rankings), which is now the comparative-evaluation
+# track. See posi-data/AJR-SPEC.md.
+/pqf-scores /pqf 301
+/pqf-scores/ /pqf/ 301

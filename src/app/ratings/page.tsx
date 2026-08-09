@@ -1,109 +1,50 @@
 import Link from 'next/link'
-import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
+import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
-import type { Journal } from '@/lib/types'
 
 export const metadata = {
-  title: 'POSI Automated Journal Ratings — Pilot 2026',
-  description: 'Evidence-based, rules-driven, and reproducible journal evaluation for the POSI Core Collection, validated against a Global Benchmark Collection of established journals. 100% automated — no manual score, percentile, or quartile adjustment.',
+  title: 'POSI Journal Lifecycle Ratings — Pilot 2026',
+  description: 'Evidence-based, rules-driven, and reproducible journal evaluation, split by lifecycle stage: Early-Stage (AJR-E / E-Q), Mature (AJR-M / M-Q), and Citation (PCI / Citation Q). 100% automated — no manual score, percentile, or quartile adjustment.',
 }
 
-const ELIGIBILITY_LABEL: Record<string, string> = {
-  observation: 'Observation Stage',
-  early_stage: 'Evaluated',
-  mature: 'Evaluated (mature)',
-  not_yet_rateable: 'Not Yet Rateable',
-  unknown: 'Unknown',
-}
-
-const ELIGIBILITY_COLOR: Record<string, string> = {
-  observation: '#6B7280',
-  early_stage: '#1F7A4D',
-  mature: '#1F7A4D',
-  not_yet_rateable: '#B45309',
-  unknown: '#6B7280',
-}
-
-function RatingsTable({ journals, showPQ }: { journals: Journal[]; showPQ: boolean }) {
+function TrackCard({
+  eyebrow, title, window, methodology, quartile, desc, href, cta, accent,
+}: {
+  eyebrow: string; title: string; window: string; methodology: string; quartile: string
+  desc: string; href: string; cta: string; accent: string
+}) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <thead>
-          <tr style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
-            <th className="text-left px-4 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Journal</th>
-            <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Publisher</th>
-            <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PSC</th>
-            <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Score</th>
-            <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Status</th>
-            {showPQ && <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>E-Q</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {journals.map(j => {
-            const r = j.early_stage_rating
-            const eligibility = r?.eligibility ?? 'unknown'
-            return (
-              <tr key={j.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
-                <td className="px-4 py-3">
-                  {j.is_external_benchmark ? (
-                    <a href={j.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
-                      {j.title}
-                    </a>
-                  ) : (
-                    <Link href={`/journal/${j.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
-                      {j.title}
-                    </Link>
-                  )}
-                </td>
-                <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>{j.publisher}</td>
-                <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>Not yet classified</td>
-                <td className="px-3 py-3 text-center font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>
-                  {r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
-                </td>
-                <td className="px-3 py-3 text-center">
-                  <span
-                    className="font-mono text-[10px] font-semibold"
-                    style={{ color: ELIGIBILITY_COLOR[eligibility] }}
-                    title={eligibility === 'not_yet_rateable' ? 'Below the minimum evidence bar — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. See the validation finding above.' : undefined}
-                  >
-                    {ELIGIBILITY_LABEL[eligibility]}
-                  </span>
-                </td>
-                {showPQ && (
-                  <td
-                    className="px-3 py-3 text-center text-[10px]"
-                    style={{ color: 'var(--posi-muted)' }}
-                    title={eligibility === 'mature' ? 'Not applicable — mature journals are ranked by Citation Q (PCI-based), not E-Q' : 'Not assigned — insufficient peer cohort'}
-                  >
-                    {eligibility === 'mature' ? 'N/A' : '—'}
-                  </td>
-                )}
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+    <Link href={href} className="p-6 block transition-colors hover:bg-black/[0.015] group" style={{ border: '1px solid var(--posi-border)' }}>
+      <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]" style={{ color: accent }}>
+        {eyebrow}
+      </span>
+      <h2 className="text-lg font-bold mt-2 mb-3 leading-tight" style={{ color: 'var(--posi-text)' }}>{title}</h2>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {[window, methodology, quartile].map(t => (
+          <span key={t} className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)' }}>{t}</span>
+        ))}
+      </div>
+      <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>{desc}</p>
+      <span className="text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100" style={{ color: accent }}>
+        {cta}
+      </span>
+    </Link>
   )
 }
 
 export default function RatingsPage() {
   const coreCollection = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
-    .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
-  const evaluatedCount = coreCollection.filter(j => j.early_stage_rating?.total != null).length
-
-  const benchmarkSorted = [...BENCHMARK_JOURNALS]
-    .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
-  const benchmarkEvaluated = benchmarkSorted.filter(j => j.early_stage_rating?.total != null)
-  const benchmarkTop = benchmarkEvaluated.slice(0, 25)
+  const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
+  const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
+    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Automated Ratings</span>
+        <span style={{ color: 'var(--posi-text)' }}>Ratings &amp; Rankings</span>
       </nav>
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
@@ -112,96 +53,76 @@ export default function RatingsPage() {
             PILOT 2026
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            {coreCollection.length} Core Collection · {BENCHMARK_JOURNALS.length} Global Benchmark
+            AJR Lifecycle 1.0
           </span>
         </div>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Automated Journal Ratings (AJR)</h1>
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Journal Lifecycle Ratings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Evidence-based, rules-driven, and reproducible journal evaluation. Published as a <strong style={{ color: 'var(--posi-text)' }}>pilot</strong>,
-          not a final release. The same AJR score applies to any early-stage or mature journal — lifecycle stage
-          only decides whether a journal's quartile track is the early-stage E-Q system (below) or Citation Q
-          (PCI-based, for mature journals with a real citation window).
+          A journal&apos;s lifecycle stage decides which track evaluates it — new journals are ranked
+          against other new journals, established journals against other established journals, and
+          citation impact is reported independently of both. See{' '}
+          <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="underline">AJR-SPEC.md →</a>
         </p>
+      </div>
+
+      <div className="tracks-grid grid md:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)', borderRight: 'none' }}>
+        <div style={{ borderRight: '1px solid var(--posi-border)' }}>
+          <TrackCard
+            eyebrow="Track 01"
+            title="Early-Stage"
+            window="12–59 months"
+            methodology="AJR-E"
+            quartile="E-Q1–E-Q4"
+            desc={`${earlyStageCount} journals currently evaluated. Scored on editorial governance, research integrity, infrastructure, publishing stability, output signals, reach, and transparency.`}
+            href="/ratings/early-stage"
+            cta="View Early-Stage Rankings →"
+            accent="var(--posi-accent)"
+          />
+        </div>
+        <div style={{ borderRight: '1px solid var(--posi-border)' }}>
+          <TrackCard
+            eyebrow="Track 02"
+            title="Mature"
+            window="60+ months"
+            methodology="AJR-M"
+            quartile="M-Q1–M-Q4"
+            desc={`${matureCount} journals currently evaluated (interim AJR-E basis — AJR-M citation-weighted model not yet implemented). Ranked separately from Citation Q.`}
+            href="/ratings/mature"
+            cta="View Mature Rankings →"
+            accent="#B45309"
+          />
+        </div>
+        <div>
+          <TrackCard
+            eyebrow="Track 03"
+            title="Citation"
+            window="Metric Eligible"
+            methodology="PCI / PCI-5 / PNCI"
+            quartile="Citation Q1–Q4"
+            desc="Independent of lifecycle stage or AJR score — ranks purely on citation performance within a PSC subject category once a real citation window exists."
+            href="/citation-reports"
+            cta="View Citation Rankings →"
+            accent="#1F7A4D"
+          />
+        </div>
       </div>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
+          <p><strong>Current Rating Release:</strong> Pilot 2026</p>
+          <p><strong>Methodology:</strong> AJR Lifecycle 1.0</p>
           <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {BENCHMARK_JOURNALS.length} Global Benchmark journals</p>
-          <p><strong>Methodology:</strong> AJR-1.0 Pilot</p>
-          <p><strong>Scoring:</strong> 100% rules-driven, from crawled site evidence and sampled Crossref articles</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>
           <p><strong>Quartiles:</strong> Assigned only once a minimum same-category PSC peer group exists</p>
         </div>
       </div>
 
-      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Core Collection Ratings</h2>
-          <Link href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-            Methodology (AJR-1.0) →
-          </Link>
-        </div>
-        <RatingsTable journals={coreCollection} showPQ />
-        <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          {evaluatedCount} of {coreCollection.length} scored to date. E-Q (Early-Stage Quartile) is not assigned
-          to any journal yet — insufficient peer cohort. It requires PSC subject classification (not yet wired
-          into ranking) and a minimum same-category, same-cohort peer group per AJR-SPEC.md § 5.
-          This is expected at this stage, not an error.
-        </p>
-      </section>
-
-      {/* Global Benchmark Collection */}
-      <div className="border-l-4 pl-5 pt-2" style={{ borderColor: '#6B7280' }}>
-        <h2 className="text-lg font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Global Benchmark Collection</h2>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          {BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical AJR-1.0
-          pipeline — used to validate the methodology against journals already broadly agreed to be excellent,
-          not to expand POSI's Core Collection. <strong style={{ color: 'var(--posi-text)' }}>Not part of the Core
-          Collection, not a candidate for admission, not counted in Indexed/Metric Eligible stats.</strong> Selected
-          using only OpenAlex's own open signals (is_core, citation activity, topic-domain balance) — no Web of
-          Science or Scopus data anywhere in selection or scoring.
-        </p>
-      </div>
-
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
-        <span style={{ color: '#92400e' }}>
-          <strong>Validation finding:</strong> the first benchmark run scored only 5 of 200 journals. Extending
-          the evidence crawl to check policy subpages (not just the homepage) and widening the ethics-keyword
-          set raised this to 22 of 200 (Nature now scores 71/100) — a real improvement. Expanding the corpus to
-          600 journals held at the same ~9% rate, ruling out sample size as the cause. A direct investigation
-          found the real bottleneck: <strong>73% of a sampled batch of still-failing journals return HTTP 403 on
-          the first request</strong> — Elsevier, Wiley, ACS, APS, AIP, Oxford, and IOP platforms among them.
-          No amount of subpage-guessing or keyword-widening can fix that; it's a structural ceiling of a
-          plain-HTTP-only crawl, not evidence those journals lack real governance. <strong>"Not Yet Rateable" on a
-          bot-protected platform means POSI's crawl was blocked — not that no evidence of governance exists.</strong>{' '}
-          Published here rather than quietly smoothed over, per POSI's own no-hidden-adjustment principle.
-        </span>
-      </div>
-
-      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>
-            Top {benchmarkTop.length} of {benchmarkEvaluated.length} Evaluated
-          </h2>
-          <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
-            {benchmarkEvaluated.length} of {BENCHMARK_JOURNALS.length} scored
-          </span>
-        </div>
-        <RatingsTable journals={benchmarkTop} showPQ={false} />
-        <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          Showing the top {benchmarkTop.length} by score. Benchmark journals never receive an E-Q — as
-          established journals, their eventual quartile track is Citation Q (PCI-based), not the early-stage
-          system. Full corpus and per-journal evidence: see{' '}
-          <a href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/blob/master/src/lib/benchmark-journals.ts" target="_blank" rel="noopener noreferrer" className="underline">benchmark-journals.ts →</a>
-        </p>
-      </section>
-
       <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/coverage/global-benchmark" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Global Benchmark Collection →</Link>
         <Link href="/core-collection" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Core Collection →</Link>
-        <Link href="/citation-reports" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Citation Analytics (Preview) →</Link>
+        <Link href="/subjects" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PSC Subjects →</Link>
         <Link href="/open-data" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Open Data →</Link>
       </div>
     </div>

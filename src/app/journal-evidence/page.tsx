@@ -210,7 +210,7 @@ export default function JournalEvidencePage() {
       <div className="flex flex-wrap gap-4 text-xs">
         <Link href="/evidence" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Evidence Registry →</Link>
         <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
-        <Link href="/pqf-scores" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Scores →</Link>
+        <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Editorial Selection (PQF) →</Link>
         <Link href="/journals?tab=psg" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Verified Journals →</Link>
       </div>
     </div>

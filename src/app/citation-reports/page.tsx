@@ -7,7 +7,7 @@ import { primarySubject } from '@/lib/subject-keywords'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
 export const metadata = {
-  title: 'Citation Analytics — Preview',
+  title: 'Citation Rankings — Preview',
   description: 'Provisional open citation indicators for the POSI Core Collection — not yet official PJR PCI values or POSI Quartiles. See PJR-SPEC.md for the official methodology.',
 }
 
@@ -93,9 +93,9 @@ export default async function CitationReportsPage() {
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
-        <Link href="/journals" className="hover:text-gray-700">Journals</Link>
+        <Link href="/ratings" className="hover:text-gray-700">Ratings &amp; Rankings</Link>
         <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Citation Reports</span>
+        <span style={{ color: 'var(--posi-text)' }}>Citation Rankings</span>
       </nav>
 
       <div className="border-l-4 pl-5" style={{ borderColor: '#B45309' }}>
@@ -107,7 +107,7 @@ export default async function CitationReportsPage() {
             {rows.length} journals · Core Collection
           </span>
         </div>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Analytics — Preview</h1>
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Two independently-sourced, provisional citation indicators — OpenAlex 2-Year Citedness (a preview of{' '}
           <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>, not

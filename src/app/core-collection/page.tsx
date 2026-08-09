@@ -1,7 +1,14 @@
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
-import { Badge } from '@/components/Badge'
+
+const LIFECYCLE_LABEL: Record<string, string> = {
+  observation: 'Observation',
+  early_stage: 'Early-Stage',
+  mature: 'Mature',
+  not_yet_rateable: 'Not Yet Rateable',
+  unknown: 'Unknown',
+}
 
 export const metadata = {
   title: 'POSI Core Collection',
@@ -98,13 +105,16 @@ export default function CoreCollectionPage() {
               <tr style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
                 <th className="text-left px-4 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Journal</th>
                 <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Publisher</th>
-                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PQF</th>
-                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Metric Eligible</th>
+                <th className="text-left px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PSC</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Lifecycle</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Rating</th>
+                <th className="text-center px-3 py-2.5 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>Citation</th>
               </tr>
             </thead>
             <tbody>
               {coreCollection.map(j => {
-                const score = (j.pqf ?? j.ojqf) ?? j.auto_pqf ?? null
+                const eligibility = j.early_stage_rating?.eligibility ?? 'unknown'
+                const total = j.early_stage_rating?.total
                 return (
                   <tr key={j.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                     <td className="px-4 py-3">
@@ -114,11 +124,19 @@ export default function CoreCollectionPage() {
                       <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{j.short_title}</span>
                     </td>
                     <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>{j.publisher}</td>
-                    <td className="px-3 py-3 text-center font-mono font-bold" style={{ color: score ? 'var(--posi-accent)' : 'var(--posi-muted)' }}>
-                      {score ? `${score.grade}` : '—'}
+                    <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>
+                      {j.psc_category ? (
+                        <>{j.psc_category}{j.psc_confidence === 'low' && <span className="ml-1 opacity-60" title="Low-confidence classification">*</span>}</>
+                      ) : 'Not yet classified'}
                     </td>
-                    <td className="px-3 py-3 text-center">
-                      <Badge label="Yes" variant="oa" />
+                    <td className="px-3 py-3 text-center font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>
+                      {LIFECYCLE_LABEL[eligibility]}
+                    </td>
+                    <td className="px-3 py-3 text-center font-mono font-bold" style={{ color: total != null ? 'var(--posi-accent)' : 'var(--posi-muted)' }} title={total != null ? 'AJR score — E-Q/M-Q quartile not yet assigned (needs a PSC peer cohort)' : undefined}>
+                      {total != null ? `${total}/100` : '—'}
+                    </td>
+                    <td className="px-3 py-3 text-center text-[10px]" style={{ color: 'var(--posi-muted)' }} title="Citation Q depends on PCI, not yet wired for this journal">
+                      Not eligible
                     </td>
                   </tr>
                 )
@@ -129,8 +147,8 @@ export default function CoreCollectionPage() {
       </section>
 
       <div className="flex flex-wrap gap-5 text-xs">
-        <Link href="/citation-reports" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Citation Reports →</Link>
-        <Link href="/pqf#eligibility" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Eligibility →</Link>
+        <Link href="/ratings" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Ratings &amp; Rankings →</Link>
+        <Link href="/pqf#eligibility" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Editorial Selection Eligibility →</Link>
         <Link href="/journals?tab=discovered" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Auto-discovered Records →</Link>
       </div>
     </div>

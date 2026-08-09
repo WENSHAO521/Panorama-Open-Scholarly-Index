@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const metadata = {
   title: 'PSC Subject Classification',
@@ -55,6 +57,18 @@ export default async function SubjectsPage() {
     byParent.get(c.parent)!.push(c)
   }
 
+  const allJournals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...BENCHMARK_JOURNALS]
+  const countsByCategory = new Map<string, { total: number; earlyStage: number; mature: number }>()
+  for (const j of allJournals) {
+    if (!j.psc_category) continue
+    const c = countsByCategory.get(j.psc_category) ?? { total: 0, earlyStage: 0, mature: 0 }
+    c.total++
+    if (j.early_stage_rating?.eligibility === 'early_stage') c.earlyStage++
+    if (j.early_stage_rating?.eligibility === 'mature') c.mature++
+    countsByCategory.set(j.psc_category, c)
+  }
+  const classifiedCount = allJournals.filter(j => j.psc_category).length
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
@@ -79,9 +93,11 @@ export default async function SubjectsPage() {
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
-          Journal-to-PSC classification has not run yet on this site — that's the next phase after
-          OpenAlex identity enrichment (see <Link href="/open-data" className="underline">Open Data</Link>).
-          This page shows the taxonomy structure itself, pinned to{' '}
+          {classifiedCount.toLocaleString()} of {allJournals.length.toLocaleString()} journals (Core Collection +
+          Global Benchmark) have been classified against this taxonomy via OpenAlex topic data — see{' '}
+          <a href="https://github.com/WENSHAO521/posi-data/blob/master/PSC-CROSSWALK.md" target="_blank" rel="noopener noreferrer" className="underline">PSC-CROSSWALK.md →</a>.
+          PSC is not yet wired into ranking cohorts (E-Q/M-Q/Citation Q peer groups) — the counts below are
+          classification coverage, not ranked cohorts. Taxonomy pinned to{' '}
           <a href={`https://github.com/WENSHAO521/posi-data/commit/${PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PINNED_COMMIT.slice(0, 7)}</a>{' '}
           — the same taxonomy on every rebuild, not whatever happens to be on <span className="font-mono">master</span> that day.
         </span>
@@ -109,12 +125,25 @@ export default async function SubjectsPage() {
               </span>
             </div>
             <div className="p-4 grid sm:grid-cols-2 md:grid-cols-3 gap-2">
-              {(byParent.get(domain.code) ?? []).map(cat => (
-                <div key={cat.code} className="px-3 py-2 text-xs" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border-light)' }}>
-                  <span className="font-mono text-[10px] mr-1.5" style={{ color: 'var(--posi-muted)' }}>{cat.code}</span>
-                  <span style={{ color: 'var(--posi-text)' }}>{cat.name}</span>
-                </div>
-              ))}
+              {(byParent.get(domain.code) ?? []).map(cat => {
+                const counts = countsByCategory.get(cat.code)
+                return (
+                  <div key={cat.code} className="px-3 py-2 text-xs" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border-light)' }}>
+                    <div>
+                      <span className="font-mono text-[10px] mr-1.5" style={{ color: 'var(--posi-muted)' }}>{cat.code}</span>
+                      <span style={{ color: 'var(--posi-text)' }}>{cat.name}</span>
+                    </div>
+                    {counts && counts.total > 0 && (
+                      <p className="text-[9px] font-mono mt-1" style={{ color: 'var(--posi-muted)' }}>
+                        {counts.total} journal{counts.total === 1 ? '' : 's'}
+                        {(counts.earlyStage > 0 || counts.mature > 0) && (
+                          <> · {counts.earlyStage} early-stage · {counts.mature} mature</>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         ))}
