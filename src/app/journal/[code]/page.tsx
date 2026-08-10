@@ -589,7 +589,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               src={journal.cover_image_url}
               alt={`${journal.short_title} cover`}
               className="w-16 shrink-0 object-cover"
-              style={{ aspectRatio: '2/3', border: '1px solid var(--posi-border)' }}
+              style={{ aspectRatio: '210/297', border: '1px solid var(--posi-border)' }}
             />
           )}
           <div className="flex-1 min-w-0">

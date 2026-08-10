@@ -223,7 +223,7 @@ export default async function HomePage() {
               <Link
                 key={f.abbr}
                 href={f.href}
-                className="p-7 block transition-colors hover:bg-black/[0.015] group"
+                className="p-7 h-full flex flex-col transition-colors hover:bg-black/[0.015] group"
               >
                 {/* DIN-style: mono abbreviation + rule divider */}
                 <div className="mb-5">
@@ -253,7 +253,7 @@ export default async function HomePage() {
                   {f.desc}
                 </p>
                 <span
-                  className="text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100"
+                  className="mt-auto text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100"
                   style={{ color: 'var(--posi-accent)' }}
                 >
                   {f.cta}
