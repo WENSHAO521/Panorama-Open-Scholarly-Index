@@ -114,14 +114,20 @@ function extractSignals(html) {
 // left a gap.
 const POLICY_SUBPATHS = ['/about', '/for-authors', '/editorial-policies', '/ethics']
 
+// Returns { signals, resolved }. resolved=false means the homepage itself
+// couldn't be fetched at all (HTTP 403, timeout, DNS failure, ...) — every
+// one of extractSignals()'s 12 criteria is then unknown/unresolved, not
+// "confirmed absent". This distinction is what Evidence Coverage (see
+// AJR-SPEC.md §6) is built from: "Not Yet Rateable" on a blocked site means
+// POSI's crawl was blocked, not that the journal lacks real governance.
 async function crawlJournalSite(websiteUrl) {
-  if (!websiteUrl) return null
+  if (!websiteUrl) return { signals: null, resolved: false }
   const home = await fetchText(websiteUrl)
-  if (!home) return null
+  if (!home) return { signals: null, resolved: false }
   const signals = extractSignals(home)
 
   const stillMissing = !signals.peerReview || !signals.editorialBoard || !signals.ethics
-  if (!stillMissing) return signals
+  if (!stillMissing) return { signals, resolved: true }
 
   const base = websiteUrl.replace(/\/+$/, '')
   const subpages = await Promise.all(
@@ -134,22 +140,27 @@ async function crawlJournalSite(websiteUrl) {
       if (!signals[key] && found[key]) signals[key] = true
     }
   }
-  return signals
+  return { signals, resolved: true }
 }
 
+// Both return { ok, resolved } — resolved=false when the fetch itself
+// failed (blocked/timeout/etc.), distinct from a successful fetch that
+// simply didn't find the expected content. See crawlJournalSite's header
+// comment for why this distinction matters (Evidence Coverage, AJR-SPEC §6).
 async function checkSitemap(websiteUrl) {
-  if (!websiteUrl) return false
+  if (!websiteUrl) return { ok: false, resolved: false }
   const base = websiteUrl.replace(/\/+$/, '')
   const xml = await fetchText(`${base}/sitemap.xml`, 8000)
-  return !!xml && (xml.includes('<urlset') || xml.includes('<sitemapindex'))
+  if (xml == null) return { ok: false, resolved: false }
+  return { ok: xml.includes('<urlset') || xml.includes('<sitemapindex'), resolved: true }
 }
 
 async function checkRobots(websiteUrl) {
-  if (!websiteUrl) return false
+  if (!websiteUrl) return { ok: false, resolved: false }
   const base = websiteUrl.replace(/\/+$/, '')
   const txt = await fetchText(`${base}/robots.txt`, 8000)
-  if (txt == null) return false
-  return !/^\s*disallow:\s*\/\s*$/im.test(txt)
+  if (txt == null) return { ok: false, resolved: false }
+  return { ok: !/^\s*disallow:\s*\/\s*$/im.test(txt), resolved: true }
 }
 
 async function checkDoiResolves(doi) {
@@ -422,13 +433,29 @@ function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, s
   return monthsSinceLaunch <= EARLY_STAGE_MAX_MONTHS ? 'early_stage' : 'mature'
 }
 
+// Evidence Coverage (AJR-SPEC.md §6) = resolved evidence weight / applicable
+// evidence weight x 100. Scoped to the crawl-based criteria where "resolved"
+// vs "blocked" is cleanly instrumentable: extractSignals()'s 12 site-content
+// checks (all resolved together, since they all come from the same
+// home+subpage fetches) plus sitemap.xml and robots.txt (2 more, each
+// independently fetched). DOI-resolves/OpenAlex-found are deliberately
+// excluded — a 404-shaped "not found" and a genuine block aren't
+// distinguishable in checkDoiResolves/fetchOpenAlexStats today, so folding
+// them in would silently overstate coverage rather than measure it honestly.
+const EVIDENCE_COVERAGE_CRITERIA = 14 // 12 site-content signals + sitemap + robots
+
+function computeEvidenceCoverage({ siteResolved, sitemapResolved, robotsResolved }) {
+  const resolved = (siteResolved ? 12 : 0) + (sitemapResolved ? 1 : 0) + (robotsResolved ? 1 : 0)
+  return Math.round((resolved / EVIDENCE_COVERAGE_CRITERIA) * 100)
+}
+
 async function rateJournal(journal) {
   const issn = journal.issnOnline ?? journal.issnPrint
   if (!issn) {
-    return { id: journal.id, rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null } }
+    return { id: journal.id, rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, evidence_coverage: null } }
   }
 
-  const [site, sitemapOk, robotsOk, openAlexFound, firstPublished, articles] = await Promise.all([
+  const [crawlResult, sitemapResult, robotsResult, openAlexFound, firstPublished, articles] = await Promise.all([
     crawlJournalSite(journal.website_url),
     checkSitemap(journal.website_url),
     checkRobots(journal.website_url),
@@ -436,7 +463,11 @@ async function rateJournal(journal) {
     fetchEarliestWork(issn),
     fetchArticleSample(issn),
   ])
+  const { signals: site, resolved: siteResolved } = crawlResult
+  const { ok: sitemapOk, resolved: sitemapResolved } = sitemapResult
+  const { ok: robotsOk, resolved: robotsResolved } = robotsResult
   const doiResolves = await checkDoiResolves(articles[0]?.doi ?? null)
+  const evidenceCoverage = computeEvidenceCoverage({ siteResolved, sitemapResolved, robotsResolved })
 
   const monthsSinceLaunch = firstPublished ? monthsBetween(firstPublished, RATING_CUTOFF) : null
   const eligibility = computeEligibility({ firstPublished, monthsSinceLaunch, articleCount: journal.article_count, site })
@@ -444,7 +475,7 @@ async function rateJournal(journal) {
   if (eligibility !== 'early_stage' && eligibility !== 'mature') {
     return {
       id: journal.id,
-      rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, subfactors: null, total: null },
+      rating: { eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch, subfactors: null, total: null, evidence_coverage: evidenceCoverage },
     }
   }
 
@@ -461,7 +492,7 @@ async function rateJournal(journal) {
     id: journal.id,
     rating: {
       eligibility, first_published: firstPublished, months_since_launch: monthsSinceLaunch,
-      subfactors: { egf, rif, inf, pub, soc, rdc, trn }, total,
+      subfactors: { egf, rif, inf, pub, soc, rdc, trn }, total, evidence_coverage: evidenceCoverage,
     },
   }
 }
@@ -511,6 +542,11 @@ function parseCoreCollection(src) {
 // code path here (or anywhere in this script) that accepts a manually-
 // supplied score, percentile, or quartile as input — see spec §5.
 
+// NOTE: always re-run scripts/rank-lifecycle.mjs after this script — every
+// re-run of this script resets provisional_quartile to null (this script
+// doesn't know about PSC cohorts), so a stale quartile from a previous
+// rank-lifecycle.mjs run would otherwise survive un-refreshed instead of
+// being recomputed against the new ratings.
 function injectRating(src, id, rating) {
   const idIdx = src.indexOf(`id: '${id}'`)
   if (idIdx === -1) return src
@@ -520,7 +556,7 @@ function injectRating(src, id, rating) {
   const subfactorsLit = rating.subfactors
     ? `{ egf: ${rating.subfactors.egf}, rif: ${rating.subfactors.rif}, inf: ${rating.subfactors.inf}, pub: ${rating.subfactors.pub}, soc: ${rating.subfactors.soc}, rdc: ${rating.subfactors.rdc}, trn: ${rating.subfactors.trn} }`
     : 'null'
-  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'AJR-E-1.0' },\n`
+  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, evidence_coverage: ${rating.evidence_coverage ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'AJR-E-1.0' },\n`
 
   const blockContent = src.slice(idIdx, blockEnd)
   if (blockContent.includes('early_stage_rating:')) {
@@ -566,7 +602,7 @@ async function main() {
     console.log(`\nWrote early_stage_rating for ${results.length} journals to ${DATA_PATH}`)
   } else {
     console.log('\nDry run (pass --write to persist):')
-    for (const r of results) console.log(`  ${r.id}: ${r.rating.eligibility}${r.rating.total != null ? ` — ${r.rating.total}/100` : ''}`)
+    for (const r of results) console.log(`  ${r.id}: ${r.rating.eligibility}${r.rating.total != null ? ` — ${r.rating.total}/100` : ''} (evidence coverage: ${r.rating.evidence_coverage ?? 'n/a'}%)`)
   }
 }
 

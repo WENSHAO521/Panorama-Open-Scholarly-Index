@@ -208,6 +208,15 @@ export interface EarlyStageRating {
   months_since_launch: number | null
   subfactors: EarlyStageSubfactors | null
   total: number | null   // sum of subfactors, out of 100
+  // resolved evidence weight / applicable evidence weight x 100 (AJR-SPEC.md
+  // §6) — scoped to the 12 site-content signals + sitemap.xml + robots.txt
+  // (14 criteria), the ones scripts/rate-early-stage.mjs can cleanly tell
+  // "confirmed absent" apart from "blocked/couldn't check" for. Low coverage
+  // on a 'not_yet_rateable' journal usually means POSI's crawl was blocked
+  // (see the Global Benchmark Collection's HTTP 403 finding), not that the
+  // journal lacks real governance — unknown evidence is not equivalent to
+  // failed criteria. null only when no ISSN exists to rate at all.
+  evidence_coverage: number | null
   // E-Q1-E-Q4 (eligibility === 'early_stage') or M-Q1-M-Q4 (eligibility ===
   // 'mature') — see scripts/rank-lifecycle.mjs. null until a same-category
   // (or same-domain fallback) PSC peer cohort clears the minimum size gate

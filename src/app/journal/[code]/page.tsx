@@ -333,9 +333,20 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
                   100% AUTOMATED
                 </span>
               </div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
-                {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
-              </p>
+              <div className="flex items-baseline justify-between">
+                <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
+                  {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
+                </p>
+                {journal.early_stage_rating.evidence_coverage != null && (
+                  <span
+                    className="text-[10px] font-mono"
+                    style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+                    title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+                  >
+                    Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
                 {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
                 from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
@@ -374,9 +385,20 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
 
           {!isDiscovered && journal.early_stage_rating && journal.early_stage_rating.eligibility !== 'early_stage' && journal.early_stage_rating.eligibility !== 'mature' && (
             <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>
-                POSI Automated Rating (AJR)
-              </h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+                  POSI Automated Rating (AJR)
+                </h2>
+                {journal.early_stage_rating.evidence_coverage != null && (
+                  <span
+                    className="text-[10px] font-mono"
+                    style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+                    title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+                  >
+                    Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+                  </span>
+                )}
+              </div>
               <p className="text-xs font-semibold" style={{ color: journal.early_stage_rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
                 {journal.early_stage_rating.eligibility === 'observation' && 'Observation Stage'}
                 {journal.early_stage_rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
