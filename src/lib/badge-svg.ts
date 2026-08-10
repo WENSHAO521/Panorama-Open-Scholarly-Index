@@ -47,6 +47,75 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
+// Helvetica-Bold AFM advance widths (1000 units/em). Every chip ("NOT
+// VERIFIED", "AJR 83", "CAND.", plain digits) only ever uses uppercase
+// letters, digits, spaces, and periods, so this small table is exact for
+// every string these badges actually render — no need for a full font
+// metrics library just to size a colored box around its own text.
+const HELV_BOLD_WIDTHS: Record<string, number> = {
+  ' ': 278, '.': 278, '/': 278,
+  '0': 556, '1': 556, '2': 556, '3': 556, '4': 556, '5': 556, '6': 556, '7': 556, '8': 556, '9': 556,
+  A: 722, B: 722, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, I: 278, J: 556, K: 722, L: 611,
+  M: 833, N: 722, O: 778, P: 667, Q: 778, R: 722, S: 667, T: 611, U: 722, V: 667, W: 944, X: 667, Y: 667, Z: 611,
+}
+
+// Real chip text ("NOT VERIFIED" at font-size 9, for example) measures wider
+// than the fixed pixel widths this file used to hardcode — that's the "box
+// doesn't fully wrap its text" bug. CHIP_SAFETY pads further still, because
+// the CSS font-weight used here (800) is heavier than the standard Bold (700)
+// metrics in the table above and browsers render it wider via synthetic
+// bolding when the font file has no true 800 weight (Arial/Helvetica ship
+// 400/700 only).
+const CHIP_SAFETY = 1.08
+const CHIP_PAD_X = 8
+
+function chipWidth(text: string, fontSize: number): number {
+  let units = 0
+  for (const ch of text) units += HELV_BOLD_WIDTHS[ch.toUpperCase()] ?? 650
+  return Math.ceil((units / 1000) * fontSize * CHIP_SAFETY) + CHIP_PAD_X * 2
+}
+
+type ChipAlign = 'left' | 'right' | 'center'
+
+// Renders a filled rect sized to exactly fit `text` (via chipWidth above)
+// plus its centered label — replaces the old fixed-width `<rect
+// width="60">` + `<text>` pairs, which clipped or left visible slack
+// depending on how long the chip's text happened to be.
+function chip(opts: {
+  edge: number
+  align: ChipAlign
+  y: number
+  height: number
+  textY: number
+  text: string
+  fontSize: number
+  fill: string
+  textFill?: string
+  rx?: number
+}): string {
+  const { edge, align, y, height, textY, text, fontSize, fill, textFill = '#ffffff', rx } = opts
+  const w = chipWidth(text, fontSize)
+  const x = align === 'left' ? edge : align === 'right' ? edge - w : edge - w / 2
+  const rxAttr = rx ? ` rx="${rx}"` : ''
+  return `<rect x="${x}" y="${y}" width="${w}" height="${height}" fill="${fill}"${rxAttr}/><text x="${x + w / 2}" y="${textY}" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="${fontSize}" fill="${textFill}" text-anchor="middle">${text}</text>`
+}
+
+// Approximate regular-weight (non-bold) Arial/Helvetica average advance, as
+// a fraction of font-size — used only to decide where a title needs an
+// ellipsis before it runs into a neighboring chip or past the card's own
+// edge. Deliberately a bit generous (assumes slightly wider-than-average
+// glyphs) so it truncates a touch early rather than not at all; titles are
+// arbitrary journal names, unlike the fixed uppercase chip vocabulary above,
+// so an exact metrics table isn't practical.
+const AVG_CHAR_WIDTH_FACTOR = 0.54
+
+function truncateToWidth(text: string, maxWidth: number, fontSize: number): string {
+  const perChar = fontSize * AVG_CHAR_WIDTH_FACTOR
+  if (text.length * perChar <= maxWidth) return text
+  const maxChars = Math.max(1, Math.floor(maxWidth / perChar) - 1)
+  return `${text.slice(0, maxChars).trimEnd()}…`
+}
+
 // The official POSI mark (see public/posi-logo.svg): three squares — black
 // top-left, red top-right, black bottom-left — spaced apart (not touching),
 // plus a fourth short black stub bottom-right (same width, 1/3 height) that
@@ -67,35 +136,37 @@ function mark(x: number, y: number, size: number, primary: string): string {
 export function badgeStandardSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.short_title || journal.title)
+  const rawTitle = journal.short_title || journal.title
+  const title = esc(truncateToWidth(rawTitle, 156, 9))
   const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
   const borderColor = isCandidate ? CANDIDATE_GOLD : '#c4c4c4'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${esc(rawTitle)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="${borderColor}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(12, 12, 14, '#111111')}
   <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#666666">${title}</text>
   ${isCandidate
-    ? `<rect x="52" y="45" width="60" height="14" fill="${color}"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+    ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: 'NOT VERIFIED', fontSize: 9, fill: color })
+    : ajr ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: `AJR ${ajr.total}`, fontSize: 9, fill: color }) : ''}
 </svg>`
 }
 
 export function badgeDarkSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.short_title || journal.title)
+  const rawTitle = journal.short_title || journal.title
+  const title = esc(truncateToWidth(rawTitle, 156, 9))
   const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#999999'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${esc(rawTitle)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="219" height="63" fill="#111111" stroke="${isCandidate ? CANDIDATE_GOLD : '#333333'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(12, 12, 14, '#ffffff')}
   <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#ffffff">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#aaaaaa">${title}</text>
   ${isCandidate
-    ? `<rect x="52" y="45" width="60" height="14" fill="${color}"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+    ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: 'NOT VERIFIED', fontSize: 9, fill: color })
+    : ajr ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: `AJR ${ajr.total}`, fontSize: 9, fill: color }) : ''}
 </svg>`
 }
 
@@ -123,20 +194,22 @@ export function badgeCompactSvg(journal: Journal): string {
 
 // Tiny inline pill — for reference lists, footers, anywhere a 220px-wide card
 // doesn't fit. No logo mark (illegible at this scale); score is a small color
-// chip instead.
+// chip instead. "POSI CANDIDATE" doesn't fit next to a chip at this width,
+// so the candidate label itself is abbreviated here (only here — every other
+// variant has room for the full word).
 export function badgeMicroSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const label = isCandidate ? 'POSI CAND.' : 'POSI VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="20" viewBox="0 0 130 20" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="20" viewBox="0 0 130 20" role="img" aria-label="${isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="129" height="19" rx="3" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(6, 3, 6, '#111111')}
   <text x="24" y="14" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" letter-spacing="0.3" fill="#111111">${label}</text>
   ${isCandidate
-    ? `<rect x="98" y="4" width="26" height="12" rx="2" fill="${color}"/><text x="111" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="6" fill="#ffffff" text-anchor="middle">CAND.</text>`
-    : ajr ? `<rect x="98" y="4" width="26" height="12" rx="2" fill="${color}"/><text x="111" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="7" fill="#ffffff" text-anchor="middle">${ajr.total}</text>` : ''}
+    ? chip({ edge: 124, align: 'right', y: 4, height: 12, textY: 13, text: 'CAND.', fontSize: 6, fill: color, rx: 2 })
+    : ajr ? chip({ edge: 124, align: 'right', y: 4, height: 12, textY: 13, text: `${ajr.total}`, fontSize: 7, fill: color, rx: 2 }) : ''}
 </svg>`
 }
 
@@ -161,18 +234,19 @@ export function badgeIconSvg(journal: Journal): string {
 export function badgeVerticalSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.short_title || journal.title)
+  const rawTitle = journal.short_title || journal.title
+  const title = esc(truncateToWidth(rawTitle, 70, 8))
   const secondLine = isCandidate ? 'CANDIDATE' : 'VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="140" viewBox="0 0 90 140" role="img" aria-label="POSI ${isCandidate ? 'Candidate' : 'Verified'} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="140" viewBox="0 0 90 140" role="img" aria-label="POSI ${isCandidate ? 'Candidate' : 'Verified'} — ${esc(rawTitle)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="89" height="139" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(32, 18, 12, '#111111')}
   <text x="45" y="58" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="14" letter-spacing="0.5" text-anchor="middle" fill="#111111">POSI</text>
   <text x="45" y="70" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">${secondLine}</text>
   <text x="45" y="87" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="8" text-anchor="middle" fill="#666666">${title}</text>
   ${isCandidate
-    ? `<rect x="15" y="98" width="60" height="18" fill="${color}"/><text x="45" y="111" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="25" y="98" width="40" height="18" fill="${color}"/><text x="45" y="111" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="10" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+    ? chip({ edge: 45, align: 'center', y: 98, height: 18, textY: 111, text: 'NOT VERIFIED', fontSize: 8, fill: color })
+    : ajr ? chip({ edge: 45, align: 'center', y: 98, height: 18, textY: 111, text: `AJR ${ajr.total}`, fontSize: 10, fill: color }) : ''}
 </svg>`
 }
 
@@ -181,17 +255,19 @@ export function badgeVerticalSvg(journal: Journal): string {
 export function badgeBannerSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.title)
   const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="48" viewBox="0 0 400 48" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  const chipText = isCandidate ? 'NOT VERIFIED' : ajr ? `AJR ${ajr.total}` : ''
+  const chipFontSize = isCandidate ? 9 : 11
+  const chipRightEdge = 386
+  const chipLeftEdge = chipText ? chipRightEdge - chipWidth(chipText, chipFontSize) : chipRightEdge
+  const title = esc(truncateToWidth(journal.title, chipLeftEdge - 46 - 8, 10))
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="48" viewBox="0 0 400 48" role="img" aria-label="${label} — ${esc(journal.title)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="399" height="47" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(14, 14, 10, '#111111')}
   <text x="46" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="46" y="35" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="10" fill="#666666">${title}</text>
-  ${isCandidate
-    ? `<rect x="326" y="14" width="60" height="20" fill="${color}"/><text x="356" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="346" y="14" width="40" height="20" fill="${color}"/><text x="366" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${chipText ? chip({ edge: chipRightEdge, align: 'right', y: 14, height: 20, textY: 28, text: chipText, fontSize: chipFontSize, fill: color }) : ''}
 </svg>`
 }
 
@@ -203,9 +279,10 @@ export function badgeBannerSvg(journal: Journal): string {
 export function badgeMonoSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.short_title || journal.title)
+  const rawTitle = journal.short_title || journal.title
+  const title = esc(truncateToWidth(rawTitle, 156, 9))
   const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${esc(rawTitle)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
   <rect x="12" y="12" width="14" height="14" fill="#111111"/>
   <rect x="29.5" y="12" width="14" height="14" fill="#111111" fill-opacity="0.5"/>
@@ -214,8 +291,8 @@ export function badgeMonoSvg(journal: Journal): string {
   <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#444444">${title}</text>
   ${isCandidate
-    ? `<rect x="52" y="45" width="60" height="14" fill="#111111"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="#111111"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+    ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: 'NOT VERIFIED', fontSize: 9, fill: '#111111' })
+    : ajr ? chip({ edge: 52, align: 'left', y: 45, height: 14, textY: 55, text: `AJR ${ajr.total}`, fontSize: 9, fill: '#111111' }) : ''}
 </svg>`
 }
 
@@ -225,23 +302,26 @@ export function badgeMonoSvg(journal: Journal): string {
 export function badgeDetailedSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
   const isCandidate = isCandidateJournal(journal)
-  const title = esc(journal.short_title || journal.title)
+  const rawTitle = journal.short_title || journal.title
+  const title = esc(truncateToWidth(rawTitle, 204, 9))
   const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
   const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
-  const subfactorLine = isCandidate
-    ? 'Below Core Collection eligibility bar — pending PQF re-review'
+  const rawSubfactorLine = isCandidate
+    ? 'Below eligibility bar — pending PQF re-review'
     : ajr?.subfactors
-      ? `EGF ${ajr.subfactors.egf} &#183; RIF ${ajr.subfactors.rif} &#183; INF ${ajr.subfactors.inf} &#183; PUB ${ajr.subfactors.pub} &#183; SOC ${ajr.subfactors.soc} &#183; RDC ${ajr.subfactors.rdc} &#183; TRN ${ajr.subfactors.trn}`
+      ? `EGF ${ajr.subfactors.egf} · RIF ${ajr.subfactors.rif} · INF ${ajr.subfactors.inf} · PUB ${ajr.subfactors.pub} · SOC ${ajr.subfactors.soc} · RDC ${ajr.subfactors.rdc} · TRN ${ajr.subfactors.trn}`
       : 'AJR assessment pending'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="100" viewBox="0 0 260 100" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  const subfactorLine = esc(truncateToWidth(rawSubfactorLine, 234, 7)).replace(/·/g, '&#183;')
+  const ajrChipW = ajr ? chipWidth('AJR', 9) : 0
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="100" viewBox="0 0 260 100" role="img" aria-label="${label} — ${esc(rawTitle)}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="259" height="99" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(14, 14, 10, '#111111')}
   <text x="44" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="44" y="35" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#666666">${title}</text>
   ${isCandidate
-    ? `<rect x="44" y="43" width="80" height="16" fill="${color}"/><text x="84" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
-    : ajr ? `<rect x="44" y="43" width="34" height="16" fill="${color}"/><text x="61" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR</text><text x="84" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="9" fill="#111111">${ajr.total}/100</text>` : ''}
-  <text x="14" y="78" font-family="Arial, Helvetica, sans-serif" font-size="7.5" fill="#666666">${subfactorLine}</text>
+    ? chip({ edge: 44, align: 'left', y: 43, height: 16, textY: 55, text: 'NOT VERIFIED', fontSize: 9, fill: color })
+    : ajr ? `${chip({ edge: 44, align: 'left', y: 43, height: 16, textY: 55, text: 'AJR', fontSize: 9, fill: color })}<text x="${44 + ajrChipW + 8}" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="9" fill="#111111">${ajr.total}/100</text>` : ''}
+  <text x="14" y="78" font-family="Arial, Helvetica, sans-serif" font-size="7" fill="#666666">${subfactorLine}</text>
   <text x="14" y="92" font-family="Arial, Helvetica, sans-serif" font-size="6" fill="#999999">posi.panorama-sg.com</text>
 </svg>`
 }
