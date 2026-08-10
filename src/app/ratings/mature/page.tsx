@@ -1,19 +1,20 @@
 import Link from 'next/link'
 import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 
 export const metadata = {
   title: 'POSI Mature Journal Rankings — AJR-M',
-  description: 'Journals 60+ months after first regular scholarly publication. AJR-M and M-Q1–M-Q4 are not yet implemented — shown here on an interim AJR-E basis pending the citation-weighted AJR-M model.',
+  description: 'Journals 60+ months after first regular scholarly publication, ranked M-Q1–M-Q4 within PSC peer cohorts. Scores are the interim AJR-E rubric pending the citation-weighted AJR-M model.',
 }
 
 export default function MatureRankingsPage() {
-  const core = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const core = getCoreCollection()
     .filter(j => j.early_stage_rating?.eligibility === 'mature')
   const benchmark = BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature')
   const journals = [...core, ...benchmark].sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
+  const mQAssignedCount = journals.filter(j => j.early_stage_rating?.provisional_quartile).length
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -45,8 +46,10 @@ export default function MatureRankingsPage() {
           <strong>Methodology status:</strong> AJR-M is not yet implemented (see AJR-SPEC.md § 13, open
           question). The scores below are the interim AJR-E rubric applied to mature journals — the same
           100-point evidence-based scoring used for early-stage journals — so they are directionally useful
-          but not the citation-weighted AJR-M score this page is ultimately meant to show. No M-Q is assigned
-          yet, and Citation Q depends on PCI wiring that has not run against this cohort.
+          but not the citation-weighted AJR-M score this page is ultimately meant to show. M-Q is assigned to
+          journals in a PSC category (or domain, as fallback) that has reached the minimum peer-cohort size —
+          {mQAssignedCount} of {journals.length} currently qualify — and Citation Q depends on PCI wiring
+          that has not run against this cohort.
         </span>
       </div>
 
@@ -72,7 +75,12 @@ export default function MatureRankingsPage() {
             journals={journals}
             extraColumns={[
               { header: 'Collection', render: j => ({ value: j.is_external_benchmark ? 'Benchmark' : 'Core' }) },
-              { header: 'M-Q', render: () => ({ value: '—', title: 'AJR-M not yet implemented' }) },
+              {
+                header: 'M-Q',
+                render: j => j.early_stage_rating?.provisional_quartile
+                  ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
+                  : { value: '—', title: 'Not assigned — its PSC category/domain cohort hasn\'t reached the minimum size yet (L2 ≥20, L1 fallback ≥30)' },
+              },
               { header: 'Citation Q', render: () => ({ value: '—', title: 'PCI not yet wired into this cohort' }) },
             ]}
           />

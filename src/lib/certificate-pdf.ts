@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 import QRCode from 'qrcode'
 import type { Journal } from './types'
+import { RELEASE_ID, verificationCode } from './release'
 
 // Automated Core Collection inclusion certificate — one PDF per Core
 // Collection journal, generated at build time (see
@@ -168,7 +169,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   }
 
   // QR code + verification URL, bottom-left
-  const verifyUrl = `${SITE_ORIGIN}/journal/${journal.journal_code}`
+  const verifyUrl = `${SITE_ORIGIN}/verify?code=${journal.journal_code}`
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 0, width: 200 })
   const qrPng = await doc.embedPng(qrDataUrl)
   const qrSize = 64
@@ -176,11 +177,14 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   page.drawText('Verify at', { x: margin + 40 + qrSize + 10, y: margin + 30 + qrSize - 22, size: 8, font: helvetica, color: POSI_LIGHT_GRAY })
   page.drawText(verifyUrl, { x: margin + 40 + qrSize + 10, y: margin + 30 + qrSize - 34, size: 10, font: helveticaBold, color: POSI_BLACK })
 
-  // Issue date, bottom-right
+  // Issue date + release + verification code, bottom-right
   const issueLabel = `Issued ${issueDate}  ·  Automatically generated — not manually signed`
   const issueSize = 8
   const issueWidth = helvetica.widthOfTextAtSize(issueLabel, issueSize)
   page.drawText(issueLabel, { x: width - margin - 40 - issueWidth, y: margin + 34, size: issueSize, font: helvetica, color: POSI_LIGHT_GRAY })
+  const codeLabel = `${RELEASE_ID}  ·  ${verificationCode(journal.journal_code)}`
+  const codeWidth = helvetica.widthOfTextAtSize(codeLabel, issueSize)
+  page.drawText(codeLabel, { x: width - margin - 40 - codeWidth, y: margin + 34 - 11, size: issueSize, font: helvetica, color: POSI_LIGHT_GRAY })
 
   return doc.save()
 }

@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
 
 export const metadata = {
-  title: 'POSI Journal Lifecycle Ratings — Pilot 2026',
+  title: `POSI Journal Lifecycle Ratings — ${RELEASE_LABEL}`,
   description: 'Evidence-based, rules-driven, and reproducible journal evaluation, split by lifecycle stage: Early-Stage (AJR-E / E-Q), Mature (AJR-M / M-Q), and Citation (PCI / Citation Q). 100% automated — no manual score, percentile, or quartile adjustment.',
 }
 
@@ -34,7 +35,7 @@ function TrackCard({
 }
 
 export default function RatingsPage() {
-  const coreCollection = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const coreCollection = getCoreCollection()
   const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
   const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
     + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
@@ -50,10 +51,10 @@ export default function RatingsPage() {
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-            PILOT 2026
+            {RELEASE_ID}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            AJR Lifecycle 1.0
+            {METHODOLOGY_VERSION}
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Journal Lifecycle Ratings</h1>
@@ -110,8 +111,9 @@ export default function RatingsPage() {
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
-          <p><strong>Current Rating Release:</strong> Pilot 2026</p>
-          <p><strong>Methodology:</strong> AJR Lifecycle 1.0</p>
+          <p><strong>Current Rating Release:</strong> {RELEASE_LABEL} ({RELEASE_ID})</p>
+          <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
+          <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
           <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {BENCHMARK_JOURNALS.length} Global Benchmark journals</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>
@@ -120,6 +122,7 @@ export default function RatingsPage() {
       </div>
 
       <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/verify" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Verify a Record →</Link>
         <Link href="/coverage/global-benchmark" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Global Benchmark Collection →</Link>
         <Link href="/core-collection" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Core Collection →</Link>
         <Link href="/subjects" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PSC Subjects →</Link>
