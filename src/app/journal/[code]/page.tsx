@@ -204,13 +204,13 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               View on OpenAlex →
             </a>
           )}
-          {!isDiscovered && !isCandidate && (
+          {!isDiscovered && (
             <Link
               href={`/badges?code=${journal.journal_code}`}
               className="block text-[11px] hover:underline mt-1 transition-colors"
-              style={{ color: 'var(--posi-accent)' }}
+              style={{ color: isCandidate ? '#B45309' : 'var(--posi-accent)' }}
             >
-              Get POSI Badge →
+              {isCandidate ? 'Get POSI Candidate Badge →' : 'Get POSI Badge →'}
             </Link>
           )}
           {!isDiscovered && (

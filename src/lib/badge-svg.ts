@@ -16,6 +16,18 @@ function ajrColor(total: number): string {
   return '#666666'
 }
 
+// Candidate journals (see data.ts's collection_status) get their own badges
+// too, not just certificates — but a gold tier color and "POSI CANDIDATE"
+// label, always overriding score-based color banding (the tier signal
+// matters more here than the raw score), so a candidate badge is
+// unmistakable from a full Core Collection one even at a glance, same
+// diamond/gold distinction the certificate PDFs use.
+const CANDIDATE_GOLD = '#B8870A'
+
+function isCandidateJournal(journal: Journal): boolean {
+  return journal.collection_status === 'candidate'
+}
+
 interface AjrDisplay {
   total: number
   subfactors: { egf: number; rif: number; inf: number; pub: number; soc: number; rdc: number; trn: number } | null
@@ -54,27 +66,36 @@ function mark(x: number, y: number, size: number, primary: string): string {
 
 export function badgeStandardSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="#c4c4c4"/>
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
+  const borderColor = isCandidate ? CANDIDATE_GOLD : '#c4c4c4'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="${borderColor}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(12, 12, 14, '#111111')}
-  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">POSI VERIFIED</text>
+  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#666666">${title}</text>
-  ${ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${isCandidate
+    ? `<rect x="52" y="45" width="60" height="14" fill="${color}"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
 </svg>`
 }
 
 export function badgeDarkSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#999999'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="219" height="63" fill="#111111" stroke="#333333"/>
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#999999'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="219" height="63" fill="#111111" stroke="${isCandidate ? CANDIDATE_GOLD : '#333333'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(12, 12, 14, '#ffffff')}
-  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#ffffff">POSI VERIFIED</text>
+  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#ffffff">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#aaaaaa">${title}</text>
-  ${ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${isCandidate
+    ? `<rect x="52" y="45" width="60" height="14" fill="${color}"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="${color}"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
 </svg>`
 }
 
@@ -86,14 +107,17 @@ export function badgeCompactSvg(journal: Journal): string {
   // sit comfortably inside it with room to spare. Score is conveyed by the
   // ring color rather than appended text, for the same reason.
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const ringColor = ajr ? ajrColor(ajr.total) : '#E30613'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="90" viewBox="0 0 140 90" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const secondLine = isCandidate ? 'CANDIDATE' : 'VERIFIED'
+  const ringColor = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#E30613'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="140" height="90" viewBox="0 0 140 90" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <ellipse cx="70" cy="45" rx="68" ry="43" fill="#ffffff" stroke="#111111" stroke-width="2"/>
-  <ellipse cx="70" cy="45" rx="59" ry="36" fill="none" stroke="${ringColor}" stroke-width="1.5"/>
+  <ellipse cx="70" cy="45" rx="59" ry="36" fill="none" stroke="${ringColor}" stroke-width="${isCandidate ? 2.5 : 1.5}"/>
   ${mark(58, 22, 10, '#111111')}
   <text x="70" y="63" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="13" letter-spacing="0.5" text-anchor="middle" fill="#111111">POSI</text>
-  <text x="70" y="75" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">VERIFIED</text>
+  <text x="70" y="75" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">${secondLine}</text>
 </svg>`
 }
 
@@ -102,13 +126,17 @@ export function badgeCompactSvg(journal: Journal): string {
 // chip instead.
 export function badgeMicroSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="20" viewBox="0 0 130 20" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="129" height="19" rx="3" fill="#ffffff" stroke="#c4c4c4"/>
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="130" height="20" viewBox="0 0 130 20" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="129" height="19" rx="3" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(6, 3, 6, '#111111')}
-  <text x="24" y="14" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" letter-spacing="0.3" fill="#111111">POSI VERIFIED</text>
-  ${ajr ? `<rect x="98" y="4" width="26" height="12" rx="2" fill="${color}"/><text x="111" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="7" fill="#ffffff" text-anchor="middle">${ajr.total}</text>` : ''}
+  <text x="24" y="14" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" letter-spacing="0.3" fill="#111111">${label}</text>
+  ${isCandidate
+    ? `<rect x="98" y="4" width="26" height="12" rx="2" fill="${color}"/><text x="111" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="6" fill="#ffffff" text-anchor="middle">CAND.</text>`
+    : ajr ? `<rect x="98" y="4" width="26" height="12" rx="2" fill="${color}"/><text x="111" y="13" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="7" fill="#ffffff" text-anchor="middle">${ajr.total}</text>` : ''}
 </svg>`
 }
 
@@ -118,10 +146,12 @@ export function badgeMicroSvg(journal: Journal): string {
 // seal's ring color: color/position carries the signal, not cramped text.
 export function badgeIconSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const dotColor = ajr ? ajrColor(ajr.total) : '#cccccc'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="39" height="39" fill="#ffffff" stroke="#c4c4c4"/>
+  const label = isCandidate ? 'POSI Candidate' : 'POSI Verified'
+  const dotColor = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#cccccc'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="39" height="39" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(9, 9, 7, '#111111')}
   <circle cx="32" cy="32" r="5" fill="${dotColor}" stroke="#ffffff" stroke-width="1.5"/>
 </svg>`
@@ -130,15 +160,19 @@ export function badgeIconSvg(journal: Journal): string {
 // Vertical/stacked orientation — for sidebars and narrow columns.
 export function badgeVerticalSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="140" viewBox="0 0 90 140" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="89" height="139" fill="#ffffff" stroke="#c4c4c4"/>
+  const secondLine = isCandidate ? 'CANDIDATE' : 'VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="90" height="140" viewBox="0 0 90 140" role="img" aria-label="POSI ${isCandidate ? 'Candidate' : 'Verified'} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="89" height="139" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(32, 18, 12, '#111111')}
   <text x="45" y="58" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="14" letter-spacing="0.5" text-anchor="middle" fill="#111111">POSI</text>
-  <text x="45" y="70" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">VERIFIED</text>
+  <text x="45" y="70" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="7" letter-spacing="0.8" text-anchor="middle" fill="#666666">${secondLine}</text>
   <text x="45" y="87" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="8" text-anchor="middle" fill="#666666">${title}</text>
-  ${ajr ? `<rect x="25" y="98" width="40" height="18" fill="${color}"/><text x="45" y="111" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="10" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${isCandidate
+    ? `<rect x="15" y="98" width="60" height="18" fill="${color}"/><text x="45" y="111" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="25" y="98" width="40" height="18" fill="${color}"/><text x="45" y="111" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="10" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
 </svg>`
 }
 
@@ -146,32 +180,42 @@ export function badgeVerticalSvg(journal: Journal): string {
 // journal title rather than the short_title the narrower variants use.
 export function badgeBannerSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#666666'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="48" viewBox="0 0 400 48" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="399" height="47" fill="#ffffff" stroke="#c4c4c4"/>
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="48" viewBox="0 0 400 48" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="399" height="47" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(14, 14, 10, '#111111')}
-  <text x="46" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">POSI VERIFIED</text>
+  <text x="46" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="46" y="35" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="10" fill="#666666">${title}</text>
-  ${ajr ? `<rect x="346" y="14" width="40" height="20" fill="${color}"/><text x="366" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${isCandidate
+    ? `<rect x="326" y="14" width="60" height="20" fill="${color}"/><text x="356" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="346" y="14" width="40" height="20" fill="${color}"/><text x="366" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
 </svg>`
 }
 
 // Single-color variant for print/grayscale contexts — no red accent, and the
 // score box stays black/white regardless of score (color-coding the score is
 // exactly what "monochrome" opts out of; the number itself still shows).
+// Candidates are the one exception: the "NOT VERIFIED" text itself carries
+// the distinction here, since color can't.
 export function badgeMonoSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
   <rect x="0.5" y="0.5" width="219" height="63" fill="#ffffff" stroke="#111111" stroke-width="1.5"/>
   <rect x="12" y="12" width="14" height="14" fill="#111111"/>
   <rect x="29.5" y="12" width="14" height="14" fill="#111111" fill-opacity="0.5"/>
   <rect x="12" y="29.5" width="14" height="14" fill="#111111"/>
   <rect x="29.5" y="29.5" width="14" height="4.67" fill="#111111"/>
-  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">POSI VERIFIED</text>
+  <text x="52" y="24" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="52" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#444444">${title}</text>
-  ${ajr ? `<rect x="52" y="45" width="40" height="14" fill="#111111"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
+  ${isCandidate
+    ? `<rect x="52" y="45" width="60" height="14" fill="#111111"/><text x="82" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="52" y="45" width="40" height="14" fill="#111111"/><text x="72" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR ${ajr.total}</text>` : ''}
 </svg>`
 }
 
@@ -180,17 +224,23 @@ export function badgeMonoSvg(journal: Journal): string {
 // at build time, unlike a PCI-based variant would need).
 export function badgeDetailedSvg(journal: Journal): string {
   const ajr = ajrDisplay(journal)
+  const isCandidate = isCandidateJournal(journal)
   const title = esc(journal.short_title || journal.title)
-  const color = ajr ? ajrColor(ajr.total) : '#666666'
-  const subfactorLine = ajr?.subfactors
-    ? `EGF ${ajr.subfactors.egf} &#183; RIF ${ajr.subfactors.rif} &#183; INF ${ajr.subfactors.inf} &#183; PUB ${ajr.subfactors.pub} &#183; SOC ${ajr.subfactors.soc} &#183; RDC ${ajr.subfactors.rdc} &#183; TRN ${ajr.subfactors.trn}`
-    : 'AJR assessment pending'
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="100" viewBox="0 0 260 100" role="img" aria-label="POSI Verified — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
-  <rect x="0.5" y="0.5" width="259" height="99" fill="#ffffff" stroke="#c4c4c4"/>
+  const label = isCandidate ? 'POSI CANDIDATE' : 'POSI VERIFIED'
+  const color = isCandidate ? CANDIDATE_GOLD : ajr ? ajrColor(ajr.total) : '#666666'
+  const subfactorLine = isCandidate
+    ? 'Below Core Collection eligibility bar — pending PQF re-review'
+    : ajr?.subfactors
+      ? `EGF ${ajr.subfactors.egf} &#183; RIF ${ajr.subfactors.rif} &#183; INF ${ajr.subfactors.inf} &#183; PUB ${ajr.subfactors.pub} &#183; SOC ${ajr.subfactors.soc} &#183; RDC ${ajr.subfactors.rdc} &#183; TRN ${ajr.subfactors.trn}`
+      : 'AJR assessment pending'
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="100" viewBox="0 0 260 100" role="img" aria-label="${label} — ${title}${ajr ? ` — AJR ${ajr.total}/100` : ''}">
+  <rect x="0.5" y="0.5" width="259" height="99" fill="#ffffff" stroke="${isCandidate ? CANDIDATE_GOLD : '#c4c4c4'}" stroke-width="${isCandidate ? 1.5 : 1}"/>
   ${mark(14, 14, 10, '#111111')}
-  <text x="44" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">POSI VERIFIED</text>
+  <text x="44" y="21" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="11" letter-spacing="0.4" fill="#111111">${label}</text>
   <text x="44" y="35" font-family="Arial, Helvetica, sans-serif" font-weight="500" font-size="9" fill="#666666">${title}</text>
-  ${ajr ? `<rect x="44" y="43" width="34" height="16" fill="${color}"/><text x="61" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR</text><text x="84" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="9" fill="#111111">${ajr.total}/100</text>` : ''}
+  ${isCandidate
+    ? `<rect x="44" y="43" width="80" height="16" fill="${color}"/><text x="84" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">NOT VERIFIED</text>`
+    : ajr ? `<rect x="44" y="43" width="34" height="16" fill="${color}"/><text x="61" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="9" fill="#ffffff" text-anchor="middle">AJR</text><text x="84" y="55" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="9" fill="#111111">${ajr.total}/100</text>` : ''}
   <text x="14" y="78" font-family="Arial, Helvetica, sans-serif" font-size="7.5" fill="#666666">${subfactorLine}</text>
   <text x="14" y="92" font-family="Arial, Helvetica, sans-serif" font-size="6" fill="#999999">posi.panorama-sg.com</text>
 </svg>`

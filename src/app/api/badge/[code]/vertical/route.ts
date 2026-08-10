@@ -1,8 +1,8 @@
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getJournalByCode, getCoreCollection} from '@/lib/data'
+import { getJournalByCode, getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { badgeVerticalSvg } from '@/lib/badge-svg'
 
 export async function generateStaticParams() {
-  const journals = getCoreCollection()
+  const journals = [...getCoreCollection(), ...getCandidateJournals()]
   return journals.map(j => ({ code: j.journal_code }))
 }
 
@@ -12,7 +12,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cod
   const { code } = await params
   const journal = getJournalByCode(code)
   if (!journal || journal.id.startsWith('j-disc-')) {
-    return new Response('Not a POSI Core Collection journal', { status: 404 })
+    return new Response('Not a POSI Core Collection or candidate journal', { status: 404 })
   }
   return new Response(badgeVerticalSvg(journal), {
     headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' },

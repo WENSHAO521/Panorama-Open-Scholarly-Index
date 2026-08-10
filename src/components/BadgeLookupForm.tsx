@@ -7,6 +7,7 @@ interface EligibleJournal {
   code: string
   title: string
   ajrTotal: number | null
+  collectionStatus: 'core' | 'candidate'
 }
 
 const VARIANTS: { id: string; label: string; width: number; height: number; dark?: boolean }[] = [
@@ -64,7 +65,8 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
       <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Get Your Badge</h2>
       <p className="text-[11px] mb-3" style={{ color: 'var(--posi-muted)' }}>
         Enter your journal code (shown on your POSI journal record URL, e.g. <code className="font-mono">/journal/&lt;code&gt;</code>).
-        Only Core Collection journals — those with an official or auto-assessed PQF review — are eligible.
+        Journals with an official or auto-assessed PQF review are eligible — Core Collection journals get a
+        "POSI Verified" badge, candidate journals get a distinctly gold "POSI Candidate" badge instead.
       </p>
       <input
         value={query}
@@ -83,6 +85,9 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
               style={{ color: 'var(--posi-text)' }}
             >
               <span className="font-mono" style={{ color: 'var(--posi-accent)' }}>{s.code}</span> — {s.title}
+              {s.collectionStatus === 'candidate' && (
+                <span className="ml-1.5 text-[9px] font-mono px-1 py-0.5" style={{ color: '#B8870A', border: '1px solid #B8870A' }}>CANDIDATE</span>
+              )}
             </button>
           ))}
         </div>
@@ -95,6 +100,14 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
         </div>
       )}
 
+      {match && match.collectionStatus === 'candidate' && (
+        <div className="mt-4 p-3 text-[11px]" style={{ background: '#fffbeb', border: '1px solid #B8870A', color: '#78350f' }}>
+          <strong>{match.title} is a candidate, not a Core Collection member.</strong> These badges are
+          deliberately gold-styled and say "POSI Candidate" / "NOT VERIFIED" — not the same design as a Core
+          Collection badge, so a reader can't mistake one for the other.
+        </div>
+      )}
+
       {match && (
         <div className="mt-4 space-y-5">
           {VARIANTS.map(v => {
@@ -104,7 +117,8 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
             const previewUrl = `/api/badge/${match.code}/${v.id}?v=${cacheBust}`
             const imgUrl = `${siteUrl}/api/badge/${match.code}/${v.id}`
             const linkUrl = `${siteUrl}/journal/${match.code}/`
-            const altText = `POSI Verified — ${match.title}${match.ajrTotal != null ? ` — AJR ${match.ajrTotal}/100` : ''}`
+            const badgeKind = match.collectionStatus === 'candidate' ? 'POSI Candidate' : 'POSI Verified'
+            const altText = `${badgeKind} — ${match.title}${match.ajrTotal != null ? ` — AJR ${match.ajrTotal}/100` : ''}`
             const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer"><img src="${imgUrl}" alt="${altText}" /></a>`
             return (
               <div key={v.id}>

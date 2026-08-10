@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { BadgeLookupForm } from '@/components/BadgeLookupForm'
 
 const SITE_URL = 'https://posi.panorama-sg.com'
@@ -20,8 +20,8 @@ export const metadata = {
 }
 
 export default function BadgesPage() {
-  const journals = getCoreCollection()
-    .map(j => ({ code: j.journal_code, title: j.short_title || j.title, ajrTotal: j.early_stage_rating?.total ?? null }))
+  const journals = [...getCoreCollection(), ...getCandidateJournals()]
+    .map(j => ({ code: j.journal_code, title: j.short_title || j.title, ajrTotal: j.early_stage_rating?.total ?? null, collectionStatus: j.collection_status ?? 'core' }))
     .sort((a, b) => a.title.localeCompare(b.title))
 
   const example = PSG_JOURNALS[0]
@@ -38,22 +38,26 @@ export default function BadgesPage() {
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>BADGES</span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            {journals.length} eligible journals · Core Collection
+            {journals.length} eligible journals · Core Collection + Candidates
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Badges</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Embeddable "POSI Verified" badges that Core Collection journals can display on their own website,
-          linking back to their POSI journal record.
+          Embeddable badges that journals with a POSI record can display on their own website, linking back to
+          it. Core Collection journals get a "POSI Verified" badge; candidate journals (admitted once, since
+          demoted below the PQF eligibility bar) get a distinctly gold-styled "POSI Candidate" badge instead —
+          never the same design, so the two can't be confused.
         </p>
       </div>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
-          <strong>Eligibility is enforced, not just requested.</strong> Badge images are generated only for journals
-          in the Core Collection (manually or auto-PQF reviewed, see <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>).
-          A badge URL for any other journal code returns a 404 — there is no way to display a valid POSI badge without an actual POSI record.
+          <strong>Eligibility is enforced, not just requested.</strong> Badge images are generated only for
+          journals with a real POSI record — Core Collection (manually or auto-PQF reviewed, see{' '}
+          <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>) or candidate. A badge URL
+          for any other journal code returns a 404 — there is no way to display a valid POSI badge without an
+          actual POSI record, and no way to make a candidate badge render as a Core Collection one.
         </span>
       </div>
 
@@ -86,10 +90,10 @@ export default function BadgesPage() {
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Usage Terms</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
-            { title: 'Core Collection only', body: 'Badges are issued to journals with an official or auto-assessed PQF review. Auto-discovered, unreviewed records are not eligible.' },
+            { title: 'Reviewed journals only', body: 'Badges are issued to journals with an official or auto-assessed PQF review — Core Collection or candidate. Auto-discovered, unreviewed records are not eligible.' },
             { title: 'Must link back', body: 'The badge should link to your journal\'s POSI record (the embed snippet includes this automatically) so readers can verify the record themselves.' },
             { title: 'Not an endorsement', body: 'A POSI badge reflects that a journal has a reviewed record with a PQF assessment — it is not a certification, accreditation, or guarantee of quality. See What POSI Is Not.' },
-            { title: 'Revocable', body: 'If a journal record is later reclassified (e.g. moved out of the Core Collection), its badge URLs stop resolving. Badges should not be cached indefinitely by the embedding site.' },
+            { title: 'Style changes with status', body: 'A badge\'s design tracks the journal\'s current status automatically — a Core Collection journal demoted to candidate gets the gold candidate badge at the same URL, not a broken image. Badges should not be cached indefinitely by the embedding site.' },
           ].map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
