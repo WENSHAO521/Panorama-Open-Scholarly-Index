@@ -215,7 +215,7 @@ export default async function HomePage() {
               {
                 abbr: '04',
                 label: 'Open Methodology & Data',
-                desc: 'Every rating, evidence source, methodology version, and ranking release is documented and reproducible from a pinned commit.',
+                desc: 'Every rating, evidence source, methodology version, and ranking release is documented and independently reproducible.',
                 href: '/open-data',
                 cta: 'Inspect Methodology →',
               },
@@ -321,15 +321,15 @@ export default async function HomePage() {
                 style={{ color: 'var(--posi-muted)', maxWidth: '60ch' }}
               >
                 POSI does not compute rankings behind closed doors. The journal data, the PCI/PNCI
-                formulas, the subject taxonomy, and the ranking engine are all public on GitHub —
-                pin a commit, re-run the calculation, and you should get the same number POSI published.
+                formulas, the subject taxonomy, and the ranking engine are fully open and independently
+                verifiable — re-run the calculation yourself and you should get the same number POSI published.
               </p>
               <div className="flex flex-wrap gap-2">
                 {[
                   { code: 'DATA',   label: 'Open journal & metric records' },
                   { code: 'CODE',   label: 'Open calculation engine' },
                   { code: 'AUDIT',  label: 'Published migration audits' },
-                  { code: 'VERSION',label: 'Every result pinned to a commit' },
+                  { code: 'VERSION',label: 'Every result independently reproducible' },
                 ].map(d => (
                   <div
                     key={d.code}
