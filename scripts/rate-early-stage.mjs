@@ -86,20 +86,26 @@ function hasAny(text, patterns) {
   return patterns.some(p => lower.includes(p))
 }
 
+// English-only keyword matching silently failed every Chinese-language
+// journal (several Core Collection titles, e.g. 人文学刊) even when the
+// policy content was plainly present — verified directly: 编辑委员会
+// ("Editorial Board") and 同行评审 ("peer review") appear right on the
+// homepage of a journal this crawler was scoring as if neither existed.
+// Each criterion below now checks both languages.
 function extractSignals(html) {
   return {
-    aimScope: hasAny(html, ['aim and scope', 'aims and scope', 'about the journal', 'journal focus', 'focus and scope']),
-    peerReview: hasAny(html, ['peer review', 'peer-review', 'peer reviewed', 'double-blind', 'single-blind', 'double blind review']),
-    editorialBoard: hasAny(html, ['editorial board', 'editorial team', 'board of editors']),
-    apc: hasAny(html, ['article processing charge', 'apc', 'publication fee', 'processing fee']),
-    waiver: hasAny(html, ['waiver', 'fee waiver', 'fee discount', 'no charge']),
-    openAccess: hasAny(html, ['open access']),
-    license: hasAny(html, ['creative commons', 'cc by', 'copyright notice']),
-    ethics: hasAny(html, ['publication ethics', 'committee on publication ethics', 'cope guidelines', 'research ethics', 'research integrity', 'ethical guidelines', 'code of conduct']),
-    corrections: hasAny(html, ['retraction', 'correction policy', 'errata']),
-    plagiarism: hasAny(html, ['plagiarism', 'similarity check', 'turnitin', 'ithenticate', 'similarity index']),
-    dataAvailability: hasAny(html, ['data availability', 'data sharing', 'data accessibility']),
-    frequencyStated: hasAny(html, ['monthly', 'bimonthly', 'quarterly', 'biannual', 'annual', 'issues per year', 'continuous publication', 'rolling publication']),
+    aimScope: hasAny(html, ['aim and scope', 'aims and scope', 'about the journal', 'journal focus', 'focus and scope', '宗旨', '办刊宗旨', '期刊简介', '关于本刊']),
+    peerReview: hasAny(html, ['peer review', 'peer-review', 'peer reviewed', 'double-blind', 'single-blind', 'double blind review', '同行评审', '同行评议', '双盲评审', '盲审']),
+    editorialBoard: hasAny(html, ['editorial board', 'editorial team', 'board of editors', 'editorial masthead', '编辑委员会', '编委会']),
+    apc: hasAny(html, ['article processing charge', 'apc', 'publication fee', 'processing fee', '版面费', '发表费', '审稿费']),
+    waiver: hasAny(html, ['waiver', 'fee waiver', 'fee discount', 'no charge', '费用减免', '费用豁免']),
+    openAccess: hasAny(html, ['open access', '开放获取', '开放存取']),
+    license: hasAny(html, ['creative commons', 'cc by', 'copyright notice', '知识共享', '版权声明']),
+    ethics: hasAny(html, ['ethics', 'research integrity', 'code of conduct', '伦理', '科研诚信', '学术规范', '学术不端']),
+    corrections: hasAny(html, ['retraction', 'correction policy', 'errata', '勘误', '撤稿', '更正声明']),
+    plagiarism: hasAny(html, ['plagiarism', 'similarity check', 'turnitin', 'ithenticate', 'similarity index', '抄袭', '查重', '相似度检测', '剽窃']),
+    dataAvailability: hasAny(html, ['data availability', 'data sharing', 'data accessibility', '数据可用性', '数据共享']),
+    frequencyStated: hasAny(html, ['monthly', 'bimonthly', 'quarterly', 'biannual', 'annual', 'issues per year', 'continuous publication', 'rolling publication', '季刊', '月刊', '双月刊', '半年刊', '年刊', '连续出版']),
   }
 }
 
@@ -112,7 +118,16 @@ function extractSignals(html) {
 // journals) tend to put everything on the homepage already, so this only
 // fires — and only spends the extra fetches — when the homepage alone
 // left a gap.
-const POLICY_SUBPATHS = ['/about', '/for-authors', '/editorial-policies', '/ethics']
+//
+// The /about/* paths are OJS's own default "About the Journal" submenu —
+// verified directly against two different Core Collection OJS
+// installations, which used two different slugs for the same page
+// (editorialTeam vs editorialMasthead) confirming both are needed, not
+// just one.
+const POLICY_SUBPATHS = [
+  '/about', '/for-authors', '/editorial-policies', '/ethics',
+  '/about/editorialTeam', '/about/editorialMasthead', '/about/submissions', '/apc',
+]
 
 // Returns { signals, resolved }. resolved=false means the homepage itself
 // couldn't be fetched at all (HTTP 403, timeout, DNS failure, ...) — every
@@ -197,7 +212,15 @@ async function fetchOpenAlexStats(issn) {
 
 // Earliest Crossref-registered work for this ISSN — used as a proxy for
 // "first published" since journal launch date isn't tracked as its own field.
-async function fetchEarliestWork(issn) {
+// A journal's first-publication date drives eligibility itself (see
+// computeEligibility below) — a transient Crossref failure here doesn't
+// just lose a few points, it silently downgrades the whole journal to
+// 'unknown', which reads as "we don't know anything about this journal"
+// rather than "one API call hiccupped". Verified directly against live
+// Crossref data multiple times this run: journals scored 'unknown' had
+// real, resolvable Crossref records seconds later. Worth one retry before
+// giving up.
+async function fetchEarliestWork(issn, attempt = 0) {
   try {
     const params = new URLSearchParams({
       rows: '1', sort: 'published', order: 'asc',
@@ -207,7 +230,10 @@ async function fetchEarliestWork(issn) {
     const res = await fetch(`https://api.crossref.org/journals/${issn}/works?${params.toString()}`, {
       headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      if (attempt < 2) { await sleep(1000 * (attempt + 1)); return fetchEarliestWork(issn, attempt + 1) }
+      return null
+    }
     const data = await res.json()
     const item = data.message?.items?.[0]
     if (!item) return null
@@ -218,6 +244,7 @@ async function fetchEarliestWork(issn) {
     const [y, m = 1, d = 1] = dateParts
     return new Date(Date.UTC(y, m - 1, d)).toISOString().slice(0, 10)
   } catch {
+    if (attempt < 2) { await sleep(1000 * (attempt + 1)); return fetchEarliestWork(issn, attempt + 1) }
     return null
   }
 }
