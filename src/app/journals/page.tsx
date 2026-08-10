@@ -35,6 +35,7 @@ function slim(
     pqf_grade: score?.grade ?? null,
     pqf_total: score?.total ?? null,
     pqf_is_auto: !officialScore && !!j.auto_pqf,
+    collection_status: j.collection_status,
     two_yr_mean_citedness: two_yr_mean_citedness ?? null,
     h_index: h_index ?? null,
   }

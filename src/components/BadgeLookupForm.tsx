@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 interface EligibleJournal {
   code: string
   title: string
+  ajrTotal: number | null
 }
 
 const VARIANTS: { id: string; label: string; width: number; height: number; dark?: boolean }[] = [
@@ -103,7 +104,8 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
             const previewUrl = `/api/badge/${match.code}/${v.id}?v=${cacheBust}`
             const imgUrl = `${siteUrl}/api/badge/${match.code}/${v.id}`
             const linkUrl = `${siteUrl}/journal/${match.code}/`
-            const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer"><img src="${imgUrl}" alt="POSI Verified — ${match.title}" /></a>`
+            const altText = `POSI Verified — ${match.title}${match.ajrTotal != null ? ` — AJR ${match.ajrTotal}/100` : ''}`
+            const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer"><img src="${imgUrl}" alt="${altText}" /></a>`
             return (
               <div key={v.id}>
                 <div className="flex items-center justify-between mb-2">

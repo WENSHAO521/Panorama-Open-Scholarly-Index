@@ -213,14 +213,14 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               Get POSI Badge →
             </Link>
           )}
-          {!isDiscovered && !isCandidate && (
+          {!isDiscovered && (
             <a
               href={`/api/certificate/${journal.journal_code}/pdf`}
-              download={`POSI-Core-Collection-Certificate-${journal.journal_code}.pdf`}
+              download={`POSI-${isCandidate ? 'Candidate-Record' : 'Core-Collection-Certificate'}-${journal.journal_code}.pdf`}
               className="block text-[11px] hover:underline mt-1 transition-colors"
-              style={{ color: 'var(--posi-accent)' }}
+              style={{ color: isCandidate ? '#B45309' : 'var(--posi-accent)' }}
             >
-              Download Certificate (PDF) →
+              {isCandidate ? 'Download Candidate Record (PDF) →' : 'Download Certificate (PDF) →'}
             </a>
           )}
         </div>

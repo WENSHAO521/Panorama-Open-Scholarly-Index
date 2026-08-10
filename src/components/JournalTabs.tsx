@@ -28,6 +28,7 @@ export interface SlimJournal {
   pqf_grade: string | null
   pqf_total: number | null
   pqf_is_auto: boolean
+  collection_status?: 'core' | 'candidate'
   two_yr_mean_citedness: number | null
   h_index: number | null
 }
@@ -105,8 +106,11 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
                           )}
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{journal.short_title}</span>
-                            {journal.pqf_grade && !journal.pqf_is_auto && (
+                            {journal.pqf_grade && !journal.pqf_is_auto && journal.collection_status !== 'candidate' && (
                               <Badge label="Core Collection" variant="core-collection" className="text-[9px] px-1 py-0" />
+                            )}
+                            {journal.collection_status === 'candidate' && (
+                              <Badge label="Candidate" variant="pending" className="text-[9px] px-1 py-0" />
                             )}
                           </div>
                         </div>
@@ -236,8 +240,11 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 
               <div className="flex flex-wrap gap-1 mt-2">
                 <Badge label="OA" variant="oa" />
-                {journal.pqf_grade && !journal.pqf_is_auto && (
+                {journal.pqf_grade && !journal.pqf_is_auto && journal.collection_status !== 'candidate' && (
                   <Badge label="Core Collection" variant="core-collection" />
+                )}
+                {journal.collection_status === 'candidate' && (
+                  <Badge label="Candidate" variant="pending" />
                 )}
               </div>
             </CardEl>

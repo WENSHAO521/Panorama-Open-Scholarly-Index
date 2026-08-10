@@ -17,6 +17,11 @@ const POSI_RED = rgb(0.8, 0, 0) // #cc0000
 const POSI_BLACK = rgb(0.067, 0.067, 0.067) // #111111
 const POSI_GRAY = rgb(0.4, 0.4, 0.4)
 const POSI_LIGHT_GRAY = rgb(0.6, 0.6, 0.6)
+// Tier accent — deliberately distinct from POSI_RED (the fixed brand
+// wordmark color, unchanged either way) so the two certificate kinds are
+// unmistakable even at a glance, not just readable in the fine print.
+const DIAMOND = rgb(0.10, 0.45, 0.75) // Core Collection
+const GOLD = rgb(0.72, 0.53, 0.05)    // Candidate
 
 const SITE_ORIGIN = 'https://posi.panorama-sg.com'
 
@@ -66,13 +71,16 @@ function issnLine(journal: Journal): string {
 }
 
 export async function generateCertificatePdf(journal: Journal): Promise<Uint8Array> {
+  const isCandidate = journal.collection_status === 'candidate'
+  const accentColor = isCandidate ? GOLD : DIAMOND
+
   const doc = await PDFDocument.create()
   doc.registerFontkit(fontkit)
   doc.setProducer('POSI Certificate Generator')
-  doc.setSubject('Certificate of POSI Core Collection Inclusion')
+  doc.setSubject(isCandidate ? 'POSI Candidate Journal Record' : 'Certificate of POSI Core Collection Inclusion')
   // pdf-lib's setTitle also runs text through WinAnsi encoding — guard it
   // the same way as any other CJK-unsafe text drawn on the page.
-  doc.setTitle(`POSI Core Collection Certificate - ${winAnsiSafe(journal.title)}`)
+  doc.setTitle(`POSI ${isCandidate ? 'Candidate Record' : 'Core Collection Certificate'} - ${winAnsiSafe(journal.title)}`)
 
   const page = doc.addPage([842, 595]) // A4 landscape, points
   const { width, height } = page.getSize()
@@ -100,11 +108,13 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
     width: width - margin * 2, height: height - margin * 2,
     borderColor: POSI_BLACK, borderWidth: 1.5,
   })
-  // Accent rule directly inside the border
+  // Accent rule directly inside the border — tier color (diamond/gold), not
+  // brand red, so a Core Collection certificate and a Candidate record are
+  // visually distinguishable at a glance, before reading any text.
   page.drawRectangle({
     x: margin + 6, y: margin + 6,
     width: width - (margin + 6) * 2, height: height - (margin + 6) * 2,
-    borderColor: POSI_RED, borderWidth: 0.75,
+    borderColor: accentColor, borderWidth: 1.5,
   })
 
   let y = height - 90
@@ -118,11 +128,25 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   })
 
   // Certificate label, right-aligned
-  const certLabel = 'CERTIFICATE OF CORE COLLECTION INCLUSION'
+  const certLabel = isCandidate ? 'CANDIDATE JOURNAL RECORD — NOT CORE COLLECTION' : 'CERTIFICATE OF CORE COLLECTION INCLUSION'
   const certLabelSize = 12
   const certLabelWidth = helveticaBold.widthOfTextAtSize(certLabel, certLabelSize)
   page.drawText(certLabel, {
     x: width - margin - 40 - certLabelWidth, y: y - 4, size: certLabelSize, font: helveticaBold, color: POSI_BLACK,
+  })
+
+  // Tier stamp — a colored tag naming the tier explicitly, not just the
+  // border color, so it survives black-and-white printing/screenshots too.
+  const tierLabel = isCandidate ? 'CANDIDATE' : 'CORE COLLECTION'
+  const tierSize = 10
+  const tierPaddingX = 10
+  const tierWidth = helveticaBold.widthOfTextAtSize(tierLabel, tierSize) + tierPaddingX * 2
+  page.drawRectangle({
+    x: width - margin - 40 - tierWidth, y: y - 26, width: tierWidth, height: 16,
+    color: accentColor,
+  })
+  page.drawText(tierLabel, {
+    x: width - margin - 40 - tierWidth + tierPaddingX, y: y - 22, size: tierSize, font: helveticaBold, color: rgb(1, 1, 1),
   })
 
   y -= 90
@@ -161,7 +185,9 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
 
   // Statement
   const issueDate = new Date().toISOString().slice(0, 10)
-  const statement = `This certifies that the above journal was included in the POSI Core Collection as of ${journal.created_at ? journal.created_at.slice(0, 10) : issueDate}, having met POSI's published editorial selection criteria (PQF). Inclusion reflects transparency, metadata quality, and technical discoverability at the time of assessment — it is not a certification of scientific quality, peer review rigor, citation impact, or accreditation, and is not affiliated with Web of Science, Scopus, or DOAJ. Verify this record and its current status at the URL below.`
+  const statement = isCandidate
+    ? `This documents that the above journal was admitted to the POSI Core Collection on ${journal.created_at ? journal.created_at.slice(0, 10) : issueDate}, but a subsequent PQF re-review found it below the eligibility bar for continued Core Collection membership — it is currently a candidate record, not a Core Collection member, pending re-review. This is not a certification of any kind and should not be represented as one. Verify this record and its current status at the URL below.`
+    : `This certifies that the above journal was included in the POSI Core Collection as of ${journal.created_at ? journal.created_at.slice(0, 10) : issueDate}, having met POSI's published editorial selection criteria (PQF). Inclusion reflects transparency, metadata quality, and technical discoverability at the time of assessment — it is not a certification of scientific quality, peer review rigor, citation impact, or accreditation, and is not affiliated with Web of Science, Scopus, or DOAJ. Verify this record and its current status at the URL below.`
   const stmtLines = wrapText(statement, helvetica, 9.5, width - (margin + 40) * 2)
   for (const line of stmtLines) {
     page.drawText(line, { x: margin + 40, y, size: 9.5, font: helvetica, color: POSI_GRAY })

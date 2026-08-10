@@ -21,7 +21,7 @@ export const metadata = {
 
 export default function BadgesPage() {
   const journals = getCoreCollection()
-    .map(j => ({ code: j.journal_code, title: j.short_title || j.title }))
+    .map(j => ({ code: j.journal_code, title: j.short_title || j.title, ajrTotal: j.early_stage_rating?.total ?? null }))
     .sort((a, b) => a.title.localeCompare(b.title))
 
   const example = PSG_JOURNALS[0]
