@@ -12,7 +12,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowSquareOut, Globe, FileText, Users, Barcode, ChartBar } from '@phosphor-icons/react/dist/ssr'
 import { getJournalByCode } from '@/lib/data'
-import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry, openAlexGetSourceStats, crossrefGetCitationScore } from '@/lib/api'
+import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry } from '@/lib/api'
+import { getCitationStats } from '@/lib/citation-stats'
 import type { DoajJournalInfo } from '@/lib/types'
 import { Badge } from '@/components/Badge'
 import { MetadataQualityBar } from '@/components/MetadataQualityBar'
@@ -103,21 +104,20 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // curated collection (PSG/indexed), never inferred from DOAJ listing status —
   // DOAJ is external metadata, not a POSI admission or ranking signal.
   const showCitationImpact = !isDiscovered
-  const citationIssn = journal.issn_online ?? journal.issn_print
+  // Precomputed snapshot (scripts/fetch-citation-stats.mjs) instead of a live
+  // OpenAlex/Crossref fetch — keeps this figure identical to /citation-reports's,
+  // which reads the same file. See src/lib/citation-stats.ts.
+  const citationEntry = showCitationImpact ? getCitationStats(journal.journal_code) : null
+  const citationStats = citationEntry?.stats ?? null
+  const citationScore = citationEntry?.pcs ?? null
 
-  const [doajResult, crMeta, issnCountry, citationStats, citationScore] = await Promise.all([
+  const [doajResult, crMeta, issnCountry] = await Promise.all([
     // Skip DOAJ if journal is already auto-scored (all its info is in data.ts)
     !isDiscovered && journal.issn_online ? doajGetJournal(journal.issn_online).catch(() => null) : null,
     // Skip Crossref meta for discovered journals (article_count comes from data.ts)
     !isDiscovered && journal.issn_online ? crossrefFetchJournal(journal.issn_online).catch(() => null) : null,
     // Skip ISSN country lookup for discovered journals (registration_country already in data.ts)
     !isDiscovered && !journal.registration_country && journal.issn_online ? issnGetCountry(journal.issn_online).catch(() => null) : null,
-    showCitationImpact && citationIssn
-      ? withTimeout(openAlexGetSourceStats(citationIssn).catch(() => null), 4000, null)
-      : null,
-    showCitationImpact && citationIssn
-      ? withTimeout(crossrefGetCitationScore(citationIssn).catch(() => null), 4000, null)
-      : null,
   ])
   doaj = doajResult
   const doajCountry = doajResult?.publisher_country_code ? (ISO_COUNTRY[doajResult.publisher_country_code] ?? doajResult.publisher_country_code) : null

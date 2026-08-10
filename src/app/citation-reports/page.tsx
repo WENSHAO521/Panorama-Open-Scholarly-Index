@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
-import { openAlexGetSourceStats, crossrefGetCitationScore } from '@/lib/api'
+import { getCitationStats } from '@/lib/citation-stats'
 import { primarySubject } from '@/lib/subject-keywords'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
@@ -34,38 +34,32 @@ const METHODOLOGY_PRINCIPLES = [
   },
 ]
 
-// A single slow/hanging OpenAlex lookup must never block static generation.
-function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
-  return Promise.race([p, new Promise<T>(res => setTimeout(() => res(fallback), ms))])
-}
-
 export default async function CitationReportsPage() {
-  const TIMEOUT_MS = 4000
   // Scope: only the reviewed/verified collection (PSG + manually-indexed).
   // Auto-discovered, unreviewed records are deliberately excluded — citation
   // impact ranking is a Core Collection feature, not extended to unverified data.
   const journals = getCoreCollection()
 
-  const withStats = await Promise.all(
-    journals.map(async j => {
-      const issn = j.issn_online ?? j.issn_print
-      const [stats, pcs] = await Promise.all([
-        issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
-        issn ? withTimeout(crossrefGetCitationScore(issn).catch(() => null), TIMEOUT_MS, null) : null,
-      ])
-      return {
-        title: j.title,
-        short_title: j.short_title,
-        journal_code: j.journal_code,
-        subject: primarySubject(j.subjects),
-        two_yr_mean_citedness: stats?.two_yr_mean_citedness ?? null,
-        h_index: stats?.h_index ?? null,
-        cited_by_count: stats?.cited_by_count ?? null,
-        pcs_ratio: pcs?.ratio ?? null,
-        pcs_window: pcs?.window ?? null,
-      }
-    })
-  )
+  // Precomputed snapshot (scripts/fetch-citation-stats.mjs), same file
+  // /journal/[code] reads via src/lib/citation-stats.ts — the two pages
+  // used to each fetch OpenAlex/Crossref live at build time and could show
+  // different figures for the same journal when this page's much larger
+  // burst of concurrent requests tripped its own build timeout and the
+  // single-journal page's didn't. Reading one shared file keeps them in sync.
+  const withStats = journals.map(j => {
+    const entry = getCitationStats(j.journal_code)
+    return {
+      title: j.title,
+      short_title: j.short_title,
+      journal_code: j.journal_code,
+      subject: primarySubject(j.subjects),
+      two_yr_mean_citedness: entry?.stats?.two_yr_mean_citedness ?? null,
+      h_index: entry?.stats?.h_index ?? null,
+      cited_by_count: entry?.stats?.cited_by_count ?? null,
+      pcs_ratio: entry?.pcs?.ratio ?? null,
+      pcs_window: entry?.pcs?.window ?? null,
+    }
+  })
 
   // Subject percentile: rank by 2yr mean citedness within each subject group.
   const bySubject = new Map<string, typeof withStats>()

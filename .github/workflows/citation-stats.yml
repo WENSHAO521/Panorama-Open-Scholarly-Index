@@ -1,0 +1,52 @@
+name: Weekly Citation Stats Refresh
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # 每周一 UTC 03:00（北京时间 11:00）
+  workflow_dispatch:        # 允许手动触发
+
+permissions:
+  contents: write           # 写入权限（commit + push）
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 重新抓取 Core Collection 全部期刊的 OpenAlex（PCI 预览：2yr mean
+      # citedness / h-index / total citations）+ Crossref（PCS：4 年滚动窗口
+      # 引用均值），写入 src/lib/citation-stats.json。/citation-reports 和
+      # /journal/[code] 都从这份文件读数——见 src/lib/citation-stats.ts、
+      # scripts/fetch-citation-stats.mjs 顶部注释（两处页面过去各自在构建时
+      # 现抓，高并发下 citation-reports 容易超时丢数据，跟单期刊页对不上）。
+      - name: Fetch citation stats (OpenAlex + Crossref)
+        run: npm run citation-stats
+
+      # 有变化才 commit，无变化静默退出（不产生空 commit）。push 会照常触发
+      # Cloudflare Pages 的 git 集成自动部署，不需要额外的 deploy hook。
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "posi-sync-bot"
+          git config user.email "posi-sync-bot@users.noreply.github.com"
+          git add src/lib/citation-stats.json
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+          else
+            git commit -m "chore(data): weekly citation stats refresh $(date -u +%Y-%m-%d)"
+            git push
+          fi

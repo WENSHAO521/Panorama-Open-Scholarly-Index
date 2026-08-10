@@ -1,0 +1,443 @@
+{
+  "grhas": {
+    "issn": "3052-539X",
+    "stats": {
+      "two_yr_mean_citedness": 0.3902439024390244,
+      "h_index": 2,
+      "cited_by_count": 16
+    },
+    "pcs": {
+      "ratio": 0.35135135135135137,
+      "window": "2022–2025",
+      "sampled_articles": 37,
+      "total_in_window": 37
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "afs": {
+    "issn": "3053-4011",
+    "stats": {
+      "two_yr_mean_citedness": 0.8181818181818182,
+      "h_index": 2,
+      "cited_by_count": 9
+    },
+    "pcs": {
+      "ratio": 1.4,
+      "window": "2022–2025",
+      "sampled_articles": 5,
+      "total_in_window": 5
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jlpcs": {
+    "issn": "3052-9654",
+    "stats": {
+      "two_yr_mean_citedness": 0.3181818181818182,
+      "h_index": 2,
+      "cited_by_count": 7
+    },
+    "pcs": {
+      "ratio": 0.17647058823529413,
+      "window": "2022–2025",
+      "sampled_articles": 17,
+      "total_in_window": 17
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "hnex": {
+    "issn": "3053-7037",
+    "stats": {
+      "two_yr_mean_citedness": 0.2727272727272727,
+      "h_index": 1,
+      "cited_by_count": 3
+    },
+    "pcs": {
+      "ratio": 0.4,
+      "window": "2022–2025",
+      "sampled_articles": 5,
+      "total_in_window": 5
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "pear": {
+    "issn": "3053-3597",
+    "stats": {
+      "two_yr_mean_citedness": 0.08333333333333333,
+      "h_index": 1,
+      "cited_by_count": 1
+    },
+    "pcs": {
+      "ratio": 0.1,
+      "window": "2022–2025",
+      "sampled_articles": 10,
+      "total_in_window": 10
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jesa": {
+    "issn": "3053-478X",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 4,
+      "total_in_window": 4
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "tts": {
+    "issn": "3053-6553",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 13,
+      "total_in_window": 13
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "rggd": {
+    "issn": "3053-7282",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 3,
+      "total_in_window": 3
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "rjgms": {
+    "issn": "3053-4410",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 11,
+      "total_in_window": 11
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "csgs": {
+    "issn": "3054-9663",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": null,
+      "window": "2022–2025",
+      "sampled_articles": 0,
+      "total_in_window": 0
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jscc": {
+    "issn": "3054-6958",
+    "stats": {
+      "two_yr_mean_citedness": 0.3333333333333333,
+      "h_index": 1,
+      "cited_by_count": 1
+    },
+    "pcs": {
+      "ratio": null,
+      "window": "2022–2025",
+      "sampled_articles": 0,
+      "total_in_window": 0
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "silence": {
+    "issn": "3054-4386",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": null,
+      "window": "2022–2025",
+      "sampled_articles": 0,
+      "total_in_window": 0
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jmss": {
+    "issn": "3078-4441",
+    "stats": {
+      "two_yr_mean_citedness": 0.5535714285714286,
+      "h_index": 2,
+      "cited_by_count": 31
+    },
+    "pcs": {
+      "ratio": 0.7659574468085106,
+      "window": "2022–2025",
+      "sampled_articles": 47,
+      "total_in_window": 47
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jcsis": {
+    "issn": "3078-5324",
+    "stats": {
+      "two_yr_mean_citedness": 0.9117647058823529,
+      "h_index": 4,
+      "cited_by_count": 62
+    },
+    "pcs": {
+      "ratio": 0.9636363636363636,
+      "window": "2022–2025",
+      "sampled_articles": 55,
+      "total_in_window": 55
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jcac": {
+    "issn": "3079-7489",
+    "stats": {
+      "two_yr_mean_citedness": 0.1875,
+      "h_index": 1,
+      "cited_by_count": 3
+    },
+    "pcs": {
+      "ratio": 0.23076923076923078,
+      "window": "2022–2025",
+      "sampled_articles": 13,
+      "total_in_window": 13
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "rwxk": {
+    "issn": "3104-5022",
+    "stats": {
+      "two_yr_mean_citedness": 0.05113636363636364,
+      "h_index": 1,
+      "cited_by_count": 9
+    },
+    "pcs": {
+      "ratio": 0.07142857142857142,
+      "window": "2022–2025",
+      "sampled_articles": 140,
+      "total_in_window": 140
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jyyjx": {
+    "issn": "3080-8847",
+    "stats": {
+      "two_yr_mean_citedness": 0.12863070539419086,
+      "h_index": 3,
+      "cited_by_count": 31
+    },
+    "pcs": {
+      "ratio": 0.2229299363057325,
+      "window": "2022–2025",
+      "sampled_articles": 157,
+      "total_in_window": 157
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "jassp": {
+    "issn": "3079-7659",
+    "stats": {
+      "two_yr_mean_citedness": 0.29545454545454547,
+      "h_index": 2,
+      "cited_by_count": 13
+    },
+    "pcs": {
+      "ratio": 0.34285714285714286,
+      "window": "2022–2025",
+      "sampled_articles": 35,
+      "total_in_window": 35
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "zgwxxk": {
+    "issn": "3106-3675",
+    "stats": {
+      "two_yr_mean_citedness": 0.08333333333333333,
+      "h_index": 1,
+      "cited_by_count": 2
+    },
+    "pcs": {
+      "ratio": 0.16666666666666666,
+      "window": "2022–2025",
+      "sampled_articles": 12,
+      "total_in_window": 12
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "yishu": {
+    "issn": "3107-0191",
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 16,
+      "total_in_window": 16
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "shr-ai": {
+    "issn": "3106-3705",
+    "stats": {
+      "two_yr_mean_citedness": 0.2222222222222222,
+      "h_index": 1,
+      "cited_by_count": 2
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 3,
+      "total_in_window": 3
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "smn": {
+    "issn": "3106-3713",
+    "stats": {
+      "two_yr_mean_citedness": 1.2222222222222223,
+      "h_index": 2,
+      "cited_by_count": 11
+    },
+    "pcs": {
+      "ratio": 2.5,
+      "window": "2022–2025",
+      "sampled_articles": 4,
+      "total_in_window": 4
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "xw": {
+    "issn": "3106-9983",
+    "stats": {
+      "two_yr_mean_citedness": 0.2222222222222222,
+      "h_index": 1,
+      "cited_by_count": 2
+    },
+    "pcs": {
+      "ratio": 0.2222222222222222,
+      "window": "2022–2025",
+      "sampled_articles": 9,
+      "total_in_window": 9
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "zgfx": {
+    "issn": "3107-1708",
+    "stats": {
+      "two_yr_mean_citedness": 1.0909090909090908,
+      "h_index": 2,
+      "cited_by_count": 12
+    },
+    "pcs": {
+      "ratio": 1.3333333333333333,
+      "window": "2022–2025",
+      "sampled_articles": 9,
+      "total_in_window": 9
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "cmas": {
+    "issn": "3106-0749",
+    "stats": {
+      "two_yr_mean_citedness": 0.8,
+      "h_index": 2,
+      "cited_by_count": 12
+    },
+    "pcs": {
+      "ratio": 1.8571428571428572,
+      "window": "2022–2025",
+      "sampled_articles": 7,
+      "total_in_window": 7
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "cds": {
+    "issn": "3105-5834",
+    "stats": {
+      "two_yr_mean_citedness": 0.05319148936170213,
+      "h_index": 1,
+      "cited_by_count": 5
+    },
+    "pcs": {
+      "ratio": 0.15217391304347827,
+      "window": "2022–2025",
+      "sampled_articles": 46,
+      "total_in_window": 46
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "rae": {
+    "issn": "3105-5842",
+    "stats": {
+      "two_yr_mean_citedness": 0.05263157894736842,
+      "h_index": 1,
+      "cited_by_count": 3
+    },
+    "pcs": {
+      "ratio": 0,
+      "window": "2022–2025",
+      "sampled_articles": 6,
+      "total_in_window": 6
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "eaou": {
+    "issn": "3105-5850",
+    "stats": {
+      "two_yr_mean_citedness": 0.1348314606741573,
+      "h_index": 2,
+      "cited_by_count": 12
+    },
+    "pcs": {
+      "ratio": 0.5263157894736842,
+      "window": "2022–2025",
+      "sampled_articles": 38,
+      "total_in_window": 38
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "tjiss": {
+    "issn": "3030-5322",
+    "stats": {
+      "two_yr_mean_citedness": 0.02631578947368421,
+      "h_index": 1,
+      "cited_by_count": 1
+    },
+    "pcs": {
+      "ratio": 0.05555555555555555,
+      "window": "2022–2025",
+      "sampled_articles": 18,
+      "total_in_window": 18
+    },
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  },
+  "dif-rfp": {
+    "issn": "3135-0011",
+    "stats": null,
+    "pcs": null,
+    "fetched_at": "2026-08-10T15:31:19.394Z"
+  }
+}
