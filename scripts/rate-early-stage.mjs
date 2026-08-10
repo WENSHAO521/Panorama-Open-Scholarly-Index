@@ -23,10 +23,18 @@
  * within a PSC category, and PSC classification hasn't been wired into
  * ranking yet (see AJR-SPEC.md § 5 and spec status note).
  *
+ * Operates directly on a corpus JSON file (Journal[]) — src/lib's vendored
+ * core-collection.json/global-benchmark.json by default, or any other path
+ * via --file (e.g. a posi-data checkout's corpus/core-collection.json, to
+ * update the authoritative copy directly rather than this repo's vendored
+ * snapshot). If you write to a posi-data checkout, commit + push there, then
+ * run this repo's scripts/sync-corpus.mjs to pull the update back.
+ *
  * Usage:
- *   node scripts/rate-early-stage.mjs                 # dry run — print ratings
- *   node scripts/rate-early-stage.mjs --write         # inject early_stage_rating into data.ts
- *   node scripts/rate-early-stage.mjs --limit 5       # only process the first N (testing)
+ *   node scripts/rate-early-stage.mjs                                     # dry run — Core Collection
+ *   node scripts/rate-early-stage.mjs --write                             # inject early_stage_rating
+ *   node scripts/rate-early-stage.mjs --file src/lib/global-benchmark.json --write
+ *   node scripts/rate-early-stage.mjs --limit 5                           # only process first N (testing)
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -37,18 +45,14 @@ const LIMIT = (() => {
   const i = process.argv.indexOf('--limit')
   return i !== -1 ? parseInt(process.argv[i + 1], 10) : null
 })()
-// --file/--arrays let this same script rate BENCHMARK_JOURNALS (in
-// benchmark-journals.ts) as well as the default Core Collection — same
-// methodology, same scoring functions, just a different source array. See
-// scripts/discover-benchmark-journals.mjs for what the benchmark file is.
+// --file lets this same script rate global-benchmark.json as well as the
+// default core-collection.json — same methodology, same scoring functions,
+// just a different corpus file. See scripts/discover-benchmark-journals.mjs
+// for what the benchmark file is.
 const DATA_PATH = resolve((() => {
   const i = process.argv.indexOf('--file')
-  return i !== -1 ? process.argv[i + 1] : 'src/lib/data.ts'
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/core-collection.json'
 })())
-const TARGET_ARRAYS = (() => {
-  const i = process.argv.indexOf('--arrays')
-  return i !== -1 ? process.argv[i + 1].split(',') : ['PSG_JOURNALS', 'INDEXED_JOURNALS', 'SHIHARR_JOURNALS', 'OTHER_INDEXED_JOURNALS']
-})()
 
 const UA = 'POSI-EarlyStageRating/0.2 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
 const CONCURRENCY = 4
@@ -524,46 +528,19 @@ async function rateJournal(journal) {
   }
 }
 
-// ─── Parse the target arrays from the target file ──────────────────────────
+// ─── Load journals from the corpus JSON file ────────────────────────────────
 
-const CORE_ARRAYS = TARGET_ARRAYS
-
-function parseCoreCollection(src) {
-  const journals = []
-  for (const arrayName of CORE_ARRAYS) {
-    const startMarker = `export const ${arrayName}: Journal[] = [`
-    const start = src.indexOf(startMarker)
-    if (start === -1) continue
-    let depth = 0, i = start + startMarker.length - 1, end = -1
-    for (; i < src.length; i++) {
-      if (src[i] === '[') depth++
-      else if (src[i] === ']') { depth--; if (depth === 0) { end = i; break } }
-    }
-    if (end === -1) continue
-    const section = src.slice(start, end)
-    const lines = section.split('\n')
-    let current = null
-    const flush = () => { if (current?.id) journals.push(current) }
-    for (const line of lines) {
-      // Anchored to line start — an unanchored /id:/ also matches inside
-      // "openalex_source_id: '...'", which is always a real string for
-      // benchmark journals (unlike Core Collection, where it's usually
-      // null) and was silently creating phantom duplicate entries.
-      const idM = /^\s*id:\s*'([^']+)'/.exec(line)
-      if (idM) { flush(); current = { id: idM[1], code: null, issnOnline: null, issnPrint: null, websiteUrl: null, articleCount: 0 }; continue }
-      if (!current) continue
-      const codeM = /journal_code:\s*'([^']+)'/.exec(line); if (codeM) { current.code = codeM[1]; continue }
-      const ionM = /issn_online:\s*["']([^"']+)["']/.exec(line); if (ionM) { current.issnOnline = ionM[1]; continue }
-      const ipM = /issn_print:\s*["']([^"']+)["']/.exec(line); if (ipM) { current.issnPrint = ipM[1]; continue }
-      const wsM = /website_url:\s*["']([^"']+)["']/.exec(line); if (wsM) { current.websiteUrl = wsM[1]; continue }
-      const acM = /article_count:\s*(\d+)/.exec(line); if (acM) { current.articleCount = parseInt(acM[1], 10); continue }
-    }
-    flush()
+function toRateTarget(j) {
+  return {
+    id: j.id,
+    website_url: j.website_url ?? null,
+    issnOnline: j.issn_online ?? null,
+    issnPrint: j.issn_print ?? null,
+    article_count: j.article_count ?? 0,
   }
-  return journals.map(j => ({ id: j.id, website_url: j.websiteUrl, issnOnline: j.issnOnline, issnPrint: j.issnPrint, article_count: j.articleCount }))
 }
 
-// ─── Write early_stage_rating into data.ts ─────────────────────────────────
+// ─── Apply early_stage_rating onto the in-memory corpus array ──────────────
 // Machine-generated field — same "do not hand-edit, correct evidence and
 // re-run" discipline as discovered-journals.ts. There is deliberately no
 // code path here (or anywhere in this script) that accepts a manually-
@@ -574,26 +551,23 @@ function parseCoreCollection(src) {
 // doesn't know about PSC cohorts), so a stale quartile from a previous
 // rank-lifecycle.mjs run would otherwise survive un-refreshed instead of
 // being recomputed against the new ratings.
-function injectRating(src, id, rating) {
-  const idIdx = src.indexOf(`id: '${id}'`)
-  if (idIdx === -1) return src
-  const blockEnd = src.indexOf('created_at:', idIdx)
-  if (blockEnd === -1) return src
-
-  const subfactorsLit = rating.subfactors
-    ? `{ egf: ${rating.subfactors.egf}, rif: ${rating.subfactors.rif}, inf: ${rating.subfactors.inf}, pub: ${rating.subfactors.pub}, soc: ${rating.subfactors.soc}, rdc: ${rating.subfactors.rdc}, trn: ${rating.subfactors.trn} }`
-    : 'null'
-  const line = `  early_stage_rating: { eligibility: '${rating.eligibility}', first_published: ${rating.first_published ? `'${rating.first_published}'` : 'null'}, months_since_launch: ${rating.months_since_launch ?? 'null'}, subfactors: ${subfactorsLit}, total: ${rating.total ?? 'null'}, evidence_coverage: ${rating.evidence_coverage ?? 'null'}, provisional_quartile: null, rated_at: '${new Date().toISOString().slice(0, 10)}', version: 'AJR-E-1.0' },\n`
-
-  const blockContent = src.slice(idIdx, blockEnd)
-  if (blockContent.includes('early_stage_rating:')) {
-    const existingIdx = src.indexOf('early_stage_rating:', idIdx)
-    if (existingIdx < blockEnd) {
-      const lineEnd = src.indexOf('\n', existingIdx)
-      return src.slice(0, existingIdx) + line.trim() + src.slice(lineEnd)
-    }
+function applyRating(journals, id, rating) {
+  const idx = journals.findIndex(j => j.id === id)
+  if (idx === -1) return
+  journals[idx] = {
+    ...journals[idx],
+    early_stage_rating: {
+      eligibility: rating.eligibility,
+      first_published: rating.first_published,
+      months_since_launch: rating.months_since_launch,
+      subfactors: rating.subfactors,
+      total: rating.total,
+      evidence_coverage: rating.evidence_coverage,
+      provisional_quartile: null,
+      rated_at: new Date().toISOString().slice(0, 10),
+      version: 'AJR-E-1.0',
+    },
   }
-  return src.slice(0, blockEnd) + line + '  ' + src.slice(blockEnd)
 }
 
 // ─── Batch runner ───────────────────────────────────────────────────────────
@@ -611,21 +585,20 @@ async function runBatch(items, fn, concurrency) {
 }
 
 async function main() {
-  const src = readFileSync(DATA_PATH, 'utf-8')
-  const all = parseCoreCollection(src)
-  const journals = LIMIT ? all.slice(0, LIMIT) : all
-  console.log(`Found ${all.length} journals in ${TARGET_ARRAYS.join('/')} (${DATA_PATH})${LIMIT ? ` — processing first ${journals.length}` : ''}\n`)
+  const journals = JSON.parse(readFileSync(DATA_PATH, 'utf-8'))
+  const all = journals.map(toRateTarget)
+  const targets = LIMIT ? all.slice(0, LIMIT) : all
+  console.log(`Found ${all.length} journals in ${DATA_PATH}${LIMIT ? ` — processing first ${targets.length}` : ''}\n`)
 
-  const results = await runBatch(journals, rateJournal, CONCURRENCY)
+  const results = await runBatch(targets, rateJournal, CONCURRENCY)
 
   const counts = { observation: 0, early_stage: 0, mature: 0, not_yet_rateable: 0, unknown: 0 }
   for (const r of results) counts[r.rating.eligibility]++
   console.log('Eligibility breakdown:', counts)
 
   if (WRITE) {
-    let out = src
-    for (const r of results) out = injectRating(out, r.id, r.rating)
-    writeFileSync(DATA_PATH, out, 'utf-8')
+    for (const r of results) applyRating(journals, r.id, r.rating)
+    writeFileSync(DATA_PATH, JSON.stringify(journals, null, 2) + '\n', 'utf-8')
     console.log(`\nWrote early_stage_rating for ${results.length} journals to ${DATA_PATH}`)
   } else {
     console.log('\nDry run (pass --write to persist):')

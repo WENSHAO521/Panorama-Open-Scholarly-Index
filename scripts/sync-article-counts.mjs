@@ -16,9 +16,16 @@
  * response — the journal's own publishing system is authoritative when
  * DOI registration is incomplete.
  *
+ * Operates directly on a corpus JSON file (Journal[]) — src/lib's vendored
+ * core-collection.json by default, or any other path via --file (e.g. a
+ * posi-data checkout's corpus/core-collection.json, to update the
+ * authoritative copy directly). If you write to a posi-data checkout,
+ * commit + push there, then run this repo's scripts/sync-corpus.mjs to
+ * pull the update back.
+ *
  * Usage:
  *   node scripts/sync-article-counts.mjs           # dry run — print counts
- *   node scripts/sync-article-counts.mjs --write    # inject into data.ts
+ *   node scripts/sync-article-counts.mjs --write    # inject into the corpus file
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -26,7 +33,10 @@ import { resolve } from 'path'
 
 const WRITE = process.argv.includes('--write')
 const UA = 'POSI-ArticleCountSync/0.1 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
-const DATA_PATH = resolve('src/lib/data.ts')
+const DATA_PATH = resolve((() => {
+  const i = process.argv.indexOf('--file')
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/core-collection.json'
+})())
 
 async function fetchCrossrefCount(issn) {
   try {
@@ -59,48 +69,24 @@ async function fetchOaiCount(oaiBaseUrl) {
   }
 }
 
-function parseJournalBlocks(src) {
-  const blocks = []
-  const issnRe = /issn_online:\s*(null|'[^']+')/
-  const oaiRe = /oai_base_url:\s*(null|'[^']+')/
-  const countRe = /article_count:\s*(\d+)/
-  let idx = 0
-  while (true) {
-    const idMatch = src.slice(idx).match(/^\s*id:\s*'([^']+)'/m)
-    if (!idMatch) break
-    const blockStart = idx + idMatch.index
-    const nextIdMatch = src.slice(blockStart + idMatch[0].length).match(/^\s*id:\s*'([^']+)'/m)
-    const blockEnd = nextIdMatch ? blockStart + idMatch[0].length + nextIdMatch.index : src.length
-    const block = src.slice(blockStart, blockEnd)
-    const issnMatch = block.match(issnRe)
-    const oaiMatch = block.match(oaiRe)
-    const countMatch = block.match(countRe)
-    blocks.push({
-      id: idMatch[1],
-      issn_online: issnMatch && issnMatch[1] !== 'null' ? issnMatch[1].slice(1, -1) : null,
-      oai_base_url: oaiMatch && oaiMatch[1] !== 'null' ? oaiMatch[1].slice(1, -1) : null,
-      current_count: countMatch ? parseInt(countMatch[1], 10) : null,
-    })
-    idx = blockEnd
+function toCountTarget(j) {
+  return {
+    id: j.id,
+    issn_online: j.issn_online ?? null,
+    oai_base_url: j.oai_base_url ?? null,
+    current_count: j.article_count ?? null,
   }
-  return blocks
 }
 
-function injectCount(src, id, count) {
-  const idIdx = src.indexOf(`id: '${id}'`)
-  if (idIdx === -1) return src
-  const blockEnd = src.indexOf('created_at:', idIdx)
-  if (blockEnd === -1) return src
-  const existingIdx = src.indexOf('article_count:', idIdx)
-  if (existingIdx === -1 || existingIdx > blockEnd) return src
-  const valueStart = existingIdx + 'article_count:'.length
-  const commaIdx = src.indexOf(',', valueStart)
-  return src.slice(0, existingIdx) + `article_count: ${count},` + src.slice(commaIdx + 1)
+function applyCount(journals, id, count) {
+  const idx = journals.findIndex(j => j.id === id)
+  if (idx === -1) return
+  journals[idx] = { ...journals[idx], article_count: count }
 }
 
 async function main() {
-  let src = readFileSync(DATA_PATH, 'utf-8')
-  const journals = parseJournalBlocks(src)
+  const data = JSON.parse(readFileSync(DATA_PATH, 'utf-8'))
+  const journals = data.map(toCountTarget)
 
   console.log(`Found ${journals.length} Core Collection journals.\n`)
 
@@ -131,9 +117,9 @@ async function main() {
   }
 
   for (const r of results) {
-    if (r.new_count !== r.current_count) src = injectCount(src, r.id, r.new_count)
+    if (r.new_count !== r.current_count) applyCount(data, r.id, r.new_count)
   }
-  writeFileSync(DATA_PATH, src, 'utf-8')
+  writeFileSync(DATA_PATH, JSON.stringify(data, null, 2) + '\n', 'utf-8')
   console.log(`\nWrote updated article_count values to ${DATA_PATH}`)
 }
 

@@ -18,9 +18,16 @@
  * Benchmark journals together (Early-Stage cohorts are Core Collection
  * only — Benchmark journals are never early_stage in practice).
  *
+ * Operates directly on the two corpus JSON files (Journal[]) — src/lib's
+ * vendored core-collection.json/global-benchmark.json by default, or any
+ * other paths via --core/--benchmark (e.g. a posi-data checkout's
+ * corpus/*.json, to update the authoritative copies directly). If you write
+ * to a posi-data checkout, commit + push there, then run this repo's
+ * scripts/sync-corpus.mjs to pull the update back.
+ *
  * Usage:
  *   node scripts/rank-lifecycle.mjs                # dry run — print cohort sizes/results
- *   node scripts/rank-lifecycle.mjs --write         # inject provisional_quartile into data.ts + benchmark-journals.ts
+ *   node scripts/rank-lifecycle.mjs --write         # inject provisional_quartile into both files
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -28,6 +35,14 @@ import { resolve } from 'path'
 import taxonomy from '../src/lib/psc-v1.0.snapshot.json' with { type: 'json' }
 
 const WRITE = process.argv.includes('--write')
+const CORE_PATH = resolve((() => {
+  const i = process.argv.indexOf('--core')
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/core-collection.json'
+})())
+const BENCHMARK_PATH = resolve((() => {
+  const i = process.argv.indexOf('--benchmark')
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/global-benchmark.json'
+})())
 
 const RANKING_METHODOLOGY_VERSION = 'RANK-1.0'
 const MIN_L2_SIZE = 20
@@ -108,58 +123,30 @@ function rankTrack(entries, prefix) {
   return results
 }
 
-function parseJournalBlocks(src) {
-  const blocks = []
-  const pscRe = /psc_category:\s*'([^']+)'/
-  // Scoped specifically inside early_stage_rating: {...} — a naive whole-block
-  // /total:\s*(\d+)/ would instead match the PqfScore.total field (or even the
-  // "// total: NN, Grade X" comment that precedes most pqf(...) calls in this
-  // file), silently grabbing the wrong number. `.*?` (non-greedy) safely skips
-  // over the nested subfactors: {...} sub-object, which has no `total` key of
-  // its own, so this still lands on early_stage_rating's real total.
-  const earlyStageRe = /early_stage_rating:\s*\{\s*eligibility:\s*'([^']+)'.*?total:\s*(null|\d+)/
-  let idx = 0
-  while (true) {
-    const idMatch = src.slice(idx).match(/^\s*id:\s*'([^']+)'/m)
-    if (!idMatch) break
-    const blockStart = idx + idMatch.index
-    const nextIdMatch = src.slice(blockStart + idMatch[0].length).match(/^\s*id:\s*'([^']+)'/m)
-    const blockEnd = nextIdMatch ? blockStart + idMatch[0].length + nextIdMatch.index : src.length
-    const block = src.slice(blockStart, blockEnd)
-    const pscMatch = block.match(pscRe)
-    const earlyStageMatch = block.match(earlyStageRe)
-    blocks.push({
-      id: idMatch[1],
-      psc_category: pscMatch ? pscMatch[1] : null,
-      eligibility: earlyStageMatch ? earlyStageMatch[1] : null,
-      total: earlyStageMatch && earlyStageMatch[2] !== 'null' ? parseInt(earlyStageMatch[2], 10) : null,
-    })
-    idx = blockEnd
+function toRankTarget(j) {
+  return {
+    id: j.id,
+    psc_category: j.psc_category ?? null,
+    eligibility: j.early_stage_rating?.eligibility ?? null,
+    total: j.early_stage_rating?.total ?? null,
   }
-  return blocks
 }
 
-function injectQuartile(src, id, quartile) {
-  const idIdx = src.indexOf(`id: '${id}'`)
-  if (idIdx === -1) return src
-  const blockEnd = src.indexOf('created_at:', idIdx)
-  if (blockEnd === -1) return src
-  const existingIdx = src.indexOf('provisional_quartile:', idIdx)
-  if (existingIdx === -1 || existingIdx > blockEnd) return src
-  const valueStart = existingIdx + 'provisional_quartile:'.length
-  const commaIdx = src.indexOf(',', valueStart)
-  const replacement = quartile ? ` '${quartile}',` : ' null,'
-  return src.slice(0, existingIdx) + 'provisional_quartile:' + replacement + src.slice(commaIdx + 1)
+function applyQuartile(journals, id, quartile) {
+  const idx = journals.findIndex(j => j.id === id)
+  if (idx === -1 || !journals[idx].early_stage_rating) return
+  journals[idx] = {
+    ...journals[idx],
+    early_stage_rating: { ...journals[idx].early_stage_rating, provisional_quartile: quartile },
+  }
 }
 
 function main() {
-  const dataPath = resolve('src/lib/data.ts')
-  const benchmarkPath = resolve('src/lib/benchmark-journals.ts')
-  let dataSrc = readFileSync(dataPath, 'utf-8')
-  let benchmarkSrc = readFileSync(benchmarkPath, 'utf-8')
+  const coreData = JSON.parse(readFileSync(CORE_PATH, 'utf-8'))
+  const benchmarkData = JSON.parse(readFileSync(BENCHMARK_PATH, 'utf-8'))
 
-  const coreJournals = parseJournalBlocks(dataSrc)
-  const benchmarkJournals = parseJournalBlocks(benchmarkSrc)
+  const coreJournals = coreData.map(toRankTarget)
+  const benchmarkJournals = benchmarkData.map(toRankTarget)
 
   const eEntries = coreJournals
     .filter(j => j.eligibility === 'early_stage' && j.psc_category && j.total != null)
@@ -190,15 +177,15 @@ function main() {
     return
   }
 
-  for (const [id, q] of eResults) dataSrc = injectQuartile(dataSrc, id, q)
+  for (const [id, q] of eResults) applyQuartile(coreData, id, q)
   for (const [id, q] of mResults) {
-    dataSrc = injectQuartile(dataSrc, id, q)
-    benchmarkSrc = injectQuartile(benchmarkSrc, id, q)
+    applyQuartile(coreData, id, q)
+    applyQuartile(benchmarkData, id, q)
   }
 
-  writeFileSync(dataPath, dataSrc, 'utf-8')
-  writeFileSync(benchmarkPath, benchmarkSrc, 'utf-8')
-  console.log(`\nWrote quartile assignments to ${dataPath} and ${benchmarkPath}`)
+  writeFileSync(CORE_PATH, JSON.stringify(coreData, null, 2) + '\n', 'utf-8')
+  writeFileSync(BENCHMARK_PATH, JSON.stringify(benchmarkData, null, 2) + '\n', 'utf-8')
+  console.log(`\nWrote quartile assignments to ${CORE_PATH} and ${BENCHMARK_PATH}`)
 }
 
 main()

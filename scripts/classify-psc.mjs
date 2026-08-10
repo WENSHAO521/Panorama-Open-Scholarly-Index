@@ -21,9 +21,15 @@
  * field publication history genuinely doesn't reduce to one PSC category,
  * not a bug in the crosswalk.
  *
+ * Operates directly on a corpus JSON file (Journal[]) — src/lib's vendored
+ * core-collection.json by default, or any other path via --file (e.g. a
+ * posi-data checkout's corpus/*.json, to update the authoritative copy
+ * directly). If you write to a posi-data checkout, commit + push there, then
+ * run this repo's scripts/sync-corpus.mjs to pull the update back.
+ *
  * Usage:
- *   node scripts/classify-psc.mjs --file src/lib/data.ts --arrays PSG_JOURNALS,INDEXED_JOURNALS,SHIHARR_JOURNALS,OTHER_INDEXED_JOURNALS [--write] [--limit N]
- *   node scripts/classify-psc.mjs --file src/lib/benchmark-journals.ts --arrays BENCHMARK_JOURNALS --write
+ *   node scripts/classify-psc.mjs [--write] [--limit N]
+ *   node scripts/classify-psc.mjs --file src/lib/global-benchmark.json --write
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -36,12 +42,8 @@ const LIMIT = (() => {
 })()
 const DATA_PATH = resolve((() => {
   const i = process.argv.indexOf('--file')
-  return i !== -1 ? process.argv[i + 1] : 'src/lib/data.ts'
+  return i !== -1 ? process.argv[i + 1] : 'src/lib/core-collection.json'
 })())
-const TARGET_ARRAYS = (() => {
-  const i = process.argv.indexOf('--arrays')
-  return i !== -1 ? process.argv[i + 1].split(',') : ['PSG_JOURNALS', 'INDEXED_JOURNALS', 'SHIHARR_JOURNALS', 'OTHER_INDEXED_JOURNALS']
-})()
 
 const UA = 'POSI-PscClassification/0.1 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
 const CONCURRENCY = 4
@@ -178,55 +180,16 @@ async function classifyJournal(journal) {
   return { id: journal.id, result: classify(data.topics, data.worksCount) }
 }
 
-// ─── Parse the target arrays (shares the same block-scanning approach as
-// rate-early-stage.mjs's parseCoreCollection — see that file for why the
-// id: regex must stay anchored to line start) ───────────────────────────
+// ─── Load journals from the corpus JSON file ────────────────────────────────
 
-function parseJournals(src) {
-  const journals = []
-  for (const arrayName of TARGET_ARRAYS) {
-    const startMarker = `export const ${arrayName}: Journal[] = [`
-    const start = src.indexOf(startMarker)
-    if (start === -1) continue
-    let depth = 0, i = start + startMarker.length - 1, end = -1
-    for (; i < src.length; i++) {
-      if (src[i] === '[') depth++
-      else if (src[i] === ']') { depth--; if (depth === 0) { end = i; break } }
-    }
-    if (end === -1) continue
-    const section = src.slice(start, end)
-    const lines = section.split('\n')
-    let current = null
-    const flush = () => { if (current?.id) journals.push(current) }
-    for (const line of lines) {
-      const idM = /^\s*id:\s*'([^']+)'/.exec(line)
-      if (idM) { flush(); current = { id: idM[1], issnOnline: null, issnPrint: null }; continue }
-      if (!current) continue
-      const ionM = /issn_online:\s*["']([^"']+)["']/.exec(line); if (ionM) { current.issnOnline = ionM[1]; continue }
-      const ipM = /issn_print:\s*["']([^"']+)["']/.exec(line); if (ipM) { current.issnPrint = ipM[1]; continue }
-    }
-    flush()
-  }
-  return journals
+function toClassifyTarget(j) {
+  return { id: j.id, issnOnline: j.issn_online ?? null, issnPrint: j.issn_print ?? null }
 }
 
-function injectPsc(src, id, result) {
-  const idIdx = src.indexOf(`id: '${id}'`)
-  if (idIdx === -1) return src
-  const blockEnd = src.indexOf('created_at:', idIdx)
-  if (blockEnd === -1) return src
-
-  const line = `  psc_category: ${result.psc_category ? `'${result.psc_category}'` : 'null'}, psc_confidence: ${result.psc_confidence ? `'${result.psc_confidence}'` : 'null'},\n`
-
-  const blockContent = src.slice(idIdx, blockEnd)
-  if (blockContent.includes('psc_category:')) {
-    const existingIdx = src.indexOf('psc_category:', idIdx)
-    if (existingIdx < blockEnd) {
-      const lineEnd = src.indexOf('\n', existingIdx)
-      return src.slice(0, existingIdx) + line.trim() + src.slice(lineEnd)
-    }
-  }
-  return src.slice(0, blockEnd) + line + '  ' + src.slice(blockEnd)
+function applyPsc(journals, id, result) {
+  const idx = journals.findIndex(j => j.id === id)
+  if (idx === -1) return
+  journals[idx] = { ...journals[idx], psc_category: result.psc_category, psc_confidence: result.psc_confidence }
 }
 
 async function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
@@ -242,12 +205,12 @@ async function runBatch(items, fn, concurrency) {
 }
 
 async function main() {
-  const src = readFileSync(DATA_PATH, 'utf-8')
-  const all = parseJournals(src)
-  const journals = LIMIT ? all.slice(0, LIMIT) : all
-  console.log(`Found ${all.length} journals in ${TARGET_ARRAYS.join('/')} (${DATA_PATH})${LIMIT ? ` — processing first ${journals.length}` : ''}\n`)
+  const journals = JSON.parse(readFileSync(DATA_PATH, 'utf-8'))
+  const all = journals.map(toClassifyTarget)
+  const targets = LIMIT ? all.slice(0, LIMIT) : all
+  console.log(`Found ${all.length} journals in ${DATA_PATH}${LIMIT ? ` — processing first ${targets.length}` : ''}\n`)
 
-  const results = await runBatch(journals, classifyJournal, CONCURRENCY)
+  const results = await runBatch(targets, classifyJournal, CONCURRENCY)
 
   const highConf = results.filter(r => r.result.psc_confidence === 'high').length
   const lowConf = results.filter(r => r.result.psc_confidence === 'low').length
@@ -255,9 +218,8 @@ async function main() {
   console.log('Classification breakdown:', { high_confidence: highConf, low_confidence: lowConf, unclassified })
 
   if (WRITE) {
-    let out = src
-    for (const r of results) out = injectPsc(out, r.id, r.result)
-    writeFileSync(DATA_PATH, out, 'utf-8')
+    for (const r of results) applyPsc(journals, r.id, r.result)
+    writeFileSync(DATA_PATH, JSON.stringify(journals, null, 2) + '\n', 'utf-8')
     console.log(`\nWrote psc_category for ${results.length} journals to ${DATA_PATH}`)
   } else {
     console.log('\nDry run (pass --write to persist):')
