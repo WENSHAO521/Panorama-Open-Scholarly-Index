@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 
 export const metadata: Metadata = {
   title: 'Policy Evidence Directory | POSI',
   description: 'Browse publicly verifiable policy evidence for POSI journal records. Filter by policy type, verification status, and journal.',
 }
 
-const ASSESSED_JOURNALS = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+const ASSESSED_JOURNALS = getCoreCollection()
 
 const POLICY_TYPES = [
   { key: 'aim_scope',         label: 'Aim & Scope' },

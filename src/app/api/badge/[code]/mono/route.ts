@@ -1,8 +1,8 @@
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getJournalByCode } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getJournalByCode, getCoreCollection} from '@/lib/data'
 import { badgeMonoSvg } from '@/lib/badge-svg'
 
 export async function generateStaticParams() {
-  const journals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const journals = getCoreCollection()
   return journals.map(j => ({ code: j.journal_code }))
 }
 

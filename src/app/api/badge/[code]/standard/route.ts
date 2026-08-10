@@ -1,11 +1,11 @@
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getJournalByCode } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getJournalByCode, getCoreCollection} from '@/lib/data'
 import { badgeStandardSvg } from '@/lib/badge-svg'
 
 // Core Collection only — the same manually-reviewed set used by /citation-reports.
 // Auto-discovered/unreviewed records are excluded: badge eligibility is a Core
 // Collection feature, not extended to unverified data.
 export async function generateStaticParams() {
-  const journals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const journals = getCoreCollection()
   return journals.map(j => ({ code: j.journal_code }))
 }
 

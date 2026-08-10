@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BadgeLookupForm } from '@/components/BadgeLookupForm'
 
 const SITE_URL = 'https://posi.panorama-sg.com'
@@ -20,7 +20,7 @@ export const metadata = {
 }
 
 export default function BadgesPage() {
-  const journals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const journals = getCoreCollection()
     .map(j => ({ code: j.journal_code, title: j.short_title || j.title }))
     .sort((a, b) => a.title.localeCompare(b.title))
 

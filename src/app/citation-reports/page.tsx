@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { openAlexGetSourceStats, crossrefGetCitationScore } from '@/lib/api'
 import { primarySubject } from '@/lib/subject-keywords'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
@@ -44,7 +44,7 @@ export default async function CitationReportsPage() {
   // Scope: only the reviewed/verified collection (PSG + manually-indexed).
   // Auto-discovered, unreviewed records are deliberately excluded — citation
   // impact ranking is a Core Collection feature, not extended to unverified data.
-  const journals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const journals = getCoreCollection()
 
   const withStats = await Promise.all(
     journals.map(async j => {

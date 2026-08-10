@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 
 export const metadata = {
@@ -9,7 +9,7 @@ export const metadata = {
 }
 
 export default function EarlyStageRankingsPage() {
-  const journals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const journals = getCoreCollection()
     .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
   const evaluated = journals.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
 

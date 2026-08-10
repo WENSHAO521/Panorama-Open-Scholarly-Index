@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
+import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection} from '@/lib/data'
 
 const LIFECYCLE_LABEL: Record<string, string> = {
   observation: 'Observation',
@@ -34,7 +34,7 @@ const STATES = [
 ]
 
 export default function CoreCollectionPage() {
-  const coreCollection = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const coreCollection = getCoreCollection()
     .sort((a, b) => a.title.localeCompare(b.title))
   const discoveredCount = DISCOVERED_JOURNALS.length
   // Metric Eligible = has a PCI/PCS record today, i.e. today's entire Core

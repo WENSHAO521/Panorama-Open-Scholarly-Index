@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const metadata = {
@@ -57,7 +57,7 @@ export default async function SubjectsPage() {
     byParent.get(c.parent)!.push(c)
   }
 
-  const allJournals = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...BENCHMARK_JOURNALS]
+  const allJournals = [...getCoreCollection(), ...BENCHMARK_JOURNALS]
   const countsByCategory = new Map<string, { total: number; earlyStage: number; mature: number }>()
   for (const j of allJournals) {
     if (!j.psc_category) continue

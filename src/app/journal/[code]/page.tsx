@@ -94,6 +94,11 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
 
   // Discovered journals already have metadata from data.ts — skip redundant API calls
   const isDiscovered = journal.id.startsWith('j-disc-')
+  // A journal demoted from Core Collection after a PQF re-review (see
+  // data.ts's getCoreCollection()) keeps its full record and rating tabs —
+  // only Core Collection member privileges (certificate, badge, the
+  // "Core Collection" pill) are withheld.
+  const isCandidate = journal.collection_status === 'candidate'
   // Citation impact display is a Core Collection feature: shown only for the manually
   // curated collection (PSG/indexed), never inferred from DOAJ listing status —
   // DOAJ is external metadata, not a POSI admission or ranking signal.
@@ -152,7 +157,13 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--posi-muted)' }}>Core Collection</span>
-            <span className="font-semibold" style={{ color: !isDiscovered ? '#1F7A4D' : '#6B7280' }}>{!isDiscovered ? 'Yes' : 'No'}</span>
+            <span
+              className="font-semibold"
+              style={{ color: !isDiscovered && !isCandidate ? '#1F7A4D' : isCandidate ? '#B45309' : '#6B7280' }}
+              title={isCandidate ? 'Admitted once, but a PQF re-review found it below the eligibility bar — pending re-review, not full Core Collection membership.' : undefined}
+            >
+              {isCandidate ? 'Candidate' : !isDiscovered ? 'Yes' : 'No'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span style={{ color: 'var(--posi-muted)' }}>PSC Category</span>
@@ -193,7 +204,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               View on OpenAlex →
             </a>
           )}
-          {!isDiscovered && (
+          {!isDiscovered && !isCandidate && (
             <Link
               href={`/badges?code=${journal.journal_code}`}
               className="block text-[11px] hover:underline mt-1 transition-colors"
@@ -202,7 +213,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               Get POSI Badge →
             </Link>
           )}
-          {!isDiscovered && (
+          {!isDiscovered && !isCandidate && (
             <a
               href={`/api/certificate/${journal.journal_code}/pdf`}
               download={`POSI-Core-Collection-Certificate-${journal.journal_code}.pdf`}
@@ -587,7 +598,8 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               <Badge label="OA" variant="oa" />
               <Badge label={journal.license} variant="license" />
-              {!isDiscovered && <Badge label="Core Collection" variant="core-collection" />}
+              {!isDiscovered && !isCandidate && <Badge label="Core Collection" variant="core-collection" />}
+              {isCandidate && <Badge label="Candidate" variant="pending" />}
               {journal.doaj_status && (
                 <Badge
                   label={`DOAJ: ${journal.doaj_status === 'application_submitted' ? 'application submitted' : journal.doaj_status.replace('_', ' ')}`}

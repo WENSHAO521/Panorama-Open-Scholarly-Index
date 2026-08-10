@@ -991,12 +991,35 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = [
     article_count: 0,
       early_stage_rating: { eligibility: 'unknown', first_published: null, months_since_launch: null, subfactors: null, total: null, evidence_coverage: 93, provisional_quartile: null, rated_at: '2026-08-10', version: 'AJR-E-1.0' },
     psc_category: null, psc_confidence: null,
+    // PQF re-review (2026-08-10): total 34/100, "Not Eligible" band — no
+    // Crossref/OpenAlex/DOAJ record, no DOI evidence, no OAI-PMH. Demoted
+    // from Core Collection to candidate pending stronger evidence.
+    collection_status: 'candidate',
   created_at: '2026-07-15T00:00:00Z',
     updated_at: '2026-07-01T00:00:00Z',
   },
 ]
 
 export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...DISCOVERED_JOURNALS]
+
+// The single definition of "Core Collection" — a journal admitted through
+// PQF editorial selection that has since fallen below the eligibility bar
+// (collection_status: 'candidate') keeps its record and journal page, but
+// is not counted as, or treated with the privileges of, full Core
+// Collection membership (badges, certificates, ranking-page inclusion)
+// until re-review restores it. See scripts/rate-early-stage.mjs's PQF
+// eligibility bands (Eligible/Review Required/Insufficient Evidence/Not
+// Eligible) — 'candidate' is set manually after a Not Eligible finding,
+// not computed automatically by any script.
+export function getCoreCollection(): Journal[] {
+  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+    .filter(j => j.collection_status !== 'candidate')
+}
+
+export function getCandidateJournals(): Journal[] {
+  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+    .filter(j => j.collection_status === 'candidate')
+}
 
 // ISSN → journal_code lookup for mapping Crossref responses
 export const ISSN_TO_CODE: Record<string, string> = Object.fromEntries(

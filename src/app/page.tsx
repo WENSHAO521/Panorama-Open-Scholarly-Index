@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
-import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS } from '@/lib/data'
+import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const revalidate = 3600
@@ -16,7 +16,7 @@ export default async function HomePage() {
     ...getStats(),
     last_updated: new Date().toISOString().slice(0, 10),
   }
-  const coreCollection = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
+  const coreCollection = getCoreCollection()
   const lifecycleRated = coreCollection.filter(j => j.early_stage_rating?.total != null).length
     + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.total != null).length
   const observationCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'observation').length

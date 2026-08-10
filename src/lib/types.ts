@@ -41,6 +41,13 @@ export interface Journal {
   // best-guess in that case, but should be treated as unreliable.
   psc_category?: string | null
   psc_confidence?: 'high' | 'low' | null
+  // undefined/'core': full Core Collection membership. 'candidate': admitted
+  // once, but a PQF re-review found it below the eligibility bar (PQF total
+  // < 40, "Not Eligible") — keeps its journal record and page, but is
+  // excluded from Core Collection counts, rankings, badges, and
+  // certificates until re-review restores it. See data.ts's
+  // getCoreCollection()/getCandidateJournals().
+  collection_status?: 'core' | 'candidate'
   article_count: number
   created_at: string
   updated_at: string
