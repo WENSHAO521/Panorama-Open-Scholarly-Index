@@ -20,6 +20,7 @@ import { OjqfCard } from '@/components/OjqfCard'
 import { JournalArticles } from '@/components/JournalArticles'
 import { ArticleCountBadge } from '@/components/ArticleCountBadge'
 import { CitationImpactCard } from '@/components/CitationImpactCard'
+import { JournalProfileTabs } from '@/components/JournalProfileTabs'
 
 export async function generateMetadata(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
@@ -134,6 +135,412 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     total = journal.article_count
   }
 
+  // ─── Tab panels — see src/components/JournalProfileTabs.tsx. Panels are
+  // omitted entirely (not passed as null) for content that doesn't apply to
+  // a given journal (auto-discovered records skip Lifecycle/Citation/
+  // Evidence/Metadata/History), which also lets the tab UI itself collapse
+  // to a plain view when only one panel remains.
+
+  const overviewPanel = (
+    <div className="grid md:grid-cols-3 gap-5">
+      <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Coverage</h2>
+        <div className="space-y-2 text-xs">
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>POSI Journal Code</span>
+            <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{journal.journal_code}</span>
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>Core Collection</span>
+            <span className="font-semibold" style={{ color: !isDiscovered ? '#1F7A4D' : '#6B7280' }}>{!isDiscovered ? 'Yes' : 'No'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>PSC Category</span>
+            <span style={{ color: 'var(--posi-text)' }}>
+              {journal.psc_category ? (
+                <>
+                  {journal.psc_category}
+                  {journal.psc_confidence === 'low' && <span className="ml-1 opacity-60" title="Low-confidence classification">*</span>}
+                </>
+              ) : (
+                <span style={{ color: 'var(--posi-muted)' }}>Not yet classified</span>
+              )}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>Coverage Since</span>
+            <span style={{ color: 'var(--posi-text)' }}>{journal.created_at?.slice(0, 10) ?? '—'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>Total Articles</span>
+            <ArticleCountBadge issn={journal.issn_online ?? null} fallback={total || journal.article_count} />
+          </div>
+          <div className="flex justify-between">
+            <span style={{ color: 'var(--posi-muted)' }}>DOAJ</span>
+            <span style={{ color: 'var(--posi-muted)' }}>
+              {doaj ? (doaj.in_doaj ? 'Listed' : 'Not listed') : journal.doaj_status === 'listed' ? 'Listed' : journal.doaj_status === 'application_submitted' ? 'Applied' : 'Not listed'}
+              <span className="text-[9px] ml-1">(external ref.)</span>
+            </span>
+          </div>
+          {journal.openalex_source_id && (
+            <a
+              href={`https://openalex.org/sources/${journal.openalex_source_id}`}
+              className="block text-[11px] hover:underline mt-1 transition-colors"
+              style={{ color: 'var(--posi-accent)' }}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View on OpenAlex →
+            </a>
+          )}
+          {!isDiscovered && (
+            <Link
+              href={`/badges?code=${journal.journal_code}`}
+              className="block text-[11px] hover:underline mt-1 transition-colors"
+              style={{ color: 'var(--posi-accent)' }}
+            >
+              Get POSI Badge →
+            </Link>
+          )}
+          {!isDiscovered && (
+            <a
+              href={`/api/certificate/${journal.journal_code}/pdf`}
+              download={`POSI-Core-Collection-Certificate-${journal.journal_code}.pdf`}
+              className="block text-[11px] hover:underline mt-1 transition-colors"
+              style={{ color: 'var(--posi-accent)' }}
+            >
+              Download Certificate (PDF) →
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className="md:col-span-2">
+        <JournalArticles
+          issn={journal.issn_online ?? null}
+          journalCode={journal.journal_code}
+          initialArticles={articles}
+          initialTotal={total}
+        />
+      </div>
+    </div>
+  )
+
+  // LAYER 2 (formerly): Automated Rating (AJR) — 100% automated (see
+  // posi-data/AJR-SPEC.md §11): no reviewer, editor, publisher, or POSI
+  // staff has a way to directly set this score — only the underlying
+  // evidence can be corrected, which triggers a recompute. Lifecycle stage
+  // decides the quartile track, not whether a score exists: 'early_stage'
+  // journals (12-59 months since first publication) are eligible for a
+  // future E-Q1-E-Q4 once a real PSC peer cohort exists; 'mature' journals
+  // get the same AJR-E score but rely on Citation Q instead (see
+  // AJR-SPEC.md §1, §4).
+  const lifecyclePanel = isDiscovered || !journal.early_stage_rating ? null : (
+    (journal.early_stage_rating.eligibility === 'early_stage' || journal.early_stage_rating.eligibility === 'mature') && journal.early_stage_rating.subfactors ? (
+      <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+            POSI Automated Rating (AJR)
+          </h2>
+          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
+            100% AUTOMATED
+          </span>
+        </div>
+        <div className="flex items-baseline justify-between">
+          <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
+            {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
+          </p>
+          {journal.early_stage_rating.evidence_coverage != null && (
+            <span
+              className="text-[10px] font-mono"
+              style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+            >
+              Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+          {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
+          from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
+          or quartile adjustment is possible for this or any journal.{' '}
+          {journal.early_stage_rating.eligibility === 'early_stage'
+            ? 'No E-Q1–E-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
+            : 'This journal is in its mature stage (60+ months since first publication) — its ranking track is Citation Q (PCI-based), not E-Q.'}
+        </p>
+        <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
+          {[
+            ['EGF', journal.early_stage_rating.subfactors.egf, 15],
+            ['RIF', journal.early_stage_rating.subfactors.rif, 15],
+            ['INF', journal.early_stage_rating.subfactors.inf, 15],
+            ['PUB', journal.early_stage_rating.subfactors.pub, 15],
+            ['SOC', journal.early_stage_rating.subfactors.soc, 20],
+            ['RDC', journal.early_stage_rating.subfactors.rdc, 10],
+            ['TRN', journal.early_stage_rating.subfactors.trn, 10],
+          ].map(([label, val, max]) => (
+            <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
+              <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>
+              <p className="text-xs font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>{val}/{max}</p>
+            </div>
+          ))}
+        </div>
+        <a
+          href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-[10px] hover:underline mt-2"
+          style={{ color: 'var(--posi-accent)' }}
+        >
+          Methodology →
+        </a>
+      </div>
+    ) : (
+      <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+            POSI Automated Rating (AJR)
+          </h2>
+          {journal.early_stage_rating.evidence_coverage != null && (
+            <span
+              className="text-[10px] font-mono"
+              style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+            >
+              Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+            </span>
+          )}
+        </div>
+        <p className="text-xs font-semibold" style={{ color: journal.early_stage_rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
+          {journal.early_stage_rating.eligibility === 'observation' && 'Observation Stage'}
+          {journal.early_stage_rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
+          {journal.early_stage_rating.eligibility === 'unknown' && 'Unknown'}
+        </p>
+        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+          {journal.early_stage_rating.eligibility === 'observation' &&
+            `This journal is ${journal.early_stage_rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
+          {journal.early_stage_rating.eligibility === 'not_yet_rateable' &&
+            'Below the minimum evidence bar for AJR — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. Unknown evidence is not equivalent to failed criteria.'}
+          {journal.early_stage_rating.eligibility === 'unknown' &&
+            'First-publication date could not be determined (e.g. no Crossref records) — AJR cannot run without it.'}
+        </p>
+      </div>
+    )
+  )
+
+  // LAYER 3 (formerly): Citation Analytics — Core Collection feature, see
+  // showCitationImpact above. PCS/OpenAlex citedness are provisional
+  // previews (see /citation-reports), not official PJR PCI values.
+  const citationPanel = !showCitationImpact ? null : citationStats ? (
+    <CitationImpactCard stats={citationStats} pcs={citationScore} />
+  ) : (
+    <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+      <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>
+      <p className="text-[10px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        No resolvable OpenAlex source record for this journal's ISSN — citation figures unavailable.
+      </p>
+    </div>
+  )
+
+  // Policy Evidence Summary — moved out of the old "Methodology & Evidence"
+  // scroll section into its own Evidence tab.
+  const evidencePanel = isDiscovered ? null : (() => {
+    const pqf = journal.pqf ?? journal.ojqf
+    const jtf = pqf?.subfactors.jtf ?? 0
+    const score = journal.transparency_score ?? 0
+    const policies: { label: string; status: 'verified' | 'partial' | 'candidate' | 'missing' | 'not_checked' }[] = [
+      { label: 'Aim & Scope',           status: score >= 70 ? 'verified' : 'partial' },
+      { label: 'Editorial Board',       status: jtf >= 15 ? 'partial' : 'candidate' },
+      { label: 'Peer Review Policy',    status: jtf >= 15 ? 'partial' : 'candidate' },
+      { label: 'APC Policy',            status: score >= 60 ? 'verified' : 'partial' },
+      { label: 'Open Access Policy',    status: score >= 70 ? 'verified' : 'partial' },
+      { label: 'Copyright / License',   status: score >= 65 ? 'verified' : 'partial' },
+      { label: 'Publication Ethics',    status: jtf >= 12 ? 'partial' : 'candidate' },
+      { label: 'Corrections Policy',    status: jtf >= 10 ? 'candidate' : 'missing' },
+      { label: 'AI Use Policy',         status: 'not_checked' },
+    ]
+    const STATUS_CFG = {
+      verified:   { label: 'Verified',     color: '#1F7A4D', bg: '#f0fdf4', border: '#bbf7d0' },
+      partial:    { label: 'Partial',       color: '#B7791F', bg: '#fffbeb', border: '#fde68a' },
+      candidate:  { label: 'Candidate',    color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
+      missing:    { label: 'Missing',       color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
+      not_checked:{ label: 'Not checked',  color: '#6B7280', bg: '#f9fafb', border: '#e5e7eb' },
+    }
+    return (
+      <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+          <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Evidence</span>
+          <Link href="/policies" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
+            Full directory →
+          </Link>
+        </div>
+        <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5">
+          {policies.map(p => {
+            const cfg = STATUS_CFG[p.status]
+            return (
+              <div key={p.label} className="px-2 py-1.5" style={{ border: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+                <p className="text-[10px] leading-snug mb-1" style={{ color: 'var(--posi-muted)' }}>{p.label}</p>
+                <span className="text-[10px] font-medium px-1 py-0.5" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                  {cfg.label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
+          Policy evidence is based on publicly available information at the time of assessment.{' '}
+          <a href={`mailto:posi@panorama-sg.com?subject=Policy correction: ${journal.short_title}`} className="underline" style={{ color: 'var(--posi-accent)' }}>
+            Report a correction
+          </a>
+        </div>
+      </div>
+    )
+  })()
+
+  // Quality Scores, Discoverability Score, DOAJ detail, legacy subject tags,
+  // and the PQF card — moved out of the old "Methodology & Evidence" scroll
+  // section into their own Metadata tab.
+  const metadataPanel = isDiscovered ? null : (
+    <div className="space-y-4">
+      {(journal.pqf ?? journal.ojqf)
+        ? <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />
+        : journal.auto_pqf
+          ? <OjqfCard score={journal.auto_pqf} journalCode={journal.journal_code} isAuto />
+          : null
+      }
+
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
+            <ChartBar className="h-3.5 w-3.5" />
+            Quality Scores
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
+                <span>Metadata Quality (MQS)</span>
+                <span className="font-mono font-medium">{journal.metadata_quality_score}/100</span>
+              </div>
+              <MetadataQualityBar score={journal.metadata_quality_score} showLabel={false} />
+            </div>
+            <div>
+              <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
+                <span>Transparency Score (JTS)</span>
+                <span className="font-mono font-medium">{journal.transparency_score}/100</span>
+              </div>
+              <div className="w-full h-1.5" style={{ background: 'var(--posi-bg)' }}>
+                <div className="h-1.5" style={{ width: `${journal.transparency_score}%`, background: 'var(--posi-accent)' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>
+            Discoverability Score
+          </h3>
+          <div className="text-center py-1">
+            <span className="text-5xl font-bold font-mono" style={{ color: 'var(--posi-text)' }}>{journal.indexing_readiness}</span>
+          </div>
+          <div className="mt-2 text-center">
+            <Badge
+              label={INDEXING_LABEL[journal.indexing_readiness]}
+              variant={INDEXING_VARIANT[journal.indexing_readiness] || 'default'}
+            />
+          </div>
+          <p className="text-[10px] mt-2 text-center leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            Technical readiness for OAI-PMH, sitemap, DOI resolution, and Schema.org
+          </p>
+        </div>
+
+        <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-0.5" style={{ color: 'var(--posi-muted)' }}>
+            DOAJ (External Reference)
+          </h3>
+          <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
+            Independent OA directory — not part of POSI's own review, admission, or ranking.
+          </p>
+          {doaj ? (
+            <div className="space-y-2 text-xs">
+              {doaj.has_seal && (
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--posi-muted)' }}>DOAJ Seal</span>
+                  <span className="font-semibold" style={{ color: '#1F7A4D' }}>✓</span>
+                </div>
+              )}
+              {doaj.license && (
+                <div className="flex justify-between items-center">
+                  <span style={{ color: 'var(--posi-muted)' }}>License</span>
+                  <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{doaj.license}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span style={{ color: 'var(--posi-muted)' }}>APC</span>
+                <span style={{ color: 'var(--posi-text)' }}>
+                  {doaj.has_apc
+                    ? doaj.apc_max.length
+                      ? doaj.apc_max.map(a => `${a.currency} ${a.price}`).join(', ')
+                      : 'Yes'
+                    : 'No charge'}
+                </span>
+              </div>
+              {doaj.doaj_id && (
+                <a
+                  href={`https://doaj.org/toc/${doaj.doaj_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-[11px] hover:underline mt-1 transition-colors"
+                  style={{ color: 'var(--posi-accent)' }}
+                >
+                  View on DOAJ →
+                </a>
+              )}
+            </div>
+          ) : (
+            <a
+              href={`https://doaj.org/search/journals?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${journal.issn_online}%22%7D%7D%7D`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-[11px] hover:underline transition-colors"
+              style={{ color: 'var(--posi-accent)' }}
+            >
+              Search on DOAJ →
+            </a>
+          )}
+          {(journal.subjects?.length ?? 0) > 0 && (
+            <>
+              <p className="text-[9px] uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)' }}>Legacy Subject Tags (LCC via DOAJ)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {journal.subjects!.map(s => (
+                  <span
+                    key={s}
+                    className="text-[10px] px-1.5 py-0.5 leading-snug"
+                    style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  // No annual frozen rating releases exist yet (AJR-SPEC.md §9 Phase 6) — a
+  // real per-year history table would need at least two release snapshots
+  // to show. Honest placeholder rather than a fabricated table.
+  const historyPanel = isDiscovered ? null : (
+    <div className="bg-white p-6 text-center" style={{ border: '1px solid var(--posi-border)' }}>
+      <p className="text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>No rating history yet</p>
+      <p className="text-[11px] leading-relaxed mt-2 max-w-md mx-auto" style={{ color: 'var(--posi-muted)' }}>
+        POSI has not yet published its first annual frozen rating release, so there is only ever one
+        current AJR score on record — nothing to compare it against yet. Year-over-year history will
+        appear here starting with the first Pilot release.
+      </p>
+    </div>
+  )
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
       {/* Breadcrumb */}
@@ -233,409 +640,19 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         )}
       </div>
 
-      {/* Three-layer main content + articles */}
-      <div className="grid md:grid-cols-3 gap-5">
-        <div className="space-y-4">
-          {/* LAYER 1: Coverage — what POSI has and how it got here.
-              Replaces the old Record Status panel + Collection card, merged
-              since both answered the same underlying question. */}
-          <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Coverage</h2>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>POSI Journal Code</span>
-                <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{journal.journal_code}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>Core Collection</span>
-                <span className="font-semibold" style={{ color: !isDiscovered ? '#1F7A4D' : '#6B7280' }}>{!isDiscovered ? 'Yes' : 'No'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>PSC Category</span>
-                <span style={{ color: 'var(--posi-text)' }}>
-                  {journal.psc_category ? (
-                    <>
-                      {journal.psc_category}
-                      {journal.psc_confidence === 'low' && <span className="ml-1 opacity-60" title="Low-confidence classification">*</span>}
-                    </>
-                  ) : (
-                    <span style={{ color: 'var(--posi-muted)' }}>Not yet classified</span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>Coverage Since</span>
-                <span style={{ color: 'var(--posi-text)' }}>{journal.created_at?.slice(0, 10) ?? '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>Total Articles</span>
-                <ArticleCountBadge issn={journal.issn_online ?? null} fallback={total || journal.article_count} />
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: 'var(--posi-muted)' }}>DOAJ</span>
-                <span style={{ color: 'var(--posi-muted)' }}>
-                  {doaj ? (doaj.in_doaj ? 'Listed' : 'Not listed') : journal.doaj_status === 'listed' ? 'Listed' : journal.doaj_status === 'application_submitted' ? 'Applied' : 'Not listed'}
-                  <span className="text-[9px] ml-1">(external ref.)</span>
-                </span>
-              </div>
-              {journal.openalex_source_id && (
-                <a
-                  href={`https://openalex.org/sources/${journal.openalex_source_id}`}
-                  className="block text-[11px] hover:underline mt-1 transition-colors"
-                  style={{ color: 'var(--posi-accent)' }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View on OpenAlex →
-                </a>
-              )}
-              {!isDiscovered && (
-                <Link
-                  href={`/badges?code=${journal.journal_code}`}
-                  className="block text-[11px] hover:underline mt-1 transition-colors"
-                  style={{ color: 'var(--posi-accent)' }}
-                >
-                  Get POSI Badge →
-                </Link>
-              )}
-              {!isDiscovered && (
-                <a
-                  href={`/api/certificate/${journal.journal_code}/pdf`}
-                  download={`POSI-Core-Collection-Certificate-${journal.journal_code}.pdf`}
-                  className="block text-[11px] hover:underline mt-1 transition-colors"
-                  style={{ color: 'var(--posi-accent)' }}
-                >
-                  Download Certificate (PDF) →
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* LAYER 2: Automated Rating (AJR) — 100% automated (see
-              posi-data/AJR-SPEC.md §11): no reviewer, editor, publisher, or
-              POSI staff has a way to directly set this score — only the
-              underlying evidence can be corrected, which triggers a
-              recompute. Applies to any journal that clears the minimum
-              evidence bar regardless of age; only "not_yet_rateable"/
-              "unknown"/"observation" journals show nothing here. Lifecycle
-              stage decides the quartile track, not whether a score exists:
-              'early_stage' journals (12-59 months since first publication)
-              are eligible for a future E-Q1-E-Q4 once a real PSC peer cohort
-              exists; 'mature' journals get the same AJR-E score but rely on
-              Citation Q instead (see AJR-SPEC.md §1, §4). */}
-          {(journal.early_stage_rating?.eligibility === 'early_stage' || journal.early_stage_rating?.eligibility === 'mature') && journal.early_stage_rating.subfactors && (
-            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-                  POSI Automated Rating (AJR)
-                </h2>
-                <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
-                  100% AUTOMATED
-                </span>
-              </div>
-              <div className="flex items-baseline justify-between">
-                <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
-                  {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
-                </p>
-                {journal.early_stage_rating.evidence_coverage != null && (
-                  <span
-                    className="text-[10px] font-mono"
-                    style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
-                    title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
-                  >
-                    Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
-                {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
-                from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
-                or quartile adjustment is possible for this or any journal.{' '}
-                {journal.early_stage_rating.eligibility === 'early_stage'
-                  ? 'No E-Q1–E-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
-                  : 'This journal is in its mature stage (60+ months since first publication) — its ranking track is Citation Q (PCI-based), not E-Q.'}
-              </p>
-              <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
-                {[
-                  ['EGF', journal.early_stage_rating.subfactors.egf, 15],
-                  ['RIF', journal.early_stage_rating.subfactors.rif, 15],
-                  ['INF', journal.early_stage_rating.subfactors.inf, 15],
-                  ['PUB', journal.early_stage_rating.subfactors.pub, 15],
-                  ['SOC', journal.early_stage_rating.subfactors.soc, 20],
-                  ['RDC', journal.early_stage_rating.subfactors.rdc, 10],
-                  ['TRN', journal.early_stage_rating.subfactors.trn, 10],
-                ].map(([label, val, max]) => (
-                  <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
-                    <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>
-                    <p className="text-xs font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>{val}/{max}</p>
-                  </div>
-                ))}
-              </div>
-              <a
-                href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-[10px] hover:underline mt-2"
-                style={{ color: 'var(--posi-accent)' }}
-              >
-                Methodology →
-              </a>
-            </div>
-          )}
-
-          {!isDiscovered && journal.early_stage_rating && journal.early_stage_rating.eligibility !== 'early_stage' && journal.early_stage_rating.eligibility !== 'mature' && (
-            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-                  POSI Automated Rating (AJR)
-                </h2>
-                {journal.early_stage_rating.evidence_coverage != null && (
-                  <span
-                    className="text-[10px] font-mono"
-                    style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
-                    title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
-                  >
-                    Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-semibold" style={{ color: journal.early_stage_rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
-                {journal.early_stage_rating.eligibility === 'observation' && 'Observation Stage'}
-                {journal.early_stage_rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
-                {journal.early_stage_rating.eligibility === 'unknown' && 'Unknown'}
-              </p>
-              <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
-                {journal.early_stage_rating.eligibility === 'observation' &&
-                  `This journal is ${journal.early_stage_rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
-                {journal.early_stage_rating.eligibility === 'not_yet_rateable' &&
-                  'Below the minimum evidence bar for AJR — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. Unknown evidence is not equivalent to failed criteria.'}
-                {journal.early_stage_rating.eligibility === 'unknown' &&
-                  'First-publication date could not be determined (e.g. no Crossref records) — AJR cannot run without it.'}
-              </p>
-            </div>
-          )}
-
-          {/* LAYER 3: Citation Analytics — Core Collection feature, see
-              showCitationImpact above. PCS/OpenAlex citedness are provisional
-              previews (see /citation-reports), not official PJR PCI values. */}
-          {citationStats ? (
-            <CitationImpactCard stats={citationStats} pcs={citationScore} />
-          ) : showCitationImpact ? (
-            <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>
-              <p className="text-[10px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-                No resolvable OpenAlex source record for this journal's ISSN — citation figures unavailable.
-              </p>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Articles */}
-        <div className="md:col-span-2">
-          <JournalArticles
-            issn={journal.issn_online ?? null}
-            journalCode={journal.journal_code}
-            initialArticles={articles}
-            initialTotal={total}
-          />
-        </div>
-      </div>
-
-      {/* METHODOLOGY & EVIDENCE — supporting detail behind Core Collection
-          admission (PQF, MQS, Discoverability, Policy Evidence, legacy DOAJ
-          subject tags). Deliberately below Coverage/Automated Rating/
-          Citation Analytics, not competing with them for primary attention —
-          these are inputs to editorial selection, not journal rankings. */}
-      {!journal.id.startsWith('j-disc-') && (
-        <section className="pt-2">
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>Methodology &amp; Evidence</h2>
-            <span className="text-[9px]" style={{ color: 'var(--posi-muted)' }}>— PQF / MQS / IRS: inputs to editorial selection, not journal rankings</span>
-          </div>
-          <div className="space-y-4" style={{ opacity: 0.92 }}>
-            {(journal.pqf ?? journal.ojqf)
-              ? <OjqfCard score={(journal.pqf ?? journal.ojqf)!} journalCode={journal.journal_code} />
-              : journal.auto_pqf
-                ? <OjqfCard score={journal.auto_pqf} journalCode={journal.journal_code} isAuto />
-                : null
-            }
-
-            <div className="grid md:grid-cols-3 gap-4">
-              {/* Quality scores */}
-              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3 flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-                  <ChartBar className="h-3.5 w-3.5" />
-                  Quality Scores
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
-                      <span>Metadata Quality (MQS)</span>
-                      <span className="font-mono font-medium">{journal.metadata_quality_score}/100</span>
-                    </div>
-                    <MetadataQualityBar score={journal.metadata_quality_score} showLabel={false} />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[11px] mb-1" style={{ color: 'var(--posi-muted)' }}>
-                      <span>Transparency Score (JTS)</span>
-                      <span className="font-mono font-medium">{journal.transparency_score}/100</span>
-                    </div>
-                    <div className="w-full h-1.5" style={{ background: 'var(--posi-bg)' }}>
-                      <div className="h-1.5" style={{ width: `${journal.transparency_score}%`, background: 'var(--posi-accent)' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Discoverability Score */}
-              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>
-                  Discoverability Score
-                </h3>
-                <div className="text-center py-1">
-                  <span className="text-5xl font-bold font-mono" style={{ color: 'var(--posi-text)' }}>{journal.indexing_readiness}</span>
-                </div>
-                <div className="mt-2 text-center">
-                  <Badge
-                    label={INDEXING_LABEL[journal.indexing_readiness]}
-                    variant={INDEXING_VARIANT[journal.indexing_readiness] || 'default'}
-                  />
-                </div>
-                <p className="text-[10px] mt-2 text-center leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-                  Technical readiness for OAI-PMH, sitemap, DOI resolution, and Schema.org
-                </p>
-              </div>
-
-              {/* DOAJ detail — condensed summary already shown in Coverage above */}
-              <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-0.5" style={{ color: 'var(--posi-muted)' }}>
-                  DOAJ (External Reference)
-                </h3>
-                <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
-                  Independent OA directory — not part of POSI's own review, admission, or ranking.
-                </p>
-                {doaj ? (
-                  <div className="space-y-2 text-xs">
-                    {doaj.has_seal && (
-                      <div className="flex justify-between items-center">
-                        <span style={{ color: 'var(--posi-muted)' }}>DOAJ Seal</span>
-                        <span className="font-semibold" style={{ color: '#1F7A4D' }}>✓</span>
-                      </div>
-                    )}
-                    {doaj.license && (
-                      <div className="flex justify-between items-center">
-                        <span style={{ color: 'var(--posi-muted)' }}>License</span>
-                        <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{doaj.license}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span style={{ color: 'var(--posi-muted)' }}>APC</span>
-                      <span style={{ color: 'var(--posi-text)' }}>
-                        {doaj.has_apc
-                          ? doaj.apc_max.length
-                            ? doaj.apc_max.map(a => `${a.currency} ${a.price}`).join(', ')
-                            : 'Yes'
-                          : 'No charge'}
-                      </span>
-                    </div>
-                    {doaj.doaj_id && (
-                      <a
-                        href={`https://doaj.org/toc/${doaj.doaj_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-[11px] hover:underline mt-1 transition-colors"
-                        style={{ color: 'var(--posi-accent)' }}
-                      >
-                        View on DOAJ →
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <a
-                    href={`https://doaj.org/search/journals?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22${journal.issn_online}%22%7D%7D%7D`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-[11px] hover:underline transition-colors"
-                    style={{ color: 'var(--posi-accent)' }}
-                  >
-                    Search on DOAJ →
-                  </a>
-                )}
-                {(journal.subjects?.length ?? 0) > 0 && (
-                  <>
-                    <p className="text-[9px] uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)' }}>Legacy Subject Tags (LCC via DOAJ)</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {journal.subjects!.map(s => (
-                        <span
-                          key={s}
-                          className="text-[10px] px-1.5 py-0.5 leading-snug"
-                          style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Policy Evidence Summary */}
-            {(() => {
-              const pqf = journal.pqf ?? journal.ojqf
-              const jtf = pqf?.subfactors.jtf ?? 0
-              const score = journal.transparency_score ?? 0
-              const policies: { label: string; status: 'verified' | 'partial' | 'candidate' | 'missing' | 'not_checked' }[] = [
-                { label: 'Aim & Scope',           status: score >= 70 ? 'verified' : 'partial' },
-                { label: 'Editorial Board',       status: jtf >= 15 ? 'partial' : 'candidate' },
-                { label: 'Peer Review Policy',    status: jtf >= 15 ? 'partial' : 'candidate' },
-                { label: 'APC Policy',            status: score >= 60 ? 'verified' : 'partial' },
-                { label: 'Open Access Policy',    status: score >= 70 ? 'verified' : 'partial' },
-                { label: 'Copyright / License',   status: score >= 65 ? 'verified' : 'partial' },
-                { label: 'Publication Ethics',    status: jtf >= 12 ? 'partial' : 'candidate' },
-                { label: 'Corrections Policy',    status: jtf >= 10 ? 'candidate' : 'missing' },
-                { label: 'AI Use Policy',         status: 'not_checked' },
-              ]
-              const STATUS_CFG = {
-                verified:   { label: 'Verified',     color: '#1F7A4D', bg: '#f0fdf4', border: '#bbf7d0' },
-                partial:    { label: 'Partial',       color: '#B7791F', bg: '#fffbeb', border: '#fde68a' },
-                candidate:  { label: 'Candidate',    color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
-                missing:    { label: 'Missing',       color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
-                not_checked:{ label: 'Not checked',  color: '#6B7280', bg: '#f9fafb', border: '#e5e7eb' },
-              }
-              return (
-                <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-                  <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Evidence</span>
-                    <Link href="/policies" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-                      Full directory →
-                    </Link>
-                  </div>
-                  <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5">
-                    {policies.map(p => {
-                      const cfg = STATUS_CFG[p.status]
-                      return (
-                        <div key={p.label} className="px-2 py-1.5" style={{ border: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-                          <p className="text-[10px] leading-snug mb-1" style={{ color: 'var(--posi-muted)' }}>{p.label}</p>
-                          <span className="text-[10px] font-medium px-1 py-0.5" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
-                            {cfg.label}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
-                    Policy evidence is based on publicly available information at the time of assessment.{' '}
-                    <a href={`mailto:posi@panorama-sg.com?subject=Policy correction: ${journal.short_title}`} className="underline" style={{ color: 'var(--posi-accent)' }}>
-                      Report a correction
-                    </a>
-                  </div>
-                </div>
-              )
-            })()}
-          </div>
-        </section>
-      )}
+      {/* Tabbed profile body — see src/components/JournalProfileTabs.tsx.
+          Panels are computed above from the same data fetched for the old
+          single-scroll layout; this only changes presentation. */}
+      <JournalProfileTabs
+        panels={{
+          overview: overviewPanel,
+          lifecycle: lifecyclePanel,
+          citation: citationPanel,
+          evidence: evidencePanel,
+          metadata: metadataPanel,
+          history: historyPanel,
+        }}
+      />
     </div>
   )
 }
