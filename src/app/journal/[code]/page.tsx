@@ -142,7 +142,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // to a plain view when only one panel remains.
 
   const overviewPanel = (
-    <div className="grid md:grid-cols-3 gap-5">
+    <div className="grid md:grid-cols-3 gap-5 items-start">
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Coverage</h2>
         <div className="space-y-2 text-xs">
