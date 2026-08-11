@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
+import { Reveal, FadeIn } from '@/components/Reveal'
 import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
@@ -35,7 +36,8 @@ export default async function HomePage() {
           <div className="flex flex-col md:flex-row">
 
             {/* Left: POSI brand pillar */}
-            <div
+            <FadeIn
+              y={12}
               className="px-6 sm:px-8 pt-8 pb-5 md:pt-16 md:pb-16 shrink-0 md:w-[280px] lg:w-[320px] xl:w-[360px]"
             >
               <div aria-hidden="true" className="select-none">
@@ -70,7 +72,7 @@ export default async function HomePage() {
                   Open Scholarly Infrastructure
                 </p>
               </div>
-            </div>
+            </FadeIn>
 
             {/* Vertical divider — desktop only */}
             <div
@@ -79,7 +81,7 @@ export default async function HomePage() {
             />
 
             {/* Right: Platform content */}
-            <div className="px-6 sm:px-8 lg:px-12 pt-2 md:pt-16 pb-12 flex-1 flex flex-col justify-center">
+            <FadeIn delay={0.1} y={12} className="px-6 sm:px-8 lg:px-12 pt-2 md:pt-16 pb-12 flex-1 flex flex-col justify-center">
               <h1
                 className="font-bold leading-tight mb-4"
                 style={{
@@ -123,11 +125,11 @@ export default async function HomePage() {
                   </Link>
                 ))}
               </nav>
-            </div>
+            </FadeIn>
           </div>
 
           {/* Stats strip */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <Reveal style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
               {[
                 { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Core Collection',      note: 'Admitted through published editorial selection' },
@@ -182,13 +184,13 @@ export default async function HomePage() {
               them. Search itself additionally reaches Crossref/OpenAlex's much larger open corpus beyond
               either count; that external search scope is not a POSI-reviewed figure and isn't reported here.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── FOUR PRODUCT ENTRY POINTS ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <div className="max-w-[1400px] mx-auto">
+        <Reveal className="max-w-[1400px] mx-auto">
           <div className="indicators-grid grid md:grid-cols-4">
             {[
               {
@@ -223,7 +225,7 @@ export default async function HomePage() {
               <Link
                 key={f.abbr}
                 href={f.href}
-                className="p-7 h-full flex flex-col transition-colors hover:bg-black/[0.015] group"
+                className="tactile p-7 h-full flex flex-col transition-all duration-300 hover:bg-[#fafafa] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-20px_rgba(17,17,17,0.3)] group"
               >
                 {/* DIN-style: mono abbreviation + rule divider */}
                 <div className="mb-5">
@@ -261,12 +263,12 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── LIFECYCLE STRIP ── */}
       <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <p
             className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"
             style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
@@ -294,12 +296,12 @@ export default async function HomePage() {
             Citation Quartiles are reported independently through PCI once metric eligibility requirements
             are met — regardless of which lifecycle track a journal is in.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── REPRODUCIBILITY CTA ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
           <div
             className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pl-7"
             style={{ borderLeft: '3px solid var(--posi-accent)' }}
@@ -351,18 +353,18 @@ export default async function HomePage() {
             </div>
             <Link
               href="/open-data"
-              className="shrink-0 px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="tactile shrink-0 px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-body)' }}
             >
               View Open Data
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── PLATFORM COVERAGE ── */}
       <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
           <div className="coverage-grid grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
             {[
               {
@@ -419,12 +421,12 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── DATA SOURCES STRIP ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <span
               className="text-[9px] font-bold uppercase tracking-[0.18em] shrink-0"
@@ -451,12 +453,12 @@ export default async function HomePage() {
               Open Data & Provenance →
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── RESPONSIBLE USE NOTICE ── */}
       <section style={{ background: 'var(--posi-bg)' }}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div
             className="p-5 pl-6"
             style={{
@@ -482,7 +484,7 @@ export default async function HomePage() {
               </Link>
             </p>
           </div>
-        </div>
+        </Reveal>
       </section>
 
     </div>

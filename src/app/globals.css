@@ -60,6 +60,14 @@ a {
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Tactile press feedback for interactive elements (buttons, clickable cards) */
+.tactile {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tactile:active {
+  transform: scale(0.98);
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

@@ -1,5 +1,3 @@
-'use client'
-
 import Link from 'next/link'
 import { ArrowSquareOut, Quotes } from '@phosphor-icons/react/dist/ssr'
 import type { Article } from '@/lib/types'
@@ -38,10 +36,8 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
   if (compact) {
     return (
       <article
-        className={`bg-white px-4 py-3 flex items-center gap-4 group transition-colors ${className ?? ''}`}
+        className={`bg-white hover:bg-[var(--posi-accent-light)] px-4 py-3 flex items-center gap-4 group transition-colors duration-300 ${className ?? ''}`}
         style={{ border: '1px solid var(--posi-border)' }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--posi-accent-light)')}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#ffffff')}
       >
         <div className="flex-1 min-w-0">
           <a
@@ -106,10 +102,8 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
   // ── FULL CARD ───────────────────────────────────────────────────────────────
   return (
     <article
-      className={`bg-white p-4 transition-colors ${className ?? ''}`}
+      className={`bg-white hover:bg-[#fafafa] p-4 transition-colors duration-300 ${className ?? ''}`}
       style={{ border: '1px solid var(--posi-border)' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#fafafa')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '#ffffff')}
     >
       {/* Title + MQS score */}
       <div className="flex items-start gap-3 mb-2">
@@ -201,16 +195,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
             <Link
               key={kw}
               href={`/search?q=${encodeURIComponent(kw)}`}
-              className="text-[11px] px-1.5 py-0.5 transition-colors"
-              style={{ background: 'var(--posi-bg)', color: 'var(--posi-muted)' }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'var(--posi-accent-light)'
-                e.currentTarget.style.color = 'var(--posi-accent)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'var(--posi-bg)'
-                e.currentTarget.style.color = 'var(--posi-muted)'
-              }}
+              className="text-[11px] px-1.5 py-0.5 transition-colors duration-200 bg-[var(--posi-bg)] text-[var(--posi-muted)] hover:bg-[var(--posi-accent-light)] hover:text-[var(--posi-accent)]"
             >
               {kw}
             </Link>
@@ -238,20 +223,16 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href={`/cite?doi=${encodeURIComponent(article.doi)}`}
-              className="text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-colors"
-              style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--posi-accent)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--posi-muted)')}
+              className="text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-colors duration-200 text-[var(--posi-muted)] hover:text-[var(--posi-accent)]"
+              style={{ fontFamily: 'var(--font-mono)' }}
             >
               <Quotes className="h-3 w-3" />
               Cite
             </Link>
             <Link
               href={`/doi-lookup?doi=${encodeURIComponent(article.doi)}`}
-              className="text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-colors"
-              style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--posi-accent)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--posi-muted)')}
+              className="text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-colors duration-200 text-[var(--posi-muted)] hover:text-[var(--posi-accent)]"
+              style={{ fontFamily: 'var(--font-mono)' }}
             >
               <ArrowSquareOut className="h-3 w-3" />
               DOI Lookup

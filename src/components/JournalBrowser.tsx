@@ -57,18 +57,13 @@ export function JournalBrowser() {
             value={query}
             onChange={handleChange}
             placeholder="Search journals by title, publisher, or subject…"
-            className="w-full pl-9 pr-3 py-2.5 text-sm focus:outline-none transition-colors"
-            style={{ border: '1px solid var(--posi-border)', borderRight: 'none', color: 'var(--posi-text)' }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'var(--posi-primary)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'var(--posi-border)')}
+            className="w-full pl-9 pr-3 py-2.5 text-sm focus:outline-none transition-colors duration-200 border-[var(--posi-border)] focus:border-[var(--posi-primary)]"
+            style={{ borderWidth: '1px', borderStyle: 'solid', borderRight: 'none', color: 'var(--posi-text)' }}
           />
         </div>
         <button
           type="submit"
-          className="px-4 py-2.5 text-sm font-semibold text-white shrink-0 transition-colors"
-          style={{ background: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-hover)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--posi-accent)')}
+          className="tactile px-4 py-2.5 text-sm font-semibold text-white shrink-0 transition-colors duration-200 bg-[var(--posi-accent)] hover:bg-[var(--posi-accent-hover)] border border-[var(--posi-accent)]"
         >
           Search
         </button>
@@ -111,10 +106,8 @@ export function JournalBrowser() {
               return (
                 <div
                   key={idx}
-                  className="px-4 py-3 flex items-start justify-between gap-4 transition-colors"
+                  className="px-4 py-3 flex items-start justify-between gap-4 transition-colors duration-200 hover:bg-[var(--posi-bg)]"
                   style={{ borderBottom: '1px solid var(--posi-border-light)' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--posi-bg)')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = '')}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium leading-snug truncate" style={{ color: 'var(--posi-text)' }}>{j.title}</p>
@@ -146,10 +139,7 @@ export function JournalBrowser() {
                     {primaryIssn && (
                       <a
                         href={`/search?q=${encodeURIComponent(j.title)}&scope=all`}
-                        className="text-[11px] whitespace-nowrap transition-colors"
-                        style={{ color: 'var(--posi-muted)' }}
-                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--posi-primary)')}
-                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--posi-muted)')}
+                        className="text-[11px] whitespace-nowrap transition-colors duration-200 text-[var(--posi-muted)] hover:text-[var(--posi-primary)]"
                       >
                         Search articles →
                       </a>

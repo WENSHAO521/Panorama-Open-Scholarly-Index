@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useState, FormEvent, Suspense } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi, extractIsbn } from '@/lib/utils'
+
+const EASE = [0.16, 1, 0.3, 1] as const
 
 type SubItem = { label: string; href: string; external?: boolean }
 type NavItem = { label: string; href?: string; children?: SubItem[] }
@@ -118,6 +121,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null)
+  const reduce = useReducedMotion()
 
   function isItemActive(item: NavItem): boolean {
     if (item.href) {
@@ -213,8 +217,13 @@ export function Navbar() {
                     />
                   </button>
 
+                  <AnimatePresence>
                   {isOpen && (
-                    <div
+                    <motion.div
+                      initial={reduce ? false : { opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduce ? undefined : { opacity: 0, y: -6 }}
+                      transition={{ duration: 0.16, ease: EASE }}
                       className="absolute top-full left-0 min-w-[200px] py-1.5 z-50"
                       style={{
                         background: '#111111',
@@ -256,8 +265,9 @@ export function Navbar() {
                           </Link>
                         )
                       ))}
-                    </div>
+                    </motion.div>
                   )}
+                  </AnimatePresence>
                 </div>
               )
             })}
@@ -269,7 +279,7 @@ export function Navbar() {
             </Suspense>
             <Link
               href="/submit-journal"
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-white whitespace-nowrap transition-opacity hover:opacity-80"
+              className="tactile px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-white whitespace-nowrap transition-opacity hover:opacity-80"
               style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
             >
               Submit Journal
@@ -289,11 +299,17 @@ export function Navbar() {
       </div>
 
       {/* Mobile menu */}
+      <AnimatePresence>
       {mobileOpen && (
-        <div
-          className="md:hidden px-4 py-3"
+        <motion.div
+          initial={reduce ? false : { height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={reduce ? undefined : { height: 0, opacity: 0 }}
+          transition={{ duration: 0.25, ease: EASE }}
+          className="md:hidden overflow-hidden"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#1a1a1a' }}
         >
+        <div className="px-4 py-3">
           {navItems.map(item => {
             const active = isItemActive(item)
             const expanded = mobileExpanded === item.label
@@ -335,8 +351,16 @@ export function Navbar() {
                   />
                 </button>
 
+                <AnimatePresence>
                 {expanded && (
-                  <div className="ml-3 mb-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+                  <motion.div
+                    initial={reduce ? false : { height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={reduce ? undefined : { height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: EASE }}
+                    className="ml-3 mb-1 overflow-hidden"
+                    style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }}
+                  >
                     {item.children.map(child => (
                       child.external ? (
                         <a
@@ -366,8 +390,9 @@ export function Navbar() {
                         </Link>
                       )
                     ))}
-                  </div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
               </div>
             )
           })}
@@ -375,7 +400,7 @@ export function Navbar() {
           <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <Link
               href="/submit-journal"
-              className="block text-center px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white"
+              className="tactile block text-center px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white"
               style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
               onClick={() => setMobileOpen(false)}
             >
@@ -383,7 +408,9 @@ export function Navbar() {
             </Link>
           </div>
         </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </header>
   )
 }

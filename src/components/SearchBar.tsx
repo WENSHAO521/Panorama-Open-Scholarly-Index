@@ -94,32 +94,21 @@ export function SearchBar() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search articles, journals, authors, DOI..."
-          className="flex-1 px-4 py-3 focus:outline-none"
+          className="flex-1 px-4 py-3 focus:outline-none transition-colors duration-200 bg-[rgba(255,255,255,0.08)] border-[rgba(255,255,255,0.12)] focus:bg-[rgba(255,255,255,0.12)] focus:border-[rgba(255,255,255,0.25)]"
           style={{
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            borderWidth: '1px',
+            borderStyle: 'solid',
             borderRight: 'none',
             color: '#ffffff',
             /* iOS Safari: font-size ≥16px prevents auto-zoom */
             fontSize: '16px',
-          }}
-          onFocus={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'
-          }}
-          onBlur={e => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
           }}
         />
 
         {/* Submit */}
         <button
           type="submit"
-          className="flex items-center gap-2 px-3 sm:px-6 py-3 text-white text-sm font-semibold shrink-0 active:scale-[0.98] transition-transform"
-          style={{ background: 'var(--posi-accent)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-hover)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--posi-accent)')}
+          className="tactile flex items-center gap-2 px-3 sm:px-6 py-3 text-white text-sm font-semibold shrink-0 transition-colors duration-200 bg-[var(--posi-accent)] hover:bg-[var(--posi-accent-hover)]"
         >
           <MagnifyingGlass className="h-4 w-4" weight="bold" />
           <span className="hidden sm:inline">Search</span>
