@@ -2,7 +2,8 @@ import { Suspense } from 'react'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import Link from 'next/link'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS } from '@/lib/data'
-import { crossrefFetchJournal, issnGetCountry, openAlexGetSourceStats } from '@/lib/api'
+import { crossrefFetchJournal, issnGetCountry } from '@/lib/api'
+import { getCitationStats } from '@/lib/citation-stats'
 import { JournalTabs, type SlimJournal } from '@/components/JournalTabs'
 import type { Journal } from '@/lib/types'
 
@@ -56,24 +57,28 @@ export default async function JournalsPage() {
   const [psgRows, manualIndexedRows] = await Promise.all([
     Promise.all(
       PSG_JOURNALS.map(async j => {
-        const issn = j.issn_online ?? j.issn_print
-        const [cr, issnCountry, oaStats] = await Promise.all([
+        const [cr, issnCountry] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
-          issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
+        // Precomputed snapshot (scripts/fetch-citation-stats.mjs) instead of a live
+        // OpenAlex fetch — same file /citation-reports and /journal/[code] read via
+        // src/lib/citation-stats.ts, so this table can't show blanks that those
+        // pages don't (see citation-stats.ts's header for the timeout bug this
+        // replaced: a big Promise.all across every journal here used to race a 4s
+        // per-request budget and intermittently drop PCI/h-index).
+        const stats = getCitationStats(j.journal_code)?.stats
+        return slim(j, cr?.total_dois, issnCountry, stats?.two_yr_mean_citedness, stats?.h_index)
       })
     ),
     Promise.all(
       [...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS].map(async j => {
-        const issn = j.issn_online ?? j.issn_print
-        const [cr, issnCountry, oaStats] = await Promise.all([
+        const [cr, issnCountry] = await Promise.all([
           j.issn_online ? withTimeout(crossrefFetchJournal(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
           j.issn_online ? withTimeout(issnGetCountry(j.issn_online).catch(() => null), TIMEOUT_MS, null) : null,
-          issn ? withTimeout(openAlexGetSourceStats(issn).catch(() => null), TIMEOUT_MS, null) : null,
         ])
-        return slim(j, cr?.total_dois, issnCountry, oaStats?.two_yr_mean_citedness, oaStats?.h_index)
+        const stats = getCitationStats(j.journal_code)?.stats
+        return slim(j, cr?.total_dois, issnCountry, stats?.two_yr_mean_citedness, stats?.h_index)
       })
     ),
   ])
