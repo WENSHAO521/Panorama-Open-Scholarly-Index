@@ -3,8 +3,8 @@ import type { Metadata } from 'next'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Policy Evidence Directory | POSI',
-  description: 'Browse publicly verifiable policy evidence for POSI journal records. Filter by policy type, verification status, and journal.',
+  title: 'Policy Coverage Estimate | POSI',
+  description: 'Per-policy-type status estimates for POSI journal records, inferred from each journal\'s aggregate PQF transparency evidence — not an independently verified per-policy audit.',
 }
 
 const ASSESSED_JOURNALS = getCoreCollection()
@@ -77,20 +77,24 @@ export default function PoliciesPage() {
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700 transition-colors">Home</Link>
         <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Policy Evidence</span>
+        <span style={{ color: 'var(--posi-text)' }}>Policy Coverage Estimate</span>
       </nav>
 
       {/* Header */}
       <div className="border-l-4 border-[#c41e3a] pl-5">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-mono font-bold text-[#c41e3a] border border-[#c41e3a] px-1.5 py-0.5">Policies</span>
-          <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Evidence Directory</span>
+          <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Coverage Estimate</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">Policy Evidence Directory</h1>
+        <h1 className="text-2xl font-bold text-gray-900 leading-tight">Policy Coverage Estimate</h1>
         <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
-          POSI records publicly verifiable policy evidence for each assessed journal.
-          Policy status reflects whether a documented policy URL was found and verified at the time of assessment.
-          Candidate evidence means a URL was found but not independently confirmed.
+          This page shows an <strong>estimated</strong> per-policy-type status for each assessed journal,
+          inferred from the journal's overall <Link href="/pqf#eligibility" className="underline">PQF</Link>{' '}
+          transparency evidence (its JTF score and transparency rating) — not from an independent check of
+          each individual policy document. Only the journal-level PQF assessment itself (see{' '}
+          <Link href="/journal-evidence" className="underline">Journal Evidence →</Link>) reflects
+          directly-verified evidence; the breakdown by policy type below is a coverage estimate, not a
+          per-policy audit trail.
         </p>
       </div>
 
@@ -104,15 +108,19 @@ export default function PoliciesPage() {
 
       {/* Notice */}
       <div className="p-4 text-xs leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
-        <strong>Important:</strong> Automatically discovered policy links are marked as <em>Candidate</em> only.
-        A Candidate status means a URL was found that may contain the relevant policy, but has not yet been independently verified by the POSI team.
-        Only <em>Verified</em> status confirms the policy document has been reviewed against POSI evidence criteria.
+        <strong>Methodology:</strong> Per-policy-type status below is derived algorithmically from each
+        journal's aggregate transparency evidence (JTF score), not from checking each policy type's URL
+        individually. <em>Verified</em> and <em>Partial</em> indicate strong or moderate aggregate
+        transparency evidence exists; <em>Candidate</em> indicates weaker aggregate evidence; <em>Not
+        checked</em> means this policy type is not independently modeled and defaults to an unassessed
+        state. Treat this page as a coverage estimate for prioritizing manual review, not as confirmation
+        that any specific policy document was individually located and read.
       </div>
 
       {/* Policy type definitions */}
       <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Policy Types Assessed ({POLICY_TYPES.length})</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Policy Types Modeled ({POLICY_TYPES.length})</h2>
         </div>
         <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           {POLICY_TYPES.map(pt => (
@@ -126,7 +134,7 @@ export default function PoliciesPage() {
       {/* Per-journal policy evidence table */}
       <div>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>
-          Per-Journal Policy Evidence — {ASSESSED_JOURNALS.length} journals
+          Per-Journal Policy Coverage Estimate — {ASSESSED_JOURNALS.length} journals
         </h2>
         <div className="space-y-4">
           {ASSESSED_JOURNALS.map(j => {

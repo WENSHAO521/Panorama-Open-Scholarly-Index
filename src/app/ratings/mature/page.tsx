@@ -33,7 +33,9 @@ export default function MatureRankingsPage() {
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Mature Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Journals with at least 60 months of publishing history — evaluated eventually through{' '}
-          <strong style={{ color: 'var(--posi-text)' }}>AJR-M</strong> (citation-weighted: Citation
+          <strong style={{ color: 'var(--posi-text)' }}>AJR-M</strong>, the mature-journal track of{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong>
+          {' '}(citation-weighted: Citation
           Performance, Output &amp; Stability, Governance &amp; Integrity, Infrastructure, Reach,
           Transparency), ranked as <strong style={{ color: 'var(--posi-text)' }}>M-Q1–M-Q4</strong>.
           M-Q ranks independently of Citation Q — see AJR-SPEC.md § 1, § 4.

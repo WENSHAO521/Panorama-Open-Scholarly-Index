@@ -26,8 +26,9 @@ export default function GlobalBenchmarkPage() {
       <div className="border-l-4 pl-5" style={{ borderColor: '#6B7280' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Global Benchmark Collection</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          {BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical AJR
-          pipeline used on the Core Collection — an external validation corpus, used to check the
+          {BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical{' '}
+          <Link href="/ratings" className="underline">AJR (POSI Automated Rating)</Link> pipeline used on
+          the Core Collection — an external validation corpus, used to check the
           methodology against journals already broadly agreed to be excellent. Selected using only
           OpenAlex&apos;s own open signals (is_core, citation activity, topic-domain balance) — no Web of
           Science or Scopus data anywhere in selection or scoring.

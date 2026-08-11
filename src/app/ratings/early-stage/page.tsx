@@ -30,8 +30,10 @@ export default function EarlyStageRankingsPage() {
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Early-Stage Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Journals 12–59 months after their first regular scholarly publication, evaluated through{' '}
-          <strong style={{ color: 'var(--posi-text)' }}>AJR-E</strong>. E-Q1–E-Q4 quartiles are assigned
-          once a minimum same-category, same-cohort PSC peer group exists — see AJR-SPEC.md § 1, § 5.
+          <strong style={{ color: 'var(--posi-text)' }}>AJR-E</strong>, the early-stage track of{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong>. E-Q1–E-Q4
+          quartiles are assigned once a minimum same-category, same-cohort PSC (POSI Subject
+          Classification) peer group exists — see AJR-SPEC.md § 1, § 5.
         </p>
       </div>
 

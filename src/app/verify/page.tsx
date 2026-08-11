@@ -50,9 +50,9 @@ export default function VerifyPage() {
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Verify a POSI Record</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Confirm a journal's current Core Collection, PQF, and AJR status directly from POSI's own data — the
-          same source every other page on this site reads from, not a separate claims database that could drift
-          out of sync.
+          Confirm a journal's current Core Collection, PQF, and AJR (POSI Automated Rating) status directly
+          from POSI's own data — the same source every other page on this site reads from, not a separate
+          claims database that could drift out of sync.
         </p>
       </div>
 

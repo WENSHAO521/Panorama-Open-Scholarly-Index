@@ -372,9 +372,9 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     return (
       <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Evidence</span>
+          <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Policy Coverage Estimate</span>
           <Link href="/policies" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-            Full directory →
+            Full breakdown →
           </Link>
         </div>
         <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5">

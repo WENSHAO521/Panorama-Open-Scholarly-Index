@@ -52,7 +52,9 @@ export default function IrsPage() {
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           IRS evaluates the technical infrastructure of a journal's website for academic discovery.
           It assesses OAI-PMH availability, sitemap structure, DOI resolution health, and metadata
-          standards used for Google Scholar, Crossref, and aggregator indexing.
+          standards used for Google Scholar, Crossref, and aggregator indexing. Inside the PQF formula
+          this same figure is labeled the Technical Discoverability Factor (TDF); IRS is its standalone
+          name when published on this page.
         </p>
       </div>
 

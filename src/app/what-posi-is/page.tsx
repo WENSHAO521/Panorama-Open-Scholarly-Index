@@ -39,8 +39,8 @@ const WHO_SHOULD_USE = [
     use: 'Assess journal transparency, licensing, and editorial governance as part of collection evaluation or open access advisory work.',
   },
   {
-    audience: 'Institutions',
-    use: 'Use PQF scores as one signal in journal evaluation frameworks. Always combine with other sources (DOAJ, Scopus, WoS).',
+    audience: 'Institutions (libraries, publishing offices)',
+    use: 'Use PQF as one input when assessing individual journals for collection development or OA-fund eligibility — always combined with other sources (DOAJ, Scopus, WoS). Not for ranking institutions, departments, or researchers; see Responsible Use.',
   },
   {
     audience: 'Developers',

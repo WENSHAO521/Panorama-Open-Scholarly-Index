@@ -42,7 +42,9 @@ export default function CviPage() {
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           CVI measures whether a journal's citations are open, machine-readable, and tracked by
           open scholarly infrastructure. It uses only open citation data — no proprietary
-          citation counts from Web of Science, Scopus, or similar services.
+          citation counts from Web of Science, Scopus, or similar services. Inside the PQF formula
+          this same figure is labeled the Citation Visibility Factor (CVF); CVI is its standalone
+          name when published on this page.
         </p>
       </div>
 

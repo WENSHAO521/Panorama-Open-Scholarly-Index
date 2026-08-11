@@ -52,8 +52,10 @@ export default function MqsPage() {
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Metadata Quality Score</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           MQS measures the completeness of article-level metadata across nine criteria, scored out of 25.
-          It is one of six components that make up the POSI Quality Framework (PQF), weighted at 25%.
-          MQS is based entirely on publicly verifiable metadata fields.
+          It is one of six components that make up the POSI Quality Framework (PQF), weighted at 25% —
+          inside the PQF formula this same figure is labeled the Metadata Quality Factor (MQF); MQS is
+          its standalone name when published on this page. MQS is based entirely on publicly verifiable
+          metadata fields.
         </p>
       </div>
 

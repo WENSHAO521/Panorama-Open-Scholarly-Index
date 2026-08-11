@@ -3,14 +3,14 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Responsible Use Notice | POSI',
-  description: 'How POSI data and PQF scores should and should not be used. POSI is a transparency and metadata readiness platform, not an indexing service or impact metric provider.',
+  description: 'How POSI data, PQF scores, and PCI/PCS citation indicators should and should not be used. POSI is an open indexing and transparency-assessment platform, not a substitute for Web of Science, Scopus, or DOAJ.',
 }
 
 const PERMITTED = [
   { use: 'Journal metadata lookup and verification', detail: 'Use POSI to look up ISSN, publisher, DOI registration status, and OA license for any listed journal.' },
   { use: 'Metadata quality benchmarking', detail: 'Use MQS to identify gaps in DOI, ORCID, reference lists, and license metadata for improvement purposes.' },
   { use: 'Technical discoverability assessment', detail: 'Use IRS to identify OAI-PMH, sitemap, or Schema.org gaps that prevent aggregator indexing.' },
-  { use: 'Policy transparency review', detail: 'Use Policy Evidence Directory and Evidence Registry to verify whether a journal has publicly stated policies on peer review, APC, retraction, and ethics.' },
+  { use: 'Policy transparency review', detail: 'Use the Policy Coverage Estimate and Evidence Registry to identify which journals likely have publicly stated policies on peer review, APC, retraction, and ethics — as a starting point for manual verification, not a substitute for it.' },
   { use: 'Open citation infrastructure check', detail: 'Use CVI to check whether a journal participates in open citation standards (I4OC, Crossref deposit, OpenAlex matching).' },
   { use: 'Research on journal transparency', detail: 'POSI data may be used under CC BY 4.0 for academic research into journal metadata quality and policy transparency.' },
 ]
@@ -37,7 +37,9 @@ export default function ResponsibleUsePage() {
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Responsible Use Notice</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          POSI is an open scholarly metadata and transparency assessment platform.
+          POSI is an open journal indexing and transparency-assessment platform that also publishes
+          open citation indicators (PCI/PCS) — see{' '}
+          <Link href="/what-posi-is" className="underline">What POSI Is →</Link> for the full positioning.
           Understanding what POSI is — and is not — is essential for responsible use of its data.
         </p>
       </div>
@@ -51,6 +53,7 @@ export default function ResponsibleUsePage() {
             'A transparency assessment tool measuring publicly verifiable journal policies and metadata quality.',
             'A tool for editors and publishers to identify gaps in metadata completeness and technical discoverability.',
             'A research resource for studying open access journal infrastructure and policy transparency.',
+            'A publisher of open citation indicators (PCI/PCS), clearly distinguished from Journal Impact Factor or CiteScore.',
             'A conflict-of-interest-disclosed platform operated by Panorama Scholarly Group.',
           ].map((item, i) => (
             <li key={i} className="flex items-start gap-2">

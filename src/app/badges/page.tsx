@@ -46,7 +46,8 @@ export default function BadgesPage() {
           Embeddable badges that journals with a POSI record can display on their own website, linking back to
           it. Core Collection journals get a "POSI Verified" badge; candidate journals (admitted once, since
           demoted below the PQF eligibility bar) get a distinctly gold-styled "POSI Candidate" badge instead —
-          never the same design, so the two can't be confused.
+          never the same design, so the two can't be confused. Larger badge variants show a journal's{' '}
+          <Link href="/ratings" className="underline">AJR (POSI Automated Rating)</Link> score out of 100.
         </p>
       </div>
 

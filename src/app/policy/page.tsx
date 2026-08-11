@@ -173,6 +173,15 @@ export default function PolicyPage() {
             </tbody>
           </table>
         </div>
+        <p className="px-5 py-3 text-[11px] text-gray-500" style={{ borderTop: '1px solid #f3f4f6' }}>
+          The nine statuses above are POSI's internal record lifecycle. The public{' '}
+          <Link href="/core-collection" className="underline">Core Collection page</Link> summarizes them into
+          three reader-facing states: <strong>Discovered</strong> maps to <em>discovered</em> and{' '}
+          <em>imported</em>; <strong>Indexed</strong> maps to <em>verified</em> and <em>pqf_evaluated</em>;{' '}
+          <strong>Metric Eligible</strong> is the subset of Indexed journals with a resolvable PCI/PCS figure.
+          <em>unverified</em>, <em>submitted</em>, and <em>under_review</em> are in-progress states not yet
+          shown in either public bucket; <em>excluded</em> and <em>removed</em> records are not publicly listed.
+        </p>
       </section>
 
       {/* Section 4: Data Sources */}
@@ -249,8 +258,8 @@ export default function PolicyPage() {
               'Retraction and correction policy is available',
               'DOI records are resolvable, where applicable',
               'Metadata is available through Crossref, OAI-PMH, or public pages',
-              'No obvious false indexing claims are found',
-              'No severe transparency gaps are found',
+              'No false claims of indexing by DOAJ, Scopus, Web of Science, or PubMed appear on the journal’s public pages',
+              'Editorial board, peer review process, and APC/waiver policy are all publicly disclosed (no critical governance disclosure is missing)',
             ].map(item => (
               <li key={item} className="flex items-start gap-2">
                 <span className="mt-0.5 text-[#1F7A4D] shrink-0">✓</span>

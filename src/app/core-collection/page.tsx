@@ -62,6 +62,15 @@ export default function CoreCollectionPage() {
         </p>
       </div>
 
+      <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        The Rating column below reports <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated
+        Rating)</strong>, a 0–100 score computed entirely from crawled site evidence and sampled Crossref
+        article metadata — see <Link href="/ratings" className="underline">Ratings &amp; Rankings →</Link>.
+        PSC is <strong style={{ color: 'var(--posi-text)' }}>POSI Subject Classification</strong>, the
+        subject-category taxonomy AJR peer cohorts and citation quartiles are grouped within — see{' '}
+        <Link href="/subjects" className="underline">PSC Subjects →</Link>.
+      </p>
+
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>

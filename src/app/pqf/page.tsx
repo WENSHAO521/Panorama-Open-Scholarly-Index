@@ -25,7 +25,7 @@ const SUBFACTORS = [
   },
   {
     abbr: 'MQF', name: 'Metadata Quality Factor', weight: '25', max: 25,
-    desc: 'Evaluates article-level metadata completeness including identifiers, abstracts, keywords, and reference lists.',
+    desc: 'Evaluates article-level metadata completeness including identifiers, abstracts, keywords, and reference lists. Published as a standalone figure elsewhere on POSI under the name Metadata Quality Score (MQS) — same criteria, same points, different page.',
     items: [
       { label: 'DOI registered with Crossref for all articles', pts: 4 },
       { label: 'Crossref metadata complete (title, author, date)', pts: 4 },
@@ -55,7 +55,7 @@ const SUBFACTORS = [
   },
   {
     abbr: 'TDF', name: 'Technical Discoverability Factor', weight: '15', max: 15,
-    desc: 'Assesses how well a journal exposes its content to indexing systems, search engines, and aggregators.',
+    desc: 'Assesses how well a journal exposes its content to indexing systems, search engines, and aggregators. Published as a standalone figure elsewhere on POSI under the name Indexing Readiness Score (IRS) — same criteria, same points, different page.',
     items: [
       { label: 'sitemap.xml accessible and up-to-date', pts: 2 },
       { label: 'robots.txt permits academic crawlers', pts: 2 },
@@ -68,7 +68,7 @@ const SUBFACTORS = [
   },
   {
     abbr: 'CVF', name: 'Citation Visibility Factor', weight: '10', max: 10,
-    desc: 'Evaluates whether journal citations are open, machine-readable, and tracked by open infrastructure.',
+    desc: 'Evaluates whether journal citations are open, machine-readable, and tracked by open infrastructure. Published as a standalone figure elsewhere on POSI under the name Citation Visibility Index (CVI) — same criteria, same points, different page.',
     items: [
       { label: 'Crossref cited-by data detectable', pts: 2 },
       { label: 'OpenAlex source record exists and matchable', pts: 2 },
@@ -129,9 +129,9 @@ export default function PqfPage() {
           <span className="text-[10px] font-mono font-bold text-[#c41e3a] border border-[#c41e3a] px-1.5 py-0.5">PQF</span>
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">2026</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 leading-tight">Editorial Selection Framework (PQF)</h1>
+        <h1 className="text-2xl font-bold text-gray-900 leading-tight">POSI Quality Framework (PQF)</h1>
         <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
-          The POSI Quality Framework (PQF) is a composite, evidence-based framework assessing journal
+          PQF is POSI's editorial selection framework: a composite, evidence-based instrument assessing journal
           transparency, metadata quality, editorial governance, technical discoverability, open citation
           visibility, and research integrity readiness through publicly auditable evidence.
         </p>

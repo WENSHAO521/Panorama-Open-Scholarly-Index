@@ -14,7 +14,7 @@ export const metadata = {
 const METHODOLOGY_PRINCIPLES = [
   {
     title: 'This preview is not yet official PCI',
-    body: 'The figure shown here is OpenAlex\'s 2-year mean citedness, taken as-is, over all of a source\'s indexed works. POSI\'s official PCI (see PJR-SPEC.md) restricts the same calculation to a specific set of citable document types — the two can differ, and only the PJR-computed figure is "PCI." Until the first PJR release, this page is a provisional preview, not the official metric.',
+    body: 'The figure shown here is OpenAlex\'s 2-year mean citedness, taken as-is, over all of a source\'s indexed works. POSI\'s official PCI is computed under PJR — POSI\'s forthcoming citation-ranking framework, the specification governing when PCI/PCS become quartile-eligible (Q1–Q4), documented at PJR-SPEC.md — which restricts the same calculation to a specific set of citable document types. The two can differ, and only the PJR-computed figure is "PCI." Until the first PJR release, this page is a provisional preview, not the official metric.',
   },
   {
     title: 'DOI/Crossref = article inventory, not citation count',

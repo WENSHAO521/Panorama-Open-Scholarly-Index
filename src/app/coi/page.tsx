@@ -33,8 +33,9 @@ export default function CoiPage() {
         <p className="text-xs leading-relaxed" style={{ color: '#78350f' }}>
           <strong>POSI is operated by Panorama Scholarly Group Ltd. (PSG).</strong> PSG also publishes{' '}
           {PSG_JOURNALS.length} academic journals that are listed in POSI and receive PQF editorial-selection
-          assessments and automated AJR lifecycle ratings. This creates a structural conflict of interest:
-          the same organization that operates the platform also publishes journals that are rated by it.
+          assessments and automated AJR (POSI Automated Rating) lifecycle ratings. This creates a structural
+          conflict of interest: the same organization that operates the platform also publishes journals that
+          are rated by it.
         </p>
       </div>
 

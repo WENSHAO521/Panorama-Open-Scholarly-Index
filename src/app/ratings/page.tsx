@@ -59,9 +59,11 @@ export default function RatingsPage() {
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Journal Lifecycle Ratings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          A journal&apos;s lifecycle stage decides which track evaluates it — new journals are ranked
-          against other new journals, established journals against other established journals, and
-          citation impact is reported independently of both. See{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong> is the
+          umbrella name for the two lifecycle-specific scores below — AJR-E for early-stage journals,
+          AJR-M for mature journals. A journal&apos;s lifecycle stage decides which track evaluates it —
+          new journals are ranked against other new journals, established journals against other
+          established journals, and citation impact is reported independently of both. See{' '}
           <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="underline">AJR-SPEC.md →</a>
         </p>
       </div>
@@ -100,7 +102,7 @@ export default function RatingsPage() {
             window="Metric Eligible"
             methodology="PCI / PCI-5 / PNCI"
             quartile="Citation Q1–Q4"
-            desc="Independent of lifecycle stage or AJR score — ranks purely on citation performance within a PSC subject category once a real citation window exists."
+            desc="Independent of lifecycle stage or AJR score — ranks purely on citation performance within a PSC (POSI Subject Classification) category once a real citation window exists."
             href="/citation-reports"
             cta="View Citation Rankings →"
             accent="#1F7A4D"
