@@ -13,6 +13,20 @@ import type { Article, SearchFacets } from '@/lib/types'
 
 const YEARS = Array.from({ length: 6 }, (_, i) => 2026 - i)
 
+// Windowed page-number list with ellipsis gaps: always shows page 1 and the
+// last page, plus a window around the current page.
+function pageWindow(page: number, totalPages: number): (number | '…')[] {
+  const delta = 1
+  const range: number[] = []
+  for (let p = Math.max(2, page - delta); p <= Math.min(totalPages - 1, page + delta); p++) range.push(p)
+  const out: (number | '…')[] = [1]
+  if (range[0] > 2) out.push('…')
+  out.push(...range)
+  if (range[range.length - 1] < totalPages - 1) out.push('…')
+  if (totalPages > 1) out.push(totalPages)
+  return out
+}
+
 const SEARCH_FIELDS = [
   { value: 'all',         label: 'All Fields' },
   { value: 'title',       label: 'Title (TI)' },
@@ -228,6 +242,7 @@ function SearchResults() {
   const pageRows = 20
   const isEmpty = !q && !journal && scope === 'all'
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [jumpValue, setJumpValue] = useState('')
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -575,11 +590,11 @@ function SearchResults() {
               </div>
 
               {total > pageRows && (
-                <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: '1px solid var(--posi-border)' }}>
+                <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-4" style={{ borderTop: '1px solid var(--posi-border)' }}>
                   <span className="text-xs" style={{ color: 'var(--posi-muted)' }}>
                     Showing {(page - 1) * pageRows + 1}–{Math.min(page * pageRows, total)} of {total.toLocaleString()}
                   </span>
-                  <div className="flex gap-1.5">
+                  <div className="flex items-center gap-1 flex-wrap">
                     {page > 1 && (
                       <button
                         onClick={() => updateParam('page', String(page - 1))}
@@ -589,6 +604,24 @@ function SearchResults() {
                         ← Previous
                       </button>
                     )}
+                    {pageWindow(page, Math.ceil(total / pageRows)).map((p, i) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${i}`} className="px-1.5 text-xs" style={{ color: 'var(--posi-muted)' }}>…</span>
+                      ) : p === page ? (
+                        <span key={p} aria-current="page" className="px-2.5 py-1.5 text-xs font-mono font-bold" style={{ border: '1px solid var(--posi-accent)', color: '#fff', background: 'var(--posi-accent)' }}>
+                          {p}
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => updateParam('page', String(p))}
+                          className="px-2.5 py-1.5 text-xs font-mono bg-white transition-colors hover:bg-gray-100"
+                          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
                     <button
                       onClick={() => updateParam('page', String(page + 1))}
                       className="px-3 py-1.5 text-xs bg-white hover:border-gray-400 transition-colors"
@@ -597,6 +630,36 @@ function SearchResults() {
                       Next →
                     </button>
                   </div>
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault()
+                      const n = parseInt(jumpValue, 10)
+                      if (!Number.isFinite(n)) return
+                      updateParam('page', String(Math.min(Math.max(1, n), Math.ceil(total / pageRows))))
+                      setJumpValue('')
+                    }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>Go to</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={Math.ceil(total / pageRows)}
+                      value={jumpValue}
+                      onChange={e => setJumpValue(e.target.value)}
+                      placeholder={String(page)}
+                      aria-label="Jump to page"
+                      className="w-14 px-2 py-1.5 text-xs font-mono"
+                      style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                    />
+                    <button
+                      type="submit"
+                      className="px-2.5 py-1.5 text-xs bg-white transition-colors hover:bg-gray-100"
+                      style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
+                    >
+                      Go
+                    </button>
+                  </form>
                 </div>
               )}
             </>
