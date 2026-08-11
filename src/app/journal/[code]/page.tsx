@@ -186,13 +186,6 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             <span style={{ color: 'var(--posi-muted)' }}>Total Articles</span>
             <ArticleCountBadge issn={journal.issn_online ?? null} fallback={total || journal.article_count} />
           </div>
-          <div className="flex justify-between">
-            <span style={{ color: 'var(--posi-muted)' }}>DOAJ</span>
-            <span style={{ color: 'var(--posi-muted)' }}>
-              {doaj ? (doaj.in_doaj ? 'Listed' : 'Not listed') : journal.doaj_status === 'listed' ? 'Listed' : journal.doaj_status === 'application_submitted' ? 'Applied' : 'Not listed'}
-              <span className="text-[9px] ml-1">(external ref.)</span>
-            </span>
-          </div>
           {journal.openalex_source_id && (
             <a
               href={`https://openalex.org/sources/${journal.openalex_source_id}`}
@@ -600,16 +593,6 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               <Badge label={journal.license} variant="license" />
               {!isDiscovered && !isCandidate && <Badge label="Core Collection" variant="core-collection" />}
               {isCandidate && <Badge label="Candidate" variant="pending" />}
-              {journal.doaj_status && (
-                <Badge
-                  label={`DOAJ: ${journal.doaj_status === 'application_submitted' ? 'application submitted' : journal.doaj_status.replace('_', ' ')}`}
-                  variant={
-                    journal.doaj_status === 'listed' ? 'doaj-listed'
-                    : journal.doaj_status === 'application_submitted' ? 'doaj-pending'
-                    : 'doaj-not'
-                  }
-                />
-              )}
             </div>
           </div>
         </div>
