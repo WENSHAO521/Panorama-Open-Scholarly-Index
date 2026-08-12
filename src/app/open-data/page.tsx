@@ -34,8 +34,20 @@ const AUDITS = [
   {
     name: 'OpenAlex Enrichment Audit v0.2',
     status: 'Published',
-    desc: 'OpenAlex Source ID / ISSN-L enrichment over all 23,819 v0.1 candidate entities (23,674 verified) and re-scoring of the 171 possible-duplicate groups using that evidence (164 confirmed same, 5 confirmed distinct, 2 still manual review). No merging or POSI-J id assignment yet.',
+    desc: 'OpenAlex Source ID / ISSN-L enrichment over all 23,819 v0.1 candidate entities (23,674 verified) and re-scoring of the 171 possible-duplicate groups using that evidence. Superseded by the completed migration below — see that entry for final, corrected numbers.',
     href: 'https://github.com/WENSHAO521/posi-data/tree/master/audits/migrations/openalex-enrichment',
+  },
+  {
+    name: 'Initial Journal Migration — Complete',
+    status: 'Published',
+    desc: 'Reproducibility-verified (two independent dry-run passes, byte-identical output) and all 171 possible-duplicate groups resolved with live OpenAlex ISSN-L lookups — not string similarity: 166 confirmed same (merged), 5 confirmed distinct (kept separate), 0 left ambiguous. 23,331 permanent POSI-J-###### ids minted into journals/discovered/, 0 id collisions.',
+    href: 'https://github.com/WENSHAO521/posi-data/tree/master/audits/migrations/initial-journal-migration',
+  },
+  {
+    name: 'Core Collection & Global Benchmark Identity Migration',
+    status: 'Published',
+    desc: 'Extends permanent POSI-J-###### ids to the ~1,031 manually-curated Core Collection and Global Benchmark records (previously the only journals still on the legacy j-<code> scheme). 874 newly minted, 157 resolved to an id already minted during the discovered-corpus migration above — 0 flagged for manual review, 0 id collisions across the full 24,205-record registry.',
+    href: 'https://github.com/WENSHAO521/posi-data/pull/3',
   },
 ]
 

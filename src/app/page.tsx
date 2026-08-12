@@ -176,12 +176,13 @@ export default async function HomePage() {
               >
                 PUBLIC BETA · {RELEASE_LABEL.toUpperCase()} · TRIAL OPERATION
               </Link>
-              <span
-                className="px-1.5 py-0.5"
-                style={{ background: 'rgba(196,30,58,0.15)', border: '1px solid rgba(196,30,58,0.3)', color: 'rgba(255,255,255,0.45)' }}
+              <Link
+                href="/open-data"
+                className="px-1.5 py-0.5 transition-colors hover:text-white"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
               >
-                Migration to POSI 2.0 identity corpus in progress — see Open Data
-              </span>
+                Identity migration to permanent POSI-J ids complete (24,205 records) — see Open Data
+              </Link>
             </p>
             <p
               className="pb-4 px-6 text-[9px] leading-relaxed max-w-3xl"
