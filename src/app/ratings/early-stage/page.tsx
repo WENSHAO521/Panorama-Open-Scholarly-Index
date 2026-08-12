@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
-import { NOT_YET_MATURE_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata = {
@@ -14,18 +14,6 @@ export default function EarlyStageRankingsPage() {
   const core = getCoreCollection()
   const evaluated = core.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
   const eQAssignedCount = evaluated.filter(j => j.early_stage_rating?.provisional_quartile).length
-  // Global Benchmark publisher-catalog expansion journals that aren't yet
-  // 5+ years old (no evidence-based AJR-E score, no E-Q) — shown in the
-  // SAME table as Core Collection, not a separate section. See posi-data's
-  // audits/migrations/benchmark-citation-q-2026/.
-  //
-  // Capped: this table is fully static-rendered (no server pagination); an
-  // earlier uncapped version broke a live Cloudflare Pages deployment
-  // ("Failed to publish assets") by producing multi-MB single HTML pages.
-  const BENCHMARK_DISPLAY_CAP = 200
-  const benchmarkShown = NOT_YET_MATURE_BENCHMARK_JOURNALS.slice(0, BENCHMARK_DISPLAY_CAP)
-  const journals = [...core, ...benchmarkShown]
-    .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -60,37 +48,29 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>E-Q assigned:</strong> {eQAssignedCount} of {evaluated.length} evaluated</p>
           <p><strong>Journals evaluated:</strong> {evaluated.length} of {core.length}</p>
-          <p><strong>Global Benchmark, not yet 5yr+ (no score):</strong> {NOT_YET_MATURE_BENCHMARK_JOURNALS.length}</p>
+          <p><strong>Global Benchmark, not yet 5yr+ (no score):</strong> {publisherCatalogMeta.not_yet_mature}</p>
         </div>
       </div>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Early-Stage Track — {journals.length} Journals</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Early-Stage Track</h2>
           <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
             Methodology (AJR-E) →
           </a>
         </div>
         <LifecycleRatingsTable
-          journals={journals}
-          extraColumns={[
-            { header: 'Collection', render: j => ({ value: j.is_external_benchmark ? 'Benchmark' : 'Core' }) },
-            {
-              header: 'E-Q',
-              render: j => j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile
-                ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
-                : { value: '—', title: 'Not assigned — either insufficient peer cohort, not yet evaluated, or no AJR score exists for this record at all' },
-            },
-          ]}
+          journals={core}
+          benchmarkMode="not-yet-mature"
+          columns={['collection', 'e-q']}
         />
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the
-          minimum evidence bar have no score yet, and that is expected. Showing {benchmarkShown.length} of{' '}
-          {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} Global Benchmark rows (Collection: Benchmark) — the
-          2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible publishing
-          history, capped here to keep the page a reasonable size. No AJR-E score or E-Q, since no evidence
-          crawl was run at this scale; full corpus — see{' '}
+          minimum evidence bar have no score yet, and that is expected. Global Benchmark rows (Collection:
+          Benchmark) are the 2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible
+          publishing history, loaded client-side from a separate data file. No AJR-E score or E-Q, since no
+          evidence crawl was run at this scale; full corpus — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
       </section>

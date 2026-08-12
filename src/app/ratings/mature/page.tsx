@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
-import { BENCHMARK_JOURNALS, MATURE_RANKED_BENCHMARK_JOURNALS, MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { RELEASE_LABEL } from '@/lib/release'
 
@@ -14,27 +15,9 @@ export default function MatureRankingsPage() {
   const core = getCoreCollection()
     .filter(j => j.early_stage_rating?.eligibility === 'mature')
   const curatedBenchmark = BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature')
-  // Global Benchmark publisher-catalog expansion journals (no evidence-based
-  // AJR score — early_stage_rating is null) that are mature, both ranked
-  // (a real Citation Q) and unranked (unclassified / cohort too small) —
-  // shown in the SAME table as everything else, not a separate section. See
-  // posi-data's audits/migrations/benchmark-citation-q-2026/.
-  //
-  // Capped: this table is fully static-rendered (no server pagination), and
-  // an earlier uncapped version (all 2,695 benchmark rows -> 2,794 total)
-  // produced a 9.5 MB single HTML page and broke a live Cloudflare Pages
-  // deployment ("Failed to publish assets"). Same "Top N" convention
-  // already used on /coverage/global-benchmark.
-  const BENCHMARK_DISPLAY_CAP = 200
-  const benchmarkTotal = MATURE_RANKED_BENCHMARK_JOURNALS.length + MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS.length
-  const benchmarkShown = [...MATURE_RANKED_BENCHMARK_JOURNALS, ...MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS].slice(0, BENCHMARK_DISPLAY_CAP)
-  const journals = [...core, ...curatedBenchmark, ...benchmarkShown]
-    .sort((a, b) => {
-      const av = a.early_stage_rating?.total ?? a.citation_rating?.citation_q?.percentile ?? -1
-      const bv = b.early_stage_rating?.total ?? b.citation_rating?.citation_q?.percentile ?? -1
-      return bv - av
-    })
+  const journals = [...core, ...curatedBenchmark]
   const mQAssignedCount = journals.filter(j => j.early_stage_rating?.provisional_quartile).length
+  const benchmarkTotal = publisherCatalogMeta.mature_ranked + publisherCatalogMeta.mature_unclassified
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -76,10 +59,9 @@ export default function MatureRankingsPage() {
           they are directionally useful but not the citation-weighted AJR-M score this page is ultimately
           meant to show. M-Q is assigned to journals in a PSC category (or domain, as fallback) that has
           reached the minimum peer-cohort size — {mQAssignedCount} of {core.length + curatedBenchmark.length}{' '}
-          evidence-rated journals currently qualify. The {MATURE_RANKED_BENCHMARK_JOURNALS.length +
-          MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS.length} Global Benchmark publisher-catalog rows below have
-          no AJR score at all (no evidence crawl was run at this scale) — only a provisional Citation Q
-          where a same-category peer cohort exists; see the Citation Q column and{' '}
+          evidence-rated journals currently qualify. The {benchmarkTotal} Global Benchmark publisher-catalog
+          rows (loaded below) have no AJR score at all (no evidence crawl was run at this scale) — only a
+          provisional Citation Q where a same-category peer cohort exists; see the Citation Q column and{' '}
           <Link href="/citation-reports" className="underline">Citation Rankings</Link>.
         </span>
       </div>
@@ -90,14 +72,14 @@ export default function MatureRankingsPage() {
           <p><strong>Lifecycle window:</strong> 60+ months since first publication</p>
           <p><strong>Core Collection mature journals:</strong> {core.length}</p>
           <p><strong>Global Benchmark mature journals (evidence-rated):</strong> {curatedBenchmark.length}</p>
-          <p><strong>Global Benchmark mature journals (Citation Q only):</strong> {MATURE_RANKED_BENCHMARK_JOURNALS.length + MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS.length}</p>
+          <p><strong>Global Benchmark mature journals (Citation Q only):</strong> {benchmarkTotal}</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
         </div>
       </div>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Mature Track — {journals.length} Journals</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Mature Track</h2>
           <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
             Methodology (AJR 1.0) →
           </a>
@@ -105,24 +87,8 @@ export default function MatureRankingsPage() {
         {journals.length > 0 ? (
           <LifecycleRatingsTable
             journals={journals}
-            extraColumns={[
-              { header: 'Collection', render: j => ({ value: j.is_external_benchmark ? 'Benchmark' : 'Core' }) },
-              {
-                header: 'M-Q',
-                render: j => j.early_stage_rating?.provisional_quartile
-                  ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
-                  : { value: 'Not released', title: 'Not assigned — either its PSC category/domain cohort hasn\'t reached the minimum size yet, or no AJR score exists for this record at all' },
-              },
-              {
-                header: 'Citation Q',
-                render: j => {
-                  const cq = j.citation_rating?.citation_q
-                  if (cq?.quartile_label) return { value: cq.quartile_label, title: `Percentile ${cq.percentile}, cohort of ${cq.cohort_size} — provisional, see /citation-reports` }
-                  if (j.citation_rating) return { value: 'Unavailable', title: cq?.ranking_method === 'unavailable' ? `Cohort of ${cq.cohort_size ?? 0} is below the minimum of 20` : 'Not PSC-classified at high confidence' }
-                  return { value: 'Not released', title: 'PCI not yet wired into this cohort' }
-                },
-              },
-            ]}
+            benchmarkMode="mature"
+            columns={['collection', 'm-q', 'citation-q']}
           />
         ) : (
           <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>
@@ -130,11 +96,10 @@ export default function MatureRankingsPage() {
           </p>
         )}
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          Showing {benchmarkShown.length} of {benchmarkTotal} Global Benchmark rows (best Citation Q first) —
-          capped to keep this page a reasonable size. Global Benchmark rows (Collection: Benchmark, no AJR
-          Score) are the 2026-08 Elsevier/Frontiers publisher-catalog expansion — bulk-ingested, not
-          individually vetted, never an admission candidate. Their Citation Q is provisional (OpenAlex 2yr
-          mean citedness, not yet official PCI). Full corpus — see{' '}
+          Global Benchmark rows (Collection: Benchmark, no AJR Score) are the 2026-08 Elsevier/Frontiers
+          publisher-catalog expansion — bulk-ingested, not individually vetted, never an admission candidate,
+          loaded client-side from a separate data file (not part of this page's initial HTML). Their Citation
+          Q is provisional (OpenAlex 2yr mean citedness, not yet official PCI) — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
       </section>

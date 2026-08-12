@@ -4,7 +4,7 @@ import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { getCitationStats } from '@/lib/citation-stats'
 import { primarySubject } from '@/lib/subject-keywords'
-import { PUBLISHER_CATALOG_JOURNALS } from '@/lib/benchmark-journals'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
 export const metadata = {
@@ -80,43 +80,14 @@ export default async function CitationReportsPage() {
     return { ...row, subject_percentile }
   })
 
-  // Global Benchmark publisher-catalog expansion: bulk-ingested, not
-  // individually vetted, never a Core Collection admission candidate. Its
-  // "subject" is a PSC category code (e.g. "P3.02"), a different
-  // classification system than Core Collection's own `subjects` taxonomy —
-  // shown in the same Subject column/filter for convenience, but never
-  // grouped together for percentile purposes. subject_percentile here is
-  // the already-computed Citation Q percentile (posi-engine's
-  // rankCategory(), a PSC-category peer cohort of >=20) passed through
-  // as-is, not recomputed on this page.
-  // Capped: CitationReportsTable is a 'use client' sortable component, so
-  // every row shown gets serialized into the page's hydration payload.
-  // Uncapped (3,245 rows) produced a multi-MB page and broke a live
-  // Cloudflare Pages deployment ("Failed to publish assets"). Sorted by
-  // citedness first so the cap keeps the most relevant rows.
-  const BENCHMARK_DISPLAY_CAP = 300
-  const benchmarkTotal = PUBLISHER_CATALOG_JOURNALS.filter(j => j.citation_rating).length
-  const benchmarkRows: CitationReportRow[] = PUBLISHER_CATALOG_JOURNALS
-    .filter(j => j.citation_rating)
-    .sort((a, b) => (b.citation_rating!.two_yr_mean_citedness ?? 0) - (a.citation_rating!.two_yr_mean_citedness ?? 0))
-    .slice(0, BENCHMARK_DISPLAY_CAP)
-    .map(j => ({
-      title: j.title,
-      short_title: j.short_title,
-      journal_code: j.journal_code,
-      subject: j.citation_rating!.psc_category,
-      two_yr_mean_citedness: j.citation_rating!.two_yr_mean_citedness,
-      h_index: j.citation_rating!.h_index,
-      cited_by_count: null,
-      pcs_ratio: null,
-      pcs_window: null,
-      subject_percentile: j.citation_rating!.citation_q?.percentile ?? null,
-      is_external_benchmark: true,
-      website_url: j.website_url,
-    }))
-
-  const rows: CitationReportRow[] = [...coreRows, ...benchmarkRows]
-  const withData = rows.filter(r => r.two_yr_mean_citedness != null).length
+  // Global Benchmark publisher-catalog expansion (2026-08 Elsevier/
+  // Frontiers bulk ingestion, ~3,300 records): NOT statically imported
+  // here — CitationReportsTable fetches it client-side at runtime (see
+  // its own header and publisher-catalog-client.ts) instead of it being
+  // baked into this page's build output. An earlier version imported it
+  // at build time and produced a multi-MB static page that broke a live
+  // Cloudflare Pages deployment ("Failed to publish assets").
+  const withData = coreRows.filter(r => r.two_yr_mean_citedness != null).length
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
@@ -134,7 +105,7 @@ export default async function CitationReportsPage() {
             PREVIEW
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            {coreRows.length} Core Collection · {benchmarkRows.length} of {benchmarkTotal} Global Benchmark
+            {coreRows.length} Core Collection · {publisherCatalogMeta.count} Global Benchmark
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
@@ -156,8 +127,9 @@ export default async function CitationReportsPage() {
           <strong>OpenAlex 2-Year Citedness</strong> and <strong>PCS</strong> (Crossref mean citations per article,
           trailing 4-year window) are POSI's own independently-defined, reproducible citation indicators —
           two separately-sourced numbers, not one blended score, the same way WoS and Scopus report independently of
-          each other. POSI does not license or use Web of Science or Scopus data. {withData} of {rows.length} journals
-          have a resolvable OpenAlex source record; journals without one show as unranked. See{' '}
+          each other. POSI does not license or use Web of Science or Scopus data. {withData} of {coreRows.length}{' '}
+          Core Collection journals have a resolvable OpenAlex source record; journals without one show as
+          unranked. See{' '}
           <Link href="/cvi" className="underline">Citation Visibility Index →</Link> for how POSI treats citation
           infrastructure separately from citation volume.
         </span>
@@ -180,7 +152,7 @@ export default async function CitationReportsPage() {
       </section>
 
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading citation reports…</div>}>
-        <CitationReportsTable rows={rows} />
+        <CitationReportsTable rows={coreRows} fetchBenchmark />
       </Suspense>
     </div>
   )

@@ -16,3 +16,11 @@
 /api/certificate/*
   Content-Type: application/pdf
   Cache-Control: public, max-age=86400
+
+# Global Benchmark publisher-catalog data (~4.8 MB) — fetched client-side
+# at runtime by /ratings/mature, /ratings/early-stage, and /citation-reports
+# (see src/lib/publisher-catalog-client.ts) rather than statically bundled.
+# Cached for a day since it only changes on a deliberate scripts/sync-corpus.mjs
+# run, not on every deploy.
+/data/*
+  Cache-Control: public, max-age=86400

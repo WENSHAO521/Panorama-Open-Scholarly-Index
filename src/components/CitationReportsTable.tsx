@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { CaretUp, CaretDown } from '@phosphor-icons/react/dist/ssr'
+import { fetchPublisherCatalogJournals } from '@/lib/publisher-catalog-client'
 
 export interface CitationReportRow {
   title: string
@@ -33,14 +34,62 @@ const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'subject_percentile', label: 'Subject Percentile' },
 ]
 
-export function CitationReportsTable({ rows }: { rows: CitationReportRow[] }) {
+const BENCHMARK_DISPLAY_CAP = 300
+
+/**
+ * `rows` (Core Collection — small, manually-reviewed, precomputed citation
+ * stats) renders immediately. `fetchBenchmark`, when true, loads the much
+ * larger Global Benchmark publisher-catalog expansion (~3,300 records)
+ * client-side at runtime and merges in its provisional Citation Q figures
+ * once loaded — NOT statically bundled, see publisher-catalog-client.ts's
+ * header for why (an earlier version baked all of it into the static
+ * build and broke a live Cloudflare Pages deployment).
+ */
+export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationReportRow[]; fetchBenchmark?: boolean }) {
+  const [benchmarkRows, setBenchmarkRows] = useState<CitationReportRow[]>([])
+  const [benchmarkTotal, setBenchmarkTotal] = useState<number | null>(null)
+  const [loading, setLoading] = useState(!!fetchBenchmark)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    if (!fetchBenchmark) return
+    let cancelled = false
+    fetchPublisherCatalogJournals()
+      .then(all => {
+        if (cancelled) return
+        const classified = all.filter(j => j.citation_rating)
+        const sorted = [...classified].sort((a, b) => (b.citation_rating!.two_yr_mean_citedness ?? 0) - (a.citation_rating!.two_yr_mean_citedness ?? 0))
+        const mapped: CitationReportRow[] = sorted.slice(0, BENCHMARK_DISPLAY_CAP).map(j => ({
+          title: j.title,
+          short_title: j.short_title,
+          journal_code: j.journal_code,
+          subject: j.citation_rating!.psc_category,
+          two_yr_mean_citedness: j.citation_rating!.two_yr_mean_citedness,
+          h_index: j.citation_rating!.h_index,
+          cited_by_count: null,
+          pcs_ratio: null,
+          pcs_window: null,
+          subject_percentile: j.citation_rating!.citation_q?.percentile ?? null,
+          is_external_benchmark: true,
+          website_url: j.website_url,
+        }))
+        setBenchmarkTotal(classified.length)
+        setBenchmarkRows(mapped)
+      })
+      .catch(() => { if (!cancelled) setFailed(true) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [fetchBenchmark])
+
+  const allRows = useMemo(() => [...rows, ...benchmarkRows], [rows, benchmarkRows])
+
   const [subject, setSubject] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('two_yr_mean_citedness')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
   const filtered = useMemo(
-    () => (subject ? rows.filter(r => r.subject === subject) : rows),
-    [rows, subject]
+    () => (subject ? allRows.filter(r => r.subject === subject) : allRows),
+    [allRows, subject]
   )
 
   const sorted = useMemo(() => {
@@ -68,7 +117,7 @@ export function CitationReportsTable({ rows }: { rows: CitationReportRow[] }) {
     }
   }
 
-  const subjectsPresent = Array.from(new Set(rows.map(r => r.subject).filter((s): s is string => !!s))).sort()
+  const subjectsPresent = Array.from(new Set(allRows.map(r => r.subject).filter((s): s is string => !!s))).sort()
 
   return (
     <div>
@@ -84,6 +133,9 @@ export function CitationReportsTable({ rows }: { rows: CitationReportRow[] }) {
         </select>
         <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
           {sorted.length.toLocaleString()} journals
+          {fetchBenchmark && loading && ' · loading Global Benchmark…'}
+          {fetchBenchmark && !loading && failed && ' · Global Benchmark rows failed to load'}
+          {fetchBenchmark && !loading && !failed && benchmarkTotal != null && benchmarkTotal > BENCHMARK_DISPLAY_CAP && ` · showing top ${BENCHMARK_DISPLAY_CAP} of ${benchmarkTotal} Global Benchmark by citedness`}
         </span>
       </div>
 
