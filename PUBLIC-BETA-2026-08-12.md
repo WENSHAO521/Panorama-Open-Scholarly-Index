@@ -16,7 +16,7 @@ and "what changed since launch" reference.
 
 | Repo | Branch | Commit | Notes |
 |---|---|---|---|
-| `Panorama-Open-Scholarly-Index` (website) | `master` | `26c989058ef0bf98877aa6aa56c27682e0a03d10` | Deployed to production via Cloudflare Pages on push to `master` |
+| `Panorama-Open-Scholarly-Index` (website) | `master` | `03a89f3c500ac38855762c1b80eed4bc3ce6a7b3` | Deployed to production via Cloudflare Pages on push to `master`. Launch batch = two commits: `26c9890` (Submit Journal/Mature-preview/Coverage Policy/Announcements) then `03a89f3` (Public Beta labeling + this file). |
 | `posi-data` | `master` | `0a484f531c92da71a09b88d2d410aba5bcca78b1` | Unchanged by the Framework 1.0 work — see below |
 | `posi-engine` | `master` | `a76ba162e2ed0da6826e0fe4172a9f8fbc493fba` | Unchanged by the Framework 1.0 work — see below |
 
@@ -51,6 +51,5 @@ that's resolved, tracked in the same PRs.
 ## Rollback
 
 If a launch-day regression needs reverting, redeploy website commit
-`26c989058ef0bf98877aa6aa56c27682e0a03d10`'s *parent* (`9eeb2728f535ac9315c025c699cd64254f9edd14`)
-via Cloudflare Pages — that was the last commit before this file's own
-pre-launch batch of changes.
+`9eeb2728f535ac9315c025c699cd64254f9edd14` via Cloudflare Pages — that was
+the last commit before this launch's two-commit batch (`26c9890`, `03a89f3`).
