@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
-import { CitationRatingsTable } from '@/components/CitationRatingsTable'
 import { NOT_YET_MATURE_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import { RELEASE_LABEL } from '@/lib/release'
 
@@ -12,9 +11,15 @@ export const metadata = {
 }
 
 export default function EarlyStageRankingsPage() {
-  const journals = getCoreCollection()
+  const core = getCoreCollection()
+  // Global Benchmark publisher-catalog expansion journals that aren't yet
+  // 5+ years old (no evidence-based AJR-E score, no E-Q) — shown in the
+  // SAME table as Core Collection, not a separate section. See posi-data's
+  // audits/migrations/benchmark-citation-q-2026/.
+  const journals = [...core, ...NOT_YET_MATURE_BENCHMARK_JOURNALS]
     .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
   const evaluated = journals.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
+  const eQAssignedCount = journals.filter(j => j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile).length
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -47,67 +52,39 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Methodology:</strong> AJR-E (AJR 1.0 Lifecycle Framework)</p>
           <p><strong>Scoring:</strong> 100% rules-driven, from crawled site evidence and sampled Crossref articles</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
-          <p><strong>E-Q assignment:</strong> Pending — needs a same-category PSC peer cohort</p>
-          <p><strong>Journals evaluated:</strong> {evaluated.length} of {journals.length}</p>
+          <p><strong>E-Q assigned:</strong> {eQAssignedCount} of {evaluated.length} evaluated</p>
+          <p><strong>Journals evaluated:</strong> {evaluated.length} of {core.length}</p>
+          <p><strong>Global Benchmark, not yet 5yr+ (no score):</strong> {NOT_YET_MATURE_BENCHMARK_JOURNALS.length}</p>
         </div>
       </div>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Core Collection — Early-Stage Track</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Early-Stage Track — {journals.length} Journals</h2>
           <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
             Methodology (AJR-E) →
           </a>
         </div>
         <LifecycleRatingsTable
           journals={journals}
-          extraColumns={[{
-            header: 'E-Q',
-            render: () => ({ value: '—', title: 'Not assigned — insufficient peer cohort' }),
-          }]}
+          extraColumns={[
+            { header: 'Collection', render: j => ({ value: j.is_external_benchmark ? 'Benchmark' : 'Core' }) },
+            {
+              header: 'E-Q',
+              render: j => j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile
+                ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
+                : { value: '—', title: 'Not assigned — either insufficient peer cohort, not yet evaluated, or no AJR score exists for this record at all' },
+            },
+          ]}
         />
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the
-          minimum evidence bar have no score yet, and that is expected. Only journals in the 12–59 month
-          window with a score are candidates for a future E-Q.
+          minimum evidence bar have no score yet, and that is expected. Global Benchmark rows (Collection:
+          Benchmark) are the 2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible
+          publishing history — no AJR-E score or E-Q, since no evidence crawl was run at this scale; see{' '}
+          <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
-      </section>
-
-      {/* ── PUBLISHER-CATALOG EXPANSION: NOT YET MATURE ── */}
-      <div className="border-l-4 pl-5 pt-4" style={{ borderColor: '#6B7280' }}>
-        <h2 className="text-lg font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>
-          Global Benchmark Publisher-Catalog Expansion — Not Yet Mature
-        </h2>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} journals from the 2026-08 Elsevier/Frontiers bulk
-          publisher-catalog ingestion (see{' '}
-          <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>)
-          don&apos;t yet show 5+ years of OpenAlex-visible publishing history, so they sit here rather than
-          in Mature Rankings — a conservative check, not a claim they were founded recently (POSI&apos;s own
-          principle: absence of evidence is never treated as the favorable case). No AJR-E score, E-Q, or
-          Citation Q is computed for this group — no evidence crawl was run at this scale (see{' '}
-          <Link href="/ratings/mature" className="underline">Mature Rankings</Link> for the full rationale).
-        </p>
-      </div>
-
-      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h3 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>
-            Not Yet Mature — {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} Journals
-          </h3>
-        </div>
-        {NOT_YET_MATURE_BENCHMARK_JOURNALS.length > 0 ? (
-          <CitationRatingsTable journals={NOT_YET_MATURE_BENCHMARK_JOURNALS.slice(0, 50)} />
-        ) : (
-          <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>None.</p>
-        )}
-        {NOT_YET_MATURE_BENCHMARK_JOURNALS.length > 50 && (
-          <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-            Showing 50 of {NOT_YET_MATURE_BENCHMARK_JOURNALS.length}. Full corpus: see{' '}
-            <a href="https://github.com/WENSHAO521/posi-data/blob/master/corpus/global-benchmark.json" target="_blank" rel="noopener noreferrer" className="underline">global-benchmark.json →</a>
-          </p>
-        )}
       </section>
 
       <div className="flex flex-wrap gap-5 text-xs">

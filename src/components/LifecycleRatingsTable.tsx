@@ -64,12 +64,20 @@ export function LifecycleRatingsTable({ journals, extraColumns = [] }: { journal
                 </td>
                 <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>{j.publisher}</td>
                 <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>
-                  {j.psc_category ? (
-                    <>
-                      {j.psc_category}
-                      {j.psc_confidence === 'low' && <span className="ml-1 opacity-60" title="Low-confidence classification">*</span>}
-                    </>
-                  ) : 'Not yet classified'}
+                  {(() => {
+                    // citation_rating carries its own PSC classification for
+                    // journals with no evidence-based rating (Global Benchmark
+                    // publisher-catalog expansion) — fall back to it when the
+                    // primary field is unset.
+                    const category = j.psc_category ?? j.citation_rating?.psc_category
+                    const lowConfidence = j.psc_category ? j.psc_confidence === 'low' : (j.citation_rating && j.citation_rating.psc_confidence !== 'high')
+                    return category ? (
+                      <>
+                        {category}
+                        {lowConfidence && <span className="ml-1 opacity-60" title="Not high-confidence classification">*</span>}
+                      </>
+                    ) : 'Not yet classified'
+                  })()}
                 </td>
                 <td className="px-3 py-3 text-center font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>
                   {r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}

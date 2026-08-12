@@ -4,6 +4,7 @@ import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { getCitationStats } from '@/lib/citation-stats'
 import { primarySubject } from '@/lib/subject-keywords'
+import { PUBLISHER_CATALOG_JOURNALS } from '@/lib/benchmark-journals'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 
 export const metadata = {
@@ -35,9 +36,8 @@ const METHODOLOGY_PRINCIPLES = [
 ]
 
 export default async function CitationReportsPage() {
-  // Scope: only the reviewed/verified collection (PSG + manually-indexed).
-  // Auto-discovered, unreviewed records are deliberately excluded — citation
-  // impact ranking is a Core Collection feature, not extended to unverified data.
+  // Core Collection: manually-reviewed, evidence-based. Percentile computed
+  // on THIS page, within Core Collection's own `subjects` taxonomy.
   const journals = getCoreCollection()
 
   // Precomputed snapshot (scripts/fetch-citation-stats.mjs), same file
@@ -69,7 +69,7 @@ export default async function CitationReportsPage() {
     bySubject.get(key)!.push(row)
   }
 
-  const rows: CitationReportRow[] = withStats.map(row => {
+  const coreRows: CitationReportRow[] = withStats.map(row => {
     const key = row.subject ?? 'Uncategorized'
     const group = bySubject.get(key)!.filter(r => r.two_yr_mean_citedness != null)
     let subject_percentile: number | null = null
@@ -80,6 +80,33 @@ export default async function CitationReportsPage() {
     return { ...row, subject_percentile }
   })
 
+  // Global Benchmark publisher-catalog expansion: bulk-ingested, not
+  // individually vetted, never a Core Collection admission candidate. Its
+  // "subject" is a PSC category code (e.g. "P3.02"), a different
+  // classification system than Core Collection's own `subjects` taxonomy —
+  // shown in the same Subject column/filter for convenience, but never
+  // grouped together for percentile purposes. subject_percentile here is
+  // the already-computed Citation Q percentile (posi-engine's
+  // rankCategory(), a PSC-category peer cohort of >=20) passed through
+  // as-is, not recomputed on this page.
+  const benchmarkRows: CitationReportRow[] = PUBLISHER_CATALOG_JOURNALS
+    .filter(j => j.citation_rating)
+    .map(j => ({
+      title: j.title,
+      short_title: j.short_title,
+      journal_code: j.journal_code,
+      subject: j.citation_rating!.psc_category,
+      two_yr_mean_citedness: j.citation_rating!.two_yr_mean_citedness,
+      h_index: j.citation_rating!.h_index,
+      cited_by_count: null,
+      pcs_ratio: null,
+      pcs_window: null,
+      subject_percentile: j.citation_rating!.citation_q?.percentile ?? null,
+      is_external_benchmark: true,
+      website_url: j.website_url,
+    }))
+
+  const rows: CitationReportRow[] = [...coreRows, ...benchmarkRows]
   const withData = rows.filter(r => r.two_yr_mean_citedness != null).length
 
   return (
@@ -98,7 +125,7 @@ export default async function CitationReportsPage() {
             PREVIEW
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            {rows.length} journals · Core Collection
+            {coreRows.length} Core Collection · {benchmarkRows.length} Global Benchmark
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
@@ -106,7 +133,9 @@ export default async function CitationReportsPage() {
           Two independently-sourced, provisional citation indicators — OpenAlex 2-Year Citedness (a preview of{' '}
           <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>, not
           yet the official PJR-computed value) and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref-sourced) —
-          plus h-index and total citations, for POSI's manually-reviewed Core Collection. <strong style={{ color: 'var(--posi-text)' }}>Subject
+          plus h-index and total citations, for POSI's manually-reviewed Core Collection, plus a provisional
+          Citation Q for the Global Benchmark publisher-catalog expansion (2-Year Citedness only — no PCS, no
+          total-citations figure was computed for those rows). <strong style={{ color: 'var(--posi-text)' }}>Subject
           percentile is derived from the citedness figure only</strong> — PCS is not blended into it. These are not
           yet POSI Quartiles (Q1–Q4); see PJR-SPEC.md for when the official methodology takes effect.
         </p>

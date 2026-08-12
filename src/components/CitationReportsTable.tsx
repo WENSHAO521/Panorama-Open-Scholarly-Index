@@ -15,6 +15,11 @@ export interface CitationReportRow {
   subject_percentile: number | null
   pcs_ratio: number | null
   pcs_window: string | null
+  // Global Benchmark publisher-catalog rows have no internal /journal/
+  // page — link out to the publisher's own site instead, same pattern as
+  // LifecycleRatingsTable.
+  is_external_benchmark?: boolean
+  website_url?: string | null
 }
 
 type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs_ratio' | 'h_index' | 'cited_by_count' | 'subject_percentile'
@@ -108,9 +113,15 @@ export function CitationReportsTable({ rows }: { rows: CitationReportRow[] }) {
               {sorted.map(row => (
                 <tr key={row.journal_code} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                   <td className="px-4 py-3">
-                    <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
-                      {row.title}
-                    </Link>
+                    {row.is_external_benchmark ? (
+                      <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                        {row.title}
+                      </a>
+                    ) : (
+                      <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                        {row.title}
+                      </Link>
+                    )}
                     <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{row.short_title}</span>
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
