@@ -270,7 +270,7 @@ function SearchResults() {
               fontFamily: 'var(--font-mono)',
               fontSize: '16px',
               WebkitAppearance: 'none',
-              width: '118px',
+              width: '170px',
             }}
           >
             {SEARCH_FIELDS.map(f => (
