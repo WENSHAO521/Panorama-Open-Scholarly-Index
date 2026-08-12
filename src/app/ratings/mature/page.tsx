@@ -27,9 +27,14 @@ export default function MatureRankingsPage() {
       </nav>
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
-        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-          PILOT 2026
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
+            PILOT 2026
+          </span>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
+            MATURE TRACK — PREVIEW
+          </span>
+        </div>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Mature Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           Journals with at least 60 months of publishing history — evaluated eventually through{' '}
@@ -81,9 +86,9 @@ export default function MatureRankingsPage() {
                 header: 'M-Q',
                 render: j => j.early_stage_rating?.provisional_quartile
                   ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
-                  : { value: '—', title: 'Not assigned — its PSC category/domain cohort hasn\'t reached the minimum size yet (L2 ≥20, L1 fallback ≥30)' },
+                  : { value: 'Not released', title: 'Not assigned — its PSC category/domain cohort hasn\'t reached the minimum size yet (L2 ≥20, L1 fallback ≥30)' },
               },
-              { header: 'Citation Q', render: () => ({ value: '—', title: 'PCI not yet wired into this cohort' }) },
+              { header: 'Citation Q', render: () => ({ value: 'Not released', title: 'PCI not yet wired into this cohort' }) },
             ]}
           />
         ) : (

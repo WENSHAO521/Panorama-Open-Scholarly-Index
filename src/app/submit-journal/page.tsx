@@ -4,27 +4,25 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Submit Journal | POSI',
-  description: 'Submit an open access journal record to POSI for evidence review, PQF assessment, and metadata quality analysis.',
+  description: 'Submit a journal record to POSI for evidence review, PQF assessment, lifecycle classification, and citation analytics.',
 }
 
 const ELIGIBILITY = [
-  'Fully open access — no subscription paywall for readers',
-  'All articles published under a Creative Commons license (CC BY, CC BY-SA, CC BY-NC, or equivalent)',
-  'DOIs registered for all published articles via Crossref',
+  'Actively publishing, with a publicly accessible journal website',
+  'DOIs registered for published articles via Crossref (or an equivalent resolvable identifier)',
   'Peer review process documented and publicly disclosed',
   'Editorial board listed publicly with verifiable institutional affiliations',
-  'APC and fee information publicly available (or explicit statement of no charges)',
+  'Fee/APC information publicly available (or explicit statement of no charges) — any access or business model is fine, as long as it is disclosed',
   'Retraction and corrections policy publicly available',
-  'Open access policy clearly stated per article',
+  'Publication ethics policy publicly available',
 ]
 
 const NOT_ELIGIBLE = [
-  'Subscription-based or hybrid open access journals',
-  'Journals without Crossref DOI registration',
-  'Journals flagged on DOAJ\'s predatory journal criteria',
-  'Journals with undisclosed or unverifiable editorial boards',
-  'Single-issue, discontinued, or inactive journals',
-  'Journals with no publicly accessible website',
+  'No publicly accessible website',
+  'No resolvable DOI or other stable article-level identifier',
+  'Undisclosed or unverifiable editorial board',
+  'Discontinued or inactive journals',
+  'False claims of indexing by DOAJ, Scopus, Web of Science, or PubMed on the journal\'s own pages',
 ]
 
 const PROCESS_STEPS = [
@@ -86,9 +84,11 @@ export default function SubmitJournalPage() {
           Submit a Journal Record to POSI
         </h1>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          POSI accepts applications from open access journal editors and publishers worldwide.
-          Accepted records receive a public POSI Journal Record with full PQF assessment,
-          Metadata Quality Score (MQS), and Indexing Readiness Score (IRS).
+          POSI accepts applications from journal editors and publishers worldwide, on any access
+          or business model. Admission to the Core Collection runs through evidence review, PQF
+          editorial-selection assessment, lifecycle classification, PSC subject classification, and
+          AJR-E/AJR-M rating — see <Link href="/pqf" className="underline">how a record moves through
+          the pipeline</Link> below.
         </p>
       </div>
 
@@ -96,10 +96,12 @@ export default function SubmitJournalPage() {
       <div className="flex items-start gap-3 p-4" style={{ background: 'var(--posi-soft-blue)', border: '1px solid var(--posi-border)' }}>
         <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-primary)' }} />
         <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-text)' }}>
-          <strong>Early Access:</strong> POSI journal record review is currently free and open to qualifying open access journals.
-          We prioritize journals with active Crossref DOI registration, complete editorial transparency, and DOAJ-eligible criteria.
-          Journal records submitted by publishers who operate POSI (Panorama Scholarly Group) are subject to the same PQF criteria
-          and include a conflict of interest disclosure.{' '}
+          <strong>Pilot 2026:</strong> POSI journal record review is currently free and open to journals
+          of any access model — open access, hybrid, or subscription. Admission depends on editorial
+          transparency and resolvable identity (public editorial board, disclosed peer review, resolvable
+          DOIs), not on being open access or on DOAJ listing status; DOAJ is one signal we may reference,
+          never an admission gate. Journal records submitted by publishers who operate POSI (Panorama
+          Scholarly Group) are subject to the same PQF criteria and include a conflict of interest disclosure.{' '}
           <Link href="/about" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Read our governance policy →</Link>
         </p>
       </div>
@@ -210,12 +212,19 @@ export default function SubmitJournalPage() {
 
       {/* What happens after acceptance */}
       <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--posi-text)' }}>After Acceptance</h2>
+        <h2 className="text-sm font-bold mb-2" style={{ color: 'var(--posi-text)' }}>After Acceptance — the Core Collection Pipeline</h2>
+        <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>
+          Admission is the start of the pipeline, not the end of it. Every accepted record moves through
+          the same sequence — nothing here depends on access model or DOAJ status:
+        </p>
         <div className="space-y-3">
           {[
-            { icon: CheckCircle, color: '#1F7A4D', title: 'Public Journal Record', desc: 'A permanent POSI Journal Record page is created with all metadata, ISSN, publisher information, and journal details.' },
-            { icon: FileText, color: 'var(--posi-primary)', title: 'PQF Assessment Report', desc: 'A full PQF report showing scores for all six subfactors (JTF, MQF, EGF, TDF, CVF, RIF) with criterion-level evidence notes.' },
-            { icon: ArrowRight, color: 'var(--posi-accent)', title: 'Metadata Quality Review', desc: 'Article-level MQS scoring based on DOI, abstract, ORCID, reference list, and license metadata completeness.' },
+            { icon: CheckCircle, color: '#1F7A4D', title: '1. Public Journal Record', desc: 'A permanent POSI Journal Record page is created with all metadata, ISSN, publisher information, and journal details.' },
+            { icon: FileText, color: 'var(--posi-primary)', title: '2. PQF Editorial Selection Assessment', desc: 'A full PQF report showing scores for all six subfactors (JTF, MQF, EGF, TDF, CVF, RIF) with criterion-level evidence notes. PQF supports Core Collection admission — it is not a citation-impact score.' },
+            { icon: ArrowRight, color: 'var(--posi-accent)', title: '3. Lifecycle Classification', desc: 'Based on months since first regular publication, the journal is placed into Observation (0–11mo), Early-Stage (12–59mo), or Mature (60+mo) — see the Lifecycle tracks.' },
+            { icon: ArrowRight, color: 'var(--posi-accent)', title: '4. PSC Subject Classification', desc: 'The journal is classified into POSI Subject Categories, which determines its peer cohort for ranking.' },
+            { icon: ArrowRight, color: 'var(--posi-accent)', title: '5. AJR-E / AJR-M Rating', desc: 'Early-Stage journals receive an AJR-E score and E-Q ranking; Mature journals receive an AJR-M score and M-Q ranking within their PSC peer cohort, once the cohort reaches minimum size.' },
+            { icon: ArrowRight, color: 'var(--posi-accent)', title: '6. Citation Analytics', desc: 'Once PJR citation-impact metrics are wired to a journal\'s cohort, PCI/PCI-5/PNCI and Citation Q are reported independently of the lifecycle track.' },
             { icon: ArrowRight, color: 'var(--posi-accent)', title: 'Annual Re-assessment', desc: 'Records are re-assessed annually. Journals may request an expedited review after documented improvements.' },
           ].map((item, i) => (
             <div key={i} className="flex items-start gap-3">

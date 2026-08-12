@@ -3,6 +3,8 @@ import { SearchBar } from '@/components/SearchBar'
 import { Reveal, FadeIn } from '@/components/Reveal'
 import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { getLatestAnnouncements } from '@/lib/announcements'
+import { RELEASE_LABEL } from '@/lib/release'
 
 export const revalidate = 3600
 
@@ -19,11 +21,11 @@ export default async function HomePage() {
   }
   const coreCollection = getCoreCollection()
   const lifecycleRated = coreCollection.filter(j => j.early_stage_rating?.total != null).length
-    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.total != null).length
   const observationCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'observation').length
   const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
   const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
     + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
+  const announcements = getLatestAnnouncements(3)
 
   return (
     <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
@@ -134,7 +136,7 @@ export default async function HomePage() {
               {[
                 { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Core Collection',      note: 'Admitted through published editorial selection' },
                 { value: BENCHMARK_JOURNALS.length.toLocaleString(),                     label: 'Global Benchmark',     note: 'External validation corpus, not Core Collection' },
-                { value: lifecycleRated.toLocaleString(),                                label: 'Lifecycle Rated',      note: 'Early + Mature — see Ratings & Rankings' },
+                { value: lifecycleRated.toLocaleString(),                                label: 'Lifecycle Rated',      note: 'Core Collection, Early + Mature — see Ratings & Rankings' },
                 { value: '48',                                                            label: 'PSC Subject Categories', note: 'v1.0 taxonomy — see PSC Subjects' },
               ].map((s) => (
                 <div
@@ -167,6 +169,13 @@ export default async function HomePage() {
               style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font-mono)' }}
             >
               <span>Updated {stats.last_updated}</span>
+              <Link
+                href="/ratings"
+                className="px-1.5 py-0.5 transition-colors hover:text-white"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
+              >
+                {RELEASE_LABEL.toUpperCase()} · TRIAL OPERATION
+              </Link>
               <span
                 className="px-1.5 py-0.5"
                 style={{ background: 'rgba(196,30,58,0.15)', border: '1px solid rgba(196,30,58,0.3)', color: 'rgba(255,255,255,0.45)' }}
@@ -187,6 +196,57 @@ export default async function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      {/* ── ANNOUNCEMENTS ── */}
+      {announcements.length > 0 && (
+        <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
+          <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-between mb-4">
+              <p
+                className="text-[9px] font-bold uppercase tracking-[0.18em]"
+                style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
+              >
+                Announcements
+              </p>
+              <Link
+                href="/announcements"
+                className="text-xs hover:underline transition-colors"
+                style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
+              >
+                View All →
+              </Link>
+            </div>
+            <div style={{ border: '1px solid var(--posi-border)' }}>
+              {announcements.map((a, i) => (
+                <Link
+                  key={a.slug}
+                  href={`/announcements/${a.slug}`}
+                  className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4 p-4 sm:p-5 transition-colors hover:bg-[#fafafa] group"
+                  style={{ borderBottom: i < announcements.length - 1 ? '1px solid var(--posi-border-light)' : 'none' }}
+                >
+                  <span
+                    className="shrink-0 text-[10px] font-mono mt-0.5"
+                    style={{ color: 'var(--posi-muted)' }}
+                  >
+                    {a.date}
+                  </span>
+                  <div>
+                    <h2
+                      className="text-sm font-semibold group-hover:underline leading-snug"
+                      style={{ color: 'var(--posi-text)' }}
+                    >
+                      {a.title}
+                    </h2>
+                    <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+                      {a.summary}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+      )}
 
       {/* ── FOUR PRODUCT ENTRY POINTS ── */}
       <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>

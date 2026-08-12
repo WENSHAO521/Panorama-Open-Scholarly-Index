@@ -14,6 +14,7 @@ type NavItem = { label: string; href?: string; children?: SubItem[] }
 
 const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
+  { label: 'Announcements', href: '/announcements' },
   {
     label: 'Explore',
     children: [
@@ -39,6 +40,8 @@ const navItems: NavItem[] = [
     children: [
       { label: 'POSI Core Collection',        href: '/core-collection' },
       { label: 'Global Benchmark Collection', href: '/coverage/global-benchmark' },
+      { label: 'Coverage Policy',             href: '/coverage/policy' },
+      { label: 'Coverage Changes',            href: '/coverage/changes' },
     ],
   },
   {
