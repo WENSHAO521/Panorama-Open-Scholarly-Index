@@ -3,6 +3,7 @@ import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata = {
   title: 'POSI Mature Journal Rankings — AJR-M',
@@ -29,7 +30,7 @@ export default function MatureRankingsPage() {
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-            PILOT 2026
+            RELEASE {RELEASE_LABEL}
           </span>
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
             MATURE TRACK — PREVIEW

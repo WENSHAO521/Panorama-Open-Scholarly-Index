@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata = {
   title: 'POSI Early-Stage Journal Rankings — AJR-E',
@@ -25,7 +26,7 @@ export default function EarlyStageRankingsPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-          PILOT 2026
+          RELEASE {RELEASE_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Early-Stage Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>

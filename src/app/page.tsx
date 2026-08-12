@@ -174,7 +174,7 @@ export default async function HomePage() {
                 className="px-1.5 py-0.5 transition-colors hover:text-white"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
               >
-                PUBLIC BETA · {RELEASE_LABEL.toUpperCase()} · TRIAL OPERATION
+                POSI IS LIVE · {RELEASE_LABEL.toUpperCase()} · DATA COVERAGE EXPANDING
               </Link>
               <Link
                 href="/open-data"

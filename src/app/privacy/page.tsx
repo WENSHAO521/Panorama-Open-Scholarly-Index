@@ -47,7 +47,7 @@ const SECTIONS = [
   {
     heading: 'Changes to This Policy',
     body: [
-      'POSI is in a pre-operational pilot phase, and its technical infrastructure may change (for example, adding cookie-less analytics or an API with authenticated access). Material changes to what data is collected will be reflected on this page with an updated date below.',
+      'POSI is in a pre-operational phase, and its technical infrastructure may change (for example, adding cookie-less analytics or an API with authenticated access). Material changes to what data is collected will be reflected on this page with an updated date below.',
     ],
   },
 ]

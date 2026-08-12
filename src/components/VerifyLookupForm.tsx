@@ -51,7 +51,7 @@ export function VerifyLookupForm({ journals, releaseId }: { journals: Verifiable
       <input
         value={query}
         onChange={e => setQuery(e.target.value)}
-        placeholder="e.g. grhas or POSI-R-2026-PILOT-GRHAS"
+        placeholder="e.g. grhas or POSI-R-2026.1-GRHAS"
         className="w-full text-xs px-3 py-2 focus:outline-none mb-1"
         style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
       />

@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Terms of Use | POSI',
-  description: 'Terms governing use of posi.panorama-sg.com, the data license for POSI metadata, and disclaimers applicable during the pre-operational pilot phase.',
+  description: 'Terms governing use of posi.panorama-sg.com, the data license for POSI metadata, and disclaimers applicable during the pre-operational phase.',
 }
 
 const SECTIONS = [
@@ -12,8 +12,8 @@ const SECTIONS = [
     body: 'By accessing posi.panorama-sg.com ("POSI"), you agree to these terms. POSI is operated by Panorama Scholarly Group Ltd. ("Panorama", "we", "us"), a Hong Kong SAR entity. If you do not agree, do not use the site.',
   },
   {
-    heading: 'Pre-Operational Pilot Status',
-    body: 'POSI is currently in a pre-operational pilot phase. Several ranking and citation methodologies (including AJR, PJR, and related quartile/percentile figures) are explicitly labeled Preview, in progress, or Public Beta on the pages where they appear, and are not yet finalized. Do not treat any score, ranking, or badge on this site as a final, official, or accredited determination until the site itself states otherwise.',
+    heading: 'Pre-Operational Status',
+    body: 'POSI is formally launched and live, but currently in a pre-operational phase: several ranking and citation methodologies (including AJR, PJR, and related quartile/percentile figures) are explicitly labeled Preview, in progress, or Not Yet Released on the pages where they appear, and are not yet finalized. Do not treat any score, ranking, or badge on this site as a final, official, or accredited determination until the site itself states otherwise.',
   },
   {
     heading: 'No Warranty',
@@ -40,7 +40,7 @@ const SECTIONS = [
   },
   {
     heading: 'Limitation of Liability',
-    body: 'To the fullest extent permitted by law, Panorama Scholarly Group Ltd. is not liable for decisions made in reliance on POSI data, including during the pre-operational pilot phase when methodology is explicitly marked as unfinished.',
+    body: 'To the fullest extent permitted by law, Panorama Scholarly Group Ltd. is not liable for decisions made in reliance on POSI data, including during the pre-operational phase when methodology is explicitly marked as unfinished.',
   },
   {
     heading: 'Governing Law',
@@ -48,7 +48,7 @@ const SECTIONS = [
   },
   {
     heading: 'Changes',
-    body: 'We may update these terms as POSI moves from pre-operational pilot to full operation. Material changes will be reflected on this page with an updated date below.',
+    body: 'We may update these terms as POSI moves from pre-operational to full operation. Material changes will be reflected on this page with an updated date below.',
   },
 ]
 

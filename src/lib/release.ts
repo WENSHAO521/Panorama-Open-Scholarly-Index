@@ -10,10 +10,10 @@
 // released version file in place" rule posi-data's own taxonomy already
 // follows.
 
-export const RELEASE_ID = 'POSI-R-2026-PILOT'
-export const RELEASE_LABEL = 'Pilot 2026'
+export const RELEASE_ID = 'POSI-R-2026.1'
+export const RELEASE_LABEL = '2026.1'
 export const METHODOLOGY_VERSION = 'AJR Lifecycle 1.0'
-export const DATA_CUTOFF = '2026-08-10'
+export const DATA_CUTOFF = '2026-08-12'
 
 /**
  * Deterministic per-journal verification code — not a claim of a

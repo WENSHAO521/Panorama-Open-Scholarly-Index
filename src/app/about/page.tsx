@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { PSG_JOURNALS, getCoreCollection } from '@/lib/data'
+import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata = {
   title: 'About POSI | Panorama Open Scholarly Index',
@@ -23,7 +24,7 @@ export default function AboutPage() {
             v2.0
           </span>
           <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: '#92400e', color: '#fff' }}>
-            PUBLIC BETA · TRIAL OPERATION 2026
+            LIVE · RELEASE {RELEASE_LABEL} · DATA COVERAGE EXPANDING
           </span>
         </div>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
@@ -35,10 +36,12 @@ export default function AboutPage() {
           admission, scores, rankings, or quartiles.
         </p>
         <p className="text-sm leading-relaxed max-w-2xl mt-3 p-3" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
-          <strong>Public Beta:</strong> POSI is in public beta / trial operation as of August 2026. Some
-          lifecycle ratings, citation metrics, and subject rankings remain under methodological validation
-          and may not yet be available for all journals — pages that aren't finalized say so explicitly
-          (e.g. &quot;Preview&quot; or &quot;Not Yet Released&quot;) rather than showing a placeholder as if it were final.
+          <strong>Officially Launched, Data Coverage Expanding:</strong> POSI is formally live as of August
+          2026 — this is not a trial that could be discontinued. What&apos;s still in progress is coverage, not
+          the platform itself: some lifecycle ratings, citation metrics, and subject rankings remain under
+          methodological validation and may not yet be available for all journals — pages that aren&apos;t
+          finalized say so explicitly (e.g. &quot;Preview&quot; or &quot;Not Yet Released&quot;) rather than showing a
+          placeholder as if it were final.
         </p>
       </div>
 

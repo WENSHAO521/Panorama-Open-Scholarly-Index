@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 }
 
 // Append-only log of Core Collection status changes (see /coverage/policy for
-// what each state means). Empty at Pilot 2026 launch — this is the honest
-// starting state, not a placeholder to be replaced later.
+// what each state means). Empty at launch — this is the honest starting
+// state, not a placeholder to be replaced later.
 type CoverageChange = {
   date: string
   journal: string

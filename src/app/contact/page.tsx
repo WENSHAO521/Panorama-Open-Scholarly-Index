@@ -19,7 +19,7 @@ const CONTACT_TOPICS = [
     topic: 'Report Data or Evidence Issue',
     address: 'posi@panorama-sg.com',
     subject: 'POSI Data/Evidence Issue: [Journal Title or ISSN]',
-    desc: 'Report incorrect metadata, wrong ISSN, broken links or evidence sources, misclassified PSC subject, outdated policy information, or a dispute over evidence used in an automated assessment — for any existing journal record. Public Beta note: most rating/quartile figures are still under methodological validation, so this is for factual and evidence corrections, not a formal appeal of a published rating (there is no published rating to appeal yet).',
+    desc: 'Report incorrect metadata, wrong ISSN, broken links or evidence sources, misclassified PSC subject, outdated policy information, or a dispute over evidence used in an automated assessment — for any existing journal record. Coverage note: most rating/quartile figures are still under methodological validation, so this is for factual and evidence corrections, not a formal appeal of a published rating (there is no published rating to appeal yet).',
     cta: null,
   },
   {

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr'
+import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata: Metadata = {
   title: 'Coverage Policy | POSI',
@@ -77,7 +78,7 @@ export default function CoveragePolicyPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-          PILOT 2026
+          RELEASE {RELEASE_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Coverage Policy</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
@@ -94,7 +95,7 @@ export default function CoveragePolicyPage() {
       <div className="flex items-start gap-3 p-4 text-xs leading-relaxed" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
         <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <span>
-          <strong>Pilot 2026 note:</strong> this policy is in effect from launch. No Core Collection
+          <strong>Launch note:</strong> this policy is in effect from launch. No Core Collection
           journal has moved past Admission / Continuing Review yet — see{' '}
           <Link href="/coverage/changes" className="underline">Coverage Changes</Link> for the current,
           empty log.

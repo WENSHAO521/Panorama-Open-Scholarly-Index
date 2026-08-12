@@ -96,7 +96,7 @@ export default function SubmitJournalPage() {
       <div className="flex items-start gap-3 p-4" style={{ background: 'var(--posi-soft-blue)', border: '1px solid var(--posi-border)' }}>
         <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-primary)' }} />
         <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-text)' }}>
-          <strong>Pilot 2026:</strong> POSI journal record review is currently free and open to journals
+          <strong>Launch Period:</strong> POSI journal record review is currently free and open to journals
           of any access model — open access, hybrid, or subscription. Admission depends on editorial
           transparency and resolvable identity (public editorial board, disclosed peer review, resolvable
           DOIs), not on being open access or on DOAJ listing status; DOAJ is one signal we may reference,
