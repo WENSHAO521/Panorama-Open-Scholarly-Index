@@ -33,3 +33,27 @@ export const CURATED_BENCHMARK_JOURNALS: Journal[] = BENCHMARK_JOURNALS.filter(j
 // individually vetted. Never rated (early_stage_rating is always null on
 // these), never counted toward "internationally established" framing.
 export const PUBLISHER_CATALOG_JOURNALS: Journal[] = BENCHMARK_JOURNALS.filter(j => !!j.source_note)
+
+// Three-way split of PUBLISHER_CATALOG_JOURNALS by citation_rating (see
+// posi-data's audits/migrations/benchmark-citation-q-2026/ for how this
+// was computed — a provisional PSC classification + lifecycle bucket +
+// Citation Q ranking, deliberately NOT a full evidence-based AJR-M score).
+
+// Mature (>=5yr OpenAlex-visible publishing history), PSC-classified at
+// high confidence, AND in a same-category cohort of >=20 — the only
+// group that gets an actual Citation Q quartile. Sorted best-percentile-first.
+export const MATURE_RANKED_BENCHMARK_JOURNALS: Journal[] = PUBLISHER_CATALOG_JOURNALS
+  .filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method === 'pci_midrank')
+  .sort((a, b) => (b.citation_rating!.citation_q!.percentile ?? 0) - (a.citation_rating!.citation_q!.percentile ?? 0))
+
+// Mature, but either PSC-unclassified/low-confidence, or classified into
+// a category with fewer than 20 same-category peers to rank against —
+// shown, but never given a quartile (there's nothing to rank it against).
+export const MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS: Journal[] = PUBLISHER_CATALOG_JOURNALS
+  .filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method !== 'pci_midrank')
+
+// Not yet 5 years of OpenAlex-visible publishing history — these belong
+// conceptually with Early-Stage, not Mature. See ratings/early-stage's
+// benchmark section.
+export const NOT_YET_MATURE_BENCHMARK_JOURNALS: Journal[] = PUBLISHER_CATALOG_JOURNALS
+  .filter(j => j.citation_rating?.lifecycle_bucket === 'not_yet_mature')

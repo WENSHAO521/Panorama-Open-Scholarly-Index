@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { CitationRatingsTable } from '@/components/CitationRatingsTable'
+import { NOT_YET_MATURE_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import { RELEASE_LABEL } from '@/lib/release'
 
 export const metadata = {
@@ -70,6 +72,42 @@ export default function EarlyStageRankingsPage() {
           minimum evidence bar have no score yet, and that is expected. Only journals in the 12–59 month
           window with a score are candidates for a future E-Q.
         </p>
+      </section>
+
+      {/* ── PUBLISHER-CATALOG EXPANSION: NOT YET MATURE ── */}
+      <div className="border-l-4 pl-5 pt-4" style={{ borderColor: '#6B7280' }}>
+        <h2 className="text-lg font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>
+          Global Benchmark Publisher-Catalog Expansion — Not Yet Mature
+        </h2>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+          {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} journals from the 2026-08 Elsevier/Frontiers bulk
+          publisher-catalog ingestion (see{' '}
+          <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>)
+          don&apos;t yet show 5+ years of OpenAlex-visible publishing history, so they sit here rather than
+          in Mature Rankings — a conservative check, not a claim they were founded recently (POSI&apos;s own
+          principle: absence of evidence is never treated as the favorable case). No AJR-E score, E-Q, or
+          Citation Q is computed for this group — no evidence crawl was run at this scale (see{' '}
+          <Link href="/ratings/mature" className="underline">Mature Rankings</Link> for the full rationale).
+        </p>
+      </div>
+
+      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+          <h3 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>
+            Not Yet Mature — {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} Journals
+          </h3>
+        </div>
+        {NOT_YET_MATURE_BENCHMARK_JOURNALS.length > 0 ? (
+          <CitationRatingsTable journals={NOT_YET_MATURE_BENCHMARK_JOURNALS.slice(0, 50)} />
+        ) : (
+          <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>None.</p>
+        )}
+        {NOT_YET_MATURE_BENCHMARK_JOURNALS.length > 50 && (
+          <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
+            Showing 50 of {NOT_YET_MATURE_BENCHMARK_JOURNALS.length}. Full corpus: see{' '}
+            <a href="https://github.com/WENSHAO521/posi-data/blob/master/corpus/global-benchmark.json" target="_blank" rel="noopener noreferrer" className="underline">global-benchmark.json →</a>
+          </p>
+        )}
       </section>
 
       <div className="flex flex-wrap gap-5 text-xs">

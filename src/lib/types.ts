@@ -58,6 +58,43 @@ export interface Journal {
   // OpenAlex is_core/citation-activity signals, not a raw publisher
   // export) — see benchmark-journals.ts's CURATED_BENCHMARK_JOURNALS.
   source_note?: string | null
+  // Only present on PUBLISHER_CATALOG_JOURNALS (source_note is set) —
+  // never both this AND early_stage_rating at once. A *provisional*
+  // Citation Q rating computed without any evidence-crawling (see
+  // posi-data's audits/migrations/benchmark-citation-q-2026/README.md for
+  // the full rationale on why a full AJR-M score isn't attempted at this
+  // scale). early_stage_rating stays reserved for a real, evidence-based
+  // AJR score and is never populated by this pathway.
+  citation_rating?: CitationRating | null
+}
+
+export interface CitationRating {
+  psc_category: string | null
+  psc_confidence: 'high' | 'medium' | 'low' | 'unclassified'
+  // NOT the real FPD-1.0/LIFECYCLE-1.1 methodology (that needs an actual
+  // first-publication-date resolution) — a conservative proxy: 'mature'
+  // only when OpenAlex shows real, checkable publishing activity >=5
+  // years before this rating was computed. 'not_yet_mature' is the
+  // default for missing evidence, never assumed favorably.
+  lifecycle_bucket: 'mature' | 'not_yet_mature'
+  // OpenAlex's own 2yr_mean_citedness, taken as-is — the same provisional
+  // figure /citation-reports already shows for Core Collection, pending a
+  // real PJR release. Not official PCI.
+  two_yr_mean_citedness: number | null
+  h_index: number | null
+  works_count: number | null
+  citation_q: {
+    quartile: 'Q1' | 'Q2' | 'Q3' | 'Q4' | null
+    quartile_label: string | null
+    percentile: number | null
+    rank: number | null
+    cohort_size: number | null
+    ranking_method: 'pci_midrank' | 'unavailable'
+    category_code: string | null
+  } | null
+  rated_at: string
+  version: string
+  source_note: string
 }
 
 export interface Author {
