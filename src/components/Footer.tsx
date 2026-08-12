@@ -36,6 +36,8 @@ const NAV_COLUMNS = [
       { href: '/coi',               label: 'Conflict of Interest' },
       { href: '/responsible-use',   label: 'Responsible Use' },
       { href: '/contact',           label: 'Contact' },
+      { href: '/privacy',           label: 'Privacy Policy' },
+      { href: '/terms',             label: 'Terms of Use' },
     ],
   },
 ]

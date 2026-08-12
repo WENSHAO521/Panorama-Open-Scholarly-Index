@@ -24,15 +24,38 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const SITE_URL = "https://posi.panorama-sg.com";
+const SITE_DESCRIPTION =
+  "Panorama Open Scholarly Index is an open journal indexing, lifecycle evaluation, subject ranking, and citation analytics infrastructure built on versioned evidence and reproducible methodology.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Panorama Open Scholarly Index",
     template: "%s | POSI",
   },
-  description:
-    "Panorama Open Scholarly Index is an open journal indexing, lifecycle evaluation, subject ranking, and citation analytics infrastructure built on versioned evidence and reproducible methodology.",
+  description: SITE_DESCRIPTION,
   keywords: ["journal rankings", "journal evaluation", "academic journals", "citation analytics", "journal quartiles", "scholarly index", "open citation metrics", "PSC", "AJR", "PCI"],
   icons: { icon: "/favicon.svg" },
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: "POSI — Panorama Open Scholarly Index",
+    title: "Panorama Open Scholarly Index",
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Panorama Open Scholarly Index",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

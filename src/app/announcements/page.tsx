@@ -1,14 +1,16 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getSortedAnnouncements } from '@/lib/announcements'
+import { getLatestAnnouncements } from '@/lib/announcements'
 
 export const metadata: Metadata = {
   title: 'Announcements | POSI',
   description: 'Official announcements and platform updates from POSI — Panorama Open Scholarly Index.',
 }
 
+const MAX_VISIBLE = 5
+
 export default function AnnouncementsPage() {
-  const announcements = getSortedAnnouncements()
+  const announcements = getLatestAnnouncements(MAX_VISIBLE)
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
