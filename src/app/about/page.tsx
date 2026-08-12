@@ -17,10 +17,13 @@ export default function AboutPage() {
           <span>/</span>
           <span style={{ color: 'var(--posi-text)' }}>About</span>
         </nav>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
           <h1 className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>About POSI</h1>
           <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
             v2.0
+          </span>
+          <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: '#92400e', color: '#fff' }}>
+            PUBLIC BETA · TRIAL OPERATION 2026
           </span>
         </div>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
@@ -30,6 +33,12 @@ export default function AboutPage() {
           rankings. POSI's data, methodology, and calculation code are openly documented and versioned.
           External database inclusion (DOAJ, Scopus, Web of Science, PubMed) does not determine POSI
           admission, scores, rankings, or quartiles.
+        </p>
+        <p className="text-sm leading-relaxed max-w-2xl mt-3 p-3" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+          <strong>Public Beta:</strong> POSI is in public beta / trial operation as of August 2026. Some
+          lifecycle ratings, citation metrics, and subject rankings remain under methodological validation
+          and may not yet be available for all journals — pages that aren't finalized say so explicitly
+          (e.g. &quot;Preview&quot; or &quot;Not Yet Released&quot;) rather than showing a placeholder as if it were final.
         </p>
       </div>
 

@@ -242,14 +242,28 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   const lifecyclePanel = isDiscovered || !journal.early_stage_rating ? null : (
     (journal.early_stage_rating.eligibility === 'early_stage' || journal.early_stage_rating.eligibility === 'mature') && journal.early_stage_rating.subfactors ? (
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-            POSI Automated Rating (AJR)
+            {journal.early_stage_rating.eligibility === 'mature' ? 'POSI Automated Rating (AJR-E basis)' : 'POSI Automated Rating (AJR-E)'}
           </h2>
-          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
-            100% AUTOMATED
-          </span>
+          <div className="flex items-center gap-1.5">
+            {journal.early_stage_rating.eligibility === 'mature' && (
+              <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
+                AJR-M NOT YET RELEASED
+              </span>
+            )}
+            <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
+              100% AUTOMATED
+            </span>
+          </div>
         </div>
+        {journal.early_stage_rating.eligibility === 'mature' && (
+          <p className="text-[10px] leading-relaxed mb-2 p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+            This journal is mature (60+ months) and AJR-M (the citation-weighted mature-journal rating) is
+            not yet released. The score below is the interim AJR-E rubric — directionally useful, but not
+            AJR-M — see <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
+          </p>
+        )}
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
             {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
