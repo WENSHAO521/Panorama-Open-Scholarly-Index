@@ -1,53 +1,43 @@
 # Panorama Open Scholarly Index (POSI)
 
-Open scholarly metadata platform for journal transparency, metadata quality, and citation visibility. Live at [posi.panorama-sg.com](https://posi.panorama-sg.com).
+Open scholarly indexing, lifecycle-based automated journal ratings, subject rankings, and citation analytics — built from versioned evidence and reproducible methodology. Live at [posi.panorama-sg.com](https://posi.panorama-sg.com).
 
-> **Notice:** POSI is not a replacement for Web of Science, Scopus, or DOAJ. PQF scores indicate metadata completeness and transparency readiness only — they must not be used for researcher evaluation, hiring, promotion, or funding decisions.
+> **Notice:** POSI is not affiliated with or endorsed by Web of Science, Scopus, or DOAJ. POSI's PCI/PCI-5/PNCI figures are not Journal Impact Factors. Automated scores and rankings must not be used for individual researcher evaluation, hiring, promotion, or funding decisions — see [Responsible Use](https://posi.panorama-sg.com/responsible-use).
 
 ---
 
 ## What POSI Does
 
-POSI aggregates and enriches scholarly metadata from open infrastructure sources (Crossref, OpenAlex, OAI-PMH, DOAJ, ROR, ORCID) and publishes it through a public web platform and planned API.
+This repo is the **display layer only** — a static-exported Next.js site that reads pre-computed data from [posi-data](https://github.com/WENSHAO521/posi-data) (the canonical data store) and [posi-engine](https://github.com/WENSHAO521/posi-engine) (the calculation engine). It does not compute scores, rankings, or classifications itself.
 
-Key functions:
+- **Core Collection** — journals admitted through POSI's published editorial selection criteria (PQF admission gate), fully indexed with article-level metadata and evidence.
+- **Global Benchmark Collection** — a large external validation corpus (curated seed + a 2026-08 bulk publisher-catalog expansion), used to check POSI's methodology against real-world data at scale — never a POSI admission candidate.
+- **AJR (POSI Automated Rating)** — lifecycle-staged, evidence-based journal ratings: **AJR-E** (Early-Stage, 12–59 months) and **AJR-M** (Mature, 60+ months), each ranked within same-subject PSC peer cohorts as E-Q1–E-Q4 / M-Q1–M-Q4.
+- **Citation Q** — an independent, PCI-based citation-impact quartile track, separate from AJR-E/AJR-M.
+- **PSC (POSI Subject Classification)** — an OpenAlex-topic-derived subject taxonomy used to form fair, same-field peer cohorts for every ranking track.
+- **PQF (POSI Quality Framework)** — the evidence-based admission gate for the Core Collection (Journal Transparency, Metadata Quality, Editorial Governance, Technical Discoverability, Citation Visibility, Research Integrity).
+- **Permanent identity** — every journal POSI has resolved carries a stable `POSI-J-######` id (see posi-data's `registry/`), verifiable at `/verify`.
 
-- **Journal indexing** — profiles for PSG journals and third-party open access journals
-- **Article metadata** — DOI-linked article records with metadata quality scoring
-- **PQF assessment** — POSI Quality Factor: composite 0–100 indicator across six dimensions
-- **Evidence registry** — per-journal, criterion-level evidence records
-- **DOI lookup** — verify DOI registration, Crossref/OpenAlex status, citation visibility
-- **Full-text search** — search articles and journals via Crossref with server-side proxy
+100% automated, rules-driven scoring — no reviewer, editor, publisher, sponsor, or POSI administrator has a code path to directly set a score, rank, percentile, or quartile. Only evidence can be corrected.
 
 ---
 
-## Platform Coverage
+## Platform Coverage (2026-08)
 
 | Scope | Count |
 |---|---|
-| PSG journals | 12 |
-| Indexed third-party journals | 18 |
-| Total journals | 30 |
-| Articles (live from Crossref) | auto-updated hourly |
+| Core Collection (admitted, fully indexed) | 31 |
+| Global Benchmark Collection (external validation corpus) | 4,289 |
+| Discovered journal records (found via DOAJ/Crossref/OpenAlex, not yet reviewed) | 23,796 |
+| Permanent `POSI-J-######` identities minted | 26,000+ |
 
-Stats on the homepage are fetched live from Crossref every hour via ISR (`revalidate = 3600`).
+Discovered Journal Records are found, not indexed — POSI has a record of them, that is not the same as POSI reviewing or admitting them. See [Open Data](https://posi.panorama-sg.com/open-data) for exact current counts; the numbers above are a snapshot, not live.
 
 ---
 
-## PQF — POSI Quality Factor
+## Status: Formally Launched, Data Coverage Expanding
 
-PQF is a composite, evidence-based journal quality indicator with six weighted subfactors:
-
-| Subfactor | Weight | Assesses |
-|---|---|---|
-| JTF — Journal Transparency | 25 pts | Governance, APC policy, ethics, corrections |
-| MQF — Metadata Quality | 25 pts | DOI, ORCID, abstracts, references, license URI |
-| EGF — Editorial Governance | 20 pts | Board diversity, reviewer guidelines, COI policy |
-| TDF — Technical Discoverability | 15 pts | OAI-PMH, sitemap, Schema.org, DOI resolution |
-| CVF — Citation Visibility | 10 pts | OpenAlex, Crossref cited-by, OpenCitations |
-| RIF — Research Integrity | 5 pts | Retraction/plagiarism/data-sharing policies |
-
-Grades: A+ (≥90) · A (80–89) · B+ (70–79) · B (60–69) · C (50–59) · D (40–49) · E (<40)
+POSI is live and formally launched, not a beta or trial that could be discontinued. What's still in progress is *coverage*, not the platform: some lifecycle ratings, citation metrics, and subject rankings remain under methodological validation and aren't yet available for every journal — pages that aren't finalized say so explicitly (e.g. "Preview" or "Not Yet Released") rather than showing a placeholder as if it were final. See [About](https://posi.panorama-sg.com/about) and [Terms](https://posi.panorama-sg.com/terms).
 
 ---
 
@@ -55,14 +45,15 @@ Grades: A+ (≥90) · A (80–89) · B+ (70–79) · B (60–69) · C (50–59) 
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router, RSC, ISR) |
+| Framework | Next.js (App Router, RSC) |
 | Language | TypeScript |
-| Styling | Tailwind CSS v4 (`@tailwindcss/postcss`) |
+| Styling | Tailwind CSS v4 |
 | Icons | `@phosphor-icons/react` |
-| Data | Static seed in `src/lib/data.ts` + live API fetch at render |
-| External APIs | Crossref, OpenAlex, DOAJ, ISSN Portal, OAI-PMH |
-| Search proxy | `/api/search` route handler (avoids browser CORS/UA issues) |
-| Deployment | Vercel (ISR) |
+| Rendering | **Static export** (`output: "export"`) — every page is pre-rendered to `out/` at build time, no server runtime |
+| Data | Vendored JSON snapshots in `src/lib/` (`core-collection.json`, `global-benchmark.json`), synced deliberately from posi-data via `scripts/sync-corpus.mjs` — not fetched live |
+| Deployment | Cloudflare Pages (see `wrangler.toml`) |
+
+This repo has **no database and no live server-side computation**. Every score, rank, and classification a visitor sees was computed in posi-engine against posi-data, then vendored into this repo as a static snapshot — see [Related Repositories](#related-repositories).
 
 ---
 
@@ -73,46 +64,28 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). No environment variables are required — all data is vendored in `src/lib/`.
 
-No environment variables are required — all data comes from public APIs and the static seed file.
+To pull the latest posi-data snapshot:
+
+```bash
+node scripts/sync-corpus.mjs <posi-data-commit-sha>
+```
+
+Deliberately not automatic on every build — this repo's git history only grows when a sync is actually intended. Review the diff, then commit.
+
+To build the static site:
+
+```bash
+npm run build   # outputs to out/
+```
 
 ---
 
-## Project Structure
+## Related Repositories
 
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── search/route.ts     # Crossref search proxy (server-side)
-│   │   └── page.tsx            # API & Export documentation
-│   ├── article/[doi]/          # Article detail page
-│   ├── articles/               # Article database browser
-│   ├── doi-lookup/             # DOI verification tool
-│   ├── evidence/               # Evidence registry
-│   ├── journal/[code]/         # Journal profile page
-│   ├── journals/               # Journal list (tabs: PSG / Indexed / Crossref)
-│   ├── pqf/                    # PQF methodology + scores table
-│   ├── search/                 # Full-text search
-│   └── page.tsx                # Homepage (live stats via ISR)
-├── components/
-│   ├── ArticleCard.tsx
-│   ├── ArticleCountBadge.tsx   # Live Crossref article count
-│   ├── Badge.tsx
-│   ├── Footer.tsx
-│   ├── JournalArticles.tsx
-│   ├── JournalBrowser.tsx      # Crossref journal browser
-│   ├── JournalTabs.tsx         # PSG / Indexed / All tabs
-│   ├── MetadataQualityBar.tsx
-│   ├── Navbar.tsx
-│   ├── OjqfCard.tsx            # PQF score card
-│   └── SearchBar.tsx
-└── lib/
-    ├── api.ts                  # Crossref, OpenAlex, DOAJ, ISSN Portal, OAI-PMH clients
-    ├── data.ts                 # Static journal seed data + getStats()
-    └── types.ts                # Shared TypeScript types
-```
+- [posi-data](https://github.com/WENSHAO521/posi-data) — canonical, versioned journal/classification/citation-metric data. The source of truth this repo's `src/lib/*.json` snapshots are synced from.
+- [posi-engine](https://github.com/WENSHAO521/posi-engine) — the PSC classifier, PCI/PCI-5/PNCI calculators, and AJR-E/AJR-M/lifecycle/ranking engine that reads posi-data and produces the numbers this repo displays.
 
 ---
 
@@ -123,28 +96,14 @@ All metadata uses openly licensed sources. Source attribution is preserved in ev
 | Source | License | Used For |
 |---|---|---|
 | [Crossref](https://crossref.org) | Freely available | Article metadata, DOI records, article counts |
-| [OpenAlex](https://openalex.org) | CC0 | Citation counts, source matching |
+| [OpenAlex](https://openalex.org) | CC0 | Citation counts, subject/topic data, source matching |
 | [OpenCitations](https://opencitations.net) | CC0 | Open citation records |
 | [DOAJ](https://doaj.org) | CC BY-SA | OA journal status, APC data |
 | [ROR](https://ror.org) | CC0 | Institution identifiers |
 | [ORCID](https://orcid.org) | CC0 public records | Author identifiers |
 | [ISSN Portal](https://portal.issn.org) | — | ISSN registration country |
-| OAI-PMH | — | Article harvesting from OJS-based journals |
 
-POSI does not claim ownership over third-party metadata. PQF scores and curated journal profiles are original POSI content.
-
----
-
-## Indexed Publishers
-
-**PSG Collection (12 journals)**
-- Panorama Scholarly Group — Hong Kong, China
-
-**Third-Party Indexed (18 journals)**
-- SHIHARR Publishing Limited — Hong Kong, China (10 journals)
-- China Architecture Culture Publishing House — Hong Kong, China (3 journals)
-- ATRI International — Hong Kong, China (3 journals)
-- Other indexed journals (2)
+POSI does not claim ownership over third-party metadata.
 
 ---
 
@@ -152,8 +111,8 @@ POSI does not claim ownership over third-party metadata. PQF scores and curated 
 
 | Content | License |
 |---|---|
-| PSG-curated journal metadata & PQF scores | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
-| Source code | [MIT License](./LICENSE) |
+| POSI-curated journal metadata, PQF/AJR scores, PSC classifications | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Source code (this repo) | [MIT License](./LICENSE) |
 | Third-party metadata | Original source licenses (see above) |
 
 Attribution for curated data: *Panorama Open Scholarly Index, Panorama Scholarly Group. https://posi.panorama-sg.com*
@@ -162,7 +121,7 @@ Attribution for curated data: *Panorama Open Scholarly Index, Panorama Scholarly
 
 ## Conflict of Interest Disclosure
 
-Panorama Scholarly Group both operates POSI and publishes journals indexed in it. PQF scores for PSG journals are assessed using the same public criteria as all other journals. Independent third-party verification is encouraged. Full disclosure at [posi.panorama-sg.com/about](https://posi.panorama-sg.com/about).
+Panorama Scholarly Group both operates POSI and publishes journals indexed in it. Those journals are assessed using the same public criteria as every other journal. Independent third-party verification is encouraged. Full disclosure at [posi.panorama-sg.com/coi](https://posi.panorama-sg.com/coi).
 
 ---
 
