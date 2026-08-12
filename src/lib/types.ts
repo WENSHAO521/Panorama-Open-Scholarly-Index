@@ -51,6 +51,13 @@ export interface Journal {
   article_count: number
   created_at: string
   updated_at: string
+  // Only present on BENCHMARK_JOURNALS records added by a bulk publisher-
+  // catalog ingestion (2026-08: Elsevier jnlactive.csv, Frontiers title
+  // list — see posi-data's audits/migrations/). Its absence marks the
+  // original ~1000-journal curated validation seed (hand-selected via
+  // OpenAlex is_core/citation-activity signals, not a raw publisher
+  // export) — see benchmark-journals.ts's CURATED_BENCHMARK_JOURNALS.
+  source_note?: string | null
 }
 
 export interface Author {

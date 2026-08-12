@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { WarningCircle } from '@phosphor-icons/react/dist/ssr'
-import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { WarningCircle, Info } from '@phosphor-icons/react/dist/ssr'
+import { BENCHMARK_JOURNALS, CURATED_BENCHMARK_JOURNALS, PUBLISHER_CATALOG_JOURNALS } from '@/lib/benchmark-journals'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 
 export const metadata = {
   title: 'POSI Global Benchmark Collection',
-  description: '600 internationally established journals used as an external validation corpus for AJR — not part of the POSI Core Collection, not an admission candidate.',
+  description: 'A curated set of internationally established journals, plus a larger publisher-catalog expansion, used as an external validation corpus for AJR — not part of the POSI Core Collection, not an admission candidate.',
 }
 
 export default function GlobalBenchmarkPage() {
@@ -26,7 +26,7 @@ export default function GlobalBenchmarkPage() {
       <div className="border-l-4 pl-5" style={{ borderColor: '#6B7280' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Global Benchmark Collection</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          {BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical{' '}
+          {CURATED_BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical{' '}
           <Link href="/ratings" className="underline">AJR (POSI Automated Rating)</Link> pipeline used on
           the Core Collection — an external validation corpus, used to check the
           methodology against journals already broadly agreed to be excellent. Selected using only
@@ -42,9 +42,23 @@ export default function GlobalBenchmarkPage() {
         </div>
       </div>
 
-      <div className="coverage-grid grid sm:grid-cols-4 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
+        <span style={{ color: '#1d4ed8' }}>
+          <strong>2026-08 publisher-catalog expansion:</strong> {PUBLISHER_CATALOG_JOURNALS.length} additional
+          records were added from full active-journal exports (Elsevier&apos;s <code>jnlactive.csv</code>, Frontiers&apos;
+          title list) to validate the ingestion/identity pipeline against real, messy publisher data at scale —
+          not because every title in a publisher&apos;s complete catalog is individually &quot;internationally
+          established.&quot; These records are unrated (no AJR score is computed for them) and their presence here
+          never makes a journal ranking-eligible on its own — see the identity/registry documentation in{' '}
+          <a href="https://github.com/WENSHAO521/posi-data" target="_blank" rel="noopener noreferrer" className="underline">posi-data</a>.
+        </span>
+      </div>
+
+      <div className="coverage-grid grid sm:grid-cols-5 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
         {[
           { label: 'Total Journals', value: BENCHMARK_JOURNALS.length },
+          { label: 'Curated Seed', value: CURATED_BENCHMARK_JOURNALS.length },
           { label: 'Rated', value: rated.length },
           { label: 'Blocked / Insufficient Evidence', value: blocked.length },
           { label: 'Unknown', value: unknown.length },
@@ -55,6 +69,9 @@ export default function GlobalBenchmarkPage() {
           </div>
         ))}
       </div>
+      <p className="text-[10px] -mt-3" style={{ color: 'var(--posi-muted)' }}>
+        Curated Seed + Publisher Catalog Expansion ({PUBLISHER_CATALOG_JOURNALS.length}, unrated by design) = Total. Rated + Blocked + Unknown = Curated Seed.
+      </p>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
         <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
@@ -78,7 +95,7 @@ export default function GlobalBenchmarkPage() {
             Top {top.length} of {rated.length} Rated
           </h2>
           <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
-            {rated.length} of {BENCHMARK_JOURNALS.length} scored
+            {rated.length} of {CURATED_BENCHMARK_JOURNALS.length} curated-seed journals scored
           </span>
         </div>
         <LifecycleRatingsTable journals={top} />
