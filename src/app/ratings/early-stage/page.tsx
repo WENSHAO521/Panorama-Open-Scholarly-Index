@@ -12,14 +12,20 @@ export const metadata = {
 
 export default function EarlyStageRankingsPage() {
   const core = getCoreCollection()
+  const evaluated = core.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
+  const eQAssignedCount = evaluated.filter(j => j.early_stage_rating?.provisional_quartile).length
   // Global Benchmark publisher-catalog expansion journals that aren't yet
   // 5+ years old (no evidence-based AJR-E score, no E-Q) — shown in the
   // SAME table as Core Collection, not a separate section. See posi-data's
   // audits/migrations/benchmark-citation-q-2026/.
-  const journals = [...core, ...NOT_YET_MATURE_BENCHMARK_JOURNALS]
+  //
+  // Capped: this table is fully static-rendered (no server pagination); an
+  // earlier uncapped version broke a live Cloudflare Pages deployment
+  // ("Failed to publish assets") by producing multi-MB single HTML pages.
+  const BENCHMARK_DISPLAY_CAP = 200
+  const benchmarkShown = NOT_YET_MATURE_BENCHMARK_JOURNALS.slice(0, BENCHMARK_DISPLAY_CAP)
+  const journals = [...core, ...benchmarkShown]
     .sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
-  const evaluated = journals.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
-  const eQAssignedCount = journals.filter(j => j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile).length
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -80,9 +86,11 @@ export default function EarlyStageRankingsPage() {
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the
-          minimum evidence bar have no score yet, and that is expected. Global Benchmark rows (Collection:
-          Benchmark) are the 2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible
-          publishing history — no AJR-E score or E-Q, since no evidence crawl was run at this scale; see{' '}
+          minimum evidence bar have no score yet, and that is expected. Showing {benchmarkShown.length} of{' '}
+          {NOT_YET_MATURE_BENCHMARK_JOURNALS.length} Global Benchmark rows (Collection: Benchmark) — the
+          2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible publishing
+          history, capped here to keep the page a reasonable size. No AJR-E score or E-Q, since no evidence
+          crawl was run at this scale; full corpus — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
       </section>

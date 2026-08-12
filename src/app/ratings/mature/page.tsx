@@ -17,9 +17,18 @@ export default function MatureRankingsPage() {
   // Global Benchmark publisher-catalog expansion journals (no evidence-based
   // AJR score — early_stage_rating is null) that are mature, both ranked
   // (a real Citation Q) and unranked (unclassified / cohort too small) —
-  // shown in the SAME table as everything else, not a separate section.
-  // See posi-data's audits/migrations/benchmark-citation-q-2026/.
-  const journals = [...core, ...curatedBenchmark, ...MATURE_RANKED_BENCHMARK_JOURNALS, ...MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS]
+  // shown in the SAME table as everything else, not a separate section. See
+  // posi-data's audits/migrations/benchmark-citation-q-2026/.
+  //
+  // Capped: this table is fully static-rendered (no server pagination), and
+  // an earlier uncapped version (all 2,695 benchmark rows -> 2,794 total)
+  // produced a 9.5 MB single HTML page and broke a live Cloudflare Pages
+  // deployment ("Failed to publish assets"). Same "Top N" convention
+  // already used on /coverage/global-benchmark.
+  const BENCHMARK_DISPLAY_CAP = 200
+  const benchmarkTotal = MATURE_RANKED_BENCHMARK_JOURNALS.length + MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS.length
+  const benchmarkShown = [...MATURE_RANKED_BENCHMARK_JOURNALS, ...MATURE_UNCLASSIFIED_BENCHMARK_JOURNALS].slice(0, BENCHMARK_DISPLAY_CAP)
+  const journals = [...core, ...curatedBenchmark, ...benchmarkShown]
     .sort((a, b) => {
       const av = a.early_stage_rating?.total ?? a.citation_rating?.citation_q?.percentile ?? -1
       const bv = b.early_stage_rating?.total ?? b.citation_rating?.citation_q?.percentile ?? -1
@@ -121,9 +130,11 @@ export default function MatureRankingsPage() {
           </p>
         )}
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          Global Benchmark rows (Collection: Benchmark, no AJR Score) are the 2026-08 Elsevier/Frontiers
-          publisher-catalog expansion — bulk-ingested, not individually vetted, never an admission candidate.
-          Their Citation Q is provisional (OpenAlex 2yr mean citedness, not yet official PCI) — see{' '}
+          Showing {benchmarkShown.length} of {benchmarkTotal} Global Benchmark rows (best Citation Q first) —
+          capped to keep this page a reasonable size. Global Benchmark rows (Collection: Benchmark, no AJR
+          Score) are the 2026-08 Elsevier/Frontiers publisher-catalog expansion — bulk-ingested, not
+          individually vetted, never an admission candidate. Their Citation Q is provisional (OpenAlex 2yr
+          mean citedness, not yet official PCI). Full corpus — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
       </section>

@@ -89,8 +89,17 @@ export default async function CitationReportsPage() {
   // the already-computed Citation Q percentile (posi-engine's
   // rankCategory(), a PSC-category peer cohort of >=20) passed through
   // as-is, not recomputed on this page.
+  // Capped: CitationReportsTable is a 'use client' sortable component, so
+  // every row shown gets serialized into the page's hydration payload.
+  // Uncapped (3,245 rows) produced a multi-MB page and broke a live
+  // Cloudflare Pages deployment ("Failed to publish assets"). Sorted by
+  // citedness first so the cap keeps the most relevant rows.
+  const BENCHMARK_DISPLAY_CAP = 300
+  const benchmarkTotal = PUBLISHER_CATALOG_JOURNALS.filter(j => j.citation_rating).length
   const benchmarkRows: CitationReportRow[] = PUBLISHER_CATALOG_JOURNALS
     .filter(j => j.citation_rating)
+    .sort((a, b) => (b.citation_rating!.two_yr_mean_citedness ?? 0) - (a.citation_rating!.two_yr_mean_citedness ?? 0))
+    .slice(0, BENCHMARK_DISPLAY_CAP)
     .map(j => ({
       title: j.title,
       short_title: j.short_title,
@@ -125,7 +134,7 @@ export default async function CitationReportsPage() {
             PREVIEW
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
-            {coreRows.length} Core Collection · {benchmarkRows.length} Global Benchmark
+            {coreRows.length} Core Collection · {benchmarkRows.length} of {benchmarkTotal} Global Benchmark
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
