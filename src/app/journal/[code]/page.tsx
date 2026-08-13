@@ -575,7 +575,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
       <p className="text-[11px] leading-relaxed mt-2 max-w-md mx-auto" style={{ color: 'var(--posi-muted)' }}>
         POSI has not yet published its first annual frozen rating release, so there is only ever one
         current AJR score on record — nothing to compare it against yet. Year-over-year history will
-        appear here starting with the first Pilot release.
+        appear here starting with the first PJR release.
       </p>
     </div>
   )
