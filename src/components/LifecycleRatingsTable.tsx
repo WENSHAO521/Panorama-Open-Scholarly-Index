@@ -14,8 +14,8 @@ export const ELIGIBILITY_LABEL: Record<string, string> = {
   // been run against real Core Collection/Global Benchmark data yet — no
   // journal has an actual AJR-M score. 'mature' here means "reached the
   // 60+ month lifecycle stage," not "scored." See AJR Score/M-Q columns
-  // below, which always show "Not Yet Available" for these rows —
-  // AJR-M-1.0-SPEC.md is explicit that a mature journal must never be
+  // below, which always show "—" (with an explanatory title) for these
+  // rows — AJR-M-1.0-SPEC.md is explicit that a mature journal must never be
   // scored with the AJR-E rubric, so the old interim AJR-E number that
   // may still exist in this record's early_stage_rating.total is never
   // displayed here.
@@ -24,13 +24,27 @@ export const ELIGIBILITY_LABEL: Record<string, string> = {
   unknown: 'Unknown',
 }
 
+// Amber/bold is reserved for eligibility states that are genuinely
+// exceptional and worth flagging (a real crawl failure). 'mature' and
+// 'unknown' are structural, expected states — nearly every row in a
+// Benchmark/Mature-track page lands there simply because AJR-M hasn't
+// been run against real data yet (see ELIGIBILITY_LABEL.mature above),
+// not because anything is wrong with that specific row. Coloring every
+// row's Status cell the same warning amber turned the whole column into
+// a wall of noise that buried the one state (not_yet_rateable) actually
+// worth a second look — see the Status <td> below, which also drops
+// font-semibold for the quiet states so weight tracks color.
 export const ELIGIBILITY_COLOR: Record<string, string> = {
-  observation: '#6B7280',
-  early_stage: '#1F7A4D',
-  mature: '#B45309',
-  not_yet_rateable: '#B45309',
-  unknown: '#6B7280',
+  observation: 'var(--posi-muted)',
+  early_stage: 'var(--posi-success)',
+  mature: 'var(--posi-muted)',
+  not_yet_rateable: 'var(--posi-warning)',
+  unknown: 'var(--posi-muted)',
 }
+
+// Eligibility states that earn bold weight in the Status column — genuine
+// signal (an achieved result or a real anomaly), not a structural default.
+const ELIGIBILITY_NOTABLE = new Set(['early_stage', 'not_yet_rateable'])
 
 // Declarative column kinds, not function props — a Server Component page
 // cannot pass a function prop to a Client Component like this one (React
@@ -51,13 +65,17 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
     case 'collection':
       return { value: j.is_external_benchmark ? 'Benchmark' : 'Core' }
     case 'm-q':
-      // Always "Not Yet Available" — AJR-M 1.0 is implemented but has not
-      // been run against real data (see ELIGIBILITY_LABEL.mature above).
+      // Always unscored — AJR-M 1.0 is implemented but has not been run
+      // against real data (see ELIGIBILITY_LABEL.mature above). Rendered
+      // as the site's standard "—" missing-value placeholder (same
+      // convention as E-Q below and the ISSN/PCI/h-index columns in
+      // JournalTabs.tsx) rather than spelling out "Not Yet Available" in
+      // every row — full reasoning lives in the title tooltip instead.
       // Deliberately does NOT read early_stage_rating.provisional_quartile
       // here even though it may be populated — for a mature-eligible
       // record, that value is the old interim AJR-E-based quartile, which
       // AJR-M-1.0-SPEC.md forbids displaying as a mature journal's score.
-      return { value: 'Not Yet Available', title: 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet — no journal has a published M-Q.' }
+      return { value: '—', title: 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet — no journal has a published M-Q.' }
     case 'e-q':
       return j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile
         ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
@@ -246,13 +264,18 @@ export function LifecycleRatingsTable({
                         journals with the AJR-E rubric. AJR-M is implemented but
                         has not been run against real data (see M-Q column). */}
                     {eligibility === 'mature'
-                      ? <span style={{ color: 'var(--posi-muted)' }} title="AJR-M 1.0 is implemented but has not been run against real evidence/citation data yet">Not Yet Available</span>
+                      ? <span style={{ color: 'var(--posi-muted)' }} title="AJR-M 1.0 is implemented but has not been run against real evidence/citation data yet">—</span>
                       : r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                   </td>
                   <td className="px-3 py-3 text-center">
+                    {/* pendingFpd reads as quiet/muted, same tier as 'mature' and
+                        'unknown' — it's the expected state for nearly every
+                        Benchmark-track row, not an anomaly. Only not_yet_rateable
+                        (a real crawl failure) and early_stage (an actual scored
+                        result) earn ELIGIBILITY_NOTABLE's color + bold weight. */}
                     <span
-                      className="font-mono text-[10px] font-semibold"
-                      style={{ color: pendingFpd ? '#B45309' : ELIGIBILITY_COLOR[eligibility] }}
+                      className={`font-mono text-[10px]${!pendingFpd && ELIGIBILITY_NOTABLE.has(eligibility) ? ' font-semibold' : ''}`}
+                      style={{ color: pendingFpd ? 'var(--posi-muted)' : ELIGIBILITY_COLOR[eligibility] }}
                       title={
                         pendingFpd
                           ? 'No OpenAlex evidence of publishing activity >=5 years ago rules out "mature," but does not prove this journal is 12-59 months old — absence of proof of maturity is not proof of Early-Stage. No first-publication-date has been resolved for this record.'
