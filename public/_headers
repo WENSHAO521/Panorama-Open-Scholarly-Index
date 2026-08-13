@@ -17,10 +17,9 @@
   Content-Type: application/pdf
   Cache-Control: public, max-age=86400
 
-# Global Benchmark publisher-catalog data (~4.8 MB) — fetched client-side
-# at runtime by /ratings/mature, /ratings/early-stage, and /citation-reports
-# (see src/lib/publisher-catalog-client.ts) rather than statically bundled.
-# Cached for a day since it only changes on a deliberate scripts/sync-corpus.mjs
-# run, not on every deploy.
-/data/*
-  Cache-Control: public, max-age=86400
+# Global Benchmark publisher-catalog data (~5 MB) used to be a same-origin
+# static asset here, fetched client-side by /ratings/mature,
+# /ratings/early-stage, and /citation-reports. As of 2026-08-13 it's fetched
+# directly from data.posi.panorama-sg.com (posi-data-delivery) instead — see
+# src/lib/publisher-catalog-client.ts — so this repo no longer serves it at
+# all, and this cache rule is gone with it.

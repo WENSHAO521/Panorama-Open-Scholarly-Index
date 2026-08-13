@@ -3,20 +3,42 @@
 import type { Journal } from './types'
 
 // Client-side loader for the 2026-08 Elsevier/Frontiers bulk publisher-
-// catalog expansion (~3300 records) — deliberately NOT a static import.
-// See benchmark-journals.ts's header and scripts/sync-corpus.mjs for why:
-// baking this into the build produced multi-MB static HTML and broke a
-// live Cloudflare Pages deployment. This fetches the plain JSON asset at
-// runtime instead, cached at module scope so multiple components on the
-// same page (or repeat visits within a session) don't re-fetch.
+// catalog expansion (~3300 records) — deliberately NOT a static import,
+// and as of 2026-08-13 no longer even a same-origin static asset copied
+// into this repo's own Cloudflare Pages deployment. It's fetched directly
+// from posi-data-delivery (https://github.com/WENSHAO521/posi-data-delivery),
+// a dedicated public GitHub-Pages-hosted data layer — so this repo never
+// vendors the file at all, not even as a build artifact. See that repo's
+// README for the current.json -> manifest -> collection fetch pattern
+// this follows, and scripts/sync-corpus.mjs's header for the earlier
+// incident (a multi-MB static HTML page broke a live Cloudflare Pages
+// deployment) that motivated moving this data out of the deployment
+// entirely rather than just moving the fetch to runtime within it.
+// Cached at module scope so multiple components on the same page (or
+// repeat visits within a session) don't re-fetch.
 
-const DATA_URL = '/data/global-benchmark-publisher-catalog.json'
+// Duplicated as a plain literal in scripts/sync-corpus.mjs (see that
+// file's comment for why it's not a shared cross-boundary import).
+const POSI_DATA_BASE = 'https://data.posi.panorama-sg.com'
+
+interface CurrentPointer {
+  snapshot: string
+  manifest: string
+}
 
 let cache: Promise<Journal[]> | null = null
 
 export function fetchPublisherCatalogJournals(): Promise<Journal[]> {
   if (!cache) {
-    cache = fetch(DATA_URL)
+    cache = fetch(`${POSI_DATA_BASE}/current.json`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch current.json: HTTP ${res.status}`)
+        return res.json() as Promise<CurrentPointer>
+      })
+      .then(current => {
+        const snapshotDir = current.manifest.replace(/\/manifest\.json$/, '')
+        return fetch(`${POSI_DATA_BASE}${snapshotDir}/collections/publisher-catalog.json`)
+      })
       .then(res => {
         if (!res.ok) throw new Error(`Failed to fetch publisher-catalog data: HTTP ${res.status}`)
         return res.json() as Promise<Journal[]>

@@ -2,94 +2,95 @@
 /**
  * sync-corpus.mjs
  *
- * Refreshes this repo's vendored corpus snapshot from posi-data's corpus/
- * (see that repo's corpus/README.md) at a pinned commit — deliberate, not
- * automatic on every build, so this repo's git history only grows when a
- * sync is actually intended.
+ * Refreshes this repo's small, statically-bundled corpus files from
+ * data.posi.panorama-sg.com (posi-data-delivery — see that repo's README)
+ * — deliberate, not automatic on every build, so this repo's git history
+ * only grows when a sync is actually intended. Always reads current.json
+ * first, then follows its manifest pointer, rather than hardcoding a
+ * snapshot id — matching posi-data-delivery's own documented consumption
+ * pattern.
  *
- * src/lib/core-collection.json — full file, statically imported (small,
- * ~30 real journals, safe to bundle at build time).
+ * Only pulls the two small collections:
+ *   - src/lib/core-collection.json  — full file, statically imported
+ *     (small, ~30 real journals, safe to bundle at build time).
+ *   - src/lib/global-benchmark.json — the curated Global Benchmark seed
+ *     only (posi-data-delivery's collections/benchmark-curated.json,
+ *     already split server-side — no client-side source_note filtering
+ *     needed here anymore). Small enough to bundle safely.
  *
- * global-benchmark.json is split in two, because it no longer fits the
- * "small enough to statically import" assumption once the 2026-08
- * Elsevier/Frontiers bulk publisher-catalog expansion landed (1000 ->
- * 4289 records). Baking all of it into every page that touches
- * BENCHMARK_JOURNALS produced multi-MB static HTML pages and broke a live
- * Cloudflare Pages deployment ("Failed to publish assets") once enough
- * pages started rendering rows from it — see git history around
- * 2026-08-13 for the incident.
- *   - src/lib/global-benchmark.json  — CURATED subset only (no
- *     `source_note` — the original hand-selected validation seed, ~1000
- *     records). Statically imported as before; small enough to be safe.
- *   - public/data/global-benchmark-publisher-catalog.json — the bulk
- *     publisher-catalog expansion (`source_note` is set). NOT imported by
- *     any module — Next.js copies it into the static export as a plain
- *     asset, untouched, with zero build-time processing cost. Pages that
- *     need this data fetch it client-side at runtime
- *     (src/lib/publisher-catalog-client.ts) instead of having it baked
- *     into every page's HTML/hydration payload.
+ * Does NOT pull collections/publisher-catalog.json (~5MB) — that file is
+ * fetched directly from data.posi.panorama-sg.com at runtime by
+ * src/lib/publisher-catalog-client.ts, never vendored into this repo or
+ * its Cloudflare Pages deployment at all. Baking the full publisher-
+ * catalog expansion into this repo (first as static HTML, then even as a
+ * same-origin static asset copied on every sync) produced multi-MB static
+ * pages that broke a live Cloudflare Pages deployment ("Failed to publish
+ * assets") — see git history around 2026-08-13 for the incident, and
+ * posi-data-delivery's README for why a dedicated external data layer
+ * replaces vendoring entirely rather than just moving the fetch to
+ * runtime within the same deployment.
  *
  * Usage:
- *   node scripts/sync-corpus.mjs <commit-sha>
- *   node scripts/sync-corpus.mjs af68b73f3f582afe903a558e25f33a7f7881bbc6
+ *   node scripts/sync-corpus.mjs
  */
 
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
-const commit = process.argv[2]
-if (!commit) {
-  console.error('Usage: node scripts/sync-corpus.mjs <posi-data-commit-sha>')
-  process.exit(1)
-}
+// Duplicated in src/lib/publisher-catalog-client.ts (kept as a plain
+// literal in each rather than a shared cross-boundary import — this is a
+// standalone Node script, not part of the Next.js app, and importing from
+// src/ here would tie the script's module resolution to the app's
+// bundler config for no real benefit at only two call sites).
+const POSI_DATA_BASE = 'https://data.posi.panorama-sg.com'
 
-const UA = 'POSI-CorpusSync/0.1 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
+const UA = 'POSI-CorpusSync/0.2 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
 
-async function fetchJson(file) {
-  const url = `https://raw.githubusercontent.com/WENSHAO521/posi-data/${commit}/corpus/${file}`
+async function fetchJson(url) {
   console.log(`Fetching ${url} ...`)
   const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(30000) })
-  if (!res.ok) throw new Error(`Failed to fetch ${file}: HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`Failed to fetch ${url}: HTTP ${res.status}`)
   const text = await res.text()
   return JSON.parse(text) // fail fast on malformed JSON rather than writing it
 }
 
 async function main() {
-  const coreCollection = await fetchJson('core-collection.json')
+  const current = await fetchJson(`${POSI_DATA_BASE}/current.json`)
+  console.log(`current.json -> snapshot ${current.snapshot} (is_official_release: ${current.is_official_release})`)
+  const manifest = await fetchJson(`${POSI_DATA_BASE}${current.manifest}`)
+  const snapshotDir = current.manifest.replace(/\/manifest\.json$/, '')
+
+  const coreCollection = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/core-collection.json`)
   writeFileSync(resolve('src/lib/core-collection.json'), JSON.stringify(coreCollection, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/core-collection.json (${coreCollection.length} records)`)
 
-  const globalBenchmark = await fetchJson('global-benchmark.json')
-  const curated = globalBenchmark.filter(j => !j.source_note)
-  const publisherCatalog = globalBenchmark.filter(j => !!j.source_note)
-
+  const curated = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/benchmark-curated.json`)
   writeFileSync(resolve('src/lib/global-benchmark.json'), JSON.stringify(curated, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/global-benchmark.json — curated only (${curated.length} records, statically bundled)`)
 
-  const dataDir = resolve('public/data')
-  if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true })
-  writeFileSync(resolve(dataDir, 'global-benchmark-publisher-catalog.json'), JSON.stringify(publisherCatalog), 'utf-8')
-  console.log(`  Wrote public/data/global-benchmark-publisher-catalog.json — publisher-catalog expansion (${publisherCatalog.length} records, fetched client-side, NOT bundled)`)
-
   // Tiny, safe-to-bundle companion so build-time pages can show an accurate
-  // total count (e.g. stat cards) without importing the full multi-MB file.
-  // mature_evidence/not_yet_mature reflect citation_preview.history_evidence
-  // only (real, checkable OpenAlex activity evidence >=5 years back) — NOT a
-  // ranking split. citation_preview is diagnostic-only (rank/percentile/
-  // quartile always null, status always "diagnostic_only"); see posi-data's
-  // audits/migrations/citation-preview-correction-2026/ for why the earlier
-  // mature_ranked/mature_unclassified split (tied to a withdrawn Citation Q
-  // ranking) was removed.
+  // publisher-catalog total count (e.g. stat cards) without importing the
+  // full multi-MB collection. mature_evidence/not_yet_mature reflect
+  // citation_preview.history_evidence only (real, checkable OpenAlex
+  // activity evidence >=5 years back) — NOT a ranking split.
+  // citation_preview is diagnostic-only (rank/percentile/quartile always
+  // null, status always "diagnostic_only"); see posi-data's audits/
+  // migrations/citation-preview-correction-2026/ for why the earlier
+  // mature_ranked/mature_unclassified split (tied to a withdrawn Citation
+  // Q ranking) was removed. Fetched here (not derived from manifest counts)
+  // so this stays correct even if the manifest's own count fields lag.
+  const publisherCatalog = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/publisher-catalog.json`)
   const meta = {
     count: publisherCatalog.length,
     mature_evidence: publisherCatalog.filter(j => j.citation_preview?.history_evidence?.has_activity_5y_ago === true).length,
     not_yet_mature: publisherCatalog.filter(j => j.citation_preview?.history_evidence?.has_activity_5y_ago === false).length,
+    snapshot: current.snapshot,
     generated_at: new Date().toISOString(),
   }
   writeFileSync(resolve('src/lib/publisher-catalog-meta.json'), JSON.stringify(meta, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/publisher-catalog-meta.json — counts only, statically bundled (${JSON.stringify(meta)})`)
 
-  console.log(`\nSynced to posi-data@${commit.slice(0, 7)}. Review the diff, then commit.`)
+  console.log(`\nSynced to posi-data-delivery snapshot ${current.snapshot} (posi-data@${manifest.data_commit.slice(0, 7)}). Review the diff, then commit.`)
 }
 
 main().catch(err => { console.error(err); process.exit(1) })
