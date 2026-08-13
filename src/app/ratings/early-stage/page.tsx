@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
@@ -59,11 +60,13 @@ export default function EarlyStageRankingsPage() {
             Methodology (AJR-E) →
           </a>
         </div>
-        <LifecycleRatingsTable
-          journals={core}
-          benchmarkMode="not-yet-mature"
-          columns={['collection', 'e-q']}
-        />
+        <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
+          <LifecycleRatingsTable
+            journals={core}
+            benchmarkMode="not-yet-mature"
+            columns={['collection', 'e-q']}
+          />
+        </Suspense>
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the

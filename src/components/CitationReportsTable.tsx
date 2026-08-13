@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CaretUp, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { fetchPublisherCatalogJournals } from '@/lib/publisher-catalog-client'
+import { Pagination } from './Pagination'
 
 export interface CitationReportRow {
   title: string
@@ -34,22 +36,27 @@ const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'subject_percentile', label: 'Subject Percentile' },
 ]
 
-const BENCHMARK_DISPLAY_CAP = 300
+const PER_PAGE = 25
 
 /**
  * `rows` (Core Collection — small, manually-reviewed, precomputed citation
  * stats) renders immediately. `fetchBenchmark`, when true, loads the much
  * larger Global Benchmark publisher-catalog expansion (~3,300 records)
- * client-side at runtime and merges in its provisional Citation Q figures
- * once loaded — NOT statically bundled, see publisher-catalog-client.ts's
- * header for why (an earlier version baked all of it into the static
- * build and broke a live Cloudflare Pages deployment).
+ * client-side at runtime and merges in ALL of its citation_preview figures
+ * once loaded (no display cap) — NOT statically bundled, see
+ * publisher-catalog-client.ts's header for why (an earlier version baked
+ * all of it into the static build and broke a live Cloudflare Pages
+ * deployment). Paginated (`?page=`, PER_PAGE rows/page — same
+ * Pagination/pageWindow pattern used elsewhere on the site) so every row
+ * is reachable no matter how large the merged set grows.
  */
 export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationReportRow[]; fetchBenchmark?: boolean }) {
   const [benchmarkRows, setBenchmarkRows] = useState<CitationReportRow[]>([])
-  const [benchmarkTotal, setBenchmarkTotal] = useState<number | null>(null)
   const [loading, setLoading] = useState(!!fetchBenchmark)
   const [failed, setFailed] = useState(false)
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     if (!fetchBenchmark) return
@@ -62,7 +69,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
         // No subject_percentile for Global Benchmark rows — citation_preview
         // is diagnostic-only (rank/percentile/quartile always null, see
         // types.ts's CitationPreview), never a real ranking.
-        const mapped: CitationReportRow[] = sorted.slice(0, BENCHMARK_DISPLAY_CAP).map(j => ({
+        const mapped: CitationReportRow[] = sorted.map(j => ({
           title: j.title,
           short_title: j.short_title,
           journal_code: j.journal_code,
@@ -76,7 +83,6 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
           is_external_benchmark: true,
           website_url: j.website_url,
         }))
-        setBenchmarkTotal(classified.length)
         setBenchmarkRows(mapped)
       })
       .catch(() => { if (!cancelled) setFailed(true) })
@@ -111,6 +117,13 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
     return [...withValue, ...withoutValue]
   }, [filtered, sortKey, sortDir])
 
+  // Changing the subject filter or sort resets to page 1 — page 4 of an old
+  // filter/sort almost never corresponds to anything meaningful once the
+  // underlying row order changes.
+  function resetPage() {
+    if (searchParams.get('page')) router.push(pathname)
+  }
+
   function handleSort(key: SortKey) {
     if (key === sortKey) {
       setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
@@ -118,7 +131,18 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
       setSortKey(key)
       setSortDir('desc')
     }
+    resetPage()
   }
+
+  function handleSubjectChange(value: string) {
+    setSubject(value)
+    resetPage()
+  }
+
+  const requestedPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE))
+  const page = Math.min(requestedPage, totalPages)
+  const paged = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   const subjectsPresent = Array.from(new Set(allRows.map(r => r.subject).filter((s): s is string => !!s))).sort()
 
@@ -127,7 +151,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <select
           value={subject}
-          onChange={e => setSubject(e.target.value)}
+          onChange={e => handleSubjectChange(e.target.value)}
           className="text-xs px-2 py-1.5 focus:outline-none"
           style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
         >
@@ -135,10 +159,10 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
           {subjectsPresent.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
+          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}–${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
           {sorted.length.toLocaleString()} journals
           {fetchBenchmark && loading && ' · loading Global Benchmark…'}
           {fetchBenchmark && !loading && failed && ' · Global Benchmark rows failed to load'}
-          {fetchBenchmark && !loading && !failed && benchmarkTotal != null && benchmarkTotal > BENCHMARK_DISPLAY_CAP && ` · showing top ${BENCHMARK_DISPLAY_CAP} of ${benchmarkTotal} Global Benchmark by citedness`}
         </span>
       </div>
 
@@ -165,7 +189,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
               </tr>
             </thead>
             <tbody>
-              {sorted.map(row => (
+              {paged.map(row => (
                 <tr key={row.journal_code} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                   <td className="px-4 py-3">
                     {row.is_external_benchmark ? (
@@ -201,6 +225,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
           </table>
         </div>
       </div>
+      <Pagination page={page} totalPages={totalPages} makeHref={p => `${pathname}?page=${p}`} />
     </div>
   )
 }

@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import type { Journal } from '@/lib/types'
 import { fetchPublisherCatalogJournals, filterMatureEvidence, filterNotYetMature } from '@/lib/publisher-catalog-client'
+import { Pagination } from './Pagination'
 
 export const ELIGIBILITY_LABEL: Record<string, string> = {
   observation: 'Observation Stage',
@@ -69,7 +71,7 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
   }
 }
 
-const BENCHMARK_DISPLAY_CAP = 500
+const PER_PAGE = 20
 
 export type BenchmarkMode = 'mature' | 'not-yet-mature'
 
@@ -103,10 +105,14 @@ function defaultSort(a: Journal, b: Journal): number {
  * `journals` (Core Collection / curated benchmark — small, real
  * evidence-based data) renders immediately, server-side. `benchmarkMode`,
  * when given, fetches the much larger publisher-catalog expansion
- * (~3,300 records) client-side at runtime and merges in the matching rows
- * once loaded — NOT statically bundled, see publisher-catalog-client.ts's
- * header for why (an earlier version baked all of it into the static
- * build and broke a live Cloudflare Pages deployment).
+ * (~3,300 records) client-side at runtime and merges in ALL matching rows
+ * once loaded (no display cap) — NOT statically bundled, see
+ * publisher-catalog-client.ts's header for why (an earlier version baked
+ * all of it into the static build and broke a live Cloudflare Pages
+ * deployment). Paginated (`?page=`, PER_PAGE rows/page, same
+ * Pagination/pageWindow pattern as JournalTabs.tsx/the journals listing)
+ * so every row is reachable no matter how large the merged set grows —
+ * never truncated to a fixed top-N cap.
  */
 export function LifecycleRatingsTable({
   journals,
@@ -118,9 +124,10 @@ export function LifecycleRatingsTable({
   benchmarkMode?: BenchmarkMode
 }) {
   const [benchmarkRows, setBenchmarkRows] = useState<Journal[] | null>(null)
-  const [benchmarkTotal, setBenchmarkTotal] = useState<number | null>(null)
   const [loading, setLoading] = useState(!!benchmarkMode)
   const [failed, setFailed] = useState(false)
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!benchmarkMode) return
@@ -128,9 +135,7 @@ export function LifecycleRatingsTable({
     fetchPublisherCatalogJournals()
       .then(all => {
         if (cancelled) return
-        const matched = applyBenchmarkMode(all, benchmarkMode)
-        setBenchmarkTotal(matched.length)
-        setBenchmarkRows(matched.slice(0, BENCHMARK_DISPLAY_CAP))
+        setBenchmarkRows(applyBenchmarkMode(all, benchmarkMode))
       })
       .catch(() => { if (!cancelled) setFailed(true) })
       .finally(() => { if (!cancelled) setLoading(false) })
@@ -138,10 +143,22 @@ export function LifecycleRatingsTable({
   }, [benchmarkMode])
 
   const merged = benchmarkRows ? [...journals, ...benchmarkRows] : journals
-  const rows = [...merged].sort(defaultSort)
+  const allRows = [...merged].sort(defaultSort)
+
+  const requestedPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+  const totalPages = Math.max(1, Math.ceil(allRows.length / PER_PAGE))
+  const page = Math.min(requestedPage, totalPages)
+  const rows = allRows.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   return (
     <div>
+      {allRows.length > 0 && (
+        <div className="flex justify-end mb-2">
+          <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
+            {((page - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
+          </span>
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -241,13 +258,12 @@ export function LifecycleRatingsTable({
         <p className="px-4 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: rows.length > 0 ? '1px solid var(--posi-border-light)' : undefined }}>
           {loading && 'Loading Global Benchmark rows…'}
           {!loading && failed && 'Global Benchmark rows failed to load — showing Core Collection only.'}
-          {!loading && !failed && benchmarkRows && benchmarkTotal != null && (
-            benchmarkTotal > BENCHMARK_DISPLAY_CAP
-              ? `Showing ${BENCHMARK_DISPLAY_CAP} of ${benchmarkTotal} Global Benchmark rows.`
-              : `${benchmarkTotal} Global Benchmark row${benchmarkTotal === 1 ? '' : 's'} loaded.`
+          {!loading && !failed && benchmarkRows && (
+            `${benchmarkRows.length.toLocaleString()} Global Benchmark row${benchmarkRows.length === 1 ? '' : 's'} loaded — all reachable via the pages below.`
           )}
         </p>
       )}
+      <Pagination page={page} totalPages={totalPages} makeHref={p => `${pathname}?page=${p}`} />
     </div>
   )
 }

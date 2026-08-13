@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { WarningCircle, Info } from '@phosphor-icons/react/dist/ssr'
 import { BENCHMARK_JOURNALS, CURATED_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
@@ -14,7 +15,6 @@ export default function GlobalBenchmarkPage() {
   const rated = sorted.filter(j => j.early_stage_rating?.total != null)
   const blocked = sorted.filter(j => j.early_stage_rating?.eligibility === 'not_yet_rateable')
   const unknown = sorted.filter(j => j.early_stage_rating?.eligibility === 'unknown')
-  const top = rated.slice(0, 50)
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -93,13 +93,15 @@ export default function GlobalBenchmarkPage() {
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
           <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>
-            Top {top.length} of {rated.length} Rated
+            {rated.length} Rated
           </h2>
           <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
             {rated.length} of {CURATED_BENCHMARK_JOURNALS.length} curated-seed journals scored
           </span>
         </div>
-        <LifecycleRatingsTable journals={top} />
+        <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
+          <LifecycleRatingsTable journals={rated} />
+        </Suspense>
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Benchmark journals never receive an E-Q or M-Q — the Core Collection quartile systems don't apply
           here. The publisher-catalog expansion's OpenAlex citation figure is a diagnostic preview only, not
