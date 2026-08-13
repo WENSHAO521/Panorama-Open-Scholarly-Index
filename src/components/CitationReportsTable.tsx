@@ -147,13 +147,20 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
   const subjectsPresent = Array.from(new Set(allRows.map(r => r.subject).filter((s): s is string => !!s))).sort()
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+    <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+      {/* Filter + range toolbar as this card's own top strip (same gray
+          background/hairline-border language the table's <thead> and every
+          other section header on the site uses) rather than a separate
+          floating row above a disconnected bordered box. */}
+      <div
+        className="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2"
+        style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}
+      >
         <select
           value={subject}
           onChange={e => handleSubjectChange(e.target.value)}
           className="text-xs px-2 py-1.5 focus:outline-none"
-          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'white' }}
+          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'var(--posi-surface)' }}
         >
           <option value="">All subjects</option>
           {subjectsPresent.map(s => <option key={s} value={s}>{s}</option>)}
@@ -166,7 +173,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
         </span>
       </div>
 
-      <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+      <div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
