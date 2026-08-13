@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
@@ -88,11 +89,13 @@ export default function MatureRankingsPage() {
           </a>
         </div>
         {journals.length > 0 ? (
-          <LifecycleRatingsTable
-            journals={journals}
-            benchmarkMode="mature"
-            columns={['collection', 'm-q', 'citation-preview']}
-          />
+          <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
+            <LifecycleRatingsTable
+              journals={journals}
+              benchmarkMode="mature"
+              columns={['collection', 'm-q', 'citation-preview']}
+            />
+          </Suspense>
         ) : (
           <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>
             No mature journals have cleared the evidence bar yet.

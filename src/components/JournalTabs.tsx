@@ -1,12 +1,13 @@
 'use client'
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from './Badge'
 import { MetadataQualityBar } from './MetadataQualityBar'
 import { JournalBrowser } from './JournalBrowser'
 import { ArticleCountBadge } from './ArticleCountBadge'
+import { Pagination } from './Pagination'
 import { SUBJECT_KEYWORDS } from '@/lib/subject-keywords'
 
 // Only the fields needed for the journal list table — keeps serialized HTML small
@@ -257,96 +258,10 @@ function JournalTable({ rows, showOjqf }: { rows: JournalWithCr[]; showOjqf?: bo
 
 const PER_PAGE = 20
 
-// Windowed page-number list with ellipsis gaps: always shows page 1 and the
-// last page, plus a window around the current page — avoids rendering up to
-// 1190 buttons for the Discovered tab.
-function pageWindow(page: number, totalPages: number): (number | '…')[] {
-  const delta = 1
-  const range: number[] = []
-  for (let p = Math.max(2, page - delta); p <= Math.min(totalPages - 1, page + delta); p++) range.push(p)
-  const out: (number | '…')[] = [1]
-  if (range[0] > 2) out.push('…')
-  out.push(...range)
-  if (range[range.length - 1] < totalPages - 1) out.push('…')
-  if (totalPages > 1) out.push(totalPages)
-  return out
-}
-
-function Pagination({ page, totalPages, tab, subject, pathname }: { page: number; totalPages: number; tab: string; subject?: string; pathname: string }) {
-  const router = useRouter()
-  const [jumpValue, setJumpValue] = useState('')
-  if (totalPages <= 1) return null
-  const makeHref = (p: number) => {
-    const params = new URLSearchParams({ tab, page: String(p) })
-    if (subject) params.set('subject', subject)
-    return `${pathname}?${params.toString()}`
-  }
-  const prev = page > 1 ? makeHref(page - 1) : null
-  const next = page < totalPages ? makeHref(page + 1) : null
-
-  function handleJumpSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const n = parseInt(jumpValue, 10)
-    if (!Number.isFinite(n)) return
-    const clamped = Math.min(Math.max(1, n), totalPages)
-    router.push(makeHref(clamped))
-    setJumpValue('')
-  }
-
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3" style={{ borderTop: '1px solid var(--posi-border)' }}>
-      <div className="flex items-center gap-1 flex-wrap">
-        {prev ? (
-          <Link href={prev} className="px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
-            ← Prev
-          </Link>
-        ) : (
-          <span className="px-3 py-1.5 text-xs" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)', opacity: 0.4 }}>← Prev</span>
-        )}
-        {pageWindow(page, totalPages).map((p, i) =>
-          p === '…' ? (
-            <span key={`ellipsis-${i}`} className="px-1.5 text-xs" style={{ color: 'var(--posi-muted)' }}>…</span>
-          ) : p === page ? (
-            <span key={p} aria-current="page" className="px-2.5 py-1.5 text-xs font-mono font-bold" style={{ border: '1px solid var(--posi-accent)', color: '#fff', background: 'var(--posi-accent)' }}>
-              {p}
-            </span>
-          ) : (
-            <Link key={p} href={makeHref(p)} className="px-2.5 py-1.5 text-xs font-mono transition-colors hover:bg-gray-100" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
-              {p}
-            </Link>
-          )
-        )}
-        {next ? (
-          <Link href={next} className="px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
-            Next →
-          </Link>
-        ) : (
-          <span className="px-3 py-1.5 text-xs" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)', opacity: 0.4 }}>Next →</span>
-        )}
-      </div>
-      <form onSubmit={handleJumpSubmit} className="flex items-center gap-1.5">
-        <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>Page {page} / {totalPages} · Go to</span>
-        <input
-          type="number"
-          min={1}
-          max={totalPages}
-          value={jumpValue}
-          onChange={e => setJumpValue(e.target.value)}
-          placeholder={String(page)}
-          aria-label="Jump to page"
-          className="w-14 px-2 py-1.5 text-xs font-mono"
-          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
-        />
-        <button
-          type="submit"
-          className="px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-gray-100"
-          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
-        >
-          Go
-        </button>
-      </form>
-    </div>
-  )
+function makeTabHref(pathname: string, tab: string, subject: string | undefined, page: number) {
+  const params = new URLSearchParams({ tab, page: String(page) })
+  if (subject) params.set('subject', subject)
+  return `${pathname}?${params.toString()}`
 }
 
 type TabId = 'psg' | 'indexed' | 'crossref' | 'discovered'
@@ -517,7 +432,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
             </div>
           </div>
           <JournalTable rows={pagedIndexed} showOjqf />
-          <Pagination page={indexedPage} totalPages={indexedTotalPages} tab="indexed" subject={activeSubject || undefined} pathname={pathname} />
+          <Pagination page={indexedPage} totalPages={indexedTotalPages} makeHref={p => makeTabHref(pathname, 'indexed', activeSubject || undefined, p)} />
         </div>
       )}
 
@@ -561,7 +476,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
             </span>
           </div>
           <JournalTable rows={pagedDiscovered} showOjqf />
-          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} tab="discovered" subject={activeSubject || undefined} pathname={pathname} />
+          <Pagination page={discoveredPage} totalPages={discoveredTotalPages} makeHref={p => makeTabHref(pathname, 'discovered', activeSubject || undefined, p)} />
         </div>
       )}
     </div>
