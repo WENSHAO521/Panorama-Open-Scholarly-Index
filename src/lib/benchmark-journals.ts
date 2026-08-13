@@ -13,13 +13,17 @@
 // scripts/discover-benchmark-journals.mjs's header for the full rationale.
 //
 // As of 2026-08-13, this file holds ONLY the original curated validation
-// seed (~1000 records) — sync-corpus.mjs filters out the 2026-08
-// Elsevier/Frontiers bulk publisher-catalog expansion (~3300 records)
-// into public/data/global-benchmark-publisher-catalog.json instead, fetched
-// client-side (see publisher-catalog-client.ts) rather than statically
-// bundled. Baking all ~4300 records into every page that touched
-// BENCHMARK_JOURNALS produced multi-MB static HTML and broke a live
-// Cloudflare Pages deployment — see git history around 2026-08-13.
+// seed (~1000 records) — sync-corpus.mjs pulls that from posi-data-
+// delivery's collections/benchmark-curated.json. The 2026-08 Elsevier/
+// Frontiers bulk publisher-catalog expansion (~3300 records) is never
+// vendored into this repo at all: it's fetched client-side directly from
+// data.posi.panorama-sg.com (see publisher-catalog-client.ts). Baking all
+// ~4300 records into every page that touched BENCHMARK_JOURNALS produced
+// multi-MB static HTML and broke a live Cloudflare Pages deployment; even
+// after that was fixed, the file was still a same-origin static asset
+// copied into this repo's own deployment on every sync — moving it to a
+// dedicated external data layer (posi-data-delivery) removes it from this
+// repo's deployment surface entirely. See git history around 2026-08-13.
 import type { Journal } from './types'
 import globalBenchmarkRaw from './global-benchmark.json'
 
