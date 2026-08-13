@@ -24,6 +24,14 @@ import { pageWindow } from '@/lib/pagination'
  * input, submit share one boundary) instead of three loose floating
  * pieces, matching the rest of the site's restrained black/white/red,
  * hairline-divider language.
+ *
+ * The two clusters (page numbers, page-info+jump) sit centered as one
+ * group with a hairline divider between them, not spread with
+ * `justify-between` — on a wide table that put ~800px of dead white
+ * space between them, reading as a broken/unfinished bar rather than a
+ * single designed control. Sharp corners throughout (no border-radius)
+ * to match the site's Bauhaus flat-block language; this isn't a
+ * softer-rounded SaaS control.
  */
 export function Pagination({
   page,
@@ -59,15 +67,15 @@ export function Pagination({
   return (
     <nav
       aria-label="Pagination"
-      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mt-3 px-4 py-2.5"
+      className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-3 px-4 py-3"
       style={{ background: 'var(--posi-surface)', border: '1px solid var(--posi-border)' }}
     >
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1">
         {prev ? (
           <Link
             href={prev}
             aria-label="Previous page"
-            className="tactile flex items-center justify-center h-8 w-8 transition-colors"
+            className="tactile flex items-center justify-center h-9 w-9 transition-colors"
             style={{ color: 'var(--posi-text)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-bg)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -75,7 +83,7 @@ export function Pagination({
             <CaretLeft className="h-3.5 w-3.5" weight="bold" />
           </Link>
         ) : (
-          <span aria-hidden className="flex items-center justify-center h-8 w-8" style={{ color: 'var(--posi-soft)' }}>
+          <span aria-hidden className="flex items-center justify-center h-9 w-9" style={{ color: 'var(--posi-soft)' }}>
             <CaretLeft className="h-3.5 w-3.5" weight="bold" />
           </span>
         )}
@@ -89,7 +97,7 @@ export function Pagination({
             <span
               key={p}
               aria-current="page"
-              className="flex items-center justify-center h-8 min-w-8 px-1.5 text-xs font-mono font-bold"
+              className="flex items-center justify-center h-9 min-w-9 px-1.5 text-xs font-mono font-bold"
               style={{ background: 'var(--posi-accent)', color: '#fff' }}
             >
               {p}
@@ -98,7 +106,7 @@ export function Pagination({
             <Link
               key={p}
               href={makeHref(p)}
-              className="tactile flex items-center justify-center h-8 min-w-8 px-1.5 text-xs font-mono transition-colors"
+              className="tactile flex items-center justify-center h-9 min-w-9 px-1.5 text-xs font-mono transition-colors"
               style={{ color: 'var(--posi-muted)' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--posi-bg)'; e.currentTarget.style.color = 'var(--posi-text)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--posi-muted)' }}
@@ -112,7 +120,7 @@ export function Pagination({
           <Link
             href={next}
             aria-label="Next page"
-            className="tactile flex items-center justify-center h-8 w-8 transition-colors"
+            className="tactile flex items-center justify-center h-9 w-9 transition-colors"
             style={{ color: 'var(--posi-text)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-bg)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -120,18 +128,20 @@ export function Pagination({
             <CaretRight className="h-3.5 w-3.5" weight="bold" />
           </Link>
         ) : (
-          <span aria-hidden className="flex items-center justify-center h-8 w-8" style={{ color: 'var(--posi-soft)' }}>
+          <span aria-hidden className="flex items-center justify-center h-9 w-9" style={{ color: 'var(--posi-soft)' }}>
             <CaretRight className="h-3.5 w-3.5" weight="bold" />
           </span>
         )}
       </div>
 
+      <div aria-hidden className="hidden sm:block self-stretch w-px my-1" style={{ background: 'var(--posi-border)' }} />
+
       <div className="flex items-center gap-3">
-        <span className="text-[11px] font-mono hidden sm:inline" style={{ color: 'var(--posi-muted)' }}>
+        <span className="text-[11px] font-mono hidden sm:inline whitespace-nowrap" style={{ color: 'var(--posi-muted)' }}>
           Page {page.toLocaleString()} of {totalPages.toLocaleString()}
         </span>
-        <form onSubmit={handleJumpSubmit} className="flex items-center h-8 transition-colors" style={{ border: '1px solid var(--posi-border)' }}>
-          <label htmlFor="pagination-jump" className="pl-2.5 pr-1.5 text-[10px] font-mono uppercase tracking-wide select-none" style={{ color: 'var(--posi-soft)' }}>
+        <form onSubmit={handleJumpSubmit} className="flex items-center h-9 transition-colors" style={{ border: '1px solid var(--posi-border)' }}>
+          <label htmlFor="pagination-jump" className="pl-3 pr-2 text-[10px] font-mono uppercase tracking-wide select-none" style={{ color: 'var(--posi-soft)' }}>
             Go to
           </label>
           <input
@@ -144,13 +154,13 @@ export function Pagination({
             onFocus={focusGroup}
             onBlur={blurGroup}
             placeholder={String(page)}
-            className="w-10 h-full px-1 text-xs font-mono text-center focus:outline-none"
+            className="w-12 h-full px-1 text-xs font-mono text-center focus:outline-none"
             style={{ color: 'var(--posi-text)', background: 'transparent' }}
           />
           <button
             type="submit"
             aria-label="Go to page"
-            className="tactile flex items-center justify-center h-full w-8 shrink-0 transition-colors"
+            className="tactile flex items-center justify-center h-full w-9 shrink-0 transition-colors"
             style={{ color: 'var(--posi-accent)', borderLeft: '1px solid var(--posi-border)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-light)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
