@@ -53,17 +53,14 @@ export default function EarlyStageRankingsPage() {
       </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Early-Stage Track</h2>
-          <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-            Methodology (AJR-E) →
-          </a>
-        </div>
         <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
           <LifecycleRatingsTable
             journals={core}
             benchmarkMode="not-yet-mature"
             columns={['collection', 'e-q']}
+            title="Early-Stage Track"
+            methodologyHref="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
+            methodologyLabel="Methodology (AJR-E)"
           />
         </Suspense>
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>

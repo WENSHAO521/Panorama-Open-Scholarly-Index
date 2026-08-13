@@ -85,16 +85,12 @@ export default function GlobalBenchmarkPage() {
       </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>
-            {rated.length} Rated
-          </h2>
-          <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
-            {rated.length} of {CURATED_BENCHMARK_JOURNALS.length} curated-seed journals scored
-          </span>
-        </div>
         <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
-          <LifecycleRatingsTable journals={rated} />
+          <LifecycleRatingsTable
+            journals={rated}
+            title={`${rated.length} Rated`}
+            headerStat={`${rated.length} of ${CURATED_BENCHMARK_JOURNALS.length} curated-seed journals scored`}
+          />
         </Suspense>
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Benchmark journals never receive an E-Q or M-Q — the Core Collection quartile systems don't apply

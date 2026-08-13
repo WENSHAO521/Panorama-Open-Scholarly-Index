@@ -80,24 +80,26 @@ export default function MatureRankingsPage() {
       </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Mature Track</h2>
-          <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
-            Methodology (AJR 1.0) →
-          </a>
-        </div>
         {journals.length > 0 ? (
           <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
             <LifecycleRatingsTable
               journals={journals}
               benchmarkMode="mature"
               columns={['collection', 'm-q', 'citation-preview']}
+              title="Mature Track"
+              methodologyHref="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
+              methodologyLabel="Methodology (AJR 1.0)"
             />
           </Suspense>
         ) : (
-          <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>
-            No mature journals have cleared the evidence bar yet.
-          </p>
+          <>
+            <div className="px-5 py-3" style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+              <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Mature Track</h2>
+            </div>
+            <p className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>
+              No mature journals have cleared the evidence bar yet.
+            </p>
+          </>
         )}
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Global Benchmark rows (Collection: Benchmark, no AJR Score) are the 2026-08 Elsevier/Frontiers

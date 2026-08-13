@@ -118,10 +118,18 @@ export function LifecycleRatingsTable({
   journals,
   columns = [],
   benchmarkMode,
+  title,
+  methodologyHref,
+  methodologyLabel,
+  headerStat,
 }: {
   journals: Journal[]
   columns?: ColumnKind[]
   benchmarkMode?: BenchmarkMode
+  title: string
+  methodologyHref?: string
+  methodologyLabel?: string
+  headerStat?: string
 }) {
   const [benchmarkRows, setBenchmarkRows] = useState<Journal[] | null>(null)
   const [loading, setLoading] = useState(!!benchmarkMode)
@@ -152,17 +160,27 @@ export function LifecycleRatingsTable({
 
   return (
     <div>
-      {allRows.length > 0 && (
-        // Same background/padding language as the section title bar this
-        // table is mounted under (px-5, --posi-bg, hairline bottom border)
-        // so this reads as that bar's second line, not a disconnected
-        // white gap floating between two gray strips.
-        <div className="px-5 py-2 flex justify-end" style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border-light)' }}>
-          <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-            {((page - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
-          </span>
+      {/* Title + row-range live in one row, same as CitationReportsTable's
+          toolbar — a range indicator on its own row reads as an orphaned
+          strip of empty space, not a caption attached to anything. */}
+      <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1" style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <div className="flex items-baseline gap-3 min-w-0">
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em] whitespace-nowrap" style={{ color: 'var(--posi-muted)' }}>{title}</h2>
+          {allRows.length > 0 && (
+            <span className="text-[11px] font-mono whitespace-nowrap" style={{ color: 'var(--posi-muted)' }}>
+              {((page - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
+            </span>
+          )}
         </div>
-      )}
+        <div className="flex items-center gap-3 shrink-0">
+          {headerStat && <span className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>{headerStat}</span>}
+          {methodologyHref && (
+            <a href={methodologyHref} target="_blank" rel="noopener noreferrer" className="text-[10px] hover:underline whitespace-nowrap" style={{ color: 'var(--posi-accent)' }}>
+              {methodologyLabel} →
+            </a>
+          )}
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
