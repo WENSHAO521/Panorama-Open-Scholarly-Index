@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'POSI Citation Impact (PCI) & POSI Citation Score (PCS) | POSI',
@@ -66,21 +67,19 @@ export default function PciPage() {
       </div>
 
       {/* Explicit non-overclaiming notice */}
-      <div className="p-4 text-xs leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <strong style={{ color: '#1d4ed8' }}>Neither PCI nor PCS claims to replace or outperform the Journal Impact Factor or CiteScore.</strong>
-        <span style={{ color: '#1d4ed8' }}>
-          {' '}They answer a narrower, honest question: what do fully open citation graphs say about a journal's
-          citation rate? Their value is that anyone can check the numbers, not that the numbers are more
-          accurate than Clarivate's or Elsevier's.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>Neither PCI nor PCS claims to replace or outperform the Journal Impact Factor or CiteScore.</strong>
+        {' '}They answer a narrower, honest question: what do fully open citation graphs say about a journal's
+        citation rate? Their value is that anyone can check the numbers, not that the numbers are more
+        accurate than Clarivate's or Elsevier's.
+      </Callout>
 
       {/* What determines ranking, and what does not */}
-      <div className="p-4 text-xs leading-relaxed space-y-1.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <p style={{ color: '#92400e' }}><strong>Only PCI determines POSI Citation Rank, Citation Percentile, and Citation Quartile.</strong></p>
-        <p style={{ color: '#92400e' }}>OpenAlex 2-Year Mean Citedness is displayed only as a source-level preview indicator and is not PCI.</p>
-        <p style={{ color: '#92400e' }}>PCS is an independently reported Crossref-based citation indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.</p>
-      </div>
+      <Callout variant="warning" className="space-y-1.5">
+        <p><strong>Only PCI determines POSI Citation Rank, Citation Percentile, and Citation Quartile.</strong></p>
+        <p>OpenAlex 2-Year Mean Citedness is displayed only as a source-level preview indicator and is not PCI.</p>
+        <p>PCS is an independently reported Crossref-based citation indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.</p>
+      </Callout>
 
       {/* Two independent measurements */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>

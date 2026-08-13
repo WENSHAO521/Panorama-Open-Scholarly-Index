@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { Callout } from '@/components/Callout'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 
@@ -17,7 +17,7 @@ export default function EarlyStageRankingsPage() {
   const eQAssignedCount = evaluated.filter(j => j.early_stage_rating?.provisional_quartile).length
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
@@ -40,9 +40,8 @@ export default function EarlyStageRankingsPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
+      <Callout variant="info">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Lifecycle window:</strong> 12–59 months since first publication</p>
           <p><strong>Methodology:</strong> AJR-E (AJR 1.0 Lifecycle Framework)</p>
           <p><strong>Scoring:</strong> 100% rules-driven, from crawled site evidence and sampled Crossref articles</p>
@@ -51,7 +50,7 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Journals evaluated:</strong> {evaluated.length} of {core.length}</p>
           <p><strong>Global Benchmark, pending FPD verification:</strong> {publisherCatalogMeta.not_yet_mature}</p>
         </div>
-      </div>
+      </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>

@@ -153,7 +153,11 @@ export function LifecycleRatingsTable({
   return (
     <div>
       {allRows.length > 0 && (
-        <div className="flex justify-end mb-2">
+        // Same background/padding language as the section title bar this
+        // table is mounted under (px-5, --posi-bg, hairline bottom border)
+        // so this reads as that bar's second line, not a disconnected
+        // white gap floating between two gray strips.
+        <div className="px-5 py-2 flex justify-end" style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border-light)' }}>
           <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
             {((page - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
           </span>

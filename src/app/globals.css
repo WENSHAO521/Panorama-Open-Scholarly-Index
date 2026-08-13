@@ -13,6 +13,24 @@
   --posi-danger: #9b1c31;
   --posi-warning: #b77a1f;
   --posi-success: #1f7a4d;
+  --posi-info: #2c5282;
+
+  /* Tint + border pairs for the four semantic callout colors above —
+     hand-picked desaturated tints (not default Tailwind blue-50/amber-50/
+     etc.) so a callout box reads as part of this palette, not a foreign
+     component pasted in. Use via Callout.tsx rather than inline hex —
+     see that component's header for why (a 2026-08 audit found 21+
+     files hardcoding '#eff6ff'/'#1d4ed8' and 18+ hardcoding
+     '#fffbeb'/'#92400e' independently, plus several more near-duplicate
+     one-off tints for the same four semantic purposes). */
+  --posi-info-bg: #eef3f8;
+  --posi-info-border: #c9d9e8;
+  --posi-warning-bg: #fdf6e9;
+  --posi-warning-border: #ecd9ab;
+  --posi-danger-bg: #fbeef0;
+  --posi-danger-border: #e8b8c0;
+  --posi-success-bg: #eaf5ef;
+  --posi-success-border: #b8dcc8;
 
   --posi-bg: #e8e8e8;
   --posi-surface: #ffffff;

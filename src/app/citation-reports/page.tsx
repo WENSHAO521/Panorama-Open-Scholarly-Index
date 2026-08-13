@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { getCitationStats } from '@/lib/citation-stats'
 import { primarySubject } from '@/lib/subject-keywords'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
+import { Callout } from '@/components/Callout'
 
 export const metadata = {
   title: 'Citation Rankings — Preview',
@@ -90,7 +90,7 @@ export default async function CitationReportsPage() {
   const withData = coreRows.filter(r => r.two_yr_mean_citedness != null).length
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
@@ -99,9 +99,9 @@ export default async function CitationReportsPage() {
         <span style={{ color: 'var(--posi-text)' }}>Citation Rankings</span>
       </nav>
 
-      <div className="border-l-4 pl-5" style={{ borderColor: '#B45309' }}>
+      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-warning)' }}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fefce8' }}>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-warning)', border: '1px solid var(--posi-warning-border)', background: 'var(--posi-warning-bg)' }}>
             PREVIEW
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
@@ -123,20 +123,17 @@ export default async function CitationReportsPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <span style={{ color: '#1d4ed8' }}>
-          <strong>OpenAlex 2-Year Citedness</strong> and the <strong>Legacy Crossref Preview</strong> (mean
-          citations per article, trailing 4-year window, currently capped at a 200-article sample — see the
-          methodology section below for why this isn't yet called "PCS") are POSI's own independently-defined,
-          reproducible citation indicators — two separately-sourced numbers, not one blended score, the same way
-          WoS and Scopus report independently of each other. POSI does not license or use Web of Science or
-          Scopus data. {withData} of {coreRows.length} Core Collection journals have a resolvable OpenAlex source
-          record; journals without one show as unranked. See{' '}
-          <Link href="/cvi" className="underline">Citation Visibility Index →</Link> for how POSI treats citation
-          infrastructure separately from citation volume.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>OpenAlex 2-Year Citedness</strong> and the <strong>Legacy Crossref Preview</strong> (mean
+        citations per article, trailing 4-year window, currently capped at a 200-article sample — see the
+        methodology section below for why this isn't yet called "PCS") are POSI's own independently-defined,
+        reproducible citation indicators — two separately-sourced numbers, not one blended score, the same way
+        WoS and Scopus report independently of each other. POSI does not license or use Web of Science or
+        Scopus data. {withData} of {coreRows.length} Core Collection journals have a resolvable OpenAlex source
+        record; journals without one show as unranked. See{' '}
+        <Link href="/cvi" className="underline">Citation Visibility Index →</Link> for how POSI treats citation
+        infrastructure separately from citation volume.
+      </Callout>
 
       {/* Methodology */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>

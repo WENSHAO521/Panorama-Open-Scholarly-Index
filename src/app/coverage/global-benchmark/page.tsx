@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { WarningCircle, Info } from '@phosphor-icons/react/dist/ssr'
 import { BENCHMARK_JOURNALS, CURATED_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { Callout } from '@/components/Callout'
 
 export const metadata = {
   title: 'POSI Global Benchmark Collection',
@@ -17,7 +17,7 @@ export default function GlobalBenchmarkPage() {
   const unknown = sorted.filter(j => j.early_stage_rating?.eligibility === 'unknown')
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
@@ -43,18 +43,15 @@ export default function GlobalBenchmarkPage() {
         </div>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <span style={{ color: '#1d4ed8' }}>
-          <strong>2026-08 publisher-catalog expansion:</strong> {publisherCatalogMeta.count} additional
-          records were added from full active-journal exports (Elsevier&apos;s <code>jnlactive.csv</code>, Frontiers&apos;
-          title list) to validate the ingestion/identity pipeline against real, messy publisher data at scale —
-          not because every title in a publisher&apos;s complete catalog is individually &quot;internationally
-          established.&quot; These records are unrated (no AJR score is computed for them) and their presence here
-          never makes a journal ranking-eligible on its own — see the identity/registry documentation in{' '}
-          <a href="https://github.com/WENSHAO521/posi-data" target="_blank" rel="noopener noreferrer" className="underline">posi-data</a>.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>2026-08 publisher-catalog expansion:</strong> {publisherCatalogMeta.count}{' '}
+        additional records were added from full active-journal exports (Elsevier&apos;s <code>jnlactive.csv</code>, Frontiers&apos;
+        title list) to validate the ingestion/identity pipeline against real, messy publisher data at scale —
+        not because every title in a publisher&apos;s complete catalog is individually &quot;internationally
+        established.&quot; These records are unrated (no AJR score is computed for them) and their presence here
+        never makes a journal ranking-eligible on its own — see the identity/registry documentation in{' '}
+        <a href="https://github.com/WENSHAO521/posi-data" target="_blank" rel="noopener noreferrer" className="underline">posi-data</a>.
+      </Callout>
 
       <div className="coverage-grid grid sm:grid-cols-5 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
         {[
@@ -74,21 +71,18 @@ export default function GlobalBenchmarkPage() {
         Curated Seed + Publisher Catalog Expansion ({publisherCatalogMeta.count}, unrated by design) = Total. Rated + Blocked + Unknown = Curated Seed.
       </p>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
-        <span style={{ color: '#92400e' }}>
-          <strong>Evidence acquisition finding:</strong> the first benchmark run scored only 5 of 200 journals. Extending
-          the evidence crawl to check policy subpages (not just the homepage) and widening the ethics-keyword
-          set raised this to 22 of 200 (Nature now scores 71/100) — a real improvement. Expanding the corpus to
-          600 journals held at the same ~9% rate, ruling out sample size as the cause. A direct investigation
-          found the real bottleneck: <strong>73% of a sampled batch of still-failing journals return HTTP 403 on
-          the first request</strong> — Elsevier, Wiley, ACS, APS, AIP, Oxford, and IOP platforms among them.
-          No amount of subpage-guessing or keyword-widening can fix that; it&apos;s a structural ceiling of a
-          plain-HTTP-only crawl, not evidence those journals lack real governance. <strong>&quot;Not Yet Rateable&quot; on a
-          bot-protected platform means POSI&apos;s crawl was blocked — not that no evidence of governance exists.</strong>{' '}
-          Published here rather than quietly smoothed over, per POSI&apos;s own no-hidden-adjustment principle.
-        </span>
-      </div>
+      <Callout variant="warning">
+        <strong>Evidence acquisition finding:</strong> the first benchmark run scored only 5 of 200 journals. Extending
+        the evidence crawl to check policy subpages (not just the homepage) and widening the ethics-keyword
+        set raised this to 22 of 200 (Nature now scores 71/100) — a real improvement. Expanding the corpus to
+        600 journals held at the same ~9% rate, ruling out sample size as the cause. A direct investigation
+        found the real bottleneck: <strong>73% of a sampled batch of still-failing journals return HTTP 403 on
+        the first request</strong> — Elsevier, Wiley, ACS, APS, AIP, Oxford, and IOP platforms among them.
+        No amount of subpage-guessing or keyword-widening can fix that; it&apos;s a structural ceiling of a
+        plain-HTTP-only crawl, not evidence those journals lack real governance. <strong>&quot;Not Yet Rateable&quot; on a
+        bot-protected platform means POSI&apos;s crawl was blocked — not that no evidence of governance exists.</strong>{' '}
+        Published here rather than quietly smoothed over, per POSI&apos;s own no-hidden-adjustment principle.
+      </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>

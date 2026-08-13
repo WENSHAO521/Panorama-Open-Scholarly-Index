@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { Callout } from '@/components/Callout'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 
 export const metadata = {
@@ -20,7 +20,7 @@ export default function MatureRankingsPage() {
   const benchmarkTotal = publisherCatalogMeta.mature_evidence
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
         <Link href="/" className="hover:text-gray-700">Home</Link>
         <span>/</span>
@@ -34,7 +34,7 @@ export default function MatureRankingsPage() {
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
             {DATA_SNAPSHOT_LABEL}
           </span>
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-warning)', border: '1px solid var(--posi-warning)', background: 'var(--posi-warning-bg)' }}>
             AJR-M 1.0 — PENDING DATA
           </span>
         </div>
@@ -50,15 +50,14 @@ export default function MatureRankingsPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
-        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#92400e' }}>
+      <Callout variant="warning">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>AJR-M 1.0 methodology:</strong> Implemented</p>
           <p><strong>Current rating status:</strong> Pending required mature-stage citation/evidence inputs</p>
           <p><strong>AJR-M Score:</strong> Not Yet Available</p>
           <p><strong>M-Q:</strong> Not Yet Available</p>
         </div>
-        <span className="block mt-2" style={{ color: '#92400e' }}>
+        <span className="block mt-2">
           AJR-M-1.0-SPEC.md is implemented in posi-engine (<code className="font-mono">src/ajr-mature.mjs</code>)
           but has not been run against real evidence/citation data for any journal yet — no AJR-M score or M-Q
           exists to display. <strong>A mature journal is never scored with the AJR-E rubric</strong> (the
@@ -68,18 +67,17 @@ export default function MatureRankingsPage() {
           diagnostic OpenAlex citation preview only — not a score, not ranked; see the Citation Preview column
           and <Link href="/citation-reports" className="underline">Citation Rankings</Link>.
         </span>
-      </div>
+      </Callout>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
+      <Callout variant="info">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Lifecycle window:</strong> 60+ months since first publication</p>
           <p><strong>Core Collection mature journals:</strong> {core.length}</p>
           <p><strong>Global Benchmark mature journals (evidence-rated):</strong> {curatedBenchmark.length}</p>
           <p><strong>Global Benchmark mature journals (citation preview only):</strong> {benchmarkTotal}</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
         </div>
-      </div>
+      </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
