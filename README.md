@@ -12,8 +12,8 @@ This repo is the **display layer only** — a static-exported Next.js site that 
 
 - **Core Collection** — journals admitted through POSI's published editorial selection criteria (PQF admission gate), fully indexed with article-level metadata and evidence.
 - **Global Benchmark Collection** — a large external validation corpus (curated seed + a 2026-08 bulk publisher-catalog expansion), used to check POSI's methodology against real-world data at scale — never a POSI admission candidate.
-- **AJR (POSI Automated Rating)** — lifecycle-staged, evidence-based journal ratings: **AJR-E** (Early-Stage, 12–59 months) and **AJR-M** (Mature, 60+ months), each ranked within same-subject PSC peer cohorts as E-Q1–E-Q4 / M-Q1–M-Q4.
-- **Citation Q** — an independent, PCI-based citation-impact quartile track, separate from AJR-E/AJR-M.
+- **AJR (POSI Automated Rating)** — lifecycle-staged, evidence-based journal ratings: **AJR-E** (Early-Stage, 12–59 months) and **AJR-M** (Mature, 60+ months), each ranked within same-subject PSC peer cohorts as E-Q1–E-Q4 / M-Q1–M-Q4. AJR-M's methodology is implemented but has not yet been run against real evidence/citation data for any journal — pages say so explicitly rather than substituting the Early-Stage rubric.
+- **Citation Q** — an independent, PCI-based citation-impact quartile track, separate from AJR-E/AJR-M. Not yet computed for any journal (no PJR release has been produced — PCI requires one). Global Benchmark journals instead show a **citation preview**: OpenAlex's 2-year mean citedness, explicitly diagnostic-only, never a rank, percentile, or quartile.
 - **PSC (POSI Subject Classification)** — an OpenAlex-topic-derived subject taxonomy used to form fair, same-field peer cohorts for every ranking track.
 - **PQF (POSI Quality Framework)** — the evidence-based admission gate for the Core Collection (Journal Transparency, Metadata Quality, Editorial Governance, Technical Discoverability, Citation Visibility, Research Integrity).
 - **Permanent identity** — every journal POSI has resolved carries a stable `POSI-J-######` id (see posi-data's `registry/`), verifiable at `/verify`.
@@ -37,7 +37,7 @@ Discovered Journal Records are found, not indexed — POSI has a record of them,
 
 ## Status: Formally Launched, Data Coverage Expanding
 
-POSI is live and formally launched, not a beta or trial that could be discontinued. What's still in progress is *coverage*, not the platform: some lifecycle ratings, citation metrics, and subject rankings remain under methodological validation and aren't yet available for every journal — pages that aren't finalized say so explicitly (e.g. "Preview" or "Not Yet Released") rather than showing a placeholder as if it were final. See [About](https://posi.panorama-sg.com/about) and [Terms](https://posi.panorama-sg.com/terms).
+POSI is live and formally launched, not a beta or trial that could be discontinued. What's still in progress is *coverage*, not the platform: some lifecycle ratings, citation metrics, and subject rankings remain under methodological validation and aren't yet available for every journal — pages that aren't finalized say so explicitly (e.g. "Preview" or "Not Yet Available") rather than showing a placeholder as if it were final. Every public-facing badge reflects this too: pages show a **data snapshot date**, not a `RELEASE` label — no `POSI-R-*` platform release has been produced yet (see posi-data's `POSI-R-1.0-SPEC.md`), and none is claimed until one actually is. See [About](https://posi.panorama-sg.com/about) and [Terms](https://posi.panorama-sg.com/terms).
 
 ---
 
@@ -50,10 +50,13 @@ POSI is live and formally launched, not a beta or trial that could be discontinu
 | Styling | Tailwind CSS v4 |
 | Icons | `@phosphor-icons/react` |
 | Rendering | **Static export** (`output: "export"`) — every page is pre-rendered to `out/` at build time, no server runtime |
-| Data | Vendored JSON snapshots in `src/lib/` (`core-collection.json`, `global-benchmark.json`), synced deliberately from posi-data via `scripts/sync-corpus.mjs` — not fetched live |
+| Data | Two tiers — see below |
 | Deployment | Cloudflare Pages (see `wrangler.toml`) |
 
-This repo has **no database and no live server-side computation**. Every score, rank, and classification a visitor sees was computed in posi-engine against posi-data, then vendored into this repo as a static snapshot — see [Related Repositories](#related-repositories).
+This repo has **no database and no live server-side computation**. Every score, rank, and classification a visitor sees was computed in posi-engine against posi-data. Data reaches this site in two tiers, chosen per collection size:
+
+- **Small, statically bundled** — `src/lib/core-collection.json` and `src/lib/global-benchmark.json` (the curated Global Benchmark seed only), synced deliberately via `scripts/sync-corpus.mjs`. Baked into the build; a visitor never fetches these separately.
+- **Large, fetched live at runtime** — the ~3,300-record Global Benchmark publisher-catalog expansion is fetched client-side directly from [`data.posi.panorama-sg.com`](https://github.com/WENSHAO521/posi-data-delivery) (`src/lib/publisher-catalog-client.ts`), a dedicated public data layer. It is **not vendored into this repo or this deployment in any form** — an earlier version copied it into `public/data/` as a same-origin static asset, which still meant multi-MB JSON shipped with every Cloudflare Pages deploy; moving it to its own origin removes that entirely. See [Related Repositories](#related-repositories).
 
 ---
 
@@ -64,15 +67,15 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). No environment variables are required — all data is vendored in `src/lib/`.
+Open [http://localhost:3000](http://localhost:3000). No environment variables are required — the small collections are vendored in `src/lib/`, and the publisher-catalog fetch reads live from `data.posi.panorama-sg.com` even in local dev.
 
-To pull the latest posi-data snapshot:
+To pull the latest data-layer snapshot into `src/lib/`:
 
 ```bash
-node scripts/sync-corpus.mjs <posi-data-commit-sha>
+node scripts/sync-corpus.mjs
 ```
 
-Deliberately not automatic on every build — this repo's git history only grows when a sync is actually intended. Review the diff, then commit.
+Reads `data.posi.panorama-sg.com/current.json`, follows its manifest pointer, and syncs the two small collections from whatever snapshot is currently published — deliberately not automatic on every build, so this repo's git history only grows when a sync is actually intended. Review the diff, then commit.
 
 To build the static site:
 
@@ -84,8 +87,9 @@ npm run build   # outputs to out/
 
 ## Related Repositories
 
-- [posi-data](https://github.com/WENSHAO521/posi-data) — canonical, versioned journal/classification/citation-metric data. The source of truth this repo's `src/lib/*.json` snapshots are synced from.
+- [posi-data](https://github.com/WENSHAO521/posi-data) — canonical, versioned journal/classification/citation-metric data. The source of truth for everything POSI publishes.
 - [posi-engine](https://github.com/WENSHAO521/posi-engine) — the PSC classifier, PCI/PCI-5/PNCI calculators, and AJR-E/AJR-M/lifecycle/ranking engine that reads posi-data and produces the numbers this repo displays.
+- [posi-data-delivery](https://github.com/WENSHAO521/posi-data-delivery) — the public, versioned, read-only data layer this repo actually reads from at build time (`scripts/sync-corpus.mjs`) and at runtime (`src/lib/publisher-catalog-client.ts`), served over HTTPS at `data.posi.panorama-sg.com`. A generated public mirror of posi-data's `corpus/`, not itself a source of truth — see that repo's README for the current.json → manifest → collection fetch pattern and its immutable-snapshot discipline.
 
 ---
 
