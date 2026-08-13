@@ -15,11 +15,15 @@ import { pageWindow } from '@/lib/pagination'
  * this component). Page state lives in the URL (`?page=`), not React
  * state, so a page is directly linkable/shareable and works without JS.
  *
- * Styled as a plain-text index control (numbers as ghost buttons, one
- * solid-fill accent for the current page, no per-item borders) rather than
- * a grid of bordered chiclets — matches the rest of the site's restrained
- * black/white/red, hairline-divider language instead of looking like a
- * bolted-on generic web-forum pager.
+ * Rendered as its own bordered white bar (not bare text on the page's gray
+ * background) — a prior version had no background of its own, so it
+ * inherited the page's gray directly and its hover states (which lit up
+ * to that *same* gray) were invisible. Numbers stay ghost buttons with one
+ * solid-fill accent for the current page — no per-item borders — while the
+ * jump-to-page control is grouped into a single bordered chip (label,
+ * input, submit share one boundary) instead of three loose floating
+ * pieces, matching the rest of the site's restrained black/white/red,
+ * hairline-divider language.
  */
 export function Pagination({
   page,
@@ -45,11 +49,18 @@ export function Pagination({
     setJumpValue('')
   }
 
+  function focusGroup(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.closest('form')?.style.setProperty('border-color', 'var(--posi-accent)')
+  }
+  function blurGroup(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.closest('form')?.style.setProperty('border-color', 'var(--posi-border)')
+  }
+
   return (
     <nav
       aria-label="Pagination"
-      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mt-1 pt-4"
-      style={{ borderTop: '1px solid var(--posi-border)' }}
+      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mt-3 px-4 py-2.5"
+      style={{ background: 'var(--posi-surface)', border: '1px solid var(--posi-border)' }}
     >
       <div className="flex items-center gap-0.5">
         {prev ? (
@@ -116,11 +127,11 @@ export function Pagination({
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-[11px] font-mono" style={{ color: 'var(--posi-muted)' }}>
+        <span className="text-[11px] font-mono hidden sm:inline" style={{ color: 'var(--posi-muted)' }}>
           Page {page.toLocaleString()} of {totalPages.toLocaleString()}
         </span>
-        <form onSubmit={handleJumpSubmit} className="flex items-center gap-1.5">
-          <label htmlFor="pagination-jump" className="text-[11px] font-mono" style={{ color: 'var(--posi-soft)' }}>
+        <form onSubmit={handleJumpSubmit} className="flex items-center h-8 transition-colors" style={{ border: '1px solid var(--posi-border)' }}>
+          <label htmlFor="pagination-jump" className="pl-2.5 pr-1.5 text-[10px] font-mono uppercase tracking-wide select-none" style={{ color: 'var(--posi-soft)' }}>
             Go to
           </label>
           <input
@@ -130,17 +141,17 @@ export function Pagination({
             max={totalPages}
             value={jumpValue}
             onChange={e => setJumpValue(e.target.value)}
+            onFocus={focusGroup}
+            onBlur={blurGroup}
             placeholder={String(page)}
-            className="w-12 h-8 px-1.5 text-xs font-mono text-center focus:outline-none"
-            style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', background: 'var(--posi-surface)' }}
-            onFocus={e => (e.currentTarget.style.borderColor = 'var(--posi-accent)')}
-            onBlur={e => (e.currentTarget.style.borderColor = 'var(--posi-border)')}
+            className="w-10 h-full px-1 text-xs font-mono text-center focus:outline-none"
+            style={{ color: 'var(--posi-text)', background: 'transparent' }}
           />
           <button
             type="submit"
             aria-label="Go to page"
-            className="tactile flex items-center justify-center h-8 w-8 transition-colors"
-            style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-border)' }}
+            className="tactile flex items-center justify-center h-full w-8 shrink-0 transition-colors"
+            style={{ color: 'var(--posi-accent)', borderLeft: '1px solid var(--posi-border)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--posi-accent-light)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
