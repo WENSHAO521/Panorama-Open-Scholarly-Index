@@ -73,11 +73,17 @@ async function main() {
 
   // Tiny, safe-to-bundle companion so build-time pages can show an accurate
   // total count (e.g. stat cards) without importing the full multi-MB file.
+  // mature_evidence/not_yet_mature reflect citation_preview.history_evidence
+  // only (real, checkable OpenAlex activity evidence >=5 years back) — NOT a
+  // ranking split. citation_preview is diagnostic-only (rank/percentile/
+  // quartile always null, status always "diagnostic_only"); see posi-data's
+  // audits/migrations/citation-preview-correction-2026/ for why the earlier
+  // mature_ranked/mature_unclassified split (tied to a withdrawn Citation Q
+  // ranking) was removed.
   const meta = {
     count: publisherCatalog.length,
-    mature_ranked: publisherCatalog.filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method === 'pci_midrank').length,
-    mature_unclassified: publisherCatalog.filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method !== 'pci_midrank').length,
-    not_yet_mature: publisherCatalog.filter(j => j.citation_rating?.lifecycle_bucket === 'not_yet_mature').length,
+    mature_evidence: publisherCatalog.filter(j => j.citation_preview?.history_evidence?.has_activity_5y_ago === true).length,
+    not_yet_mature: publisherCatalog.filter(j => j.citation_preview?.history_evidence?.has_activity_5y_ago === false).length,
     generated_at: new Date().toISOString(),
   }
   writeFileSync(resolve('src/lib/publisher-catalog-meta.json'), JSON.stringify(meta, null, 2) + '\n', 'utf-8')

@@ -27,8 +27,8 @@ type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs_ratio' | 'h_index' | 'ci
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
-  { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness — a provisional preview of PCI, not yet the official PJR-computed value' },
-  { key: 'pcs_ratio', label: 'PCS', title: 'POSI Citation Score — Crossref mean citations per article over a trailing 4-year window, comparable to CiteScore' },
+  { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness — a source-level preview indicator only, not PCI. Only PCI determines Citation Rank, Percentile, or Quartile.' },
+  { key: 'pcs_ratio', label: 'Legacy Crossref Preview', title: 'Crossref mean citations per article over a trailing 4-year window, currently capped at a 200-article sample — not yet PCS 1.0 (which is uncapped), so not labeled "PCS" until the real Crossref ETL runs. Does not determine Citation Rank, Percentile, or Quartile.' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
   { key: 'subject_percentile', label: 'Subject Percentile' },
@@ -57,19 +57,22 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
     fetchPublisherCatalogJournals()
       .then(all => {
         if (cancelled) return
-        const classified = all.filter(j => j.citation_rating)
-        const sorted = [...classified].sort((a, b) => (b.citation_rating!.two_yr_mean_citedness ?? 0) - (a.citation_rating!.two_yr_mean_citedness ?? 0))
+        const classified = all.filter(j => j.citation_preview)
+        const sorted = [...classified].sort((a, b) => (b.citation_preview!.value ?? 0) - (a.citation_preview!.value ?? 0))
+        // No subject_percentile for Global Benchmark rows — citation_preview
+        // is diagnostic-only (rank/percentile/quartile always null, see
+        // types.ts's CitationPreview), never a real ranking.
         const mapped: CitationReportRow[] = sorted.slice(0, BENCHMARK_DISPLAY_CAP).map(j => ({
           title: j.title,
           short_title: j.short_title,
           journal_code: j.journal_code,
-          subject: j.citation_rating!.psc_category,
-          two_yr_mean_citedness: j.citation_rating!.two_yr_mean_citedness,
-          h_index: j.citation_rating!.h_index,
+          subject: j.citation_preview!.psc_category,
+          two_yr_mean_citedness: j.citation_preview!.value,
+          h_index: j.citation_preview!.h_index,
           cited_by_count: null,
           pcs_ratio: null,
           pcs_window: null,
-          subject_percentile: j.citation_rating!.citation_q?.percentile ?? null,
+          subject_percentile: null,
           is_external_benchmark: true,
           website_url: j.website_url,
         }))

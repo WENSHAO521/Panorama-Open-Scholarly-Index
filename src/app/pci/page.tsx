@@ -75,6 +75,13 @@ export default function PciPage() {
         </span>
       </div>
 
+      {/* What determines ranking, and what does not */}
+      <div className="p-4 text-xs leading-relaxed space-y-1.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+        <p style={{ color: '#92400e' }}><strong>Only PCI determines POSI Citation Rank, Citation Percentile, and Citation Quartile.</strong></p>
+        <p style={{ color: '#92400e' }}>OpenAlex 2-Year Mean Citedness is displayed only as a source-level preview indicator and is not PCI.</p>
+        <p style={{ color: '#92400e' }}>PCS is an independently reported Crossref-based citation indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.</p>
+      </div>
+
       {/* Two independent measurements */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-2" style={{ color: 'var(--posi-muted)' }}>Two Independent Measurements, Not One Blended Score</h2>
@@ -175,9 +182,9 @@ export default function PciPage() {
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>How PCI &amp; PCS Are Computed</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
-            { title: 'PCI: one source, OpenAlex', body: 'PCI is OpenAlex\'s 2-year mean citedness, taken as-is. OpenAlex already aggregates and deduplicates citation data from Crossref and other registries — POSI does not separately re-count Crossref citations and add them on top.' },
-            { title: 'PCS: one source, Crossref', body: 'PCS is the mean is-referenced-by-count across a journal\'s articles published in the trailing 4 calendar years (sampled up to 200 articles), computed directly from Crossref — independent of OpenAlex, never averaged with PCI.' },
-            { title: 'DOI/Crossref article counts ≠ citation counts', body: 'Where Crossref is used to verify how many articles a journal has published (the "Articles" figure on journal records), that is a separate use from PCS\'s citation-count role and is never double-applied.' },
+            { title: 'PCI: citable-items and citations, OpenAlex-sourced', body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — a citation-window calculation, computed under a formal PJR release. No POSI-R-* release has been produced yet (see POSI-R-1.0-SPEC.md), so no PCI value has been officially published. OpenAlex\'s own summary_stats.2yr_mean_citedness is a different, source-level figure shown elsewhere as a preview indicator — it is not PCI, and only PCI determines POSI Citation Rank, Citation Percentile, or Citation Quartile.' },
+            { title: 'PCS: one source, Crossref — not yet frozen-spec compliant', body: 'PCS 1.0 (PCS-1.0-SPEC.md) is defined as the mean is-referenced-by-count across a journal\'s articles published in the trailing 4 calendar years, computed directly from Crossref via full cursor pagination — no article-sample cap. The figure currently shown on Citation Reports still reflects an earlier, capped-at-200-articles sample and does not yet meet that spec, so it is labeled "Legacy Crossref Preview" there rather than "PCS." Like PCI, it is independent of OpenAlex and never averaged with it, and it does not determine Citation Rank, Percentile, or Quartile.' },
+            { title: 'DOI/Crossref article counts ≠ citation counts', body: 'Where Crossref is used to verify how many articles a journal has published (the "Articles" figure on journal records), that is a separate use from the citation-count role above and is never double-applied.' },
             { title: 'One DOI per cited work', body: 'A dataset or preprint on Zenodo (or similar) under its own DOI is supplementary evidence, not a separate citable record, unless explicitly linked to the article DOI as a version/supplement.' },
             { title: 'No proprietary blending', body: 'POSI does not run a combined citation-counting pipeline that merges OpenAlex and Crossref into one number. Each metric is displayed with its own source attribution — full detail and rankings at Citation Reports.' },
           ].map(p => (

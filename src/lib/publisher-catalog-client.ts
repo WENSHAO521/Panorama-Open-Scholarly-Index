@@ -29,20 +29,22 @@ export function fetchPublisherCatalogJournals(): Promise<Journal[]> {
   return cache
 }
 
-// Mature, PSC-classified at high confidence, in a same-category cohort of
-// >=20 — the only group with an actual Citation Q quartile.
-export function filterMatureRanked(journals: Journal[]): Journal[] {
+// Real, checkable evidence of >=5 years of OpenAlex-visible publishing
+// activity. NOT a ranking split — every citation_preview record is
+// status: "diagnostic_only", so there is no "ranked" subset any more (see
+// posi-data's audits/migrations/citation-preview-correction-2026/ for why
+// the earlier ranked/unclassified split was withdrawn). Sorted by the raw
+// OpenAlex citedness value only for display purposes, not as a claim of
+// rank.
+export function filterMatureEvidence(journals: Journal[]): Journal[] {
   return journals
-    .filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method === 'pci_midrank')
-    .sort((a, b) => (b.citation_rating!.citation_q!.percentile ?? 0) - (a.citation_rating!.citation_q!.percentile ?? 0))
+    .filter(j => j.citation_preview?.history_evidence.has_activity_5y_ago === true)
+    .sort((a, b) => (b.citation_preview!.value ?? 0) - (a.citation_preview!.value ?? 0))
 }
 
-// Mature, but unclassified/low-confidence or cohort too small to rank.
-export function filterMatureUnclassified(journals: Journal[]): Journal[] {
-  return journals.filter(j => j.citation_rating?.lifecycle_bucket === 'mature' && j.citation_rating?.citation_q?.ranking_method !== 'pci_midrank')
-}
-
-// Not yet 5+ years of OpenAlex-visible publishing history.
+// Not yet 5+ years of OpenAlex-visible publishing history — this is
+// absence of proof of maturity, not proof of Early-Stage (12-59 months);
+// callers must not display these as genuinely evaluated Early-Stage rows.
 export function filterNotYetMature(journals: Journal[]): Journal[] {
-  return journals.filter(j => j.citation_rating?.lifecycle_bucket === 'not_yet_mature')
+  return journals.filter(j => j.citation_preview?.history_evidence.has_activity_5y_ago === false)
 }

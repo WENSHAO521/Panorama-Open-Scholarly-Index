@@ -14,8 +14,8 @@ export const metadata = {
 
 const METHODOLOGY_PRINCIPLES = [
   {
-    title: 'This preview is not yet official PCI',
-    body: 'The figure shown here is OpenAlex\'s 2-year mean citedness, taken as-is, over all of a source\'s indexed works. POSI\'s official PCI is computed under PJR — POSI\'s forthcoming citation-ranking framework, the specification governing when PCI/PCS become quartile-eligible (Q1–Q4), documented at PJR-SPEC.md — which restricts the same calculation to a specific set of citable document types. The two can differ, and only the PJR-computed figure is "PCI." Until the first PJR release, this page is a provisional preview, not the official metric.',
+    title: 'Only PCI determines Citation Rank, Percentile, and Quartile',
+    body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — computed under a formal PJR release, which has not yet been produced (no POSI-R-* release exists — see POSI-R-1.0-SPEC.md). The 2-Year Citedness figure shown here is OpenAlex\'s own summary_stats.2yr_mean_citedness, taken as-is — a source-level preview indicator only, not PCI, and it does not determine any Citation Rank, Citation Percentile, or Citation Quartile.',
   },
   {
     title: 'DOI/Crossref = article inventory, not citation count',
@@ -30,8 +30,8 @@ const METHODOLOGY_PRINCIPLES = [
     body: 'POSI does not run its own citation-counting pipeline or combine raw counts into a custom formula. It displays OpenAlex\'s published metric with full source attribution — the same open-data-only stance applied to CVI.',
   },
   {
-    title: 'PCS is Crossref-sourced, not a PCI recomputation',
-    body: 'PCS (mean citations per article across a trailing 4-year publication window, capped at a 200-article sample) is computed directly from Crossref\'s own is-referenced-by-count — a different database and a different window than PCI\'s OpenAlex figure. The two are published side by side, not averaged together.',
+    title: 'The Crossref figure shown is a legacy preview, not PCS 1.0',
+    body: 'PCS 1.0 (POSI Citation Score, PCS-1.0-SPEC.md) is frozen as a full cursor-paginated count of Crossref\'s is-referenced-by-count across a trailing 4-year publication window — no article-sample cap. The Crossref figure currently shown on this page still reflects an earlier, capped-at-200-articles sample and does not yet meet that spec, so it is labeled "Legacy Crossref Preview," not "PCS," until the real PCS Crossref ETL runs. Like 2-Year Citedness, it is an independently reported indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.',
   },
 ]
 
@@ -110,26 +110,29 @@ export default async function CitationReportsPage() {
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Two independently-sourced, provisional citation indicators — OpenAlex 2-Year Citedness (a preview of{' '}
-          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>, not
-          yet the official PJR-computed value) and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (Crossref-sourced) —
-          plus h-index and total citations, for POSI's manually-reviewed Core Collection, plus a provisional
-          Citation Q for the Global Benchmark publisher-catalog expansion (2-Year Citedness only — no PCS, no
-          total-citations figure was computed for those rows). <strong style={{ color: 'var(--posi-text)' }}>Subject
-          percentile is derived from the citedness figure only</strong> — PCS is not blended into it. These are not
-          yet POSI Quartiles (Q1–Q4); see PJR-SPEC.md for when the official methodology takes effect.
+          Two independently-sourced, non-ranking citation indicators — OpenAlex 2-Year Citedness (a source-level
+          preview indicator, not{' '}
+          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>)
+          and a <strong style={{ color: 'var(--posi-text)' }}>Legacy Crossref Preview</strong> — plus h-index and
+          total citations, for POSI's manually-reviewed Core Collection, plus 2-Year Citedness only (no Crossref
+          preview, no total-citations figure) for the Global Benchmark publisher-catalog expansion.{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>Only PCI determines POSI Citation Rank, Citation
+          Percentile, and Citation Quartile</strong> — neither figure shown here does, for either collection, and
+          no Citation Rank/Percentile/Quartile is shown for Global Benchmark journals at all. See PJR-SPEC.md for
+          the official methodology, not yet in effect (no POSI-R-* release has been produced).
         </p>
       </div>
 
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
-          <strong>OpenAlex 2-Year Citedness</strong> and <strong>PCS</strong> (Crossref mean citations per article,
-          trailing 4-year window) are POSI's own independently-defined, reproducible citation indicators —
-          two separately-sourced numbers, not one blended score, the same way WoS and Scopus report independently of
-          each other. POSI does not license or use Web of Science or Scopus data. {withData} of {coreRows.length}{' '}
-          Core Collection journals have a resolvable OpenAlex source record; journals without one show as
-          unranked. See{' '}
+          <strong>OpenAlex 2-Year Citedness</strong> and the <strong>Legacy Crossref Preview</strong> (mean
+          citations per article, trailing 4-year window, currently capped at a 200-article sample — see the
+          methodology section below for why this isn't yet called "PCS") are POSI's own independently-defined,
+          reproducible citation indicators — two separately-sourced numbers, not one blended score, the same way
+          WoS and Scopus report independently of each other. POSI does not license or use Web of Science or
+          Scopus data. {withData} of {coreRows.length} Core Collection journals have a resolvable OpenAlex source
+          record; journals without one show as unranked. See{' '}
           <Link href="/cvi" className="underline">Citation Visibility Index →</Link> for how POSI treats citation
           infrastructure separately from citation volume.
         </span>

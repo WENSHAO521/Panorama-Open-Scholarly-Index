@@ -101,8 +101,10 @@ export default function GlobalBenchmarkPage() {
         </div>
         <LifecycleRatingsTable journals={top} />
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
-          Benchmark journals never receive an E-Q or M-Q — their track is Citation Q (PCI-based), not the
-          Core Collection quartile systems. Full corpus and per-journal evidence: see{' '}
+          Benchmark journals never receive an E-Q or M-Q — the Core Collection quartile systems don't apply
+          here. The publisher-catalog expansion's OpenAlex citation figure is a diagnostic preview only, not
+          PCI, not ranked (see <Link href="/citation-reports" className="underline">Citation Rankings</Link>).
+          Full corpus and per-journal evidence: see{' '}
           <a href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/blob/master/src/lib/benchmark-journals.ts" target="_blank" rel="noopener noreferrer" className="underline">benchmark-journals.ts →</a>
         </p>
       </section>

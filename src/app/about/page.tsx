@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PSG_JOURNALS, getCoreCollection } from '@/lib/data'
-import { RELEASE_LABEL } from '@/lib/release'
+import { DATA_CUTOFF } from '@/lib/release'
 
 export const metadata = {
   title: 'About POSI | Panorama Open Scholarly Index',
@@ -24,7 +24,7 @@ export default function AboutPage() {
             v2.0
           </span>
           <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: '#92400e', color: '#fff' }}>
-            LIVE · RELEASE {RELEASE_LABEL} · DATA COVERAGE EXPANDING
+            LIVE · DATA SNAPSHOT {DATA_CUTOFF} · DATA COVERAGE EXPANDING
           </span>
         </div>
         <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>

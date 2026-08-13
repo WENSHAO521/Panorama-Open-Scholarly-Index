@@ -3,8 +3,9 @@ import { SearchBar } from '@/components/SearchBar'
 import { Reveal, FadeIn } from '@/components/Reveal'
 import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { getLatestAnnouncements } from '@/lib/announcements'
-import { RELEASE_LABEL } from '@/lib/release'
+import { DATA_CUTOFF } from '@/lib/release'
 
 export const revalidate = 3600
 
@@ -26,6 +27,7 @@ export default async function HomePage() {
   const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
     + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
   const announcements = getLatestAnnouncements(3)
+  const globalBenchmarkTotal = BENCHMARK_JOURNALS.length + publisherCatalogMeta.count
 
   return (
     <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
@@ -135,7 +137,7 @@ export default async function HomePage() {
             <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
               {[
                 { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Core Collection',      note: 'Admitted through published editorial selection' },
-                { value: BENCHMARK_JOURNALS.length.toLocaleString(),                     label: 'Global Benchmark',     note: 'External validation corpus, not Core Collection' },
+                { value: globalBenchmarkTotal.toLocaleString(),                          label: 'Global Benchmark',     note: 'External validation corpus, not Core Collection' },
                 { value: lifecycleRated.toLocaleString(),                                label: 'Lifecycle Rated',      note: 'Core Collection, Early + Mature — see Ratings & Rankings' },
                 { value: '48',                                                            label: 'PSC Subject Categories', note: 'v1.0 taxonomy — see PSC Subjects' },
               ].map((s) => (
@@ -174,7 +176,7 @@ export default async function HomePage() {
                 className="px-1.5 py-0.5 transition-colors hover:text-white"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
               >
-                POSI IS LIVE · {RELEASE_LABEL.toUpperCase()} · DATA COVERAGE EXPANDING
+                POSI IS LIVE · DATA SNAPSHOT {DATA_CUTOFF} · DATA COVERAGE EXPANDING
               </Link>
               <Link
                 href="/open-data"
@@ -432,7 +434,7 @@ export default async function HomePage() {
                 title: 'Coverage',
                 items: [
                   { label: 'Core Collection',               value: stats.psg_journals + stats.indexed_journals },
-                  { label: 'Global Benchmark',               value: BENCHMARK_JOURNALS.length },
+                  { label: 'Global Benchmark',               value: globalBenchmarkTotal },
                   { label: 'Discovered (not yet reviewed)',  value: stats.discovered_journals },
                 ],
               },
