@@ -2,10 +2,11 @@ import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
-import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
+import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
 
 export const metadata = {
-  title: `POSI Journal Lifecycle Ratings — ${RELEASE_LABEL}`,
+  title: `POSI Journal Lifecycle Ratings — ${DATA_SNAPSHOT_LABEL}`,
   description: 'Evidence-based, rules-driven, and reproducible journal evaluation, split by lifecycle stage: Early-Stage (AJR-E / E-Q), Mature (AJR-M / M-Q), and Citation (PCI / Citation Q). 100% automated — no manual score, percentile, or quartile adjustment.',
 }
 
@@ -37,8 +38,6 @@ function TrackCard({
 export default function RatingsPage() {
   const coreCollection = getCoreCollection()
   const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
-  const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
-    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -51,7 +50,7 @@ export default function RatingsPage() {
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-            {RELEASE_ID}
+            {DATA_SNAPSHOT_LABEL}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
             {METHODOLOGY_VERSION}
@@ -89,7 +88,7 @@ export default function RatingsPage() {
             window="60+ months"
             methodology="AJR-M"
             quartile="M-Q1–M-Q4"
-            desc={`${matureCount} journals currently evaluated (interim AJR-E basis — AJR-M citation-weighted model not yet implemented). Ranked separately from Citation Q.`}
+            desc="AJR-M 1.0 methodology is implemented but has not yet been run against real evidence/citation data — no AJR-M score or M-Q has been published. Ranked separately from Citation Q."
             href="/ratings/mature"
             cta="View Mature Rankings →"
             accent="#B45309"
@@ -113,10 +112,10 @@ export default function RatingsPage() {
       <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
-          <p><strong>Current Rating Release:</strong> {RELEASE_LABEL} ({RELEASE_ID})</p>
+          <p><strong>Data snapshot:</strong> {DATA_CUTOFF} (no POSI-R-* release has been produced yet — see POSI-R-1.0-SPEC.md)</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
           <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
-          <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {BENCHMARK_JOURNALS.length} Global Benchmark journals</p>
+          <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {(BENCHMARK_JOURNALS.length + publisherCatalogMeta.count)} Global Benchmark journals</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>
           <p><strong>Quartiles:</strong> Assigned only once a minimum same-category PSC peer group exists</p>

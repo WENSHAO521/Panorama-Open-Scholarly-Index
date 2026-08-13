@@ -237,33 +237,56 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // decides the quartile track, not whether a score exists: 'early_stage'
   // journals (12-59 months since first publication) are eligible for a
   // future E-Q1-E-Q4 once a real PSC peer cohort exists; 'mature' journals
-  // get the same AJR-E score but rely on Citation Q instead (see
-  // AJR-SPEC.md §1, §4).
+  // are scored via AJR-M (AJR-M-1.0-SPEC.md, implemented but not yet run
+  // against real data — see the dedicated branch below) and separately may
+  // carry an independent Citation Q (see AJR-SPEC.md §1, §4). A mature
+  // journal is never scored with the AJR-E rubric — AJR-M-1.0-SPEC.md is
+  // explicit about this — so even though early_stage_rating.total/
+  // subfactors may still be populated for a mature-eligible record (an
+  // interim AJR-E figure from earlier in POSI's history), it is
+  // deliberately never displayed here as this journal's current score.
   const lifecyclePanel = isDiscovered || !journal.early_stage_rating ? null : (
-    (journal.early_stage_rating.eligibility === 'early_stage' || journal.early_stage_rating.eligibility === 'mature') && journal.early_stage_rating.subfactors ? (
+    journal.early_stage_rating.eligibility === 'mature' ? (
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-            {journal.early_stage_rating.eligibility === 'mature' ? 'POSI Automated Rating (AJR-E basis)' : 'POSI Automated Rating (AJR-E)'}
+            POSI Automated Rating (AJR-M)
           </h2>
-          <div className="flex items-center gap-1.5">
-            {journal.early_stage_rating.eligibility === 'mature' && (
-              <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
-                AJR-M NOT YET RELEASED
-              </span>
-            )}
-            <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
-              100% AUTOMATED
-            </span>
-          </div>
+          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
+            PENDING DATA
+          </span>
         </div>
-        {journal.early_stage_rating.eligibility === 'mature' && (
-          <p className="text-[10px] leading-relaxed mb-2 p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
-            This journal is mature (60+ months) and AJR-M (the citation-weighted mature-journal rating) is
-            not yet released. The score below is the interim AJR-E rubric — directionally useful, but not
-            AJR-M — see <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
-          </p>
-        )}
+        <p className="text-[10px] leading-relaxed p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+          This journal is mature (60+ months since first publication). AJR-M 1.0 methodology is implemented
+          (<code className="font-mono">src/ajr-mature.mjs</code>, see AJR-M-1.0-SPEC.md) but has not been run
+          against real evidence/citation data for any journal yet — no AJR-M score or M-Q exists to show. A
+          mature journal is never scored with the AJR-E rubric (the early-stage 100-point evidence model),
+          so no interim score is shown here — see{' '}
+          <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
+        </p>
+        <p className="text-[10px] leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+          {journal.early_stage_rating.months_since_launch} months since first published.
+        </p>
+        <a
+          href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-M-1.0-SPEC.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-[10px] hover:underline mt-2"
+          style={{ color: 'var(--posi-accent)' }}
+        >
+          Methodology →
+        </a>
+      </div>
+    ) : journal.early_stage_rating.eligibility === 'early_stage' && journal.early_stage_rating.subfactors ? (
+      <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+            POSI Automated Rating (AJR-E)
+          </h2>
+          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
+            100% AUTOMATED
+          </span>
+        </div>
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
             {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
@@ -281,10 +304,8 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
           {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
           from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
-          or quartile adjustment is possible for this or any journal.{' '}
-          {journal.early_stage_rating.eligibility === 'early_stage'
-            ? 'No E-Q1–E-Q4 quartile is assigned yet (needs a same-cohort PSC peer group, not yet built).'
-            : 'This journal is in its mature stage (60+ months since first publication) — its ranking track is Citation Q (PCI-based), not E-Q.'}
+          or quartile adjustment is possible for this or any journal. No E-Q1–E-Q4 quartile is assigned yet
+          (needs a same-cohort PSC peer group, not yet built).
         </p>
         <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
           {[

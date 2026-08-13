@@ -3,7 +3,7 @@ import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
-import { RELEASE_LABEL } from '@/lib/release'
+import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 
 export const metadata = {
   title: 'POSI Early-Stage Journal Rankings — AJR-E',
@@ -27,7 +27,7 @@ export default function EarlyStageRankingsPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-          RELEASE {RELEASE_LABEL}
+          {DATA_SNAPSHOT_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Early-Stage Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
@@ -48,7 +48,7 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>E-Q assigned:</strong> {eQAssignedCount} of {evaluated.length} evaluated</p>
           <p><strong>Journals evaluated:</strong> {evaluated.length} of {core.length}</p>
-          <p><strong>Global Benchmark, not yet 5yr+ (no score):</strong> {publisherCatalogMeta.not_yet_mature}</p>
+          <p><strong>Global Benchmark, pending FPD verification:</strong> {publisherCatalogMeta.not_yet_mature}</p>
         </div>
       </div>
 
@@ -68,9 +68,11 @@ export default function EarlyStageRankingsPage() {
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the
           minimum evidence bar have no score yet, and that is expected. Global Benchmark rows (Collection:
-          Benchmark) are the 2026-08 publisher-catalog expansion journals without 5+ years of OpenAlex-visible
-          publishing history, loaded client-side from a separate data file. No AJR-E score or E-Q, since no
-          evidence crawl was run at this scale; full corpus — see{' '}
+          Benchmark, status "Pending FPD Verification") are the 2026-08 publisher-catalog expansion journals
+          with no OpenAlex-visible evidence of publishing activity 5+ years ago — that rules out "mature," but
+          is not proof the journal is actually 12–59 months old, so these rows are <strong>not</strong> displayed
+          as genuinely evaluated Early-Stage journals: no first-publication-date has been resolved, no AJR-E
+          score, no E-Q. Loaded client-side from a separate data file; full corpus — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>
       </section>

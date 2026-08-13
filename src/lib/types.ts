@@ -59,39 +59,47 @@ export interface Journal {
   // export) — see benchmark-journals.ts's CURATED_BENCHMARK_JOURNALS.
   source_note?: string | null
   // Only present on PUBLISHER_CATALOG_JOURNALS (source_note is set) —
-  // never both this AND early_stage_rating at once. A *provisional*
-  // Citation Q rating computed without any evidence-crawling (see
-  // posi-data's audits/migrations/benchmark-citation-q-2026/README.md for
-  // the full rationale on why a full AJR-M score isn't attempted at this
-  // scale). early_stage_rating stays reserved for a real, evidence-based
-  // AJR score and is never populated by this pathway.
-  citation_rating?: CitationRating | null
+  // never both this AND early_stage_rating at once. A diagnostic-only
+  // citation preview (OpenAlex 2yr mean citedness + PSC classification),
+  // explicitly NOT a ranking — rank/percentile/quartile are always null.
+  // withdrawn from ranking use 2026-08-13 (see posi-data's
+  // audits/migrations/citation-preview-correction-2026/README.md): an
+  // earlier version of this field fed the raw OpenAlex figure into
+  // posi-engine's real rankCategory()/rankCitationTrack() as if it were
+  // PCI, which conflicts with AJR-SPEC.md § 14 (Global Benchmark
+  // membership is not ranking eligibility) and with PCI's actual
+  // definition (PJR-SPEC.md § 5-6). early_stage_rating stays reserved for
+  // a real, evidence-based AJR score and is never populated by this
+  // pathway.
+  citation_preview?: CitationPreview | null
 }
 
-export interface CitationRating {
-  psc_category: string | null
-  psc_confidence: 'high' | 'medium' | 'low' | 'unclassified'
-  // NOT the real FPD-1.0/LIFECYCLE-1.1 methodology (that needs an actual
-  // first-publication-date resolution) — a conservative proxy: 'mature'
-  // only when OpenAlex shows real, checkable publishing activity >=5
-  // years before this rating was computed. 'not_yet_mature' is the
-  // default for missing evidence, never assumed favorably.
-  lifecycle_bucket: 'mature' | 'not_yet_mature'
-  // OpenAlex's own 2yr_mean_citedness, taken as-is — the same provisional
-  // figure /citation-reports already shows for Core Collection, pending a
-  // real PJR release. Not official PCI.
-  two_yr_mean_citedness: number | null
+export interface CitationPreview {
+  source: 'OpenAlex'
+  metric: '2yr_mean_citedness'
+  // OpenAlex's own 2yr_mean_citedness, taken as-is — NOT PCI. Only PCI
+  // (PJR-SPEC.md § 5-6, a citable-items/citation-window calculation
+  // computed under a formal PJR release) determines POSI Citation Rank,
+  // Citation Percentile, or Citation Quartile. See /pci.
+  value: number | null
   h_index: number | null
   works_count: number | null
-  citation_q: {
-    quartile: 'Q1' | 'Q2' | 'Q3' | 'Q4' | null
-    quartile_label: string | null
-    percentile: number | null
-    rank: number | null
-    cohort_size: number | null
-    ranking_method: 'pci_midrank' | 'unavailable'
-    category_code: string | null
-  } | null
+  psc_category: string | null
+  psc_confidence: 'high' | 'medium' | 'low' | 'unclassified'
+  history_evidence: {
+    // Real, checkable evidence of publishing activity >=5 years before
+    // this preview was computed — NOT the real FPD-1.0/LIFECYCLE-1.1
+    // lifecycle-stage determination, just raw evidence. false is the
+    // default for missing evidence, never assumed favorably.
+    has_activity_5y_ago: boolean
+  }
+  // Always null — this is a diagnostic preview, not a ranking. No cohort
+  // was built, no rankCategory()/rankCitationTrack() call happens
+  // anywhere upstream of this field.
+  rank: number | null
+  percentile: number | null
+  quartile: 'Q1' | 'Q2' | 'Q3' | 'Q4' | null
+  status: 'diagnostic_only'
   rated_at: string
   version: string
   source_note: string

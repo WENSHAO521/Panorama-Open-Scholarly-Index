@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr'
-import { RELEASE_LABEL } from '@/lib/release'
+import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 
 export const metadata: Metadata = {
   title: 'Coverage Policy | POSI',
@@ -78,7 +78,7 @@ export default function CoveragePolicyPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
-          RELEASE {RELEASE_LABEL}
+          {DATA_SNAPSHOT_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Coverage Policy</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>

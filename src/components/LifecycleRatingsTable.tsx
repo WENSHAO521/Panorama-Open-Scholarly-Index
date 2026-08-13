@@ -3,12 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Journal } from '@/lib/types'
-import { fetchPublisherCatalogJournals, filterMatureRanked, filterMatureUnclassified, filterNotYetMature } from '@/lib/publisher-catalog-client'
+import { fetchPublisherCatalogJournals, filterMatureEvidence, filterNotYetMature } from '@/lib/publisher-catalog-client'
 
 export const ELIGIBILITY_LABEL: Record<string, string> = {
   observation: 'Observation Stage',
   early_stage: 'Evaluated',
-  mature: 'Evaluated (mature)',
+  // AJR-M 1.0 is implemented (posi-engine/src/ajr-mature.mjs) but has not
+  // been run against real Core Collection/Global Benchmark data yet — no
+  // journal has an actual AJR-M score. 'mature' here means "reached the
+  // 60+ month lifecycle stage," not "scored." See AJR Score/M-Q columns
+  // below, which always show "Not Yet Available" for these rows —
+  // AJR-M-1.0-SPEC.md is explicit that a mature journal must never be
+  // scored with the AJR-E rubric, so the old interim AJR-E number that
+  // may still exist in this record's early_stage_rating.total is never
+  // displayed here.
+  mature: 'Pending AJR-M',
   not_yet_rateable: 'Not Yet Rateable',
   unknown: 'Unknown',
 }
@@ -16,7 +25,7 @@ export const ELIGIBILITY_LABEL: Record<string, string> = {
 export const ELIGIBILITY_COLOR: Record<string, string> = {
   observation: '#6B7280',
   early_stage: '#1F7A4D',
-  mature: '#1F7A4D',
+  mature: '#B45309',
   not_yet_rateable: '#B45309',
   unknown: '#6B7280',
 }
@@ -26,13 +35,13 @@ export const ELIGIBILITY_COLOR: Record<string, string> = {
 // Server Components can't serialize functions across that boundary, only
 // plain, serializable props like this string union), so the render logic
 // for each kind lives here instead of being supplied by the caller.
-export type ColumnKind = 'collection' | 'm-q' | 'e-q' | 'citation-q'
+export type ColumnKind = 'collection' | 'm-q' | 'e-q' | 'citation-preview'
 
 const COLUMN_HEADERS: Record<ColumnKind, string> = {
   collection: 'Collection',
   'm-q': 'M-Q',
   'e-q': 'E-Q',
-  'citation-q': 'Citation Q',
+  'citation-preview': 'Citation Preview',
 }
 
 function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: string } {
@@ -40,18 +49,22 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
     case 'collection':
       return { value: j.is_external_benchmark ? 'Benchmark' : 'Core' }
     case 'm-q':
-      return j.early_stage_rating?.provisional_quartile
-        ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
-        : { value: 'Not released', title: 'Not assigned — either its PSC category/domain cohort hasn\'t reached the minimum size yet, or no AJR score exists for this record at all' }
+      // Always "Not Yet Available" — AJR-M 1.0 is implemented but has not
+      // been run against real data (see ELIGIBILITY_LABEL.mature above).
+      // Deliberately does NOT read early_stage_rating.provisional_quartile
+      // here even though it may be populated — for a mature-eligible
+      // record, that value is the old interim AJR-E-based quartile, which
+      // AJR-M-1.0-SPEC.md forbids displaying as a mature journal's score.
+      return { value: 'Not Yet Available', title: 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet — no journal has a published M-Q.' }
     case 'e-q':
       return j.early_stage_rating?.eligibility === 'early_stage' && j.early_stage_rating?.provisional_quartile
         ? { value: j.early_stage_rating.provisional_quartile, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
         : { value: '—', title: 'Not assigned — either insufficient peer cohort, not yet evaluated, or no AJR score exists for this record at all' }
-    case 'citation-q': {
-      const cq = j.citation_rating?.citation_q
-      if (cq?.quartile_label) return { value: cq.quartile_label, title: `Percentile ${cq.percentile}, cohort of ${cq.cohort_size} — provisional, see /citation-reports` }
-      if (j.citation_rating) return { value: 'Unavailable', title: cq?.ranking_method === 'unavailable' ? `Cohort of ${cq.cohort_size ?? 0} is below the minimum of 20` : 'Not PSC-classified at high confidence' }
-      return { value: 'Not released', title: 'PCI not yet wired into this cohort' }
+    case 'citation-preview': {
+      const cp = j.citation_preview
+      if (cp?.value != null) return { value: cp.value.toFixed(2), title: 'OpenAlex 2-year mean citedness — diagnostic preview only, not PCI, not ranked. See /pci.' }
+      if (cp) return { value: 'Unavailable', title: 'No OpenAlex citation figure for this record' }
+      return { value: 'Not released', title: 'No citation preview computed for this record' }
     }
   }
 }
@@ -61,22 +74,29 @@ const BENCHMARK_DISPLAY_CAP = 500
 export type BenchmarkMode = 'mature' | 'not-yet-mature'
 
 function applyBenchmarkMode(all: Journal[], mode: BenchmarkMode): Journal[] {
-  if (mode === 'mature') return [...filterMatureRanked(all), ...filterMatureUnclassified(all)]
+  if (mode === 'mature') return filterMatureEvidence(all)
   return filterNotYetMature(all)
 }
 
-// Real AJR score first (highest first), falling back to the provisional
-// Citation Q percentile for benchmark rows that have no AJR score at all.
+// Real AJR-E score first (highest first) for non-mature rows, falling back
+// to the raw citation preview value (not a rank) — display ordering only,
+// never a claim of ranking. Mature rows never sort by early_stage_rating's
+// total, even when populated — see the AJR Score column's own comment for
+// why (that number is the old interim AJR-E score, not a real AJR-M one).
+function scoreForSort(j: Journal): number {
+  if (j.early_stage_rating?.eligibility === 'mature') return j.citation_preview?.value ?? -1
+  return j.early_stage_rating?.total ?? j.citation_preview?.value ?? -1
+}
 function defaultSort(a: Journal, b: Journal): number {
-  const av = a.early_stage_rating?.total ?? a.citation_rating?.citation_q?.percentile ?? -1
-  const bv = b.early_stage_rating?.total ?? b.citation_rating?.citation_q?.percentile ?? -1
+  const av = scoreForSort(a)
+  const bv = scoreForSort(b)
   return bv - av
 }
 
 /**
  * Shared table for /ratings/early-stage, /ratings/mature and
  * /coverage/global-benchmark — same journal-identity + AJR score + status
- * columns everywhere, with 0-2 track-specific columns (E-Q, M-Q, Citation Q,
+ * columns everywhere, with 0-2 track-specific columns (E-Q, M-Q, Citation Preview,
  * Collection) appended per caller. See AJR-SPEC.md § 5 for why the ranking
  * shape is identical across tracks — only the input score/label differs.
  *
@@ -139,6 +159,16 @@ export function LifecycleRatingsTable({
           <tbody>
             {rows.map(j => {
               const r = j.early_stage_rating
+              // A Global Benchmark row merged in via filterNotYetMature() has no
+              // early_stage_rating at all — it was never evaluated. Its only
+              // signal is the ABSENCE of >=5-year-old OpenAlex activity, which
+              // rules out "mature" but does NOT prove the journal is actually
+              // 12-59 months old (it could just as easily be unlisted/missing
+              // history for other reasons) — so it must never be shown as if it
+              // were a genuinely evaluated Early-Stage record. Distinct from the
+              // generic 'unknown' case (a Core Collection record with a real,
+              // unresolved FPD lookup).
+              const pendingFpd = j.is_external_benchmark && !!j.citation_preview && !r
               const eligibility = r?.eligibility ?? 'unknown'
               return (
                 <tr key={j.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
@@ -156,12 +186,12 @@ export function LifecycleRatingsTable({
                   <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>{j.publisher}</td>
                   <td className="px-3 py-3" style={{ color: 'var(--posi-muted)' }}>
                     {(() => {
-                      // citation_rating carries its own PSC classification for
+                      // citation_preview carries its own PSC classification for
                       // journals with no evidence-based rating (Global Benchmark
                       // publisher-catalog expansion) — fall back to it when the
                       // primary field is unset.
-                      const category = j.psc_category ?? j.citation_rating?.psc_category
-                      const lowConfidence = j.psc_category ? j.psc_confidence === 'low' : (j.citation_rating && j.citation_rating.psc_confidence !== 'high')
+                      const category = j.psc_category ?? j.citation_preview?.psc_category
+                      const lowConfidence = j.psc_category ? j.psc_confidence === 'low' : (j.citation_preview && j.citation_preview.psc_confidence !== 'high')
                       return category ? (
                         <>
                           {category}
@@ -171,15 +201,26 @@ export function LifecycleRatingsTable({
                     })()}
                   </td>
                   <td className="px-3 py-3 text-center font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>
-                    {r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {/* eligibility === 'mature' never shows a score here, even if
+                        r.total is populated — that value is the old interim AJR-E
+                        score, and AJR-M-1.0-SPEC.md forbids scoring mature
+                        journals with the AJR-E rubric. AJR-M is implemented but
+                        has not been run against real data (see M-Q column). */}
+                    {eligibility === 'mature'
+                      ? <span style={{ color: 'var(--posi-muted)' }} title="AJR-M 1.0 is implemented but has not been run against real evidence/citation data yet">Not Yet Available</span>
+                      : r?.total != null ? `${r.total}/100` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                   </td>
                   <td className="px-3 py-3 text-center">
                     <span
                       className="font-mono text-[10px] font-semibold"
-                      style={{ color: ELIGIBILITY_COLOR[eligibility] }}
-                      title={eligibility === 'not_yet_rateable' ? 'Below the minimum evidence bar — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.' : undefined}
+                      style={{ color: pendingFpd ? '#B45309' : ELIGIBILITY_COLOR[eligibility] }}
+                      title={
+                        pendingFpd
+                          ? 'No OpenAlex evidence of publishing activity >=5 years ago rules out "mature," but does not prove this journal is 12-59 months old — absence of proof of maturity is not proof of Early-Stage. No first-publication-date has been resolved for this record.'
+                          : eligibility === 'not_yet_rateable' ? 'Below the minimum evidence bar — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.' : undefined
+                      }
                     >
-                      {ELIGIBILITY_LABEL[eligibility]}
+                      {pendingFpd ? 'Pending FPD Verification' : ELIGIBILITY_LABEL[eligibility]}
                     </span>
                   </td>
                   {columns.map(kind => {
