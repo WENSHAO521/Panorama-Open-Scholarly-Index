@@ -16,8 +16,13 @@ export interface CitationReportRow {
   h_index: number | null
   cited_by_count: number | null
   subject_percentile: number | null
-  pcs_ratio: number | null
-  pcs_window: string | null
+  // Real PCS-1.0 (PCS-1.0-SPEC.md), synced from posi-data-delivery's
+  // collections/pcs.json — full cursor-paginated Crossref count, no
+  // article-sample cap. Replaced the old 200-article-capped "Legacy
+  // Crossref Preview" field here once the real PCS ETL ran (2026-08-14).
+  pcs: number | null
+  pcs_window_start_year: number | null
+  pcs_window_end_year: number | null
   // Global Benchmark publisher-catalog rows have no internal /journal/
   // page — link out to the publisher's own site instead, same pattern as
   // LifecycleRatingsTable.
@@ -25,12 +30,12 @@ export interface CitationReportRow {
   website_url?: string | null
 }
 
-type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs_ratio' | 'h_index' | 'cited_by_count' | 'subject_percentile'
+type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs' | 'h_index' | 'cited_by_count' | 'subject_percentile'
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
   { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness — a source-level preview indicator only, not PCI. Only PCI determines Citation Rank, Percentile, or Quartile.' },
-  { key: 'pcs_ratio', label: 'Legacy Crossref Preview', title: 'Crossref mean citations per article over a trailing 4-year window, currently capped at a 200-article sample — not yet PCS 1.0 (which is uncapped), so not labeled "PCS" until the real Crossref ETL runs. Does not determine Citation Rank, Percentile, or Quartile.' },
+  { key: 'pcs', label: 'PCS', title: 'POSI Citation Score — mean Crossref is-referenced-by-count across every eligible work in the 4-year window (PCS-1.0-SPEC.md § 6), no article-sample cap. Independently reported; does not determine Citation Rank, Percentile, or Quartile.' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
   { key: 'subject_percentile', label: 'Subject Percentile' },
@@ -77,8 +82,9 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
           two_yr_mean_citedness: j.citation_preview!.value,
           h_index: j.citation_preview!.h_index,
           cited_by_count: null,
-          pcs_ratio: null,
-          pcs_window: null,
+          pcs: null,
+          pcs_window_start_year: null,
+          pcs_window_end_year: null,
           subject_percentile: null,
           is_external_benchmark: true,
           website_url: j.website_url,
@@ -213,8 +219,12 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.two_yr_mean_citedness != null ? row.two_yr_mean_citedness.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                   </td>
-                  <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }} title={row.pcs_window ?? undefined}>
-                    {row.pcs_ratio != null ? row.pcs_ratio.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  <td
+                    className="px-4 py-3 text-center font-mono"
+                    style={{ color: 'var(--posi-text)' }}
+                    title={row.pcs_window_start_year != null ? `${row.pcs_window_start_year}–${row.pcs_window_end_year}` : undefined}
+                  >
+                    {row.pcs != null ? row.pcs.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.h_index != null ? row.h_index : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
