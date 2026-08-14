@@ -59,8 +59,15 @@ async function fetchCjkSubsetFont(text: string, timeoutMs = 8000): Promise<Array
   }
 }
 
-function winAnsiSafe(text: string): string {
-  return [...text].filter(c => !containsNonWinAnsi(c)).join('') || text
+// A title that is entirely non-Latin (e.g. "中国法学学刊") filters down to
+// an empty string — must NOT fall back to the original unsafe text (that
+// defeats the whole point of this guard and is exactly what caused the
+// "WinAnsi cannot encode" crash this function exists to prevent), and an
+// empty title on a certificate is unhelpful, so fall back to the journal
+// code instead, which is always ASCII.
+function winAnsiSafe(text: string, fallback: string): string {
+  const filtered = [...text].filter(c => !containsNonWinAnsi(c)).join('').trim()
+  return filtered || fallback
 }
 
 function issnLine(journal: Journal): string {
@@ -80,7 +87,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   doc.setSubject(isCandidate ? 'POSI Candidate Journal Record' : 'Certificate of POSI Core Collection Inclusion')
   // pdf-lib's setTitle also runs text through WinAnsi encoding — guard it
   // the same way as any other CJK-unsafe text drawn on the page.
-  doc.setTitle(`POSI ${isCandidate ? 'Candidate Record' : 'Core Collection Certificate'} - ${winAnsiSafe(journal.title)}`)
+  doc.setTitle(`POSI ${isCandidate ? 'Candidate Record' : 'Core Collection Certificate'} - ${winAnsiSafe(journal.title, journal.journal_code.toUpperCase())}`)
 
   const page = doc.addPage([842, 595]) // A4 landscape, points
   const { width, height } = page.getSize()
@@ -97,7 +104,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
     if (subsetBytes) {
       titleFont = await doc.embedFont(subsetBytes, { subset: true })
     } else {
-      titleText = winAnsiSafe(journal.title)
+      titleText = winAnsiSafe(journal.title, journal.journal_code.toUpperCase())
     }
   }
 
