@@ -5,6 +5,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CaretUp, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { fetchPublisherCatalogJournals } from '@/lib/publisher-catalog-client'
+import { fetchAllPcsEntriesClient, indexPcsEntriesByJournalId, type PcsClientEntry } from '@/lib/pcs-client'
 import { Pagination } from './Pagination'
 
 export interface CitationReportRow {
@@ -54,6 +55,16 @@ const PER_PAGE = 25
  * deployment). Paginated (`?page=`, PER_PAGE rows/page — same
  * Pagination/pageWindow pattern used elsewhere on the site) so every row
  * is reachable no matter how large the merged set grows.
+ *
+ * PCS for these benchmark rows (2026-08-14): fetched client-side too, via
+ * pcs-client.ts's fetchAllPcsEntriesClient() — same reasoning as the
+ * publisher-catalog fetch itself (this is a client component; a static
+ * `import raw from './pcs.json'` here would ship the whole collection in
+ * the client JS bundle, not just server-render it). Joined by posi_id.
+ * Before this, every benchmark row hardcoded `pcs: null` unconditionally —
+ * not because PCS didn't exist for these journals, but because it was
+ * never looked up at all. Fixed once posi-data's pcs-etl-v1-global4289
+ * run gave the full 4289-journal Global Benchmark real PCS coverage.
  */
 export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationReportRow[]; fetchBenchmark?: boolean }) {
   const [benchmarkRows, setBenchmarkRows] = useState<CitationReportRow[]>([])
@@ -66,29 +77,40 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
   useEffect(() => {
     if (!fetchBenchmark) return
     let cancelled = false
-    fetchPublisherCatalogJournals()
-      .then(all => {
+    Promise.all([
+      fetchPublisherCatalogJournals(),
+      // PCS is a nice-to-have enrichment for this set, not a hard
+      // dependency — if it fails to load, the benchmark rows should still
+      // render (with pcs: null, same as before this change) rather than
+      // the whole table failing.
+      fetchAllPcsEntriesClient().catch(() => [] as PcsClientEntry[]),
+    ])
+      .then(([all, pcsEntries]) => {
         if (cancelled) return
+        const pcsById = indexPcsEntriesByJournalId(pcsEntries)
         const classified = all.filter(j => j.citation_preview)
         const sorted = [...classified].sort((a, b) => (b.citation_preview!.value ?? 0) - (a.citation_preview!.value ?? 0))
         // No subject_percentile for Global Benchmark rows — citation_preview
         // is diagnostic-only (rank/percentile/quartile always null, see
         // types.ts's CitationPreview), never a real ranking.
-        const mapped: CitationReportRow[] = sorted.map(j => ({
-          title: j.title,
-          short_title: j.short_title,
-          journal_code: j.journal_code,
-          subject: j.citation_preview!.psc_category,
-          two_yr_mean_citedness: j.citation_preview!.value,
-          h_index: j.citation_preview!.h_index,
-          cited_by_count: null,
-          pcs: null,
-          pcs_window_start_year: null,
-          pcs_window_end_year: null,
-          subject_percentile: null,
-          is_external_benchmark: true,
-          website_url: j.website_url,
-        }))
+        const mapped: CitationReportRow[] = sorted.map(j => {
+          const pcsEntry = j.posi_id ? pcsById.get(j.posi_id) : undefined
+          return {
+            title: j.title,
+            short_title: j.short_title,
+            journal_code: j.journal_code,
+            subject: j.citation_preview!.psc_category,
+            two_yr_mean_citedness: j.citation_preview!.value,
+            h_index: j.citation_preview!.h_index,
+            cited_by_count: null,
+            pcs: pcsEntry?.pcs ?? null,
+            pcs_window_start_year: pcsEntry?.pcs_window_start_year ?? null,
+            pcs_window_end_year: pcsEntry?.pcs_window_end_year ?? null,
+            subject_percentile: null,
+            is_external_benchmark: true,
+            website_url: j.website_url,
+          }
+        })
         setBenchmarkRows(mapped)
       })
       .catch(() => { if (!cancelled) setFailed(true) })

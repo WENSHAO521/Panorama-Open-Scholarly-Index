@@ -30,7 +30,12 @@ const BY_JOURNAL_ID: Record<string, PcsEntry> = Object.fromEntries(
   PCS_RECORDS.map(r => [r.journal_id, r])
 )
 
-/** All synced PCS records — 1024 for the pcs-etl-v1-global1024-2026 run, including pcs: null entries. */
+/** All synced PCS records — 4320 as of the pcs-etl-v1-global1024-2026 run's
+ * 2026-08-14 Phase 2 expansion (31 Core Collection + the full 4289-journal
+ * Global Benchmark, up from Phase 1's 993-journal curated-only seed),
+ * including pcs: null entries. See that audit's README for the Phase
+ * 1/Phase 2 history — the directory name was kept even though scope grew,
+ * to avoid breaking already-published links to it. */
 export function getAllPcsEntries(): PcsEntry[] {
   return PCS_RECORDS
 }
