@@ -1,27 +1,41 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, IBM_Plex_Sans, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
-const barlowCondensed = Barlow_Condensed({
+// Self-hosted (not next/font/google) -- that mechanism fetches font files
+// from Google Fonts live at build time, and Cloudflare Pages' build
+// environment hit a real, deterministic 404 on IBM Plex Sans's pinned URL
+// (Next.js's bundled font metadata pointed at a file Google Fonts no
+// longer serves at that hash), breaking every deploy. Vendoring the actual
+// woff2 files (latin subset only, matching the previous subsets: ["latin"]
+// config) removes the live-network dependency from the build entirely.
+const barlowCondensed = localFont({
   variable: "--font-barlow",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
   display: "swap",
+  src: [
+    { path: "../fonts/barlow-condensed-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/barlow-condensed-700.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/barlow-condensed-800.woff2", weight: "800", style: "normal" },
+  ],
 });
 
-const ibmPlexSans = IBM_Plex_Sans({
+const ibmPlexSans = localFont({
   variable: "--font-ibm",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
+  src: [
+    { path: "../fonts/ibm-plex-sans-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/ibm-plex-sans-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/ibm-plex-sans-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/ibm-plex-sans-700.woff2", weight: "700", style: "normal" },
+  ],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
   display: "swap",
+  src: [{ path: "../fonts/geist-mono.woff2", weight: "400 700", style: "normal" }],
 });
 
 const SITE_URL = "https://posi.panorama-sg.com";
