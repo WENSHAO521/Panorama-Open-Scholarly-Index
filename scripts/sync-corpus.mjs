@@ -10,13 +10,17 @@
  * snapshot id — matching posi-data-delivery's own documented consumption
  * pattern.
  *
- * Only pulls the two small collections:
+ * Only pulls small collections:
  *   - src/lib/core-collection.json  — full file, statically imported
  *     (small, ~30 real journals, safe to bundle at build time).
  *   - src/lib/global-benchmark.json — the curated Global Benchmark seed
  *     only (posi-data-delivery's collections/benchmark-curated.json,
  *     already split server-side — no client-side source_note filtering
  *     needed here anymore). Small enough to bundle safely.
+ *   - src/lib/pcs.json — PCS (POSI Citation Score, PCS-1.0-SPEC.md)
+ *     per-journal records, one entry per journal_id including pcs: null
+ *     entries. ~1024 small flat records, safe to bundle. Written through
+ *     unmodified — see src/lib/pcs.ts for the typed loader.
  *
  * Does NOT pull collections/publisher-catalog.json (~5MB) — that file is
  * fetched directly from data.posi.panorama-sg.com at runtime by
@@ -67,6 +71,19 @@ async function main() {
   const curated = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/benchmark-curated.json`)
   writeFileSync(resolve('src/lib/global-benchmark.json'), JSON.stringify(curated, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/global-benchmark.json — curated only (${curated.length} records, statically bundled)`)
+
+  // Optional: older snapshots (before posi-data#22) have no collections/
+  // pcs.json at all. Don't fail the whole sync over that — warn and leave
+  // the existing src/lib/pcs.json untouched so a partial/older delivery
+  // snapshot can't silently wipe real PCS data already synced.
+  try {
+    const pcs = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pcs.json`)
+    writeFileSync(resolve('src/lib/pcs.json'), JSON.stringify(pcs, null, 2) + '\n', 'utf-8')
+    const computed = pcs.filter(r => r.pcs != null).length
+    console.log(`  Wrote src/lib/pcs.json (${pcs.length} records, ${computed} with a computed pcs value)`)
+  } catch (err) {
+    console.warn(`  Skipped src/lib/pcs.json — ${err.message}`)
+  }
 
   // Tiny, safe-to-bundle companion so build-time pages can show an accurate
   // publisher-catalog total count (e.g. stat cards) without importing the

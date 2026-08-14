@@ -32,6 +32,7 @@ const navItems: NavItem[] = [
       { label: 'Early-Stage Rankings',    href: '/ratings/early-stage' },
       { label: 'Mature Journal Rankings', href: '/ratings/mature' },
       { label: 'Citation Rankings',       href: '/citation-reports' },
+      { label: 'POSI Citation Score (PCS)', href: '/pcs' },
       { label: 'Verify a Record',         href: '/verify' },
     ],
   },

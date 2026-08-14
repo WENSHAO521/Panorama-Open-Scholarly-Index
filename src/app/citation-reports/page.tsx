@@ -30,8 +30,8 @@ const METHODOLOGY_PRINCIPLES = [
     body: 'POSI does not run its own citation-counting pipeline or combine raw counts into a custom formula. It displays OpenAlex\'s published metric with full source attribution — the same open-data-only stance applied to CVI.',
   },
   {
-    title: 'The Crossref figure shown is a legacy preview, not PCS 1.0',
-    body: 'PCS 1.0 (POSI Citation Score, PCS-1.0-SPEC.md) is frozen as a full cursor-paginated count of Crossref\'s is-referenced-by-count across a trailing 4-year publication window — no article-sample cap. The Crossref figure currently shown on this page still reflects an earlier, capped-at-200-articles sample and does not yet meet that spec, so it is labeled "Legacy Crossref Preview," not "PCS," until the real PCS Crossref ETL runs. Like 2-Year Citedness, it is an independently reported indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.',
+    title: 'The Crossref figure shown here is a legacy preview, not PCS 1.0 — real PCS data is published separately',
+    body: 'PCS 1.0 (POSI Citation Score, PCS-1.0-SPEC.md) is a full cursor-paginated count of Crossref\'s is-referenced-by-count across a trailing 4-year publication window — no article-sample cap. The Crossref figure shown on this page is a separate, earlier, capped-at-200-articles sample, kept labeled "Legacy Crossref Preview" (not "PCS") to avoid conflating the two. A real, spec-compliant PCS run now exists — see the dedicated POSI Citation Score page. Like 2-Year Citedness, neither figure here determines Citation Rank, Citation Percentile, or Citation Quartile.',
   },
 ]
 
@@ -154,6 +154,11 @@ export default async function CitationReportsPage() {
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading citation reports…</div>}>
         <CitationReportsTable rows={coreRows} fetchBenchmark />
       </Suspense>
+
+      <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/pcs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Score (real, spec-compliant PCS data) →</Link>
+        <Link href="/pci" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PCI &amp; PCS Positioning →</Link>
+      </div>
     </div>
   )
 }

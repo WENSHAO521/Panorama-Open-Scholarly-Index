@@ -51,6 +51,12 @@ export interface Journal {
   article_count: number
   created_at: string
   updated_at: string
+  // posi-data's stable POSI-J-###### id (posi-data/PJR-SPEC.md § 4) — the
+  // join key for per-journal metric-snapshot data published outside this
+  // file's own corpus JSON, e.g. src/lib/pcs.json (PCS-1.0-SPEC.md). Always
+  // present on synced records; optional here only because DISCOVERED_JOURNALS
+  // (auto-discovered, not part of posi-data's corpus) never has one.
+  posi_id?: string
   // Only present on BENCHMARK_JOURNALS records added by a bulk publisher-
   // catalog ingestion (2026-08: Elsevier jnlactive.csv, Frontiers title
   // list — see posi-data's audits/migrations/). Its absence marks the

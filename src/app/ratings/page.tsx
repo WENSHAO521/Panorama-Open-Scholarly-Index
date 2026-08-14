@@ -130,6 +130,7 @@ export default function RatingsPage() {
       </div>
 
       <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/pcs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Score (PCS) →</Link>
         <Link href="/verify" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Verify a Record →</Link>
         <Link href="/coverage/global-benchmark" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Global Benchmark Collection →</Link>
         <Link href="/core-collection" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Core Collection →</Link>
