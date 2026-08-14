@@ -4,6 +4,7 @@ import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
+import { hasRealEarlyStageScore } from '@/lib/early-stage'
 
 export const metadata = {
   title: `POSI Journal Lifecycle Ratings — ${DATA_SNAPSHOT_LABEL}`,
@@ -37,7 +38,13 @@ function TrackCard({
 
 export default function RatingsPage() {
   const coreCollection = getCoreCollection()
-  const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
+  // "Journals currently evaluated" — a real score exists (v1.1: rating_status
+  // 'official' or 'provisional'; legacy: eligibility 'early_stage', the only
+  // legacy state that ever carried one). Deliberately NOT window-membership
+  // (v1.1 lifecycle_stage === 'early_stage', currently 10) — a journal that's
+  // in the window but rating_status 'not_rateable' has no score to describe
+  // as "scored on editorial governance, research integrity, ..." below.
+  const earlyStageCount = coreCollection.filter(j => hasRealEarlyStageScore(j.early_stage_rating)).length
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

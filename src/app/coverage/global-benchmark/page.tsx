@@ -4,6 +4,7 @@ import { BENCHMARK_JOURNALS, CURATED_BENCHMARK_JOURNALS } from '@/lib/benchmark-
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
+import { earlyStageDisplayTotal, isBlockedOrNotRateable, isUnknownLifecycle } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'POSI Global Benchmark Collection',
@@ -11,10 +12,14 @@ export const metadata = {
 }
 
 export default function GlobalBenchmarkPage() {
-  const sorted = [...BENCHMARK_JOURNALS].sort((a, b) => (b.early_stage_rating?.total ?? -1) - (a.early_stage_rating?.total ?? -1))
-  const rated = sorted.filter(j => j.early_stage_rating?.total != null)
-  const blocked = sorted.filter(j => j.early_stage_rating?.eligibility === 'not_yet_rateable')
-  const unknown = sorted.filter(j => j.early_stage_rating?.eligibility === 'unknown')
+  // All Global Benchmark journals carry the legacy pre-AJR-E-1.1 shape today
+  // (src/lib/global-benchmark.json — see types.ts's EarlyStageRating union
+  // comment); these helpers are shape-aware anyway so this page keeps
+  // working unchanged if/when a v1.1 record ever lands here.
+  const sorted = [...BENCHMARK_JOURNALS].sort((a, b) => (earlyStageDisplayTotal(b.early_stage_rating) ?? -1) - (earlyStageDisplayTotal(a.early_stage_rating) ?? -1))
+  const rated = sorted.filter(j => earlyStageDisplayTotal(j.early_stage_rating) != null)
+  const blocked = sorted.filter(j => isBlockedOrNotRateable(j.early_stage_rating))
+  const unknown = sorted.filter(j => isUnknownLifecycle(j.early_stage_rating))
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">

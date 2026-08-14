@@ -5,6 +5,7 @@ import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
+import { isInEarlyStageWindow, hasRealEarlyStageScore, isOfficiallyRated, earlyStageQuartile, isBlockedOrNotRateable } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'POSI Early-Stage Journal Rankings — AJR-E',
@@ -13,8 +14,20 @@ export const metadata = {
 
 export default function EarlyStageRankingsPage() {
   const core = getCoreCollection()
-  const evaluated = core.filter(j => j.early_stage_rating?.eligibility === 'early_stage')
-  const eQAssignedCount = evaluated.filter(j => j.early_stage_rating?.provisional_quartile).length
+  // "Evaluated" = a real AJR-E score exists (v1.1: rating_status 'official'
+  // or 'provisional'; legacy: eligibility 'early_stage'). Distinct from
+  // window-membership (isInEarlyStageWindow) now that AJR-E-1.1 splits the
+  // two — a journal can be in the 12-59mo window with no score at all
+  // (rating_status 'not_rateable'). inWindow / notRateable surfaced
+  // separately below so that real gap is visible, not folded into one count.
+  const evaluated = core.filter(j => hasRealEarlyStageScore(j.early_stage_rating))
+  const inWindow = core.filter(j => isInEarlyStageWindow(j.early_stage_rating))
+  const notRateable = inWindow.filter(j => isBlockedOrNotRateable(j.early_stage_rating))
+  // Ranking-eligible pool only (v1.1: rating_status 'official' — a
+  // 'provisional' score is real and shown but AJR-SPEC.md § 6 excludes it
+  // from E-Q ranking), matching earlyStageQuartile()'s own gate.
+  const officiallyRated = core.filter(j => isOfficiallyRated(j.early_stage_rating))
+  const eQAssignedCount = officiallyRated.filter(j => earlyStageQuartile(j.early_stage_rating)).length
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -46,8 +59,12 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Methodology:</strong> AJR-E (AJR 1.0 Lifecycle Framework)</p>
           <p><strong>Scoring:</strong> 100% rules-driven, from crawled site evidence and sampled Crossref articles</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
-          <p><strong>E-Q assigned:</strong> {eQAssignedCount} of {evaluated.length} evaluated</p>
-          <p><strong>Journals evaluated:</strong> {evaluated.length} of {core.length}</p>
+          <p><strong>E-Q assigned:</strong> {eQAssignedCount} of {officiallyRated.length} officially rated</p>
+          <p><strong>Journals evaluated (real score):</strong> {evaluated.length} of {core.length}</p>
+          <p><strong>Currently in Early-Stage window:</strong> {inWindow.length} of {core.length}</p>
+          {notRateable.length > 0 && (
+            <p><strong>In window, not rateable:</strong> {notRateable.length} — below the minimum evidence bar, see each journal's page for its specific reason</p>
+          )}
           <p><strong>Global Benchmark, pending FPD verification:</strong> {publisherCatalogMeta.not_yet_mature}</p>
         </div>
       </Callout>

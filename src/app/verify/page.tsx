@@ -4,6 +4,23 @@ import { Info } from '@phosphor-icons/react/dist/ssr'
 import { getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF, verificationCode } from '@/lib/release'
 import { VerifyLookupForm, type VerifiableJournal } from '@/components/VerifyLookupForm'
+import { isEarlyStageV1_1, earlyStageDisplayTotal } from '@/lib/early-stage'
+import type { Journal } from '@/lib/types'
+
+// Short parenthetical shown next to the AJR total on the verify card (see
+// VerifyLookupForm.tsx) — only ever rendered when ajrTotal is non-null, i.e.
+// a real score exists. Legacy shape: the raw eligibility word ('early_stage'
+// / 'mature'). AJR-E-1.1: the lifecycle_stage, plus an explicit "provisional"
+// flag — a verifier reading this needs to know the score is real but NOT
+// ranking-eligible (AJR-SPEC.md § 6), not just see a bare total.
+function ajrEligibilityLabel(journal: Journal): string | null {
+  const r = journal.early_stage_rating
+  if (!r) return null
+  if (isEarlyStageV1_1(r)) {
+    return r.rating_status === 'provisional' ? `${r.lifecycle_stage}, provisional` : r.lifecycle_stage
+  }
+  return r.eligibility
+}
 
 export const metadata = {
   title: 'Verify a POSI Record',
@@ -19,8 +36,8 @@ export default function VerifyPage() {
       collectionStatus: 'core' as const,
       pqfGrade: (j.pqf ?? j.ojqf ?? j.auto_pqf)?.grade ?? null,
       pqfTotal: (j.pqf ?? j.ojqf ?? j.auto_pqf)?.total ?? null,
-      ajrEligibility: j.early_stage_rating?.eligibility ?? null,
-      ajrTotal: j.early_stage_rating?.total ?? null,
+      ajrEligibility: ajrEligibilityLabel(j),
+      ajrTotal: earlyStageDisplayTotal(j.early_stage_rating),
       verificationCode: verificationCode(j.journal_code),
     })),
     ...getCandidateJournals().map(j => ({
@@ -30,8 +47,8 @@ export default function VerifyPage() {
       collectionStatus: 'candidate' as const,
       pqfGrade: (j.pqf ?? j.ojqf ?? j.auto_pqf)?.grade ?? null,
       pqfTotal: (j.pqf ?? j.ojqf ?? j.auto_pqf)?.total ?? null,
-      ajrEligibility: j.early_stage_rating?.eligibility ?? null,
-      ajrTotal: j.early_stage_rating?.total ?? null,
+      ajrEligibility: ajrEligibilityLabel(j),
+      ajrTotal: earlyStageDisplayTotal(j.early_stage_rating),
       verificationCode: verificationCode(j.journal_code),
     })),
   ]

@@ -6,6 +6,7 @@ import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { getLatestAnnouncements } from '@/lib/announcements'
 import { DATA_CUTOFF } from '@/lib/release'
+import { earlyStageDisplayTotal, isInObservationStage, isInEarlyStageWindow, isMatureStage } from '@/lib/early-stage'
 
 export const revalidate = 3600
 
@@ -21,11 +22,19 @@ export default async function HomePage() {
     last_updated: new Date().toISOString().slice(0, 10),
   }
   const coreCollection = getCoreCollection()
-  const lifecycleRated = coreCollection.filter(j => j.early_stage_rating?.total != null).length
-  const observationCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'observation').length
-  const earlyStageCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'early_stage').length
-  const matureCount = coreCollection.filter(j => j.early_stage_rating?.eligibility === 'mature').length
-    + BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature').length
+  // "Lifecycle Rated" — has a real, currently-shown AJR-E total (see
+  // earlyStageDisplayTotal: also guards v1.1's not_rateable/not_applicable
+  // rating_status against ever counting a fabricated total).
+  const lifecycleRated = coreCollection.filter(j => earlyStageDisplayTotal(j.early_stage_rating) != null).length
+  // These three counts are lifecycle-WINDOW membership (the age brackets in
+  // the labels below), not "has a real score" — a v1.1 Early-Stage-window
+  // journal with rating_status 'not_rateable' still belongs in the
+  // Early-Stage bucket here, same as it always did under the legacy shape
+  // (which had no way to tell the two apart).
+  const observationCount = coreCollection.filter(j => isInObservationStage(j.early_stage_rating)).length
+  const earlyStageCount = coreCollection.filter(j => isInEarlyStageWindow(j.early_stage_rating)).length
+  const matureCount = coreCollection.filter(j => isMatureStage(j.early_stage_rating)).length
+    + BENCHMARK_JOURNALS.filter(j => isMatureStage(j.early_stage_rating)).length
   const announcements = getLatestAnnouncements(3)
   const globalBenchmarkTotal = BENCHMARK_JOURNALS.length + publisherCatalogMeta.count
 

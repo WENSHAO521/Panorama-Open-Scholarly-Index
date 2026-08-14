@@ -1,14 +1,7 @@
 import Link from 'next/link'
 import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection} from '@/lib/data'
-
-const LIFECYCLE_LABEL: Record<string, string> = {
-  observation: 'Observation',
-  early_stage: 'Early-Stage',
-  mature: 'Mature',
-  not_yet_rateable: 'Not Yet Rateable',
-  unknown: 'Unknown',
-}
+import { earlyStageLifecycleLabel, earlyStageDisplayTotal, isEarlyStageV1_1 } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'POSI Core Collection',
@@ -122,8 +115,14 @@ export default function CoreCollectionPage() {
             </thead>
             <tbody>
               {coreCollection.map(j => {
-                const eligibility = j.early_stage_rating?.eligibility ?? 'unknown'
-                const total = j.early_stage_rating?.total
+                const r = j.early_stage_rating
+                const total = earlyStageDisplayTotal(r)
+                // Surface the real, journal-specific not_rateable_reason (v1.1
+                // only) as the Rating cell's tooltip when no total is shown —
+                // much more useful than a generic "no score" hover, and per
+                // this project's rule against hardcoded prose now that a real
+                // reason string exists per journal.
+                const notRateableReason = r && isEarlyStageV1_1(r) && r.rating_status === 'not_rateable' ? r.not_rateable_reason : null
                 return (
                   <tr key={j.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                     <td className="px-4 py-3">
@@ -139,9 +138,9 @@ export default function CoreCollectionPage() {
                       ) : 'Not yet classified'}
                     </td>
                     <td className="px-3 py-3 text-center font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>
-                      {LIFECYCLE_LABEL[eligibility]}
+                      {earlyStageLifecycleLabel(r)}
                     </td>
-                    <td className="px-3 py-3 text-center font-mono font-bold" style={{ color: total != null ? 'var(--posi-accent)' : 'var(--posi-muted)' }} title={total != null ? 'AJR score — E-Q/M-Q quartile not yet assigned (needs a PSC peer cohort)' : undefined}>
+                    <td className="px-3 py-3 text-center font-mono font-bold" style={{ color: total != null ? 'var(--posi-accent)' : 'var(--posi-muted)' }} title={total != null ? 'AJR score — E-Q/M-Q quartile not yet assigned (needs a PSC peer cohort)' : (notRateableReason ?? undefined)}>
                       {total != null ? `${total}/100` : '—'}
                     </td>
                     <td className="px-3 py-3 text-center text-[10px]" style={{ color: 'var(--posi-muted)' }} title="Citation Q depends on PCI, not yet wired for this journal">

@@ -14,6 +14,7 @@ import { ArrowSquareOut, Globe, FileText, Users, Barcode, ChartBar } from '@phos
 import { getJournalByCode } from '@/lib/data'
 import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry } from '@/lib/api'
 import { getCitationStats } from '@/lib/citation-stats'
+import { isEarlyStageV1_1 } from '@/lib/early-stage'
 import type { DoajJournalInfo } from '@/lib/types'
 import { Badge } from '@/components/Badge'
 import { MetadataQualityBar } from '@/components/MetadataQualityBar'
@@ -81,6 +82,47 @@ const INDEXING_VARIANT = {
 // block static generation of its page past the host's per-page build timeout.
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
   return Promise.race([p, new Promise<T>(res => setTimeout(() => res(fallback), ms))])
+}
+
+// Shared between the legacy (`eligibility === 'mature'`) and AJR-E-1.1
+// (`lifecycle_stage === 'mature'`) branches below — identical presentation
+// either way: AJR-M is implemented but has not been run against real data
+// for any journal yet, so a mature journal never shows an AJR-E-scored
+// total (AJR-M-1.0-SPEC.md forbids scoring mature journals with the
+// early-stage rubric).
+function MatureRatingCard({ monthsSinceLaunch }: { monthsSinceLaunch: number | null }) {
+  return (
+    <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+          POSI Automated Rating (AJR-M)
+        </h2>
+        <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
+          PENDING DATA
+        </span>
+      </div>
+      <p className="text-[10px] leading-relaxed p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+        This journal is mature (60+ months since first publication). AJR-M 1.0 methodology is implemented
+        (<code className="font-mono">src/ajr-mature.mjs</code>, see AJR-M-1.0-SPEC.md) but has not been run
+        against real evidence/citation data for any journal yet — no AJR-M score or M-Q exists to show. A
+        mature journal is never scored with the AJR-E rubric (the early-stage 100-point evidence model),
+        so no interim score is shown here — see{' '}
+        <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
+      </p>
+      <p className="text-[10px] leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        {monthsSinceLaunch} months since first published.
+      </p>
+      <a
+        href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-M-1.0-SPEC.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block text-[10px] hover:underline mt-2"
+        style={{ color: 'var(--posi-accent)' }}
+      >
+        Methodology →
+      </a>
+    </div>
+  )
 }
 
 export default async function JournalPage(props: { params: Promise<{ code: string }> }) {
@@ -238,46 +280,130 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // journals (12-59 months since first publication) are eligible for a
   // future E-Q1-E-Q4 once a real PSC peer cohort exists; 'mature' journals
   // are scored via AJR-M (AJR-M-1.0-SPEC.md, implemented but not yet run
-  // against real data — see the dedicated branch below) and separately may
+  // against real data — see MatureRatingCard above) and separately may
   // carry an independent Citation Q (see AJR-SPEC.md §1, §4). A mature
   // journal is never scored with the AJR-E rubric — AJR-M-1.0-SPEC.md is
   // explicit about this — so even though early_stage_rating.total/
   // subfactors may still be populated for a mature-eligible record (an
   // interim AJR-E figure from earlier in POSI's history), it is
   // deliberately never displayed here as this journal's current score.
-  const lifecyclePanel = isDiscovered || !journal.early_stage_rating ? null : (
-    journal.early_stage_rating.eligibility === 'mature' ? (
+  //
+  // Two real record shapes exist (see types.ts's EarlyStageRating union,
+  // and posi-data's audits/ratings/ajr-e-1.1-rerate-core30-2026/README.md):
+  // legacy (single `eligibility` field) and AJR-E-1.1 (`lifecycle_stage` +
+  // `rating_status`, only on Core Collection records as of 2026-08-14).
+  // Each branch reads its own record's real fields — no cross-shape
+  // assumptions.
+  const rating = journal.early_stage_rating
+  const lifecyclePanel = isDiscovered || !rating ? null : isEarlyStageV1_1(rating) ? (
+    rating.lifecycle_stage === 'mature' ? (
+      <MatureRatingCard monthsSinceLaunch={rating.months_since_launch} />
+    ) : (rating.rating_status === 'official' || rating.rating_status === 'provisional') && rating.subfactors ? (
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
-            POSI Automated Rating (AJR-M)
+            POSI Automated Rating (AJR-E)
           </h2>
-          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#92400e', border: '1px solid #92400e', background: '#fffbeb' }}>
-            PENDING DATA
-          </span>
+          {rating.rating_status === 'official' ? (
+            <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
+              100% AUTOMATED
+            </span>
+          ) : (
+            <span
+              className="text-[9px] font-mono px-1.5 py-0.5"
+              style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fffbeb' }}
+              title="Real score, shown, but evidence coverage is below the threshold AJR-SPEC.md § 6 requires for E-Q ranking eligibility."
+            >
+              PROVISIONAL
+            </span>
+          )}
         </div>
-        <p className="text-[10px] leading-relaxed p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
-          This journal is mature (60+ months since first publication). AJR-M 1.0 methodology is implemented
-          (<code className="font-mono">src/ajr-mature.mjs</code>, see AJR-M-1.0-SPEC.md) but has not been run
-          against real evidence/citation data for any journal yet — no AJR-M score or M-Q exists to show. A
-          mature journal is never scored with the AJR-E rubric (the early-stage 100-point evidence model),
-          so no interim score is shown here — see{' '}
-          <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
+        <div className="flex items-baseline justify-between">
+          <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
+            {rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
+          </p>
+          {rating.evidence_coverage != null && (
+            <span
+              className="text-[10px] font-mono"
+              style={{ color: rating.evidence_coverage >= 80 ? '#1F7A4D' : rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+            >
+              Evidence Coverage {rating.evidence_coverage}%
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+          {rating.months_since_launch} months since first published. Computed entirely
+          from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
+          or quartile adjustment is possible for this or any journal.{' '}
+          {rating.rating_status === 'provisional'
+            ? 'This score is provisional — evidence coverage is below the threshold AJR-SPEC.md § 6 requires for E-Q ranking eligibility, so it is shown but not ranking-eligible.'
+            : rating.quartile
+              ? `Ranked ${rating.quartile_label ?? rating.quartile} within its PSC peer cohort.`
+              : 'No E-Q1–E-Q4 quartile assigned yet — no same-cohort PSC peer group large enough to rank against exists yet.'}
         </p>
-        <p className="text-[10px] leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
-          {journal.early_stage_rating.months_since_launch} months since first published.
-        </p>
+        <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
+          {[
+            ['EGF', rating.subfactors.egf, 15],
+            ['RIF', rating.subfactors.rif, 15],
+            ['INF', rating.subfactors.inf, 15],
+            ['PUB', rating.subfactors.pub, 15],
+            ['SOC', rating.subfactors.soc, 20],
+            ['RDC', rating.subfactors.rdc, 10],
+            ['TRN', rating.subfactors.trn, 10],
+          ].map(([label, val, max]) => (
+            <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
+              <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>
+              <p className="text-xs font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>{val}/{max}</p>
+            </div>
+          ))}
+        </div>
         <a
-          href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-M-1.0-SPEC.md"
+          href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
           target="_blank"
           rel="noopener noreferrer"
           className="block text-[10px] hover:underline mt-2"
           style={{ color: 'var(--posi-accent)' }}
         >
-          Methodology →
+          Methodology (AJR-E-1.1) →
         </a>
       </div>
-    ) : journal.early_stage_rating.eligibility === 'early_stage' && journal.early_stage_rating.subfactors ? (
+    ) : (
+      // rating_status 'not_rateable' (in the Early-Stage window, failed a
+      // mandatory-evidence gate) or 'not_applicable' (not currently in the
+      // Early-Stage window) — not_rateable_reason is always populated for
+      // both, with the real, journal-specific reason (see types.ts), so it
+      // is shown directly instead of reconstructed hardcoded prose.
+      <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
+            POSI Automated Rating (AJR-E)
+          </h2>
+          {rating.evidence_coverage != null && (
+            <span
+              className="text-[10px] font-mono"
+              style={{ color: rating.evidence_coverage >= 80 ? '#1F7A4D' : rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
+            >
+              Evidence Coverage {rating.evidence_coverage}%
+            </span>
+          )}
+        </div>
+        <p className="text-xs font-semibold" style={{ color: rating.rating_status === 'not_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
+          {rating.rating_status === 'not_rateable' ? 'Not Rateable'
+            : rating.lifecycle_stage === 'observation' ? 'Observation Stage'
+            : rating.lifecycle_stage === 'unknown' ? 'Unknown'
+            : 'Not Applicable'}
+        </p>
+        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+          {rating.not_rateable_reason ?? 'AJR-E does not currently apply to this record.'}
+        </p>
+      </div>
+    )
+  ) : (
+    rating.eligibility === 'mature' ? (
+      <MatureRatingCard monthsSinceLaunch={rating.months_since_launch} />
+    ) : rating.eligibility === 'early_stage' && rating.subfactors ? (
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
@@ -289,33 +415,33 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         </div>
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
-            {journal.early_stage_rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
+            {rating.total}<span className="text-xs font-normal" style={{ color: 'var(--posi-muted)' }}> / 100</span>
           </p>
-          {journal.early_stage_rating.evidence_coverage != null && (
+          {rating.evidence_coverage != null && (
             <span
               className="text-[10px] font-mono"
-              style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              style={{ color: rating.evidence_coverage >= 80 ? '#1F7A4D' : rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
               title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
             >
-              Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+              Evidence Coverage {rating.evidence_coverage}%
             </span>
           )}
         </div>
         <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
-          {journal.early_stage_rating.months_since_launch} months since first published. Computed entirely
+          {rating.months_since_launch} months since first published. Computed entirely
           from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
           or quartile adjustment is possible for this or any journal. No E-Q1–E-Q4 quartile is assigned yet
           (needs a same-cohort PSC peer group, not yet built).
         </p>
         <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
           {[
-            ['EGF', journal.early_stage_rating.subfactors.egf, 15],
-            ['RIF', journal.early_stage_rating.subfactors.rif, 15],
-            ['INF', journal.early_stage_rating.subfactors.inf, 15],
-            ['PUB', journal.early_stage_rating.subfactors.pub, 15],
-            ['SOC', journal.early_stage_rating.subfactors.soc, 20],
-            ['RDC', journal.early_stage_rating.subfactors.rdc, 10],
-            ['TRN', journal.early_stage_rating.subfactors.trn, 10],
+            ['EGF', rating.subfactors.egf, 15],
+            ['RIF', rating.subfactors.rif, 15],
+            ['INF', rating.subfactors.inf, 15],
+            ['PUB', rating.subfactors.pub, 15],
+            ['SOC', rating.subfactors.soc, 20],
+            ['RDC', rating.subfactors.rdc, 10],
+            ['TRN', rating.subfactors.trn, 10],
           ].map(([label, val, max]) => (
             <div key={label as string} className="px-1 py-1.5" style={{ background: 'var(--posi-bg)' }}>
               <p className="text-[8px] font-mono" style={{ color: 'var(--posi-muted)' }}>{label}</p>
@@ -339,27 +465,27 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
             POSI Automated Rating (AJR)
           </h2>
-          {journal.early_stage_rating.evidence_coverage != null && (
+          {rating.evidence_coverage != null && (
             <span
               className="text-[10px] font-mono"
-              style={{ color: journal.early_stage_rating.evidence_coverage >= 80 ? '#1F7A4D' : journal.early_stage_rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
+              style={{ color: rating.evidence_coverage >= 80 ? '#1F7A4D' : rating.evidence_coverage >= 60 ? '#B45309' : '#6B7280' }}
               title="Resolved evidence weight ÷ applicable evidence weight — see AJR-SPEC.md §6"
             >
-              Evidence Coverage {journal.early_stage_rating.evidence_coverage}%
+              Evidence Coverage {rating.evidence_coverage}%
             </span>
           )}
         </div>
-        <p className="text-xs font-semibold" style={{ color: journal.early_stage_rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
-          {journal.early_stage_rating.eligibility === 'observation' && 'Observation Stage'}
-          {journal.early_stage_rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
-          {journal.early_stage_rating.eligibility === 'unknown' && 'Unknown'}
+        <p className="text-xs font-semibold" style={{ color: rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
+          {rating.eligibility === 'observation' && 'Observation Stage'}
+          {rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
+          {rating.eligibility === 'unknown' && 'Unknown'}
         </p>
         <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
-          {journal.early_stage_rating.eligibility === 'observation' &&
-            `This journal is ${journal.early_stage_rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
-          {journal.early_stage_rating.eligibility === 'not_yet_rateable' &&
+          {rating.eligibility === 'observation' &&
+            `This journal is ${rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
+          {rating.eligibility === 'not_yet_rateable' &&
             'Below the minimum evidence bar for AJR — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance. Unknown evidence is not equivalent to failed criteria.'}
-          {journal.early_stage_rating.eligibility === 'unknown' &&
+          {rating.eligibility === 'unknown' &&
             'First-publication date could not be determined (e.g. no Crossref records) — AJR cannot run without it.'}
         </p>
       </div>

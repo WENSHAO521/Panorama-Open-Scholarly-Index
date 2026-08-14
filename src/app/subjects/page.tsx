@@ -3,6 +3,7 @@ import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
 import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { isInEarlyStageWindow, isMatureStage } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'PSC Subject Classification',
@@ -63,8 +64,8 @@ export default async function SubjectsPage() {
     if (!j.psc_category) continue
     const c = countsByCategory.get(j.psc_category) ?? { total: 0, earlyStage: 0, mature: 0 }
     c.total++
-    if (j.early_stage_rating?.eligibility === 'early_stage') c.earlyStage++
-    if (j.early_stage_rating?.eligibility === 'mature') c.mature++
+    if (isInEarlyStageWindow(j.early_stage_rating)) c.earlyStage++
+    if (isMatureStage(j.early_stage_rating)) c.mature++
     countsByCategory.set(j.psc_category, c)
   }
   const classifiedCount = allJournals.filter(j => j.psc_category).length

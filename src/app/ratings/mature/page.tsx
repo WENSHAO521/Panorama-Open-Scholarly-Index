@@ -6,6 +6,7 @@ import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
+import { isMatureStage } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'POSI Mature Journal Rankings — AJR-M',
@@ -14,8 +15,8 @@ export const metadata = {
 
 export default function MatureRankingsPage() {
   const core = getCoreCollection()
-    .filter(j => j.early_stage_rating?.eligibility === 'mature')
-  const curatedBenchmark = BENCHMARK_JOURNALS.filter(j => j.early_stage_rating?.eligibility === 'mature')
+    .filter(j => isMatureStage(j.early_stage_rating))
+  const curatedBenchmark = BENCHMARK_JOURNALS.filter(j => isMatureStage(j.early_stage_rating))
   const journals = [...core, ...curatedBenchmark]
   const benchmarkTotal = publisherCatalogMeta.mature_evidence
 
