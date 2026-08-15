@@ -7,6 +7,8 @@ import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { getLatestAnnouncements } from '@/lib/announcements'
 import { DATA_CUTOFF } from '@/lib/release'
 import { earlyStageDisplayTotal, isInObservationStage, isInEarlyStageWindow, isMatureStage } from '@/lib/early-stage'
+import { getCitationStats } from '@/lib/citation-stats'
+import { getAllPcsEntries } from '@/lib/pcs'
 
 export const revalidate = 3600
 
@@ -37,6 +39,10 @@ export default async function HomePage() {
     + BENCHMARK_JOURNALS.filter(j => isMatureStage(j.early_stage_rating)).length
   const announcements = getLatestAnnouncements(3)
   const globalBenchmarkTotal = BENCHMARK_JOURNALS.length + publisherCatalogMeta.count
+  // Real counts, not estimates — replaces the old articles*0.3/articles*0.6
+  // heuristic placeholders this section used to show.
+  const openAlexMatchedCount = coreCollection.filter(j => getCitationStats(j.journal_code)?.stats?.two_yr_mean_citedness != null).length
+  const pcsComputedCount = getAllPcsEntries().filter(e => e.pcs != null).length
 
   return (
     <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
@@ -458,9 +464,9 @@ export default async function HomePage() {
               {
                 title: 'Citation Analytics',
                 items: [
-                  { label: 'OpenAlex Matched',            value: stats.openalex_matched },
-                  { label: 'Citation Visibility Signals', value: stats.open_citation_records },
-                  { label: 'DOAJ-listed Records',         value: stats.doaj_listed },
+                  { label: 'PCS Computed',                    value: pcsComputedCount },
+                  { label: 'OpenAlex Matched (Core Collection)', value: openAlexMatchedCount },
+                  { label: 'DOAJ-listed Records',             value: stats.doaj_listed },
                 ],
               },
             ].map((group) => (

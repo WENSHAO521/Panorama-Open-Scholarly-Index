@@ -452,12 +452,8 @@ export interface PlatformStats {
   indexed_journals: number
   discovered_journals: number
   total_articles: number
-  total_authors: number
   total_doi_records: number
-  crossref_verified: number
-  openalex_matched: number
   doaj_listed: number
-  open_citation_records: number
   avg_metadata_quality: number
   last_updated: string
   data_version: string

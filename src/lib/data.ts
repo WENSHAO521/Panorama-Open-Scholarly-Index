@@ -66,15 +66,8 @@ export function getStats(liveArticleCount?: number): PlatformStats {
     indexed_journals: INDEXED_JOURNALS.length + SHIHARR_JOURNALS.length + OTHER_INDEXED_JOURNALS.length,
     discovered_journals: DISCOVERED_JOURNALS.length,
     total_articles: articles,
-    total_authors: Math.round(articles * 2.6),
     total_doi_records: articles,
-    crossref_verified: Math.round(articles * 0.85),
-    openalex_matched: Math.round(articles * 0.3),
     doaj_listed: doajListed,
-    // ~60% I4OC participation rate among DOAJ-indexed journals (Crossref deposit required for DOAJ listing)
-    open_citation_records: Math.round(
-      ALL_JOURNALS.filter(j => j.doaj_status === 'listed').reduce((s, j) => s + j.article_count, 0) * 0.60
-    ),
     avg_metadata_quality: Math.round(
       ALL_JOURNALS.reduce((s, j) => s + j.metadata_quality_score, 0) / ALL_JOURNALS.length
     ),

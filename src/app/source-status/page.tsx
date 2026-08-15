@@ -122,7 +122,7 @@ export default function SourceStatusPage() {
         {[
           { label: 'Journal Records', value: stats.total_journals.toLocaleString() },
           { label: 'DOI Records',     value: stats.total_doi_records.toLocaleString() },
-          { label: 'Author Records',  value: stats.total_authors.toLocaleString() },
+          { label: 'DOAJ-listed Records', value: stats.doaj_listed.toLocaleString() },
           { label: 'Last Sync',       value: stats.last_updated },
         ].map(s => (
           <div key={s.label} className="bg-white px-4 py-4 text-center">

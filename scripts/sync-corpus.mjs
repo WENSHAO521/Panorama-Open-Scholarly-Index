@@ -21,6 +21,12 @@
  *     per-journal records, one entry per journal_id including pcs: null
  *     entries. ~1024 small flat records, safe to bundle. Written through
  *     unmodified — see src/lib/pcs.ts for the typed loader.
+ *   - src/lib/pci.json — PCI/PCI-5 (PJR-SPEC.md § 5-6) per-journal
+ *     records, one entry per journal_id. Scope is currently the curated
+ *     Global Benchmark seed only (~993 records, ~450KB, safe to bundle) —
+ *     not Core Collection, which doesn't have real PCI data yet (see
+ *     posi-data's pjr-seed-corpus-global993-2026 audit). Written through
+ *     unmodified — see src/lib/pci.ts for the typed loader.
  *
  * Does NOT pull collections/publisher-catalog.json (~5MB) — that file is
  * fetched directly from data.posi.panorama-sg.com at runtime by
@@ -83,6 +89,17 @@ async function main() {
     console.log(`  Wrote src/lib/pcs.json (${pcs.length} records, ${computed} with a computed pcs value)`)
   } catch (err) {
     console.warn(`  Skipped src/lib/pcs.json — ${err.message}`)
+  }
+
+  // Same tolerant pattern as pcs.json above — an older snapshot with no
+  // collections/pci.json shouldn't wipe real PCI data already synced.
+  try {
+    const pci = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pci.json`)
+    writeFileSync(resolve('src/lib/pci.json'), JSON.stringify(pci, null, 2) + '\n', 'utf-8')
+    const computed = pci.filter(r => r.pci != null).length
+    console.log(`  Wrote src/lib/pci.json (${pci.length} records, ${computed} with a computed pci value)`)
+  } catch (err) {
+    console.warn(`  Skipped src/lib/pci.json — ${err.message}`)
   }
 
   // Tiny, safe-to-bundle companion so build-time pages can show an accurate

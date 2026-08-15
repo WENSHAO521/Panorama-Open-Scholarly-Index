@@ -1,10 +1,15 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getCoreCollection } from '@/lib/data'
+import { CURATED_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import { getAllPciEntries, getPciEntry } from '@/lib/pci'
 import { Callout } from '@/components/Callout'
+import { PciTable, type PciRow } from '@/components/PciTable'
 
 export const metadata: Metadata = {
   title: 'POSI Citation Impact (PCI) & POSI Citation Score (PCS) | POSI',
-  description: 'PCI and PCS are open, auditable citation-impact indicators — POSI\'s contribution to the open/alternative metrics movement, positioned alongside DORA and altmetrics rather than as a replacement for the Journal Impact Factor or CiteScore.',
+  description: 'PCI and PCS are open, auditable citation-impact indicators — POSI\'s contribution to the open/alternative metrics movement, positioned alongside DORA and altmetrics rather than as a replacement for the Journal Impact Factor or CiteScore. Real PCI data now covers the curated Global Benchmark.',
 }
 
 const COMPARISON = [
@@ -42,6 +47,32 @@ const MOVEMENT_PRINCIPLES = [
 ]
 
 export default function PciPage() {
+  const core = getCoreCollection()
+  const benchmark = CURATED_BENCHMARK_JOURNALS
+
+  const rows: PciRow[] = [...core, ...benchmark]
+    .filter(j => !!j.posi_id)
+    .map(j => {
+      const entry = getPciEntry(j.posi_id)
+      return {
+        journal_id: j.posi_id!,
+        title: j.title,
+        short_title: j.short_title,
+        journal_code: j.journal_code,
+        collection: j.is_external_benchmark ? 'benchmark' : 'core',
+        is_external_benchmark: !!j.is_external_benchmark,
+        website_url: j.website_url ?? null,
+        pci: entry?.pci ?? null,
+        pci_citable_items: entry?.pci_citable_items ?? null,
+        pci_5yr: entry?.pci_5yr ?? null,
+      }
+    })
+
+  const allEntries = getAllPciEntries()
+  const computedCount = allEntries.filter(r => r.pci != null).length
+  const window = allEntries.find(r => r.pci_window_start_year != null)
+  const windowLabel = window ? `${window.pci_window_start_year}–${window.pci_window_end_year}` : null
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
@@ -62,7 +93,8 @@ export default function PciPage() {
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
           PCI and PCS are two open, auditable citation-impact indicators, published as POSI's contribution to
           the open/alternative-metrics tradition — not a replacement for the Journal Impact Factor or CiteScore,
-          but openly computed options alongside them.
+          but openly computed options alongside them. Real PCI data is now computed for {computedCount} journals
+          in the curated Global Benchmark{windowLabel ? ` (${windowLabel} window)` : ''} — see the table below.
         </p>
       </div>
 
@@ -76,10 +108,28 @@ export default function PciPage() {
 
       {/* What determines ranking, and what does not */}
       <Callout variant="warning" className="space-y-1.5">
-        <p><strong>Only PCI determines POSI Citation Rank, Citation Percentile, and Citation Quartile.</strong></p>
-        <p>OpenAlex 2-Year Mean Citedness is displayed only as a source-level preview indicator and is not PCI.</p>
+        <p><strong>PCI does not yet determine an official POSI Citation Rank, Citation Percentile, or Citation Quartile.</strong> No POSI-R-* release has been produced (POSI-R-1.0-SPEC.md), and PNCI — needed to rank within a PSC category — has not been computed for this run. The table below is real, computed PCI data, sorted by value, not an official ranking.</p>
+        <p>OpenAlex 2-Year Mean Citedness (shown on Citation Reports) is a different, source-level preview figure and is not PCI.</p>
         <p>PCS is an independently reported Crossref-based citation indicator and does not determine Citation Rank, Citation Percentile, or Citation Quartile.</p>
       </Callout>
+
+      {/* Real PCI data table */}
+      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
+          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Real PCI Data (Curated Global Benchmark)</h2>
+        </div>
+        <div className="px-5 py-3 text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)', borderBottom: '1px solid var(--posi-border-light)' }}>
+          <strong style={{ color: 'var(--posi-text)' }}>{computedCount}</strong> of {allEntries.length} curated Global Benchmark journals have a real,
+          computed PCI value{windowLabel ? ` (${windowLabel} window)` : ''} — a full, exhaustive OpenAlex fetch, no article-sample cap. POSI's own
+          Core Collection isn't covered by this run yet: a same-day spot-check found it's overwhelmingly too young (most journals first published
+          2025-2026) to have real 2023-2024 output to measure. See{' '}
+          <a href="https://github.com/WENSHAO521/posi-data/blob/master/audits/pjr-seed-corpus/pjr-seed-corpus-global993-2026/README.md" target="_blank" rel="noopener noreferrer" className="underline">the full audit</a>{' '}
+          for methodology, scope, and two real bugs found and fixed mid-run.
+        </div>
+        <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
+          <PciTable rows={rows} />
+        </Suspense>
+      </section>
 
       {/* Two independent measurements */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
@@ -181,7 +231,7 @@ export default function PciPage() {
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>How PCI &amp; PCS Are Computed</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
-            { title: 'PCI: citable-items and citations, OpenAlex-sourced', body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — a citation-window calculation, computed under a formal PJR release. No POSI-R-* release has been produced yet (see POSI-R-1.0-SPEC.md), so no PCI value has been officially published. OpenAlex\'s own summary_stats.2yr_mean_citedness is a different, source-level figure shown elsewhere as a preview indicator — it is not PCI, and only PCI determines POSI Citation Rank, Citation Percentile, or Citation Quartile.' },
+            { title: 'PCI: citable-items and citations, OpenAlex-sourced — real data now covers the curated Global Benchmark', body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — a full, exhaustive OpenAlex fetch, no article-sample cap. A real run now covers the curated Global Benchmark (990 of 993 journals) — see the PCI table above. POSI\'s own Core Collection isn\'t covered yet (too young for a real 2023-2024 window). No POSI-R-* release has been produced (POSI-R-1.0-SPEC.md) and PNCI hasn\'t been computed this run, so this real data still does not determine an official POSI Citation Rank, Citation Percentile, or Citation Quartile. OpenAlex\'s own summary_stats.2yr_mean_citedness is a different, source-level figure shown elsewhere as a preview indicator — it is not PCI.' },
             { title: 'PCS: one source, Crossref — real, frozen-spec-compliant data now published', body: 'PCS 1.0 (PCS-1.0-SPEC.md) is the mean is-referenced-by-count across a journal\'s articles published in the trailing 4 calendar years, computed directly from Crossref via full cursor pagination — no article-sample cap. A real run now covers the Core Collection and curated Global Benchmark, and is the only PCS figure shown anywhere on the site, including Citation Reports and individual journal pages — see the PCS table below. Like PCI, PCS is independent of OpenAlex and never averaged with it, and it does not determine Citation Rank, Percentile, or Quartile.' },
             { title: 'DOI/Crossref article counts ≠ citation counts', body: 'Where Crossref is used to verify how many articles a journal has published (the "Articles" figure on journal records), that is a separate use from the citation-count role above and is never double-applied.' },
             { title: 'One DOI per cited work', body: 'A dataset or preprint on Zenodo (or similar) under its own DOI is supplementary evidence, not a separate citable record, unless explicitly linked to the article DOI as a version/supplement.' },
@@ -229,7 +279,7 @@ export default function PciPage() {
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a JIF or CiteScore substitute.</strong> Neither is calculated or peer-reviewed by Clarivate or Elsevier, and neither is directly comparable to the corresponding proprietary value.</li>
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a quality certification.</strong> A high PCI or PCS reflects citation volume within a fixed window, not editorial rigor, peer-review quality, or research integrity — those are covered separately by PQF, MQS, and IRS.</li>
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a substitute for expert judgment</strong> — see Appropriate Use above.</li>
-          <li>— <strong style={{ color: 'var(--posi-text)' }}>Not exhaustive.</strong> Both metrics are currently published only for POSI's Core Collection; see <Link href="/citation-reports" className="underline" style={{ color: 'var(--posi-accent)' }}>Citation Reports</Link> for the full ranked list.</li>
+          <li>— <strong style={{ color: 'var(--posi-text)' }}>Not exhaustive.</strong> PCS covers Core Collection and the curated Global Benchmark; PCI currently covers the curated Global Benchmark only, not Core Collection yet (see the PCI table above). See <Link href="/citation-reports" className="underline" style={{ color: 'var(--posi-accent)' }}>Citation Reports</Link> for the OpenAlex 2-Year Citedness preview shown for Core Collection in the meantime.</li>
         </ul>
       </section>
 
