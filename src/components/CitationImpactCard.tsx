@@ -1,23 +1,20 @@
 import Link from 'next/link'
-import type { OpenAlexSourceStats, CrossrefCitationScore } from '@/lib/api'
+import type { OpenAlexSourceStats } from '@/lib/api'
 import type { PcsEntry } from '@/lib/pcs'
 
 export function CitationImpactCard({
   stats,
-  pcs,
   pcsEntry,
   subjectPercentile,
 }: {
   /** Absent when the journal has no resolvable OpenAlex source record — PCS (Crossref-sourced) can still be real and shown below. */
   stats?: OpenAlexSourceStats | null
-  pcs?: CrossrefCitationScore | null
-  /** Real PCS-1.0 value (PCS-1.0-SPEC.md), synced from posi-data-delivery — distinct from the legacy `pcs` prop above. */
+  /** Real PCS-1.0 value (PCS-1.0-SPEC.md), synced from posi-data-delivery. */
   pcsEntry?: PcsEntry | null
   subjectPercentile?: number | null
 }) {
   const rows = !stats ? [] : [
     { label: '2-Yr Citedness', value: stats.two_yr_mean_citedness != null ? stats.two_yr_mean_citedness.toFixed(2) : null },
-    { label: 'Legacy Crossref Preview', value: pcs?.ratio != null ? pcs.ratio.toFixed(2) : null },
     { label: 'h-index', value: stats.h_index != null ? String(stats.h_index) : null },
     { label: 'Total Citations', value: stats.cited_by_count != null ? stats.cited_by_count.toLocaleString() : null },
     ...(subjectPercentile != null ? [{ label: 'Subject Percentile', value: `${subjectPercentile}th` }] : []),
@@ -42,10 +39,9 @@ export function CitationImpactCard({
       )}
       {rows.length > 0 && (
         <p className="text-[10px] mt-3 leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
-          2-Yr Citedness = OpenAlex 2yr mean citedness, a source-level preview indicator — not PCI. Legacy
-          Crossref Preview = Crossref {pcs?.window ?? '4yr'} mean citations/article, capped at a 200-article
-          sample — not yet PCS 1.0 (uncapped). Neither is a Web of Science or Scopus metric, and neither
-          determines Citation Rank, Percentile, or Quartile — only PCI does, once a formal PJR release exists.{' '}
+          2-Yr Citedness = OpenAlex 2yr mean citedness, a source-level preview indicator — not a Web of
+          Science or Scopus metric, and it does not determine Citation Rank, Percentile, or Quartile — only
+          PCI does, once a formal PJR release exists.{' '}
           <Link href="/pci" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
             Full positioning statement →
           </Link>{' '}

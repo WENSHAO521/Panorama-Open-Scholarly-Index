@@ -19,8 +19,8 @@ export interface CitationReportRow {
   subject_percentile: number | null
   // Real PCS-1.0 (PCS-1.0-SPEC.md), synced from posi-data-delivery's
   // collections/pcs.json — full cursor-paginated Crossref count, no
-  // article-sample cap. Replaced the old 200-article-capped "Legacy
-  // Crossref Preview" field here once the real PCS ETL ran (2026-08-14).
+  // article-sample cap. Replaced the earlier 200-article-capped Crossref
+  // preview field here once the real PCS ETL ran (2026-08-14).
   pcs: number | null
   pcs_window_start_year: number | null
   pcs_window_end_year: number | null

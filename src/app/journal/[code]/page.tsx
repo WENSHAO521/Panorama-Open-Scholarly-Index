@@ -152,7 +152,6 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // which reads the same file. See src/lib/citation-stats.ts.
   const citationEntry = showCitationImpact ? getCitationStats(journal.journal_code) : null
   const citationStats = citationEntry?.stats ?? null
-  const citationScore = citationEntry?.pcs ?? null
   // Real PCS-1.0 value (PCS-1.0-SPEC.md), joined by posi-data's posi_id —
   // independent of citationStats/citationEntry above (Crossref-sourced,
   // not OpenAlex), so it can be real and shown even when this journal has
@@ -499,12 +498,12 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   )
 
   // LAYER 3 (formerly): Citation Analytics — Core Collection feature, see
-  // showCitationImpact above. Legacy Crossref Preview/OpenAlex citedness
-  // are provisional previews (see /citation-reports), not official PJR PCI
-  // values; pcsEntry (below) is real PCS-1.0 data and renders even when
-  // citationStats is null, since PCS is Crossref-sourced, not OpenAlex.
+  // showCitationImpact above. OpenAlex citedness is a provisional preview
+  // (see /citation-reports), not an official PJR PCI value; pcsEntry (below)
+  // is real PCS-1.0 data and renders even when citationStats is null, since
+  // PCS is Crossref-sourced, not OpenAlex.
   const citationPanel = !showCitationImpact ? null : (citationStats || pcsEntry) ? (
-    <CitationImpactCard stats={citationStats} pcs={citationScore} pcsEntry={pcsEntry} />
+    <CitationImpactCard stats={citationStats} pcsEntry={pcsEntry} />
   ) : (
     <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
       <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>

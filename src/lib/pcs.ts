@@ -3,13 +3,12 @@ import raw from './pcs.json'
 // PCS (POSI Citation Score, posi-data's PCS-1.0-SPEC.md) — a real,
 // Crossref-based 4-year citation-performance indicator, synced from
 // posi-data-delivery's collections/pcs.json (see scripts/sync-corpus.mjs).
-// Distinct from src/lib/citation-stats.ts's `pcs` field, which is an
-// unrelated legacy, 200-article-capped Crossref preview shown on
-// /citation-reports and journal pages as "Legacy Crossref Preview" — that
-// field predates PCS 1.0 and is not renamed here to avoid conflating the
-// two. Every field below is passed through unmodified from posi-data's
-// schema/metric.schema.json-declared PCS subset; see PCS-1.0-SPEC.md § 9
-// for field definitions.
+// This is the only PCS figure shown anywhere on the site — the earlier
+// 200-article-capped Crossref preview in src/lib/citation-stats.ts was
+// retired once this real, uncapped PCS-1.0 pipeline shipped for all
+// journals (2026-08-14). Every field below is passed through unmodified
+// from posi-data's schema/metric.schema.json-declared PCS subset; see
+// PCS-1.0-SPEC.md § 9 for field definitions.
 export interface PcsEntry {
   journal_id: string
   metric_year: number

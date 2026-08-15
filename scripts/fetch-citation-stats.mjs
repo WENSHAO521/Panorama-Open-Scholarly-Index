@@ -2,21 +2,25 @@
 /**
  * fetch-citation-stats.mjs
  *
- * Precomputes OpenAlex 2-yr mean citedness (PCI preview) + Crossref PCS
- * (mean citations/article, trailing 4-yr window) for every journal in
- * core-collection.json and writes a single JSON snapshot to
+ * Precomputes OpenAlex 2-yr mean citedness (PCI preview) for every journal
+ * in core-collection.json and writes a single JSON snapshot to
  * src/lib/citation-stats.json.
  *
  * Why this exists: /citation-reports and each /journal/[code] page used to
- * each fetch OpenAlex + Crossref live at build time (see src/lib/api.ts's
- * openAlexGetSourceStats/crossrefGetCitationScore). citation-reports fired
- * one Promise.all across the whole Core Collection (~2 requests x ~25-30
- * journals, all concurrent), which under load could trip its 4s per-request
- * build timeout and fall back to null — while a single journal page's build
- * (2 concurrent requests) usually didn't. Result: the same journal could
- * show a PCS value on its own page but "—" on /citation-reports. Both pages
- * now read the same persisted snapshot instead of racing live APIs against
- * each other.
+ * each fetch OpenAlex live at build time (see src/lib/api.ts's
+ * openAlexGetSourceStats). citation-reports fired one Promise.all across
+ * the whole Core Collection (~1 request x ~25-30 journals, all concurrent),
+ * which under load could trip its 4s per-request build timeout and fall
+ * back to null — while a single journal page's build usually didn't.
+ * Result: the same journal could show a stats value on its own page but
+ * "—" on /citation-reports. Both pages now read the same persisted
+ * snapshot instead of racing the live API against each other.
+ *
+ * Real PCS-1.0 data is a separate pipeline — see posi-data-delivery's
+ * collections/pcs.json, synced by scripts/sync-corpus.mjs into
+ * src/lib/pcs.json — not written by this script. This script used to also
+ * fetch a 200-article-capped Crossref citation ratio as a PCS preview, but
+ * that field was dropped once real, uncapped PCS-1.0 shipped (2026-08-14).
  *
  * Usage:
  *   node scripts/fetch-citation-stats.mjs                # fetch all, write src/lib/citation-stats.json
@@ -36,11 +40,8 @@ const CORE_PATH = resolve(argOr('--core', 'src/lib/core-collection.json'))
 const OUT_PATH = resolve(argOr('--out', 'src/lib/citation-stats.json'))
 const CONCURRENCY = parseInt(argOr('--concurrency', '5'), 10)
 
-const CROSSREF = 'https://api.crossref.org'
 const OPENALEX = 'https://api.openalex.org'
 const UA = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
-const ARTICLE_FILTER = 'type:journal-article'
-const PCS_SAMPLE_CAP = 200
 const REQUEST_TIMEOUT_MS = 15000
 
 async function openAlexGetSourceStats(issn) {
@@ -63,34 +64,6 @@ async function openAlexGetSourceStats(issn) {
       h_index: source.summary_stats?.h_index ?? null,
       cited_by_count: source.cited_by_count ?? null,
     }
-  } catch {
-    return null
-  }
-}
-
-async function crossrefGetCitationScore(issn) {
-  try {
-    const currentYear = new Date().getFullYear()
-    const fromYear = currentYear - 4
-    const toYear = currentYear - 1
-    const params = new URLSearchParams({
-      filter: `${ARTICLE_FILTER},from-pub-date:${fromYear}-01-01,until-pub-date:${toYear}-12-31`,
-      rows: String(PCS_SAMPLE_CAP),
-      select: 'DOI,is-referenced-by-count,published',
-      mailto: 'posi@panoramagroup.org',
-    })
-    const res = await fetch(`${CROSSREF}/journals/${issn}/works?${params.toString()}`, {
-      headers: { 'User-Agent': UA },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    const items = data.message?.items ?? []
-    const total = data.message?.['total-results'] ?? items.length
-    const window = `${fromYear}–${toYear}`
-    if (items.length === 0) return { ratio: null, window, sampled_articles: 0, total_in_window: total }
-    const citedSum = items.reduce((s, it) => s + (it['is-referenced-by-count'] ?? 0), 0)
-    return { ratio: citedSum / items.length, window, sampled_articles: items.length, total_in_window: total }
   } catch {
     return null
   }
@@ -121,13 +94,10 @@ async function main() {
 
   const entries = await runPool(withIssn, CONCURRENCY, async j => {
     const issn = j.issn_online ?? j.issn_print
-    const [stats, pcs] = await Promise.all([
-      openAlexGetSourceStats(issn),
-      crossrefGetCitationScore(issn),
-    ])
+    const stats = await openAlexGetSourceStats(issn)
     if (stats?.two_yr_mean_citedness != null) resolved++
     else failed++
-    return [j.journal_code, { issn, stats, pcs, fetched_at: fetchedAt }]
+    return [j.journal_code, { issn, stats, fetched_at: fetchedAt }]
   })
 
   const out = Object.fromEntries(entries)

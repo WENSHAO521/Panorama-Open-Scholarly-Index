@@ -1,15 +1,16 @@
 import raw from './citation-stats.json'
-import type { OpenAlexSourceStats, CrossrefCitationScore } from './api'
+import type { OpenAlexSourceStats } from './api'
 
 // Precomputed snapshot — see scripts/fetch-citation-stats.mjs. Both
 // /citation-reports and /journal/[code] read from this single file so
-// their PCI/PCS figures for the same journal can never diverge, unlike
-// the old approach of each page fetching OpenAlex/Crossref live at build
+// their PCI figures for the same journal can never diverge, unlike
+// the old approach of each page fetching OpenAlex live at build
 // time (see that script's header comment for the bug this replaced).
+// Real PCS-1.0 data lives separately in src/lib/pcs.ts/pcs.json, sourced
+// from posi-data-delivery, not this file.
 export interface CitationStatsEntry {
   issn: string
   stats: OpenAlexSourceStats | null
-  pcs: CrossrefCitationScore | null
   fetched_at: string
 }
 
