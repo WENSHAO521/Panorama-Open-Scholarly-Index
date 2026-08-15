@@ -5,18 +5,23 @@ import { getCitationStats } from '@/lib/citation-stats'
 import { getPcsEntry } from '@/lib/pcs'
 import { primarySubject } from '@/lib/subject-keywords'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
+import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 import { CitationReportsTable, type CitationReportRow } from '@/components/CitationReportsTable'
 import { Callout } from '@/components/Callout'
 
 export const metadata = {
-  title: 'Citation Rankings — Preview',
-  description: 'Open citation indicators for the POSI Core Collection — OpenAlex 2-Year Citedness and real PCS 1.0 data — not yet official PJR PCI values or POSI Quartiles. See PJR-SPEC.md for the official methodology.',
+  title: 'Citation Rankings',
+  description: 'Open citation indicators for the POSI Core Collection and Global Benchmark — OpenAlex 2-Year Citedness, real PCS 1.0 data, and real PCI (Global Benchmark) — not yet official PJR PCI values or POSI Quartiles for Core Collection. See PJR-SPEC.md for the official methodology.',
 }
 
 const METHODOLOGY_PRINCIPLES = [
   {
     title: 'Only PCI determines Citation Rank, Percentile, and Quartile',
     body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — computed under a formal PJR release, which has not yet been produced (no POSI-R-* release exists — see POSI-R-1.0-SPEC.md). The 2-Year Citedness figure shown here is OpenAlex\'s own summary_stats.2yr_mean_citedness, taken as-is — a source-level preview indicator only, not PCI, and it does not determine any Citation Rank, Citation Percentile, or Citation Quartile.',
+  },
+  {
+    title: 'PCI is now real for Global Benchmark — still not for Core Collection',
+    body: 'A real, exhaustive OpenAlex fetch now computes PCI for 990 of 993 curated Global Benchmark journals (posi-data\'s pjr-seed-corpus-global993-2026 audit) — see the full PCI table. POSI\'s own Core Collection isn\'t covered yet: it\'s overwhelmingly too young (most journals first published 2025-2026) to have real 2023-2024 output to measure. Global Benchmark is never assigned a Citation Rank, Percentile, or Quartile regardless — it\'s an external validation corpus, not a POSI-admitted or ranked collection.',
   },
   {
     title: 'DOI/Crossref = article inventory, not citation count',
@@ -102,29 +107,33 @@ export default async function CitationReportsPage() {
         <span style={{ color: 'var(--posi-text)' }}>Citation Rankings</span>
       </nav>
 
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-warning)' }}>
+      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-warning)', border: '1px solid var(--posi-warning-border)', background: 'var(--posi-warning-bg)' }}>
-            PREVIEW
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>
+            {DATA_SNAPSHOT_LABEL}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>
             {coreRows.length} Core Collection · {publisherCatalogMeta.count} Global Benchmark
           </span>
         </div>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings — Preview</h1>
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
-          Two independently-sourced, non-ranking citation indicators — OpenAlex 2-Year Citedness (a source-level
-          preview indicator, not{' '}
-          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>)
-          and <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (POSI Citation Score, a real,
+          Three independently-sourced citation indicators, none of them a POSI ranking yet: OpenAlex 2-Year
+          Citedness (a source-level preview indicator, not{' '}
+          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>),{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (POSI Citation Score, a real,
           spec-compliant Crossref indicator — see{' '}
-          <Link href="/pcs" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>the full PCS table</Link>) —
-          plus h-index and total citations, for POSI's manually-reviewed Core Collection, plus 2-Year Citedness
-          only (no PCS, no total-citations figure) for the Global Benchmark publisher-catalog expansion.{' '}
+          <Link href="/pcs" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>the full PCS table</Link>),
+          and real <strong style={{ color: 'var(--posi-text)' }}>PCI</strong> (OpenAlex-sourced, now computed for
+          990 of 993 curated Global Benchmark journals — see{' '}
+          <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>the full PCI table</Link>).
+          Core Collection below shows 2-Year Citedness and PCS; the Global Benchmark publisher-catalog expansion
+          shows 2-Year Citedness only (no PCS, no total-citations figure).{' '}
           <strong style={{ color: 'var(--posi-text)' }}>Only PCI determines POSI Citation Rank, Citation
-          Percentile, and Citation Quartile</strong> — neither figure shown here does, for either collection, and
-          no Citation Rank/Percentile/Quartile is shown for Global Benchmark journals at all. See PJR-SPEC.md for
-          the official methodology, not yet in effect (no POSI-R-* release has been produced).
+          Percentile, and Citation Quartile</strong> — no figure shown here does yet, for either collection: no
+          POSI-R-* release has been produced, and Global Benchmark is never assigned a Citation Rank, Percentile,
+          or Quartile regardless of PCI's status, since it's an external validation corpus, not a POSI-admitted
+          collection. See PJR-SPEC.md for the official methodology.
         </p>
       </div>
 
@@ -169,7 +178,7 @@ export default async function CitationReportsPage() {
 
       <div className="flex flex-wrap gap-5 text-xs">
         <Link href="/pcs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Score (real, spec-compliant PCS data) →</Link>
-        <Link href="/pci" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PCI &amp; PCS Positioning →</Link>
+        <Link href="/pci" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Impact (real PCI data + positioning) →</Link>
       </div>
     </div>
   )

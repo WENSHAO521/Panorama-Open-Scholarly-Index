@@ -15,6 +15,8 @@ import { getJournalByCode } from '@/lib/data'
 import { crossrefGetJournalWorks, crossrefFetchJournal, doajGetJournal, issnGetCountry } from '@/lib/api'
 import { getCitationStats } from '@/lib/citation-stats'
 import { getPcsEntry } from '@/lib/pcs'
+import { getPciEntry } from '@/lib/pci'
+import { getCitationRanking } from '@/lib/citation-rankings'
 import { isEarlyStageV1_1 } from '@/lib/early-stage'
 import type { DoajJournalInfo } from '@/lib/types'
 import { Badge } from '@/components/Badge'
@@ -157,6 +159,12 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // not OpenAlex), so it can be real and shown even when this journal has
   // no resolvable OpenAlex source record.
   const pcsEntry = showCitationImpact ? getPcsEntry(journal.posi_id) : null
+  // Real PCI value (PJR-SPEC.md § 5-6) and, where a real-PCI peer pool
+  // reached MIN_CATEGORY_SIZE=20, real Citation Q (PJR-SPEC.md § 8) — see
+  // src/lib/pci.ts and src/lib/citation-rankings.ts. Real for only 2 of
+  // 30 resolvable Core Collection journals so far (too young otherwise).
+  const pciEntry = showCitationImpact ? getPciEntry(journal.posi_id) : null
+  const citationQ = showCitationImpact ? getCitationRanking(journal.posi_id) : null
 
   const [doajResult, crMeta, issnCountry] = await Promise.all([
     // Skip DOAJ if journal is already auto-scored (all its info is in data.ts)
@@ -502,8 +510,8 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // (see /citation-reports), not an official PJR PCI value; pcsEntry (below)
   // is real PCS-1.0 data and renders even when citationStats is null, since
   // PCS is Crossref-sourced, not OpenAlex.
-  const citationPanel = !showCitationImpact ? null : (citationStats || pcsEntry) ? (
-    <CitationImpactCard stats={citationStats} pcsEntry={pcsEntry} />
+  const citationPanel = !showCitationImpact ? null : (citationStats || pcsEntry || pciEntry) ? (
+    <CitationImpactCard stats={citationStats} pcsEntry={pcsEntry} pciEntry={pciEntry} citationQ={citationQ} />
   ) : (
     <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
       <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>

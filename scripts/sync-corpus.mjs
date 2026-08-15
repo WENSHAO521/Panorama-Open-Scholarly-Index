@@ -22,11 +22,16 @@
  *     entries. ~1024 small flat records, safe to bundle. Written through
  *     unmodified — see src/lib/pcs.ts for the typed loader.
  *   - src/lib/pci.json — PCI/PCI-5 (PJR-SPEC.md § 5-6) per-journal
- *     records, one entry per journal_id. Scope is currently the curated
- *     Global Benchmark seed only (~993 records, ~450KB, safe to bundle) —
- *     not Core Collection, which doesn't have real PCI data yet (see
- *     posi-data's pjr-seed-corpus-global993-2026 audit). Written through
+ *     records, one entry per journal_id. Covers Core Collection (2 of 30
+ *     with real 2023-2024 output — most are too young) and the curated
+ *     Global Benchmark seed (~1,023 records total, safe to bundle). See
+ *     posi-data's pjr-seed-corpus-global993-2026 audit. Written through
  *     unmodified — see src/lib/pci.ts for the typed loader.
+ *   - src/lib/citation-rankings.json — real Citation Q (PJR-SPEC.md § 8),
+ *     Core Collection journal_ids only. Tiny (2 records as of this
+ *     writing) — every other Core Collection journal either lacks real
+ *     PCI or its PSC category's real-PCI peer pool hasn't reached
+ *     MIN_CATEGORY_SIZE=20 yet.
  *
  * Does NOT pull collections/publisher-catalog.json (~5MB) — that file is
  * fetched directly from data.posi.panorama-sg.com at runtime by
@@ -100,6 +105,19 @@ async function main() {
     console.log(`  Wrote src/lib/pci.json (${pci.length} records, ${computed} with a computed pci value)`)
   } catch (err) {
     console.warn(`  Skipped src/lib/pci.json — ${err.message}`)
+  }
+
+  // Real Citation Q — Core Collection journal_ids only (see posi-data's
+  // publish-data-snapshot.mjs header for why Global Benchmark journals
+  // pooled into the ranking peer group never appear in this collection
+  // themselves). Not every snapshot has this collection yet.
+  try {
+    const rankings = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/citation-rankings.json`)
+    writeFileSync(resolve('src/lib/citation-rankings.json'), JSON.stringify(rankings, null, 2) + '\n', 'utf-8')
+    const ranked = rankings.filter(r => r.ranking_method !== 'unavailable').length
+    console.log(`  Wrote src/lib/citation-rankings.json (${rankings.length} records, ${ranked} with a real Citation Q)`)
+  } catch (err) {
+    console.warn(`  Skipped src/lib/citation-rankings.json — ${err.message}`)
   }
 
   // Tiny, safe-to-bundle companion so build-time pages can show an accurate
