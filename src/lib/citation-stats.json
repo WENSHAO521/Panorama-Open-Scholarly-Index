@@ -2,11 +2,11 @@
   "grhas": {
     "issn": "3052-539X",
     "stats": {
-      "two_yr_mean_citedness": 0.4146341463414634,
+      "two_yr_mean_citedness": 0.37777777777777777,
       "h_index": 2,
       "cited_by_count": 17
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "afs": {
     "issn": "3053-4011",
@@ -15,7 +15,7 @@
       "h_index": 2,
       "cited_by_count": 10
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jlpcs": {
     "issn": "3052-9654",
@@ -24,7 +24,7 @@
       "h_index": 2,
       "cited_by_count": 8
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "hnex": {
     "issn": "3053-7037",
@@ -33,7 +33,7 @@
       "h_index": 1,
       "cited_by_count": 3
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "pear": {
     "issn": "3053-3597",
@@ -42,7 +42,7 @@
       "h_index": 1,
       "cited_by_count": 1
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jesa": {
     "issn": "3053-478X",
@@ -51,7 +51,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "tts": {
     "issn": "3053-6553",
@@ -60,7 +60,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "rggd": {
     "issn": "3053-7282",
@@ -69,7 +69,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "rjgms": {
     "issn": "3053-4410",
@@ -78,7 +78,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "csgs": {
     "issn": "3054-9663",
@@ -87,7 +87,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jscc": {
     "issn": "3054-6958",
@@ -96,114 +96,118 @@
       "h_index": 1,
       "cited_by_count": 1
     },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "silence": {
     "issn": "3054-4386",
-    "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jmss": {
     "issn": "3078-4441",
-    "stats": {
-      "two_yr_mean_citedness": 0.5535714285714286,
-      "h_index": 2,
-      "cited_by_count": 31
-    },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "stats": null,
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jcsis": {
     "issn": "3078-5324",
-    "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "stats": {
+      "two_yr_mean_citedness": 0.8205128205128205,
+      "h_index": 4,
+      "cited_by_count": 64
+    },
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jcac": {
     "issn": "3079-7489",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "rwxk": {
     "issn": "3104-5022",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jyyjx": {
     "issn": "3080-8847",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "jassp": {
     "issn": "3079-7659",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "zgwxxk": {
     "issn": "3106-3675",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "yishu": {
     "issn": "3107-0191",
-    "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "shr-ai": {
     "issn": "3106-3705",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "smn": {
     "issn": "3106-3713",
-    "stats": {
-      "two_yr_mean_citedness": 1.2222222222222223,
-      "h_index": 2,
-      "cited_by_count": 11
-    },
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "stats": null,
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "xw": {
     "issn": "3106-9983",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "zgfx": {
     "issn": "3107-1708",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "cmas": {
     "issn": "3106-0749",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "cds": {
     "issn": "3105-5834",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "rae": {
     "issn": "3105-5842",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "eaou": {
     "issn": "3105-5850",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "tjiss": {
     "issn": "3030-5322",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "dif-rfp": {
     "issn": "3135-0011",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   },
   "cropt": {
     "issn": "3056-0977",
     "stats": null,
-    "fetched_at": "2026-08-17T03:40:49.235Z"
+    "fetched_at": "2026-08-24T03:44:26.997Z"
   }
 }
