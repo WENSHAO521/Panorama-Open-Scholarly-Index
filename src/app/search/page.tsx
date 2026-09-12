@@ -501,7 +501,7 @@ function SearchResults() {
           {!loading && error && (
             <div className="bg-white p-6 text-center" style={{ border: '1px solid var(--posi-border)' }}>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--posi-text)' }}>Search unavailable</p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{error}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{error}</p>
             </div>
           )}
 

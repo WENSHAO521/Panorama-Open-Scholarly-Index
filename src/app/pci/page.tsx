@@ -90,7 +90,7 @@ export default function PciPage() {
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>Open Alternative Metrics</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Impact (PCI) &amp; POSI Citation Score (PCS)</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           PCI and PCS are two open, auditable citation-impact indicators, published as POSI's contribution to
           the open/alternative-metrics tradition — not a replacement for the Journal Impact Factor or CiteScore,
           but openly computed options alongside them. Real PCI data is now computed for {computedCount} journals
@@ -118,7 +118,7 @@ export default function PciPage() {
         <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
           <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Real PCI Data (Curated Global Benchmark)</h2>
         </div>
-        <div className="px-5 py-3 text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)', borderBottom: '1px solid var(--posi-border-light)' }}>
+        <div className="px-5 py-3 text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)', borderBottom: '1px solid var(--posi-border-light)' }}>
           <strong style={{ color: 'var(--posi-text)' }}>{computedCount}</strong> of {allEntries.length} curated Global Benchmark journals have a real,
           computed PCI value{windowLabel ? ` (${windowLabel} window)` : ''} — a full, exhaustive OpenAlex fetch, no article-sample cap. POSI's own
           Core Collection isn't covered by this run yet: a same-day spot-check found it's overwhelmingly too young (most journals first published
@@ -134,7 +134,7 @@ export default function PciPage() {
       {/* Two independent measurements */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-2" style={{ color: 'var(--posi-muted)' }}>Two Independent Measurements, Not One Blended Score</h2>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Web of Science and Scopus are independently curated databases that report independent numbers — a
           journal's JIF and CiteScore routinely disagree, because they're computed from different underlying
           collections. POSI follows the same principle rather than inventing one composite "open impact score":
@@ -148,7 +148,7 @@ export default function PciPage() {
       {/* Adoption is institutional, not POSI's call */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-2" style={{ color: 'var(--posi-muted)' }}>Adoption Is an Institutional Choice</h2>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI does not lobby for PCI or PCS to replace the Journal Impact Factor or CiteScore everywhere.
           Whether an institution treats an open metric as sufficient for its own evaluation, funding, or
           accreditation purposes — in place of, or alongside, a proprietary index — is a policy decision made
@@ -166,7 +166,7 @@ export default function PciPage() {
           {MOVEMENT_PRINCIPLES.map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             </div>
           ))}
         </div>
@@ -239,7 +239,7 @@ export default function PciPage() {
           ].map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             </div>
           ))}
         </div>
@@ -251,7 +251,7 @@ export default function PciPage() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="border-l-2 pl-3" style={{ borderColor: '#1F7A4D' }}>
             <h3 className="text-xs font-semibold mb-1" style={{ color: '#1F7A4D' }}>Reasonable uses</h3>
-            <ul className="text-[11px] leading-relaxed space-y-1" style={{ color: 'var(--posi-muted)' }}>
+            <ul className="text-[11px] leading-relaxed space-y-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
               <li>— Comparing journals within the same subject area over time</li>
               <li>— A funder or library building or reviewing a journal reading/subscription list</li>
               <li>— A journal editorial board tracking its own citation trend</li>
@@ -260,14 +260,14 @@ export default function PciPage() {
           </div>
           <div className="border-l-2 pl-3" style={{ borderColor: '#b91c1c' }}>
             <h3 className="text-xs font-semibold mb-1" style={{ color: '#b91c1c' }}>Misuse POSI does not endorse</h3>
-            <ul className="text-[11px] leading-relaxed space-y-1" style={{ color: 'var(--posi-muted)' }}>
+            <ul className="text-[11px] leading-relaxed space-y-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
               <li>— Judging an individual researcher, article, or grant application by the citation average of the journal it appeared in (the ecological fallacy DORA was written to stop)</li>
               <li>— Using PCI or PCS as the sole or primary criterion in hiring, promotion, or tenure decisions</li>
               <li>— Treating a single number as a substitute for reading the work itself</li>
             </ul>
           </div>
         </div>
-        <p className="text-[10px] mt-3 leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] mt-3 leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           This split follows DORA's own recommendations. See <Link href="/responsible-use" className="underline" style={{ color: 'var(--posi-accent)' }}>Responsible Use Notice</Link> for POSI's full policy.
         </p>
       </section>
@@ -275,7 +275,7 @@ export default function PciPage() {
       {/* What PCI/PCS is not */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>What PCI &amp; PCS Are Not</h2>
-        <ul className="space-y-2 text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <ul className="space-y-2 text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a JIF or CiteScore substitute.</strong> Neither is calculated or peer-reviewed by Clarivate or Elsevier, and neither is directly comparable to the corresponding proprietary value.</li>
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a quality certification.</strong> A high PCI or PCS reflects citation volume within a fixed window, not editorial rigor, peer-review quality, or research integrity — those are covered separately by PQF, MQS, and IRS.</li>
           <li>— <strong style={{ color: 'var(--posi-text)' }}>Not a substitute for expert judgment</strong> — see Appropriate Use above.</li>

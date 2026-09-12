@@ -23,7 +23,7 @@ export default function AnnouncementsPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Announcements</h1>
-        <p className="text-sm leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           Official updates, releases, and notices from POSI.
         </p>
       </div>
@@ -38,7 +38,7 @@ export default function AnnouncementsPage() {
           >
             <p className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>{a.date}</p>
             <h2 className="text-sm font-semibold mt-1" style={{ color: 'var(--posi-text)' }}>{a.title}</h2>
-            <p className="text-xs leading-relaxed mt-1.5" style={{ color: 'var(--posi-muted)' }}>{a.summary}</p>
+            <p className="text-xs leading-relaxed mt-1.5 text-justify" style={{ color: 'var(--posi-muted)' }}>{a.summary}</p>
           </Link>
         ))}
       </div>

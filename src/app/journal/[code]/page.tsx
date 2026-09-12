@@ -104,7 +104,7 @@ function MatureRatingCard({ monthsSinceLaunch }: { monthsSinceLaunch: number | n
           PENDING DATA
         </span>
       </div>
-      <p className="text-[10px] leading-relaxed p-2" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+      <p className="text-[10px] leading-relaxed p-2 text-justify" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
         This journal is mature (60+ months since first publication). AJR-M 1.0 methodology is implemented
         (<code className="font-mono">src/ajr-mature.mjs</code>, see AJR-M-1.0-SPEC.md) but has not been run
         against real evidence/citation data for any journal yet — no AJR-M score or M-Q exists to show. A
@@ -112,7 +112,7 @@ function MatureRatingCard({ monthsSinceLaunch }: { monthsSinceLaunch: number | n
         so no interim score is shown here — see{' '}
         <Link href="/ratings/mature" className="underline">Mature Rankings</Link>.
       </p>
-      <p className="text-[10px] leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+      <p className="text-[10px] leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
         {monthsSinceLaunch} months since first published.
       </p>
       <a
@@ -345,7 +345,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </span>
           )}
         </div>
-        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.months_since_launch} months since first published. Computed entirely
           from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
           or quartile adjustment is possible for this or any journal.{' '}
@@ -408,7 +408,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             : rating.lifecycle_stage === 'unknown' ? 'Unknown'
             : 'Not Applicable'}
         </p>
-        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.not_rateable_reason ?? 'AJR-E does not currently apply to this record.'}
         </p>
       </div>
@@ -440,7 +440,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </span>
           )}
         </div>
-        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.months_since_launch} months since first published. Computed entirely
           from crawled site evidence and sampled Crossref article metadata — no manual score, percentile,
           or quartile adjustment is possible for this or any journal. No E-Q1–E-Q4 quartile is assigned yet
@@ -493,7 +493,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           {rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
           {rating.eligibility === 'unknown' && 'Unknown'}
         </p>
-        <p className="text-[10px] leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.eligibility === 'observation' &&
             `This journal is ${rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
           {rating.eligibility === 'not_yet_rateable' &&
@@ -515,7 +515,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   ) : (
     <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
       <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>
-      <p className="text-[10px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+      <p className="text-[10px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
         No resolvable OpenAlex source record for this journal's ISSN — citation figures unavailable.
       </p>
     </div>
@@ -713,7 +713,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   const historyPanel = isDiscovered ? null : (
     <div className="bg-white p-6 text-center" style={{ border: '1px solid var(--posi-border)' }}>
       <p className="text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>No rating history yet</p>
-      <p className="text-[11px] leading-relaxed mt-2 max-w-md mx-auto" style={{ color: 'var(--posi-muted)' }}>
+      <p className="text-[11px] leading-relaxed mt-2 max-w-md mx-auto text-justify" style={{ color: 'var(--posi-muted)' }}>
         POSI has not yet published its first annual frozen rating release, so there is only ever one
         current AJR score on record — nothing to compare it against yet. Year-over-year history will
         appear here starting with the first PJR release.
@@ -735,7 +735,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
       {/* COI notice — PSG journals only */}
       {journal.publisher?.toLowerCase().includes('panorama') && !journal.id.startsWith('j-disc-') && (
         <div
-          className="px-4 py-3 text-xs leading-relaxed"
+          className="px-4 py-3 text-xs leading-relaxed text-justify"
           style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '3px solid #d97706' }}
         >
           <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>

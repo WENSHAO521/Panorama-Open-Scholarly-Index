@@ -21,7 +21,7 @@ function Code({ children }: { children: React.ReactNode }) {
 function Example({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="mt-2 px-4 py-3 text-[12px] leading-relaxed font-mono"
+      className="mt-2 px-4 py-3 text-[12px] leading-relaxed font-mono text-justify"
       style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)', borderLeft: '3px solid #c41e3a' }}
     >
       {children}
@@ -74,7 +74,7 @@ export default function PsgFormatPage() {
         <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--posi-text)' }}>
           PSG Author–Date Citation Format
         </h1>
-        <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           PSG Format is the official author–date citation format of Panorama Scholarly Group. It uses a
           Chicago-style author–date structure, APA-informed digital metadata practices, and PSG-specific
           rules for DOI normalization, multilingual references, datasets, software, AI tools, and
@@ -93,7 +93,7 @@ export default function PsgFormatPage() {
 
       {/* Structure overview */}
       <div
-        className="px-4 py-3 text-xs leading-relaxed font-mono mb-8"
+        className="px-4 py-3 text-xs leading-relaxed font-mono mb-8 text-justify"
         style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}
       >
         <span className="text-[10px] uppercase tracking-[0.12em] font-sans font-semibold block mb-1" style={{ color: 'var(--posi-muted)' }}>Core Pattern</span>
@@ -277,7 +277,7 @@ export default function PsgFormatPage() {
       {/* ── Section 4: Definition ── */}
       <SectionHead id="definition">IV. Official Definition</SectionHead>
       <div
-        className="px-5 py-4 text-sm leading-relaxed"
+        className="px-5 py-4 text-sm leading-relaxed text-justify"
         style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', borderLeft: '4px solid #c41e3a' }}
       >
         <p style={{ color: 'var(--posi-text)' }}>

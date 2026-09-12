@@ -296,7 +296,7 @@ export function ArticleDetail({ doiSlug, initialArticle, fallbackJournalUrl }: {
           {article.abstract && (
             <div className="bg-white border border-gray-200 p-5">
               <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.12em] mb-3">Abstract</h2>
-              <p className="text-sm text-gray-700 leading-relaxed">{decodeHtml(article.abstract)}</p>
+              <p className="text-sm text-gray-700 leading-relaxed text-justify">{decodeHtml(article.abstract)}</p>
             </div>
           )}
 

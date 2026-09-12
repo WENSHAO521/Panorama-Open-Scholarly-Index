@@ -44,7 +44,7 @@ export default function EarlyStageRankingsPage() {
           {DATA_SNAPSHOT_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Early-Stage Journal Rankings</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Journals 12–59 months after their first regular scholarly publication, evaluated through{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR-E</strong>, the early-stage track of{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong>. E-Q1–E-Q4

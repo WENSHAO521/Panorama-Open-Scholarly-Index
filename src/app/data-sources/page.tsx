@@ -120,13 +120,13 @@ export default function DataSourcesPage() {
           <span style={{ color: 'var(--posi-text)' }}>Data Sources</span>
         </nav>
         <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--posi-text)' }}>Data Sources</h1>
-        <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI aggregates metadata from multiple open scholarly infrastructure providers.
           Source identifiers and provenance are preserved wherever available.
           Third-party metadata remains attributed to its original source.
         </p>
         <div
-          className="mt-5 p-4 text-xs leading-relaxed max-w-2xl"
+          className="mt-5 p-4 text-xs leading-relaxed max-w-2xl text-justify"
           style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', borderLeft: '3px solid var(--posi-accent)' }}
         >
           <strong style={{ color: 'var(--posi-text)' }}>POSI's primary focus is journal-level metadata and policy evidence.</strong>{' '}
@@ -209,7 +209,7 @@ export default function DataSourcesPage() {
           <Database className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--posi-primary)' }} />
           <div>
             <p className="text-sm font-semibold mb-1" style={{ color: 'var(--posi-primary)' }}>Open Data Principle</p>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-text)' }}>
+            <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-text)' }}>
               POSI only aggregates data from openly licensed sources. All data displayed on this platform
               is attributed to its original source. No proprietary or paywalled data is used. Where
               data is sourced from multiple providers, conflicts are flagged and provenance is shown.
@@ -255,7 +255,7 @@ export default function DataSourcesPage() {
 
             <div className="px-5 py-4 grid md:grid-cols-3 gap-5">
               <div className="md:col-span-2">
-                <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>{src.purpose}</p>
+                <p className="text-xs leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>{src.purpose}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {src.dataTypes.map(dt => (
                     <span
@@ -290,7 +290,7 @@ export default function DataSourcesPage() {
       </div>
 
       {/* Disclaimer */}
-      <div className="p-5 text-xs leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
+      <div className="p-5 text-xs leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
         <p className="font-semibold mb-2" style={{ color: 'var(--posi-text)' }}>Data Provenance Disclaimer</p>
         <p style={{ color: 'var(--posi-muted)' }}>
           POSI preserves source identifiers and provenance information whenever available.

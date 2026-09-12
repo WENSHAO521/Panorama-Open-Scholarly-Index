@@ -139,7 +139,7 @@ export function OjqfCard({ score, journalCode, isAuto }: PqfCardProps) {
           </p>
           <ul className="space-y-1">
             {suggestions.map((tip, i) => (
-              <li key={i} className="flex gap-2 text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <li key={i} className="flex gap-2 text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono" style={{ color: 'var(--posi-accent)' }}>→</span>
                 {tip}
               </li>
@@ -150,7 +150,7 @@ export function OjqfCard({ score, journalCode, isAuto }: PqfCardProps) {
 
       {/* Disclaimer */}
       <div className="px-5 py-2.5" style={{ borderTop: '1px solid var(--posi-border-light)', background: '#fffbeb' }}>
-        <p className="text-[10px] leading-relaxed" style={{ color: '#92400e' }}>
+        <p className="text-[10px] leading-relaxed text-justify" style={{ color: '#92400e' }}>
           {isAuto
             ? 'This is an automated assessment computed from DOAJ and Crossref signals. It has not been manually reviewed by POSI and should not be treated as an official score. Scores may change after POSI Evidence Review.'
             : 'PQF is not a Journal Impact Factor and should not be used as a substitute for expert review, article-level assessment, researcher evaluation, institutional ranking, or funding decisions. Some journals evaluated here are published by Panorama Scholarly Group, which also operates POSI.'

@@ -47,7 +47,7 @@ export default function OperatorPage() {
 
       <div className="border-l-4 border-[#c41e3a] pl-5">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Operator Information</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           Details about the organization that operates the POSI platform,
           including contact information, governance structure, and responsible parties.
         </p>
@@ -63,7 +63,7 @@ export default function OperatorPage() {
           <div className="space-y-3">
             <div className="flex items-start gap-2.5">
               <MapPin className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-muted)' }} />
-              <div className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <div className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 Room 1508, 15/F., Office Tower Two<br />
                 Grand Plaza, 625 Nathan Road<br />
                 Kowloon, Hong Kong SAR<br />
@@ -124,7 +124,7 @@ export default function OperatorPage() {
                 </span>
                 <span className="text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>{r.name}</span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{r.responsibility}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{r.responsibility}</p>
             </div>
           ))}
         </div>
@@ -135,7 +135,7 @@ export default function OperatorPage() {
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Governance Notes</h2>
         <ul className="space-y-2">
           {GOVERNANCE_NOTES.map((note, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               <span className="shrink-0 font-mono mt-0.5" style={{ color: 'var(--posi-accent)' }}>-</span>
               {note}
             </li>
@@ -145,7 +145,7 @@ export default function OperatorPage() {
 
       {/* COI link */}
       <div className="p-4" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: '#78350F' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#78350F' }}>
           <strong>Conflict of Interest:</strong> Panorama Scholarly Group operates POSI and also publishes
           the majority of journals currently indexed and evaluated on the platform.
           This is a structural conflict of interest that users should account for when interpreting scores.{' '}

@@ -117,7 +117,7 @@ export default async function CitationReportsPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Three independently-sourced citation indicators, none of them a POSI ranking yet: OpenAlex 2-Year
           Citedness (a source-level preview indicator, not{' '}
           <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>),{' '}
@@ -166,7 +166,7 @@ export default async function CitationReportsPage() {
           {METHODOLOGY_PRINCIPLES.map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             </div>
           ))}
         </div>

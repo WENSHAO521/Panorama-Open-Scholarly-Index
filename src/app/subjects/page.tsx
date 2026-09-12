@@ -86,12 +86,12 @@ export default async function SubjectsPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>PSC Subject Classification</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           {taxonomy.basis}
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
           {classifiedCount.toLocaleString()} of {allJournals.length.toLocaleString()} journals (Core Collection +
@@ -105,7 +105,7 @@ export default async function SubjectsPage() {
       </div>
 
       {usedFallback && (
-        <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+        <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
           <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
           <span style={{ color: '#92400e' }}>
             Live fetch from GitHub failed at build time — showing a vendored snapshot of the same pinned
@@ -152,7 +152,7 @@ export default async function SubjectsPage() {
 
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>PSC Governance</h2>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Changes to this taxonomy happen only via pull request against{' '}
           <a href="https://github.com/WENSHAO521/posi-data/tree/master/taxonomy/psc" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--posi-accent)' }}>posi-data</a>,
           reviewed against journal scope statements, article topic distribution, and citation network

@@ -49,7 +49,7 @@ export default function IrsPage() {
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>Technical Readiness · 0–15 points (TDF subfactor)</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Indexing Readiness Score</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           IRS evaluates the technical infrastructure of a journal's website for academic discovery.
           It assesses OAI-PMH availability, sitemap structure, DOI resolution health, and metadata
           standards used for Google Scholar, Crossref, and aggregator indexing. Inside the PQF formula
@@ -127,7 +127,7 @@ export default function IrsPage() {
       {/* How IRS is assessed */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>How IRS Is Assessed</h2>
-        <div className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <div className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           <p>IRS is checked via automated crawls and manual verification of journal websites. The OAI-PMH endpoint is tested using the official OAI-PMH validator protocol. Sitemap validity is checked against the Sitemaps.org schema.</p>
           <p>Google Scholar meta tags are checked against the Highwire Press citation_title / citation_doi standard. Schema.org JSON-LD is checked for ScholarlyArticle type markup on article pages.</p>
           <p>DOI resolution is sampled across recently published articles. A journal with more than 5% unresolvable DOIs receives 0 points for that criterion.</p>

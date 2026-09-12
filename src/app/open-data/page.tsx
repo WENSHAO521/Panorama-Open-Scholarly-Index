@@ -65,7 +65,7 @@ export default function OpenDataPage() {
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>OPEN DATA</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Open Data, Open Methodology, Open Engine</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI does not compute its rankings behind closed doors. The data, the formulas, and the code
           are all public — this is POSI's core differentiator from proprietary indices, not a side feature.
         </p>
@@ -75,7 +75,7 @@ export default function OpenDataPage() {
         {PILLARS.map(p => (
           <div key={p.title} className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
             <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-2" style={{ color: 'var(--posi-text)' }}>{p.title}</h2>
-            <p className="text-[11px] leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+            <p className="text-[11px] leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             <a
               href={p.repo.href}
               target="_blank"

@@ -46,7 +46,7 @@ export default async function AnnouncementDetailPage(props: { params: Promise<{ 
 
       <div className="bg-white p-5 space-y-4" style={{ border: '1px solid var(--posi-border)' }}>
         {announcement.body.map((paragraph, i) => (
-          <p key={i} className="text-sm leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+          <p key={i} className="text-sm leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
             {paragraph}
           </p>
         ))}

@@ -36,7 +36,7 @@ export default function ResponsibleUsePage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Responsible Use Notice</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI is an open journal indexing and transparency-assessment platform that also publishes
           open citation indicators (PCI/PCS) — see{' '}
           <Link href="/what-posi-is" className="underline">What POSI Is →</Link> for the full positioning.
@@ -47,7 +47,7 @@ export default function ResponsibleUsePage() {
       {/* What POSI is */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is</h2>
-        <ul className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <ul className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           {[
             'An open metadata platform aggregating journal records from Crossref, OpenAlex, OpenCitations, and DOAJ sources.',
             'A transparency assessment tool measuring publicly verifiable journal policies and metadata quality.',
@@ -67,7 +67,7 @@ export default function ResponsibleUsePage() {
       {/* What POSI is not */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
-        <ul className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <ul className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           {[
             'An indexing service. Being listed in POSI does not mean a journal is indexed by Web of Science, Scopus, DOAJ, or any other database.',
             'A peer review quality evaluator. PQF does not assess the rigour or independence of peer review conducted at a journal.',
@@ -93,7 +93,7 @@ export default function ResponsibleUsePage() {
           {PERMITTED.map((item, i) => (
             <div key={i} className="px-5 py-3">
               <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.use}</p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
             </div>
           ))}
         </div>
@@ -108,7 +108,7 @@ export default function ResponsibleUsePage() {
           {PROHIBITED.map((item, i) => (
             <div key={i} className="px-5 py-3">
               <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.use}</p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
             </div>
           ))}
         </div>
@@ -117,14 +117,14 @@ export default function ResponsibleUsePage() {
       {/* Citation */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Citing POSI Data</h2>
-        <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI metadata is available under{' '}
           <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
             CC BY 4.0
           </a>.
           When citing POSI data, please attribute the original data sources (Crossref, OpenAlex, DOAJ) as shown in each record's provenance fields.
         </p>
-        <div className="p-3 font-mono text-[11px] leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
+        <div className="p-3 font-mono text-[11px] leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
           Panorama Open Scholarly Index (POSI). "Journal Record: [Title]." posi.panorama-sg.com.
           Accessed [Date]. Data sourced from Crossref, OpenAlex, and DOAJ under CC0 1.0.
         </div>

@@ -110,7 +110,7 @@ export default async function JournalsPage() {
 
       {/* COI notice — shown on all journal listing pages */}
       <div
-        className="mb-5 px-4 py-3 text-xs leading-relaxed"
+        className="mb-5 px-4 py-3 text-xs leading-relaxed text-justify"
         style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '3px solid #d97706' }}
       >
         <strong style={{ color: '#92400e' }}>Conflict of Interest Disclosure: </strong>
@@ -129,7 +129,7 @@ export default async function JournalsPage() {
       <div className="p-4 text-xs flex flex-col sm:flex-row gap-4 mt-8" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
         <div className="flex items-start gap-2">
           <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: 'var(--posi-muted)' }} />
-          <p className="leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+          <p className="leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
             <strong style={{ color: 'var(--posi-text)' }}>MQS</strong> = Metadata Quality Score (0–100).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>PQF</strong> = POSI Quality Framework (Grade A+→E); <strong style={{ color: '#B45309' }}>PQF*</strong> = auto-assessed from direct site verification (pending manual review).{' '}
             <strong style={{ color: 'var(--posi-text)' }}>IRS</strong> = Discoverability Score (A–D).{' '}

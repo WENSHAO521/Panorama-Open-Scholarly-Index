@@ -66,7 +66,7 @@ export default function WhatPosiIsPage() {
 
       <div className="border-l-4 border-[#c41e3a] pl-5">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">What POSI Is</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           The Panorama Open Scholarly Index (POSI) is an open scholarly indexing, journal analytics,
           and automated evaluation infrastructure. Here is precisely what it does, what it provides,
           and who it is designed to serve.
@@ -81,7 +81,7 @@ export default function WhatPosiIsPage() {
               <span className="text-xs font-mono font-bold shrink-0 mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
               <div>
                 <h2 className="text-sm font-semibold mb-1.5" style={{ color: 'var(--posi-text)' }}>{item.title}</h2>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.body}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.body}</p>
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function WhatPosiIsPage() {
       {/* Mission */}
       <section className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Mission</h2>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI exists to make scholarly publishing infrastructure more transparent, reproducible, and
           machine-readable. We aggregate openly licensed metadata, apply automated evaluation methodology
           that no person can hand-adjust, and publish the results — data, engine, and methodology alike —
@@ -109,7 +109,7 @@ export default function WhatPosiIsPage() {
           {WHO_SHOULD_USE.map(row => (
             <div key={row.audience} className="px-5 py-3 flex items-start gap-4">
               <span className="text-xs font-semibold shrink-0 w-28" style={{ color: 'var(--posi-text)' }}>{row.audience}</span>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{row.use}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{row.use}</p>
             </div>
           ))}
         </div>
@@ -120,7 +120,7 @@ export default function WhatPosiIsPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               POSI is not licensed from or affiliated with Web of Science, Scopus, or DOAJ, not an
               accreditation authority, not a peer review certifier, and not a substitute for evaluating
               individual researchers.

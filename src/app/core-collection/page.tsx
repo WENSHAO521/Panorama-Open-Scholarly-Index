@@ -48,14 +48,14 @@ export default function CoreCollectionPage() {
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5" style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}>CORE COLLECTION</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Core Collection</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           <strong style={{ color: 'var(--posi-text)' }}>POSI has a record of a journal</strong> and{' '}
           <strong style={{ color: 'var(--posi-text)' }}>POSI has reviewed and indexed a journal</strong> are
           two different claims. This page keeps them visibly separate.
         </p>
       </div>
 
-      <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+      <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
         The Rating column below reports <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated
         Rating)</strong>, a 0–100 score computed entirely from crawled site evidence and sampled Crossref
         article metadata — see <Link href="/ratings" className="underline">Ratings &amp; Rankings →</Link>.
@@ -64,7 +64,7 @@ export default function CoreCollectionPage() {
         <Link href="/subjects" className="underline">PSC Subjects →</Link>.
       </p>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
           {discoveredCount.toLocaleString()} journals are Discovered but not reviewed — they are not
@@ -77,7 +77,7 @@ export default function CoreCollectionPage() {
         {STATES.map(s => (
           <div key={s.name} className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
             <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-2" style={{ color: s.color }}>{s.name}</h2>
-            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{s.body}</p>
+            <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{s.body}</p>
           </div>
         ))}
       </section>

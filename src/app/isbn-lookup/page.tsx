@@ -93,7 +93,7 @@ function BookDetail({ book }: { book: BookInfo }) {
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] mb-2" style={{ color: 'var(--posi-muted)' }}>
           APA Citation
         </p>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-text)' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-text)' }}>
           {book.authors.length > 0
             ? book.authors.map(a => {
                 const parts = a.split(' ')

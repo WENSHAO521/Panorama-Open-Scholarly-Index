@@ -146,7 +146,7 @@ function DoiLookupForm() {
             <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#9B1C31' }} />
             <div>
               <p className="text-sm font-semibold mb-1" style={{ color: '#9B1C31' }}>Lookup Failed</p>
-              <p className="text-xs leading-relaxed" style={{ color: '#7f1d1d' }}>{error}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: '#7f1d1d' }}>{error}</p>
               <div className="flex gap-3 mt-3">
                 <a href="/search" className="text-xs underline" style={{ color: '#9B1C31' }}>Search POSI records →</a>
                 <a href="/journals" className="text-xs underline" style={{ color: '#9B1C31' }}>Browse journal records →</a>

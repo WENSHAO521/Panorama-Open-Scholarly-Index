@@ -409,7 +409,7 @@ function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
       </div>
       <div className="p-5">
         <p
-          className="text-[13px] leading-relaxed"
+          className="text-[13px] leading-relaxed text-justify"
           style={{ fontFamily: 'var(--font-body)', color: 'var(--posi-text)' }}
           dangerouslySetInnerHTML={{ __html: pair.html }}
         />

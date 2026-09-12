@@ -183,7 +183,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
 
       {/* Abstract */}
       {showAbstract && article.abstract && (
-        <p className="text-[12.5px] line-clamp-2 leading-relaxed mb-2" style={{ color: 'var(--posi-soft)' }}>
+        <p className="text-[12.5px] line-clamp-2 leading-relaxed mb-2 text-justify" style={{ color: 'var(--posi-soft)' }}>
           {decodeHtml(article.abstract)}
         </p>
       )}

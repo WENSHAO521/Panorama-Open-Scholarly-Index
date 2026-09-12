@@ -110,7 +110,7 @@ export default function SourceStatusPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Live Overview</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Source Status</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           Sync status and operational health of all data sources integrated into POSI.
           Live sources are queried in real time. Integrated sources are synced periodically.
           Planned sources are documented but not yet active.
@@ -179,7 +179,7 @@ export default function SourceStatusPage() {
             <span className="text-[10px] font-medium px-1.5 py-0.5 shrink-0 mt-0.5" style={{ background: style.bg, color: style.color, border: `1px solid ${style.border}` }}>
               {key}
             </span>
-            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               {key === 'Primary'      && 'Internal POSI data. Manually curated and updated on each assessment cycle.'}
               {key === 'Live'         && 'Real-time connection. Queries are resolved on demand via the source\'s public API.'}
               {key === 'Integrated'   && 'Periodic sync. Data is harvested or imported on a scheduled basis.'}

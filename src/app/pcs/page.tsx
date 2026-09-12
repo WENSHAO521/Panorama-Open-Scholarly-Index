@@ -61,7 +61,7 @@ export default function PcsPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Score (PCS)</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Mean Crossref <code className="font-mono text-xs">is-referenced-by-count</code> across every eligible
           work{windowLabel ? ` published in ${windowLabel}` : ''} — a full cursor-paginated fetch, no article-sample
           cap (<a href="https://github.com/WENSHAO521/posi-data/blob/master/PCS-1.0-SPEC.md" target="_blank" rel="noopener noreferrer" className="underline">PCS-1.0-SPEC.md</a>).

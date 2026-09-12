@@ -42,7 +42,7 @@ export default function BadgesPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Badges</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Embeddable badges that journals with a POSI record can display on their own website, linking back to
           it. Core Collection journals get a "POSI Verified" badge; candidate journals (admitted once, since
           demoted below the PQF eligibility bar) get a distinctly gold-styled "POSI Candidate" badge instead —
@@ -51,7 +51,7 @@ export default function BadgesPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <span style={{ color: '#1d4ed8' }}>
           <strong>Eligibility is enforced, not just requested.</strong> Badge images are generated only for
@@ -98,7 +98,7 @@ export default function BadgesPage() {
           ].map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             </div>
           ))}
         </div>

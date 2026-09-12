@@ -74,7 +74,7 @@ export default function WhatPosiIsNotPage() {
 
       <div className="border-l-4 border-[#c41e3a] pl-5">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">What POSI Is Not</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           Knowing what POSI does not do is as important as knowing what it does.
           These are explicit, documented limitations, not disclaimers.
         </p>
@@ -82,7 +82,7 @@ export default function WhatPosiIsNotPage() {
 
       {/* COI warning */}
       <div className="p-4" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: '#78350F' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#78350F' }}>
           <strong>Conflict of Interest:</strong> POSI is operated by Panorama Scholarly Group Ltd. (PSG),
           which also publishes the majority of journals currently evaluated on this platform.
           See the <Link href="/coi" className="underline">full COI Disclosure</Link> for details.
@@ -97,7 +97,7 @@ export default function WhatPosiIsNotPage() {
               <span className="text-xs font-mono font-bold shrink-0 mt-0.5" style={{ color: '#c41e3a' }}>✗</span>
               <div>
                 <h2 className="text-sm font-semibold mb-1.5" style={{ color: 'var(--posi-text)' }}>{item.claim}</h2>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.why}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.why}</p>
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function WhatPosiIsNotPage() {
             'Treat PQF scores for PSG-published journals with awareness of the structural conflict of interest.',
             'Use POSI alongside, not instead of, established indexing and accreditation services.',
           ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               <span className="shrink-0 font-mono mt-0.5" style={{ color: 'var(--posi-accent)' }}>-</span>
               {item}
             </li>

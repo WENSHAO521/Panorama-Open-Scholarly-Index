@@ -46,7 +46,7 @@ export default function JournalEvidencePage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Per-Journal Records</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Journal Evidence Records</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           Evidence records for all journals assessed under the POSI Quality Framework.
           Each row shows the subfactor scores and links to the full journal detail page where
           individual criterion evidence sources are documented.
@@ -200,7 +200,7 @@ export default function JournalEvidencePage() {
         </section>
       )}
 
-      <div className="p-4 text-[11px] leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
+      <div className="p-4 text-[11px] leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
         Evidence records reflect publicly verifiable information at the time of assessment.
         Full criterion-level evidence sources are available on each journal's detail page.
         To report an incorrect record, contact the POSI team via the{' '}

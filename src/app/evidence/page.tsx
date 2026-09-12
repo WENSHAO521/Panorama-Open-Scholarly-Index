@@ -135,7 +135,7 @@ export default function EvidencePage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Public Registry</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Evidence Registry</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           The POSI Evidence Registry records the publicly auditable evidence behind every PQF score.
           Each PQF criterion is linked to a verifiable public source. Evidence status is updated during
           each assessment cycle.
@@ -273,13 +273,13 @@ export default function EvidencePage() {
 
       {/* Note */}
       <div className="mt-6 p-4 bg-gray-50" style={{ border: '1px solid var(--posi-border)' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Evidence status shown above reflects the aggregate state across PSG journals as of 2026-06-22.
           Individual journal evidence records are linked from each Journal Detail page.
           To report an incorrect evidence status, use the correction form on the relevant journal page or{' '}
           <Link href="/submit-journal" style={{ color: 'var(--posi-accent)' }} className="underline">contact the POSI team</Link>.
         </p>
-        <p className="text-[11px] leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[11px] leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           All evidence is based on publicly available information. POSI does not claim to have verified internal journal processes,
           manuscript handling, or reviewer conduct.
         </p>

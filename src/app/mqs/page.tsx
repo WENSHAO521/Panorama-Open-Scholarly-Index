@@ -50,7 +50,7 @@ export default function MqsPage() {
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>Article-level · 0–25 points (MQF subfactor)</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Metadata Quality Score</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           MQS measures the completeness of article-level metadata across nine criteria, scored out of 25.
           It is one of six components that make up the POSI Quality Framework (PQF), weighted at 25% —
           inside the PQF formula this same figure is labeled the Metadata Quality Factor (MQF); MQS is
@@ -62,12 +62,12 @@ export default function MqsPage() {
       {/* What MQS measures */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>What MQS Measures</h2>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           MQS evaluates whether a journal's articles have the metadata fields required for scholarly discoverability,
           citation tracking, author disambiguation, and open text mining. All criteria are checked against
           Crossref metadata records and public article pages. No proprietary databases are used.
         </p>
-        <p className="text-xs leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           MQS is a journal-level aggregate: each criterion is evaluated across a sample of recent articles
           and scored proportionally. A journal scores full points for a criterion when all sampled articles satisfy it.
         </p>

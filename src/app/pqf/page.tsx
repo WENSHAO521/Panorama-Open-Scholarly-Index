@@ -130,7 +130,7 @@ export default function PqfPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">2026</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">POSI Quality Framework (PQF)</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           PQF is POSI's editorial selection framework: a composite, evidence-based instrument assessing journal
           transparency, metadata quality, editorial governance, technical discoverability, open citation
           visibility, and research integrity readiness through publicly auditable evidence.
@@ -139,7 +139,7 @@ export default function PqfPage() {
 
       {/* Official definition */}
       <section className="bg-white border border-gray-200 mb-6 p-5">
-        <p className="text-xs leading-relaxed text-gray-700 mb-3">
+        <p className="text-xs leading-relaxed text-gray-700 mb-3 text-justify">
           <strong>PQF supports editorial selection and Core Collection admission.</strong> PQF is the
           criteria a journal must meet to enter the{' '}
           <Link href="/core-collection" className="underline">POSI Core Collection</Link> — it answers
@@ -151,12 +151,12 @@ export default function PqfPage() {
           independently-sourced citation indicator, but it does not feed the Q1–Q4 quartile calculation —
           a journal is never shown two competing "quality numbers" answering the same question.
         </p>
-        <p className="text-xs leading-relaxed text-gray-700 mb-3">
+        <p className="text-xs leading-relaxed text-gray-700 mb-3 text-justify">
           <strong>PQF is not a Journal Impact Factor.</strong> It is not a citation impact metric and is not a
           substitute for Web of Science, Scopus, DOAJ, or any other indexing or accreditation service.
           PQF scores indicate metadata completeness, transparency readiness, and technical discoverability only.
         </p>
-        <p className="text-xs leading-relaxed text-gray-600">
+        <p className="text-xs leading-relaxed text-gray-600 text-justify">
           <strong>PQF should not be used</strong> for individual researcher evaluation, hiring decisions,
           promotion criteria, funding allocation, or institutional ranking.
         </p>
@@ -271,7 +271,7 @@ export default function PqfPage() {
               <span className="ml-auto text-[11px] font-mono text-gray-400">{sf.weight} pts max</span>
             </div>
             <div className="px-5 py-4">
-              <p className="text-xs text-gray-500 leading-relaxed mb-3">{sf.desc}</p>
+              <p className="text-xs text-gray-500 leading-relaxed mb-3 text-justify">{sf.desc}</p>
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-gray-100">
@@ -310,7 +310,7 @@ export default function PqfPage() {
           ].map(p => (
             <div key={p.title} className="border-l-2 border-gray-200 pl-3">
               <h3 className="text-xs font-semibold text-gray-800 mb-1">{p.title}</h3>
-              <p className="text-[11px] text-gray-500 leading-relaxed">{p.body}</p>
+              <p className="text-[11px] text-gray-500 leading-relaxed text-justify">{p.body}</p>
             </div>
           ))}
         </div>
@@ -321,7 +321,7 @@ export default function PqfPage() {
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Limitations</h2>
         </div>
-        <div className="p-5 space-y-2 text-xs text-gray-600 leading-relaxed">
+        <div className="p-5 space-y-2 text-xs text-gray-600 leading-relaxed text-justify">
           <p>PQF does not assess peer review quality, editorial rigor, article scientific merit, or author credentials.</p>
           <p>PQF does not measure journal prestige, disciplinary impact, or citation influence.</p>
           <p>PQF scores reflect the state of publicly available evidence at the time of assessment and may not reflect recent changes.</p>
@@ -332,7 +332,7 @@ export default function PqfPage() {
       {/* Responsible Use + COI */}
       <div className="space-y-3 mb-6">
         <div className="p-4 bg-amber-50 border border-amber-200">
-          <p className="text-[11px] leading-relaxed text-amber-800">
+          <p className="text-[11px] leading-relaxed text-amber-800 text-justify">
             <strong>Publisher Conflict of Interest Notice:</strong> PQF scores for journals published by Panorama Scholarly Group (PSG)
             are assessed using the same public criteria as all other journals. Because PSG both operates POSI and publishes the journals it evaluates,
             readers should be aware of this structural conflict of interest. PQF scores are based solely on publicly verifiable criteria.
@@ -341,7 +341,7 @@ export default function PqfPage() {
           </p>
         </div>
         <div className="p-4 bg-gray-50 border border-gray-200">
-          <p className="text-[11px] leading-relaxed text-gray-600">
+          <p className="text-[11px] leading-relaxed text-gray-600 text-justify">
             <strong>Responsible Use:</strong> PQF is an internal quality framework developed by Panorama Scholarly Group.
             It is not affiliated with Scopus, Web of Science, DOAJ, or any commercial citation index.
             PQF should not be cited as an independent or third-party evaluation of PSG journals.
@@ -436,7 +436,7 @@ export default function PqfPage() {
                   {v.status}
                 </span>
               </div>
-              <p className="text-[11px] text-gray-600 leading-relaxed">{v.notes}</p>
+              <p className="text-[11px] text-gray-600 leading-relaxed text-justify">{v.notes}</p>
             </div>
           ))}
         </div>

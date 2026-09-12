@@ -87,7 +87,7 @@ export default function PoliciesPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Coverage Estimate</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Policy Coverage Estimate</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           This page shows an <strong>estimated</strong> per-policy-type status for each assessed journal,
           inferred from the journal's overall <Link href="/pqf#eligibility" className="underline">PQF</Link>{' '}
           transparency evidence (its JTF score and transparency rating) — not from an independent check of
@@ -107,7 +107,7 @@ export default function PoliciesPage() {
       </div>
 
       {/* Notice */}
-      <div className="p-4 text-xs leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
+      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
         <strong>Methodology:</strong> Per-policy-type status below is derived algorithmically from each
         journal's aggregate transparency evidence (JTF score), not from checking each policy type's URL
         individually. <em>Verified</em> and <em>Partial</em> indicate strong or moderate aggregate
@@ -202,7 +202,7 @@ export default function PoliciesPage() {
       </div>
 
       {/* Correction notice */}
-      <div className="p-4 text-xs leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
+      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
         <p className="font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>Report an incorrect policy status</p>
         <p style={{ color: 'var(--posi-muted)' }}>
           If you believe a policy status is inaccurate, please contact the POSI team at{' '}

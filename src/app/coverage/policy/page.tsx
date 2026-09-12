@@ -81,7 +81,7 @@ export default function CoveragePolicyPage() {
           {DATA_SNAPSHOT_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Coverage Policy</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Admission to the Core Collection is not a one-time event. This page defines what happens
           to a journal record over time — continuing review, warning, suspension, withdrawal, ceased,
           delisting, appeal, and reinstatement — so that a status change is never a surprise. See the{' '}
@@ -92,7 +92,7 @@ export default function CoveragePolicyPage() {
         </p>
       </div>
 
-      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
+      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed text-justify" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
         <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <span>
           <strong>Launch note:</strong> this policy is in effect from launch. No Core Collection
@@ -111,8 +111,8 @@ export default function CoveragePolicyPage() {
                 <span className="text-[10px] font-mono font-bold" style={{ color: 'var(--posi-accent)' }}>{i + 1}.</span>
                 <h3 className="text-sm font-semibold" style={{ color: 'var(--posi-text)' }}>{s.state}</h3>
               </div>
-              <p className="text-xs leading-relaxed mb-2" style={{ color: 'var(--posi-muted)' }}>{s.desc}</p>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-text)' }}>
+              <p className="text-xs leading-relaxed mb-2 text-justify" style={{ color: 'var(--posi-muted)' }}>{s.desc}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-text)' }}>
                 <strong>What readers see: </strong>{s.visible}
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function CoveragePolicyPage() {
             'No manual score, ranking, or quartile override exists at any stage of this process — a status change affects visibility and metric availability, never the underlying PQF/AJR calculation itself.',
             'Every Warning, Suspension, and Delisting carries an appeal right, reviewed independently of the original finding.',
           ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
               {item}
             </li>

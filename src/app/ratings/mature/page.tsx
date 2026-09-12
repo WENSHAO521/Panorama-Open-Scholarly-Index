@@ -40,7 +40,7 @@ export default function MatureRankingsPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Mature Journal Rankings</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Journals with at least 60 months of publishing history — evaluated through{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR-M</strong>, the mature-journal track of{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong>

@@ -83,7 +83,7 @@ export default function SubmitJournalPage() {
         <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--posi-text)' }}>
           Submit a Journal Record to POSI
         </h1>
-        <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI accepts applications from journal editors and publishers worldwide, on any access
           or business model. Admission to the Core Collection runs through evidence review, PQF
           editorial-selection assessment, lifecycle classification, PSC subject classification, and
@@ -95,7 +95,7 @@ export default function SubmitJournalPage() {
       {/* Status notice */}
       <div className="flex items-start gap-3 p-4" style={{ background: 'var(--posi-soft-blue)', border: '1px solid var(--posi-border)' }}>
         <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-primary)' }} />
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-text)' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-text)' }}>
           <strong>Launch Period:</strong> POSI journal record review is currently free and open to journals
           of any access model — open access, hybrid, or subscription. Admission depends on editorial
           transparency and resolvable identity (public editorial board, disclosed peer review, resolvable
@@ -115,7 +115,7 @@ export default function SubmitJournalPage() {
           </div>
           <ul className="space-y-2.5">
             {ELIGIBILITY.map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
                 {item}
               </li>
@@ -130,7 +130,7 @@ export default function SubmitJournalPage() {
           </div>
           <ul className="space-y-2.5">
             {NOT_ELIGIBLE.map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: 'var(--posi-danger)' }}>✗</span>
                 {item}
               </li>
@@ -173,7 +173,7 @@ export default function SubmitJournalPage() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{step.title}</p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{step.desc}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{step.desc}</p>
                 {step.link && (
                   <a
                     href={step.link.href}
@@ -204,7 +204,7 @@ export default function SubmitJournalPage() {
             <div key={p.phase} className="p-3" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border-light)' }}>
               <p className="text-xs font-bold mb-1" style={{ color: 'var(--posi-text)' }}>{p.phase}</p>
               <p className="text-sm font-bold font-mono mb-1" style={{ color: 'var(--posi-accent)' }}>{p.time}</p>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.desc}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.desc}</p>
             </div>
           ))}
         </div>
@@ -213,7 +213,7 @@ export default function SubmitJournalPage() {
       {/* What happens after acceptance */}
       <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-2" style={{ color: 'var(--posi-text)' }}>After Acceptance — the Core Collection Pipeline</h2>
-        <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed mb-4 text-justify" style={{ color: 'var(--posi-muted)' }}>
           Admission is the start of the pipeline, not the end of it. Every accepted record moves through
           the same sequence — nothing here depends on access model or DOAJ status:
         </p>
@@ -231,7 +231,7 @@ export default function SubmitJournalPage() {
               <item.icon className="h-4 w-4 shrink-0 mt-0.5" style={{ color: item.color }} />
               <div>
                 <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.title}</p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.desc}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.desc}</p>
               </div>
             </div>
           ))}
@@ -244,7 +244,7 @@ export default function SubmitJournalPage() {
           <Envelope className="h-4 w-4" style={{ color: 'var(--posi-accent)' }} />
           <h2 className="text-sm font-bold" style={{ color: 'var(--posi-text)' }}>Submit Your Application</h2>
         </div>
-        <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed mb-4 text-justify" style={{ color: 'var(--posi-muted)' }}>
           Send your application to the address below with subject line:
           <strong style={{ color: 'var(--posi-text)', fontFamily: 'var(--font-mono)' }}> "POSI Journal Submission: [Journal Title]"</strong>.
           Attach or link all required documentation listed above. Incomplete submissions may delay review.

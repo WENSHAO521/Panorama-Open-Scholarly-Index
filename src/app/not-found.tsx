@@ -28,7 +28,7 @@ export default function NotFound() {
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>
           Page Not Found
         </h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           The record or page you're looking for doesn't exist, may have moved, or the URL may
           contain a typo. Try a search below, or jump to one of the sections most people are
           looking for.

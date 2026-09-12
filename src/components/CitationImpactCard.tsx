@@ -46,7 +46,7 @@ export function CitationImpactCard({
         </div>
       )}
       {rows.length > 0 && (
-        <p className="text-[10px] mt-3 leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-[10px] mt-3 leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           2-Yr Citedness = OpenAlex 2yr mean citedness, a source-level preview indicator — not a Web of
           Science or Scopus metric, and it does not determine Citation Rank, Percentile, or Quartile — only
           PCI does, once a formal PJR release exists.{' '}
@@ -90,7 +90,7 @@ export function CitationImpactCard({
               </span>
             </div>
           )}
-          <p className="text-[10px] mt-2 leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+          <p className="text-[10px] mt-2 leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
             {citationQ && citationQ.quartile ? (
               <>This journal&apos;s Citation {citationQ.quartile} is real, computed against a peer pool combining POSI Core Collection and Global Benchmark journals with real PCI (PJR-SPEC.md § 8) — not yet from a formal POSI-R release.</>
             ) : (
@@ -119,7 +119,7 @@ export function CitationImpactCard({
               {pcsEntry.pcs_window_start_year}–{pcsEntry.pcs_window_end_year}, Crossref-sourced.
             </p>
           )}
-          <p className="text-[10px] mt-2 leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+          <p className="text-[10px] mt-2 leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
             <strong>PCS is independently reported and does not determine POSI Citation Rank, Citation
             Percentile, or Citation Quartile.</strong> PCS reflects citations known to Crossref through its
             Cited-by and metadata infrastructure. Crossref citation coverage is not exhaustive and may vary

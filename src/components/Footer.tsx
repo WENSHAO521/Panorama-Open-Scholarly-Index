@@ -81,7 +81,7 @@ export function Footer() {
             />
             <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
             <p
-              className="text-[11px] leading-relaxed hidden md:block max-w-[260px]"
+              className="text-[11px] leading-relaxed hidden md:block max-w-[260px] text-justify"
               style={{ color: 'rgba(255,255,255,0.3)' }}
             >
               Open scholarly citation index: journal coverage, citation analytics, and subject rankings — reproducible from public data.

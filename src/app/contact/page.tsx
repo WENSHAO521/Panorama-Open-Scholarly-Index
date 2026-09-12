@@ -52,7 +52,7 @@ export default function ContactPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Contact POSI</h1>
-        <p className="text-sm leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           The POSI team handles journal submissions, record corrections, data inquiries, and governance questions.
           Use the appropriate subject line to ensure your message is routed correctly.
         </p>
@@ -65,7 +65,7 @@ export default function ContactPage() {
           <div className="space-y-3">
             <div className="flex items-start gap-2.5">
               <MapPin className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-muted)' }} />
-              <div className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <div className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 Room 1508, 15/F., Office Tower Two<br />
                 Grand Plaza, 625 Nathan Road<br />
                 Kowloon, Hong Kong SAR
@@ -94,7 +94,7 @@ export default function ContactPage() {
               </a>
             </div>
           </div>
-          <div className="p-3 text-xs leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
+          <div className="p-3 text-xs leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
             <p style={{ color: 'var(--posi-muted)' }}>
               <strong style={{ color: 'var(--posi-text)' }}>Response time: </strong>
               We aim to acknowledge all inquiries within 2–3 business days.
@@ -117,7 +117,7 @@ export default function ContactPage() {
                 </Link>
               )}
             </div>
-            <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>{item.desc}</p>
+            <p className="text-xs leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>{item.desc}</p>
             <a
               href={`mailto:${item.address}?subject=${encodeURIComponent(item.subject)}`}
               className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 text-white transition-opacity hover:opacity-80"

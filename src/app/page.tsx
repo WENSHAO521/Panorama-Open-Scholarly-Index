@@ -113,7 +113,7 @@ export default async function HomePage() {
                 Open Journal Evaluation by Lifecycle
               </h1>
               <p
-                className="mb-8 leading-relaxed"
+                className="mb-8 leading-relaxed text-justify"
                 style={{
                   color: 'rgba(255,255,255,0.45)',
                   maxWidth: '56ch',
@@ -202,7 +202,7 @@ export default async function HomePage() {
               </Link>
             </p>
             <p
-              className="pb-4 px-6 text-[9px] leading-relaxed max-w-3xl"
+              className="pb-4 px-6 text-[9px] leading-relaxed max-w-3xl text-justify"
               style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font-mono)' }}
             >
               POSI Core Collection = journals admitted through POSI's published editorial selection
@@ -255,7 +255,7 @@ export default async function HomePage() {
                     >
                       {a.title}
                     </h2>
-                    <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--posi-muted)' }}>
+                    <p className="text-xs leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
                       {a.summary}
                     </p>
                   </div>
@@ -329,7 +329,7 @@ export default async function HomePage() {
                 >
                   {f.label}
                 </h2>
-                <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>
+                <p className="text-xs leading-relaxed mb-4 text-justify" style={{ color: 'var(--posi-muted)' }}>
                   {f.desc}
                 </p>
                 <span
@@ -370,7 +370,7 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-          <p className="text-xs leading-relaxed mt-4 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+          <p className="text-xs leading-relaxed mt-4 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
             Citation Quartiles are reported independently through PCI once metric eligibility requirements
             are met — regardless of which lifecycle track a journal is in.
           </p>
@@ -397,7 +397,7 @@ export default async function HomePage() {
                 Every metric is reproducible
               </h2>
               <p
-                className="text-sm leading-relaxed mb-5"
+                className="text-sm leading-relaxed mb-5 text-justify"
                 style={{ color: 'var(--posi-muted)', maxWidth: '60ch' }}
               >
                 POSI does not compute rankings behind closed doors. The journal data, the PCI/PNCI
@@ -546,7 +546,7 @@ export default async function HomePage() {
               borderLeftColor: 'var(--posi-accent)',
             }}
           >
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               <strong style={{ color: 'var(--posi-text)', fontWeight: 600 }}>
                 Responsible Use Notice:{' '}
               </strong>

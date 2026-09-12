@@ -64,7 +64,7 @@ export default function TermsPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Terms of Use</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           These terms govern use of posi.panorama-sg.com. They should be read together with the{' '}
           <Link href="/responsible-use" className="underline">Responsible Use Notice</Link> and{' '}
           <Link href="/coi" className="underline">Conflict of Interest Disclosure</Link>.
@@ -74,7 +74,7 @@ export default function TermsPage() {
       {SECTIONS.map(section => (
         <section key={section.heading} className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>{section.heading}</h2>
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+          <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
             {section.body}
             {section.links && (
               <>
@@ -93,7 +93,7 @@ export default function TermsPage() {
 
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Contact</h2>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Questions about these terms can be sent to{' '}
           <a href="mailto:posi@panorama-sg.com" className="hover:underline" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>
             posi@panorama-sg.com

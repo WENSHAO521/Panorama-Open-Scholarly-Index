@@ -21,7 +21,7 @@ export default function CoiPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: '#d97706' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Conflict of Interest Disclosure</h1>
-        <p className="text-sm leading-relaxed mt-2" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI is committed to transparency about its organizational structure and the potential
           conflicts of interest that arise from it.
         </p>
@@ -30,7 +30,7 @@ export default function CoiPage() {
       {/* Main COI statement */}
       <div className="p-5" style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '4px solid #d97706' }}>
         <h2 className="text-sm font-bold mb-2" style={{ color: '#92400e' }}>Primary Conflict of Interest</h2>
-        <p className="text-xs leading-relaxed" style={{ color: '#78350f' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: '#78350f' }}>
           <strong>POSI is operated by Panorama Scholarly Group Ltd. (PSG).</strong> PSG also publishes{' '}
           {PSG_JOURNALS.length} academic journals that are listed in POSI and receive PQF editorial-selection
           assessments and automated AJR (POSI Automated Rating) lifecycle ratings. This creates a structural
@@ -65,7 +65,7 @@ export default function CoiPage() {
               <span className="text-[10px] font-mono font-bold mt-0.5 shrink-0" style={{ color: '#d97706' }}>{i + 1}.</span>
               <div>
                 <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.title}</p>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{item.body}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.body}</p>
               </div>
             </div>
           ))}
@@ -123,7 +123,7 @@ export default function CoiPage() {
             'The PQF and AJR methodologies, criteria weights, and scoring code are published and version-controlled.',
             'Independent third-party verification of PSG journal scores is encouraged and welcomed.',
           ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
               {item}
             </li>
@@ -132,7 +132,7 @@ export default function CoiPage() {
       </section>
 
       {/* Responsible use */}
-      <div className="p-4 text-xs leading-relaxed" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
+      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
         <p style={{ color: 'var(--posi-muted)' }}>
           <strong style={{ color: 'var(--posi-text)' }}>Recommendation for readers: </strong>
           When reviewing PQF or AJR scores for PSG journals, independently verify the criteria against the journal's public website.

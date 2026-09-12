@@ -39,7 +39,7 @@ export default function CviPage() {
           <span className="text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'var(--posi-muted)' }}>Citation Visibility · 0–10 points (CVF subfactor)</span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Citation Visibility Index</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           CVI measures whether a journal's citations are open, machine-readable, and tracked by
           open scholarly infrastructure. It uses only open citation data — no proprietary
           citation counts from Web of Science, Scopus, or similar services. Inside the PQF formula
@@ -49,7 +49,7 @@ export default function CviPage() {
       </div>
 
       {/* Important notice */}
-      <div className="p-4 text-xs leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <strong style={{ color: '#1d4ed8' }}>CVI is not a citation impact metric.</strong>
         <span style={{ color: '#1d4ed8' }}>
           {' '}CVI measures citation infrastructure readiness — whether citations are open and machine-readable.
@@ -140,7 +140,7 @@ export default function CviPage() {
           ].map(p => (
             <div key={p.title} className="border-l-2 pl-3" style={{ borderColor: 'var(--posi-border)' }}>
               <h3 className="text-xs font-semibold mb-1" style={{ color: 'var(--posi-text)' }}>{p.title}</h3>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
+              <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{p.body}</p>
             </div>
           ))}
         </div>

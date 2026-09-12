@@ -55,7 +55,7 @@ export default function ApiPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Roadmap — Planned</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">API & Export</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           POSI provides selected public metadata endpoints for transparency, reuse, and verification.
           All API records preserve source attribution and provenance where available.
         </p>
@@ -63,7 +63,7 @@ export default function ApiPage() {
 
       {/* Status notice */}
       <div className="p-4 mb-6" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: '#1d4ed8' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1d4ed8' }}>
           <strong>API Status:</strong> The POSI public API is currently in planning phase.
           Endpoints listed below represent the intended specification. Currently, data can be accessed
           through the DOI Lookup tool, journal pages, and article pages on this site.
@@ -155,7 +155,7 @@ export default function ApiPage() {
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Data Reuse & Attribution</h2>
         </div>
-        <div className="p-5 space-y-3 text-xs text-gray-600 leading-relaxed">
+        <div className="p-5 space-y-3 text-xs text-gray-600 leading-relaxed text-justify">
           <p>
             POSI metadata is available for open reuse. All records include source attribution indicating
             whether data originates from Crossref, OpenAlex, OpenCitations, DOAJ, ROR, or ORCID.
@@ -180,7 +180,7 @@ export default function ApiPage() {
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-xs font-bold text-gray-700 uppercase tracking-[0.1em]">Rate Limits & Access</h2>
         </div>
-        <div className="p-5 text-xs text-gray-600 space-y-2 leading-relaxed">
+        <div className="p-5 text-xs text-gray-600 space-y-2 leading-relaxed text-justify">
           <p>Public endpoints: 60 requests/minute per IP (planned).</p>
           <p>Bulk data exports: Contact the POSI team for institutional data agreements.</p>
           <p>

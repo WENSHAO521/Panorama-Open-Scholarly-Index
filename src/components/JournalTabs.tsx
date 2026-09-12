@@ -380,7 +380,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       {/* Core Collection explainer — shown for the two manually-reviewable tabs */}
       {(activeTab === 'psg' || activeTab === 'indexed') && (
         <div
-          className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed"
+          className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed text-justify"
           style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a' }}
         >
           <span className="font-bold shrink-0 mt-px">i</span>
@@ -450,7 +450,7 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       {activeTab === 'discovered' && (
         <div>
           <div
-            className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed"
+            className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed text-justify"
             style={{ background: '#FFFBEB', border: '1px solid #F59E0B', color: '#78350F' }}
           >
             <span className="font-bold shrink-0 mt-px">!</span>

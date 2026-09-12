@@ -28,7 +28,7 @@ function TrackCard({
           <span key={t} className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: 'var(--posi-muted)', border: '1px solid var(--posi-border)' }}>{t}</span>
         ))}
       </div>
-      <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--posi-muted)' }}>{desc}</p>
+      <p className="text-xs leading-relaxed mb-4 text-justify" style={{ color: 'var(--posi-muted)' }}>{desc}</p>
       <span className="text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100" style={{ color: accent }}>
         {cta}
       </span>
@@ -64,7 +64,7 @@ export default function RatingsPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Journal Lifecycle Ratings</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong> is the
           umbrella name for the two lifecycle-specific scores below — AJR-E for early-stage journals,
           AJR-M for mature journals. A journal&apos;s lifecycle stage decides which track evaluates it —
@@ -116,7 +116,7 @@ export default function RatingsPage() {
         </div>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
           <p><strong>Data snapshot:</strong> {DATA_CUTOFF} (no POSI-R-* release has been produced yet — see POSI-R-1.0-SPEC.md)</p>

@@ -64,7 +64,7 @@ export default function PrivacyPage() {
 
       <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Privacy Policy</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI is operated by Panorama Scholarly Group Ltd. This page describes, in plain terms,
           what data posi.panorama-sg.com collects and does not collect. It is an operational
           summary, not a substitute for independent legal advice about a specific jurisdiction.
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
         <section key={section.heading} className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
           <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>{section.heading}</h2>
           {section.body.map((p, i) => (
-            <p key={i} className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+            <p key={i} className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
               {p}
               {section.links && section.links.map((l, j) => (
                 <span key={l.href}>
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
 
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Contact</h2>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Questions about this policy can be sent to{' '}
           <a href="mailto:posi@panorama-sg.com" className="hover:underline" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>
             posi@panorama-sg.com

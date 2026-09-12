@@ -69,14 +69,14 @@ export default function ExportFormatsPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">Planned</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Export Formats</h1>
-        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-2 max-w-2xl leading-relaxed text-justify">
           POSI metadata will be exportable in four open formats. All exports preserve source attribution
           and provenance information. Export availability will be announced when the public API launches.
         </p>
       </div>
 
       <div className="p-4" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <p className="text-[11px] leading-relaxed" style={{ color: '#1d4ed8' }}>
+        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1d4ed8' }}>
           <strong>Export Status:</strong> Bulk exports are planned alongside the POSI public API.
           Currently, individual records are accessible via the{' '}
           <Link href="/doi-lookup" className="underline">DOI Lookup</Link>,{' '}
@@ -96,7 +96,7 @@ export default function ExportFormatsPage() {
             </div>
             <div className="px-5 py-4 grid md:grid-cols-3 gap-5">
               <div className="md:col-span-2 space-y-3">
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>{f.desc}</p>
+                <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{f.desc}</p>
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-1.5" style={{ color: 'var(--posi-muted)' }}>Included Fields</p>
                   <div className="flex flex-wrap gap-1.5">
@@ -143,7 +143,7 @@ export default function ExportFormatsPage() {
       {/* Attribution */}
       <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>Attribution Requirements</h2>
-        <div className="space-y-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <div className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           <p>All POSI exports include a <code className="font-mono text-[10px] bg-gray-100 px-1">source_attribution</code> field indicating the origin of each metadata field (Crossref, OpenAlex, OpenCitations, DOAJ, or POSI Core).</p>
           <p>When reusing POSI exports, attribute the original data sources as indicated. POSI does not claim ownership of metadata sourced from third-party registries.</p>
           <p>PQF scores are produced by POSI and should be attributed as: <em>"POSI Quality Framework (PQF), Panorama Open Scholarly Index"</em>. Licensed under CC BY 4.0.</p>

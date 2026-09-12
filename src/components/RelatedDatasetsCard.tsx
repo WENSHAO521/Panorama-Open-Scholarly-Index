@@ -26,7 +26,7 @@ export function RelatedDatasetsCard({ records }: { records: ZenodoRecord[] }) {
           </a>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">
+      <p className="text-[10px] text-gray-400 mt-3 leading-relaxed text-justify">
         Supplementary evidence from Zenodo, linked via the record's own related-identifier metadata.
         Not counted toward citation statistics.
       </p>

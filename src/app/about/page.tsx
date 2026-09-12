@@ -27,7 +27,7 @@ export default function AboutPage() {
             LIVE · DATA SNAPSHOT {DATA_CUTOFF} · DATA COVERAGE EXPANDING
           </span>
         </div>
-        <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           The Panorama Open Scholarly Index (POSI) is an open scholarly indexing, journal analytics, and
           automated evaluation infrastructure. It provides transparent journal coverage, evidence-based
           automated ratings, open citation metrics, subject classification, and reproducible journal
@@ -35,7 +35,7 @@ export default function AboutPage() {
           External database inclusion (DOAJ, Scopus, Web of Science, PubMed) does not determine POSI
           admission, scores, rankings, or quartiles.
         </p>
-        <p className="text-sm leading-relaxed max-w-2xl mt-3 p-3" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+        <p className="text-sm leading-relaxed max-w-2xl mt-3 p-3 text-justify" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
           <strong>Officially Launched, Data Coverage Expanding:</strong> POSI is formally live as of August
           2026 — this is not a trial that could be discontinued. What&apos;s still in progress is coverage, not
           the platform itself: some lifecycle ratings, citation metrics, and subject rankings remain under
@@ -48,7 +48,7 @@ export default function AboutPage() {
       {/* Mission */}
       <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Mission</h2>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI exists to make scholarly publishing infrastructure more transparent, reproducible, and
           machine-readable. We aggregate openly licensed metadata from multiple sources, apply automated
           evaluation methodology that no person can hand-adjust, and publish the results — data, engine,
@@ -72,7 +72,7 @@ export default function AboutPage() {
               'Open data, open methodology, and an open-source calculation engine',
               'Versioned and auditable — every figure traces to a pinned commit',
             ].map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#1F7A4D' }}>✓</span>
                 {item}
               </li>
@@ -89,7 +89,7 @@ export default function AboutPage() {
               'Influenced by external database inclusion — DOAJ/Scopus/WoS listing affects no POSI score, ranking, or quartile',
               'A certifier of any individual article\'s scientific validity',
             ].map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+              <li key={i} className="flex items-start gap-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
                 <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: '#c41e3a' }}>✗</span>
                 {item}
               </li>
@@ -101,7 +101,7 @@ export default function AboutPage() {
       {/* Conflict of interest */}
       <div className="p-5" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
         <h2 className="text-sm font-bold mb-2" style={{ color: '#92400E' }}>Conflict of Interest Disclosure</h2>
-        <p className="text-xs leading-relaxed" style={{ color: '#78350F' }}>
+        <p className="text-xs leading-relaxed text-justify" style={{ color: '#78350F' }}>
           POSI is operated by Panorama Scholarly Group Ltd. (PSG). {PSG_JOURNALS.length} of the{' '}
           {coreCollectionCount} journals in the POSI Core Collection are PSG-affiliated publications
           (see the <Link href="/coi" className="underline">full Conflict of Interest Disclosure →</Link>{' '}
@@ -145,7 +145,7 @@ export default function AboutPage() {
       {/* Research & Development */}
       <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-4" style={{ color: 'var(--posi-text)' }}>Research &amp; Development</h2>
-        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI is developed under Panorama Research Institute, which is a name for PSG's internal research
           and academic development activities — not an independent academic institution, third-party
           validator, or accrediting body, and not a separate legal entity from Panorama Scholarly Group Ltd.
@@ -169,7 +169,7 @@ export default function AboutPage() {
       {/* Data & Methodology */}
       <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <h2 className="text-base font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Data &amp; Methodology</h2>
-        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>
           POSI aggregates metadata from openly licensed third-party infrastructure providers including
           Crossref, OpenAlex, DOAJ, OpenCitations, ROR, and ORCID. Source identifiers and provenance
           are preserved wherever available.
@@ -195,7 +195,7 @@ export default function AboutPage() {
       </div>
 
       {/* License — mirrors /open-data's three-way split exactly */}
-      <div className="text-xs leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+      <div className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
         <p className="mb-2">
           <strong style={{ color: 'var(--posi-text)' }}>POSI Engine</strong> (calculation code): MIT.{' '}
           <strong style={{ color: 'var(--posi-text)' }}>POSI-produced data</strong> (taxonomy, metric

@@ -35,7 +35,7 @@ export default function CoverageChangesPage() {
           {DATA_SNAPSHOT_LABEL}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Coverage Changes</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           A public, append-only log of Core Collection status changes — Warning, Suspension,
           Withdrawal, Ceased, Delisting, and Reinstatement — as they happen. See{' '}
           <Link href="/coverage/policy" className="underline">Coverage Policy</Link> for what each
@@ -43,7 +43,7 @@ export default function CoverageChangesPage() {
         </p>
       </div>
 
-      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
+      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
         <span>
           <strong>No status changes have been recorded</strong> as of the {DATA_CUTOFF} data cutoff.

@@ -66,14 +66,14 @@ export default function VerifyPage() {
           {RELEASE_ID}
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Verify a POSI Record</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl" style={{ color: 'var(--posi-muted)' }}>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Confirm a journal's current Core Collection, PQF, and AJR (POSI Automated Rating) status directly
           from POSI's own data — the same source every other page on this site reads from, not a separate
           claims database that could drift out of sync.
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
           <p><strong>Release:</strong> {RELEASE_LABEL}</p>
@@ -87,7 +87,7 @@ export default function VerifyPage() {
         <VerifyLookupForm journals={journals} releaseId={RELEASE_ID} />
       </Suspense>
 
-      <p className="text-[10px] leading-relaxed" style={{ color: 'var(--posi-muted)' }}>
+      <p className="text-[10px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
         A verification code (e.g. <code className="font-mono">{RELEASE_ID}-GRHAS</code>) is deterministic, not a
         claim of a sequentially-issued registry number — it's derived from the journal code and release ID, and
         this page proves it by re-deriving it and checking the record it points to actually exists. Lookups

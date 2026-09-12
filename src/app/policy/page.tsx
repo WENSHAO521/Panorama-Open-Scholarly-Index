@@ -90,7 +90,7 @@ export default function PolicyPage() {
           <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.15em]">2026</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">Journal Inclusion and Verification Policy</h1>
-        <p className="text-sm text-gray-500 mt-3 max-w-2xl leading-relaxed">
+        <p className="text-sm text-gray-500 mt-3 max-w-2xl leading-relaxed text-justify">
           POSI uses a hybrid journal inclusion model combining automatic metadata discovery,
           journal-initiated submission, and evidence-based manual verification.
         </p>
@@ -99,7 +99,7 @@ export default function PolicyPage() {
       {/* Section 1: Overview */}
       <section className="bg-white border border-gray-200 mb-4">
         <SectionHeader num="1" title="Overview" />
-        <div className="p-5 text-xs leading-relaxed text-gray-600 space-y-2">
+        <div className="p-5 text-xs leading-relaxed text-gray-600 space-y-2 text-justify">
           <p>
             POSI does not treat every automatically discovered record as a POSI Verified Journal Record.
             Automatically discovered records are clearly marked as unverified metadata records until they pass
@@ -114,7 +114,7 @@ export default function PolicyPage() {
         <div className="divide-y divide-gray-50">
           <div className="p-5">
             <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-2">2.1 — Extended Metadata Record</h3>
-            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+            <p className="text-xs text-gray-600 leading-relaxed mb-2 text-justify">
               An extended metadata record is identified through open scholarly metadata sources such as
               Crossref, OpenAlex, DOAJ, OAI-PMH, or other public metadata infrastructures.
               These records do <strong>not</strong> imply POSI verification, endorsement, accreditation, or quality recognition.
@@ -127,7 +127,7 @@ export default function PolicyPage() {
 
           <div className="p-5">
             <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-2">2.2 — Submitted Journal Record</h3>
-            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+            <p className="text-xs text-gray-600 leading-relaxed mb-2 text-justify">
               Created when a journal, publisher, editor, or authorized representative submits journal information to POSI for review.
               Submitted records enter a review queue and are checked against POSI's public evidence criteria.
             </p>
@@ -139,7 +139,7 @@ export default function PolicyPage() {
 
           <div className="p-5">
             <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-2">2.3 — POSI Verified Journal Record</h3>
-            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+            <p className="text-xs text-gray-600 leading-relaxed mb-2 text-justify">
               A journal record that has passed POSI's evidence-based verification process.
               Verified records may become eligible for full PQF assessment, provided sufficient public evidence is available.
             </p>
@@ -381,12 +381,12 @@ export default function PolicyPage() {
       <section className="bg-white border border-gray-200 mb-4">
         <SectionHeader num="13" title="Conflict of Interest Statement" />
         <div className="p-5">
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+          <p className="text-xs text-gray-600 leading-relaxed mb-3 text-justify">
             POSI is operated by Panorama Scholarly Group. Some journals listed in POSI may be published by Panorama Scholarly Group.
             Publisher-owned journals are evaluated using the same public criteria as all other records.
             When a journal is published by Panorama Scholarly Group, this relationship must be clearly disclosed on the journal record page.
           </p>
-          <div className="mt-4 p-3 text-[11px] leading-relaxed" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
+          <div className="mt-4 p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
             <strong>Required disclosure:</strong> This journal is published by Panorama Scholarly Group, the operator of POSI.
             The record is evaluated using the same public evidence criteria as all other POSI records.
           </div>
@@ -448,7 +448,7 @@ export default function PolicyPage() {
       <section className="bg-white border border-gray-200 mb-6">
         <SectionHeader num="16" title="Final Policy Summary" />
         <div className="p-5">
-          <p className="text-xs text-gray-600 leading-relaxed mb-4">
+          <p className="text-xs text-gray-600 leading-relaxed mb-4 text-justify">
             POSI uses automatic discovery to build open scholarly metadata coverage, journal submissions to improve record accuracy,
             and manual evidence review to establish trust.
           </p>
