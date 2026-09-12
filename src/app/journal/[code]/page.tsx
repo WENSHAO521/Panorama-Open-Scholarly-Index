@@ -26,6 +26,7 @@ import { JournalArticles } from '@/components/JournalArticles'
 import { ArticleCountBadge } from '@/components/ArticleCountBadge'
 import { CitationImpactCard } from '@/components/CitationImpactCard'
 import { JournalProfileTabs } from '@/components/JournalProfileTabs'
+import { STATUS_COLORS } from '@/lib/status-colors'
 
 export async function generateMetadata(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
@@ -539,11 +540,11 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
       { label: 'AI Use Policy',         status: 'not_checked' },
     ]
     const STATUS_CFG = {
-      verified:   { label: 'Verified',     color: '#1F7A4D', bg: '#f0fdf4', border: '#bbf7d0' },
-      partial:    { label: 'Partial',       color: '#B7791F', bg: '#fffbeb', border: '#fde68a' },
-      candidate:  { label: 'Candidate',    color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
-      missing:    { label: 'Missing',       color: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
-      not_checked:{ label: 'Not checked',  color: '#6B7280', bg: '#f9fafb', border: '#e5e7eb' },
+      verified:   { label: 'Verified',     ...STATUS_COLORS.success },
+      partial:    { label: 'Partial',       ...STATUS_COLORS.warning },
+      candidate:  { label: 'Candidate',    ...STATUS_COLORS.info },
+      missing:    { label: 'Missing',       ...STATUS_COLORS.danger },
+      not_checked:{ label: 'Not checked',  ...STATUS_COLORS.neutral },
     }
     return (
       <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>

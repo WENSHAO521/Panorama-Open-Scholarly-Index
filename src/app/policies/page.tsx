@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { Callout } from '@/components/Callout'
+import { STATUS_COLORS } from '@/lib/status-colors'
 
 export const metadata: Metadata = {
   title: 'Policy Coverage Estimate | POSI',
@@ -29,11 +30,11 @@ const POLICY_TYPES = [
 ]
 
 const STATUS_CONFIG = {
-  verified:   { label: 'Verified',         bg: '#f0fdf4', color: '#1F7A4D', border: '#bbf7d0' },
-  partial:    { label: 'Partial',           bg: '#fffbeb', color: '#B7791F', border: '#fde68a' },
-  candidate:  { label: 'Candidate',        bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
-  missing:    { label: 'Missing',          bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
-  not_checked:{ label: 'Not checked',      bg: '#f9fafb', color: '#6B7280', border: '#e5e7eb' },
+  verified:   { label: 'Verified',         ...STATUS_COLORS.success },
+  partial:    { label: 'Partial',           ...STATUS_COLORS.warning },
+  candidate:  { label: 'Candidate',        ...STATUS_COLORS.info },
+  missing:    { label: 'Missing',          ...STATUS_COLORS.danger },
+  not_checked:{ label: 'Not checked',      ...STATUS_COLORS.neutral },
 }
 
 function StatusBadge({ status }: { status: keyof typeof STATUS_CONFIG }) {

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getStats } from '@/lib/data'
+import { STATUS_COLORS } from '@/lib/status-colors'
 
 export const metadata: Metadata = {
   title: 'Source Status | POSI',
@@ -83,11 +84,11 @@ const SOURCES = [
 ]
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; border: string }> = {
-  Primary:      { bg: '#fef2f2', color: '#c41e3a', border: '#fecaca' },
-  Live:         { bg: '#f0fdf4', color: '#1F7A4D', border: '#bbf7d0' },
-  Integrated:   { bg: '#f5f5f5', color: '#374151', border: '#e5e7eb' },
-  Planned:      { bg: '#f9fafb', color: '#6B7280', border: '#e5e7eb' },
-  Discontinued: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
+  Primary:      STATUS_COLORS.brandDanger,
+  Live:         STATUS_COLORS.success,
+  Integrated:   STATUS_COLORS.integrated,
+  Planned:      STATUS_COLORS.neutral,
+  Discontinued: STATUS_COLORS.danger,
 }
 
 export default function SourceStatusPage() {

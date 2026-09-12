@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowSquareOut, Database, CheckCircle, Clock } from '@phosphor-icons/react/dist/ssr'
 import { getStats } from '@/lib/data'
+import { STATUS_COLORS } from '@/lib/status-colors'
 
 export const metadata = {
   title: 'Data Sources',
@@ -108,6 +109,13 @@ const STATUS_STYLE: Record<string, React.CSSProperties> = {
   Discontinued: { background: '#fef2f2', color: '#b91c1c' },
 }
 
+const ROW_STATUS_STYLE: Record<string, typeof STATUS_COLORS[keyof typeof STATUS_COLORS]> = {
+  Primary:      STATUS_COLORS.brandDanger,
+  Live:         STATUS_COLORS.success,
+  Integrated:   STATUS_COLORS.integrated,
+  Discontinued: STATUS_COLORS.danger,
+}
+
 export default function DataSourcesPage() {
   const stats = getStats()
   return (
@@ -186,13 +194,10 @@ export default function DataSourcesPage() {
                 <td className="px-4 py-2.5" style={{ color: 'var(--posi-muted)' }}>{row.type}</td>
                 <td className="px-4 py-2.5" style={{ color: 'var(--posi-muted)' }}>{row.use}</td>
                 <td className="px-4 py-2.5 text-center">
-                  <span className="text-[10px] font-medium px-1.5 py-0.5" style={
-                    row.status === 'Primary'      ? { background: '#fef2f2', color: '#c41e3a', border: '1px solid #fecaca' } :
-                    row.status === 'Live'         ? { background: '#f0fdf4', color: '#1F7A4D', border: '1px solid #bbf7d0' } :
-                    row.status === 'Integrated'   ? { background: '#f5f5f5', color: '#374151', border: '1px solid #e5e7eb' } :
-                    row.status === 'Discontinued' ? { background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' } :
-                    { background: '#f9fafb', color: '#6B7280', border: '1px solid #e5e7eb' }
-                  }>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5" style={(() => {
+                    const c = ROW_STATUS_STYLE[row.status] ?? STATUS_COLORS.neutral
+                    return { background: c.bg, color: c.color, border: `1px solid ${c.border}` }
+                  })()}>
                     {row.status}
                   </span>
                 </td>

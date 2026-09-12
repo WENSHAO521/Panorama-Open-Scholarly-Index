@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { STATUS_COLORS } from '@/lib/status-colors'
 
 const ASSESSED_JOURNALS = getCoreCollection()
 
@@ -99,11 +100,11 @@ const EVIDENCE_CRITERIA = [
 ]
 
 const STATUS_CONFIG = {
-  verified:      { label: 'Verified',        bg: '#f0fdf4', color: '#1F7A4D', border: '#bbf7d0' },
-  partial:       { label: 'Partially met',   bg: '#fffbeb', color: '#B7791F', border: '#fde68a' },
-  missing:       { label: 'Missing',         bg: '#fef2f2', color: '#b91c1c', border: '#fecaca' },
-  outdated:      { label: 'Outdated',        bg: '#f9fafb', color: '#6B7280', border: '#e5e7eb' },
-  manual_review: { label: 'Manual review',   bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+  verified:      { label: 'Verified',        ...STATUS_COLORS.success },
+  partial:       { label: 'Partially met',   ...STATUS_COLORS.warning },
+  missing:       { label: 'Missing',         ...STATUS_COLORS.danger },
+  outdated:      { label: 'Outdated',        ...STATUS_COLORS.neutral },
+  manual_review: { label: 'Manual review',   ...STATUS_COLORS.info },
 }
 
 function StatusBadge({ status }: { status: string }) {
