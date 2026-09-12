@@ -29,9 +29,19 @@ export interface CitationReportRow {
   // LifecycleRatingsTable.
   is_external_benchmark?: boolean
   website_url?: string | null
+  // Real Citation Q (PJR-SPEC.md § 8, src/lib/citation-rankings.ts) — the
+  // only field on this row that is an actual POSI citation ranking result,
+  // not a diagnostic preview. null for every row except the ones whose
+  // real-PCI peer pool reached MIN_CATEGORY_SIZE=20 (2 as of this snapshot);
+  // Global Benchmark rows never get one (external validation corpus, never
+  // ranked — see CitationImpactCard.tsx's identical framing on the journal
+  // profile page, which this table must stay consistent with).
+  citation_q: string | null
+  citation_percentile: number | null
+  citation_cohort_size: number | null
 }
 
-type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs' | 'h_index' | 'cited_by_count' | 'subject_percentile'
+type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs' | 'h_index' | 'cited_by_count' | 'citation_q' | 'subject_percentile'
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
@@ -39,7 +49,8 @@ const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'pcs', label: 'PCS', title: 'POSI Citation Score — mean Crossref is-referenced-by-count across every eligible work in the 4-year window (PCS-1.0-SPEC.md § 6), no article-sample cap. Independently reported; does not determine Citation Rank, Percentile, or Quartile.' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
-  { key: 'subject_percentile', label: 'Subject Percentile' },
+  { key: 'citation_q', label: 'Citation Q', title: 'Real Citation Q — PCI-based, category-pooled peer ranking (PJR-SPEC.md § 8), not yet from a formal POSI-R release. "Not citation eligible" means either no real PCI exists for this journal yet, or its PSC category peer pool has not reached the minimum size.' },
+  { key: 'subject_percentile', label: 'Subject %ile (diagnostic)', title: 'Page-local diagnostic percentile within OpenAlex 2-Yr Citedness for this subject group — not an official POSI ranking. See Citation Q for the real, methodology-defined ranking status.' },
 ]
 
 const PER_PAGE = 25
@@ -109,6 +120,12 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
             subject_percentile: null,
             is_external_benchmark: true,
             website_url: j.website_url,
+            // Global Benchmark is never assigned a Citation Rank/Percentile/
+            // Quartile — external validation corpus, not a POSI-admitted or
+            // ranked collection (types.ts's CitationPreview: always null).
+            citation_q: null,
+            citation_percentile: null,
+            citation_cohort_size: null,
           }
         })
         setBenchmarkRows(mapped)
@@ -253,6 +270,19 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.cited_by_count != null ? row.cited_by_count.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
+                    {row.citation_q ? (
+                      <span
+                        className="font-bold px-1.5 py-0.5 text-[10px]"
+                        style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}
+                        title={`Real, category-pooled peer group of ${row.citation_cohort_size ?? '—'}${row.citation_percentile != null ? `; ${row.citation_percentile.toFixed(1)}th percentile` : ''} — not yet from a formal POSI-R release.`}
+                      >
+                        {row.citation_q}
+                      </span>
+                    ) : (
+                      <span className="text-[10px]" style={{ color: 'var(--posi-muted)' }} title="No real PCI yet, or its PSC category peer pool has not reached the minimum size for ranking.">Not citation eligible</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.subject_percentile != null ? `${row.subject_percentile}th` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}

@@ -17,7 +17,7 @@ import { getCitationStats } from '@/lib/citation-stats'
 import { getPcsEntry } from '@/lib/pcs'
 import { getPciEntry } from '@/lib/pci'
 import { getCitationRanking } from '@/lib/citation-rankings'
-import { isEarlyStageV1_1 } from '@/lib/early-stage'
+import { isEarlyStageV1_1, earlyStageStatus, earlyStageBadgeVariant, earlyStageCohortInfo, earlyStageLifecycleLabel, earlyStageDisplayTotal, earlyStageQuartile } from '@/lib/early-stage'
 import type { DoajJournalInfo } from '@/lib/types'
 import { Badge } from '@/components/Badge'
 import { MetadataQualityBar } from '@/components/MetadataQualityBar'
@@ -26,7 +26,9 @@ import { JournalArticles } from '@/components/JournalArticles'
 import { ArticleCountBadge } from '@/components/ArticleCountBadge'
 import { CitationImpactCard } from '@/components/CitationImpactCard'
 import { JournalProfileTabs } from '@/components/JournalProfileTabs'
+import { DisclosurePanel } from '@/components/DisclosurePanel'
 import { STATUS_COLORS } from '@/lib/status-colors'
+import { DATA_SNAPSHOT_LABEL, verificationCode } from '@/lib/release'
 
 export async function generateMetadata(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
@@ -309,6 +311,12 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
   // Each branch reads its own record's real fields — no cross-shape
   // assumptions.
   const rating = journal.early_stage_rating
+  // Same label/color/notability earlyStageStatus() computes for the
+  // rankings tables (src/lib/early-stage.ts) — reused here instead of the
+  // panel re-deriving its own status text, so a journal's profile can never
+  // disagree with its ranking-table row about which state it's in.
+  const ratingStatus = rating ? earlyStageStatus(rating) : null
+  const cohortInfo = earlyStageCohortInfo(rating)
   const lifecyclePanel = isDiscovered || !rating ? null : isEarlyStageV1_1(rating) ? (
     rating.lifecycle_stage === 'mature' ? (
       <MatureRatingCard monthsSinceLaunch={rating.months_since_launch} />
@@ -319,17 +327,13 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             POSI Automated Rating (AJR-E)
           </h2>
           {rating.rating_status === 'official' ? (
-            <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
-              100% AUTOMATED
-            </span>
+            <Badge label="100% Automated" variant="published" />
           ) : (
-            <span
-              className="text-[9px] font-mono px-1.5 py-0.5"
-              style={{ color: '#B45309', border: '1px solid #fde68a', background: '#fffbeb' }}
+            <Badge
+              label="Provisional"
+              variant="provisional"
               title="Real score, shown, but evidence coverage is below the threshold AJR-SPEC.md § 6 requires for E-Q ranking eligibility."
-            >
-              PROVISIONAL
-            </span>
+            />
           )}
         </div>
         <div className="flex items-baseline justify-between">
@@ -356,6 +360,23 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
               ? `Ranked ${rating.quartile_label ?? rating.quartile} within its PSC peer cohort.`
               : 'No E-Q1–E-Q4 quartile assigned yet — no same-cohort PSC peer group large enough to rank against exists yet.'}
         </p>
+        {/* Peer cohort context (§12/§19 of the Stage 2 brief) — real fields
+            (cohort_key/cohort_level/cohort_size/sample_adequacy) that
+            existed on the data already but were never surfaced anywhere in
+            the UI before this. Shown whether or not a quartile was actually
+            assigned, so "no quartile" never reads as an unexplained gap. */}
+        {cohortInfo && (
+          <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
+            {rating.quartile ? (
+              <>Peer cohort: {cohortInfo.cohortLevel ?? cohortInfo.cohortKey ?? 'PSC category'}
+                {cohortInfo.cohortSize != null && `, ${cohortInfo.cohortSize} metric-eligible journals`}.</>
+            ) : cohortInfo.cohortSize != null ? (
+              <>No E-Q quartile published — peer cohort size {cohortInfo.cohortSize} has not reached the methodology&apos;s minimum for quartile assignment. The AJR-E score above remains valid regardless.</>
+            ) : (
+              <>No E-Q quartile published — no same-category PSC peer cohort has formed yet ({cohortInfo.rankingMethod}). The AJR-E score above remains valid regardless.</>
+            )}
+          </p>
+        )}
         <div className="grid grid-cols-4 gap-1 mt-2.5 text-center">
           {[
             ['EGF', rating.subfactors.egf, 15],
@@ -372,15 +393,20 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           ))}
         </div>
-        <a
-          href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-[10px] hover:underline mt-2"
-          style={{ color: 'var(--posi-accent)' }}
-        >
-          Methodology (AJR-E-1.1) →
-        </a>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+          <a
+            href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] hover:underline"
+            style={{ color: 'var(--posi-accent)' }}
+          >
+            Why this result? (Methodology, AJR-E-1.1) →
+          </a>
+          <Link href="/verify" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
+            Verify result ({verificationCode(journal.journal_code)}) →
+          </Link>
+        </div>
       </div>
     ) : (
       // rating_status 'not_rateable' (in the Early-Stage window, failed a
@@ -403,13 +429,12 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </span>
           )}
         </div>
-        <p className="text-xs font-semibold" style={{ color: rating.rating_status === 'not_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
-          {rating.rating_status === 'not_rateable' ? 'Not Rateable'
-            : rating.lifecycle_stage === 'observation' ? 'Observation Stage'
-            : rating.lifecycle_stage === 'unknown' ? 'Unknown'
-            : 'Not Applicable'}
-        </p>
-        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
+        {ratingStatus && (
+          <div className="mt-1">
+            <Badge label={ratingStatus.label} variant={earlyStageBadgeVariant(ratingStatus)} />
+          </div>
+        )}
+        <p className="text-[10px] leading-relaxed mt-1.5 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.not_rateable_reason ?? 'AJR-E does not currently apply to this record.'}
         </p>
       </div>
@@ -423,9 +448,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--posi-muted)' }}>
             POSI Automated Rating (AJR-E)
           </h2>
-          <span className="text-[9px] font-mono px-1.5 py-0.5" style={{ color: '#1F7A4D', border: '1px solid #bbf7d0', background: '#f0fdf4' }}>
-            100% AUTOMATED
-          </span>
+          <Badge label="100% Automated" variant="published" />
         </div>
         <div className="flex items-baseline justify-between">
           <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)' }}>
@@ -463,15 +486,20 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </div>
           ))}
         </div>
-        <a
-          href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-[10px] hover:underline mt-2"
-          style={{ color: 'var(--posi-accent)' }}
-        >
-          Methodology →
-        </a>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+          <a
+            href="https://github.com/WENSHAO521/posi-data/blob/master/EARLY-STAGE-RATING-SPEC.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] hover:underline"
+            style={{ color: 'var(--posi-accent)' }}
+          >
+            Why this result? (Methodology) →
+          </a>
+          <Link href="/verify" className="text-[10px] hover:underline" style={{ color: 'var(--posi-accent)' }}>
+            Verify result ({verificationCode(journal.journal_code)}) →
+          </Link>
+        </div>
       </div>
     ) : (
       <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
@@ -489,12 +517,12 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             </span>
           )}
         </div>
-        <p className="text-xs font-semibold" style={{ color: rating.eligibility === 'not_yet_rateable' ? '#B45309' : 'var(--posi-muted)' }}>
-          {rating.eligibility === 'observation' && 'Observation Stage'}
-          {rating.eligibility === 'not_yet_rateable' && 'Not Yet Rateable'}
-          {rating.eligibility === 'unknown' && 'Unknown'}
-        </p>
-        <p className="text-[10px] leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
+        {ratingStatus && (
+          <div className="mt-1">
+            <Badge label={ratingStatus.label} variant={earlyStageBadgeVariant(ratingStatus)} />
+          </div>
+        )}
+        <p className="text-[10px] leading-relaxed mt-1.5 text-justify" style={{ color: 'var(--posi-muted)' }}>
           {rating.eligibility === 'observation' &&
             `This journal is ${rating.months_since_launch ?? '<12'} months since first publication — too early for AJR (needs 12+ months). Not a quality signal either way.`}
           {rating.eligibility === 'not_yet_rateable' &&
@@ -517,7 +545,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
     <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
       <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--posi-muted)' }}>Citation Analytics</h2>
       <p className="text-[10px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-        No resolvable OpenAlex source record for this journal's ISSN — citation figures unavailable.
+        No resolvable OpenAlex source record for this journal&apos;s ISSN — citation figures unavailable.
       </p>
     </div>
   )
@@ -567,8 +595,11 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             )
           })}
         </div>
-        <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
-          Policy evidence is based on publicly available information at the time of assessment.{' '}
+        <div className="px-4 py-2 text-[10px] leading-relaxed text-justify" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
+          These statuses are automated proxies derived from this journal&apos;s PQF/transparency subfactor
+          scores — a coverage estimate, not individually-verified per-criterion crawl records with their own
+          source/retrieved-date/status. Policy evidence is based on publicly available information at the
+          time of assessment.{' '}
           <a href={`mailto:posi@panorama-sg.com?subject=Policy correction: ${journal.short_title}`} className="underline" style={{ color: 'var(--posi-accent)' }}>
             Report a correction
           </a>
@@ -638,7 +669,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
             DOAJ (External Reference)
           </h3>
           <p className="text-[10px] mb-3" style={{ color: 'var(--posi-muted)' }}>
-            Independent OA directory — not part of POSI's own review, admission, or ranking.
+            Independent OA directory — not part of POSI&apos;s own review, admission, or ranking.
           </p>
           {doaj ? (
             <div className="space-y-2 text-xs">
@@ -710,15 +741,41 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
 
   // No annual frozen rating releases exist yet (AJR-SPEC.md §9 Phase 6) — a
   // real per-year history table would need at least two release snapshots
-  // to show. Honest placeholder rather than a fabricated table.
+  // to show, so this stays an honest placeholder rather than a fabricated
+  // year-over-year table. What IS real and on file: the per-signal
+  // timestamps behind the CURRENT record (when each metric was last
+  // computed/retrieved) — previously computed but never surfaced anywhere
+  // in the UI. Shown as a short "current record timestamps" list, not
+  // reconstructed speculative history.
+  const historyEvents: { label: string; date: string }[] = []
+  if (rating?.rated_at) historyEvents.push({ label: 'AJR-E rated', date: rating.rated_at })
+  const pqfForHistory = journal.pqf ?? journal.ojqf
+  if (pqfForHistory?.evaluated_at) historyEvents.push({ label: 'PQF evaluated', date: pqfForHistory.evaluated_at })
+  if (pciEntry?.pci_source_retrieved_at) historyEvents.push({ label: 'PCI (citation) retrieved', date: pciEntry.pci_source_retrieved_at })
+  if (pcsEntry?.pcs_source_retrieved_at) historyEvents.push({ label: 'PCS (citation) retrieved', date: pcsEntry.pcs_source_retrieved_at })
+  historyEvents.sort((a, b) => b.date.localeCompare(a.date))
+
   const historyPanel = isDiscovered ? null : (
-    <div className="bg-white p-6 text-center" style={{ border: '1px solid var(--posi-border)' }}>
-      <p className="text-xs font-semibold" style={{ color: 'var(--posi-text)' }}>No rating history yet</p>
+    <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
+      <p className="text-xs font-semibold text-center" style={{ color: 'var(--posi-text)' }}>No year-over-year rating history yet</p>
       <p className="text-[11px] leading-relaxed mt-2 max-w-md mx-auto text-justify" style={{ color: 'var(--posi-muted)' }}>
-        POSI has not yet published its first annual frozen rating release, so there is only ever one
-        current AJR score on record — nothing to compare it against yet. Year-over-year history will
-        appear here starting with the first PJR release.
+        POSI has not yet published its first annual frozen rating release (a real PJR release requires at
+        least two snapshots to compare), so there is only ever one current record on file — nothing to
+        diff it against yet. Year-over-year history will appear here starting with the first PJR release.
       </p>
+      {historyEvents.length > 0 && (
+        <div className="mt-4 pt-4 max-w-md mx-auto" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
+          <p className="text-[9px] font-bold uppercase tracking-[0.12em] mb-2 text-center" style={{ color: 'var(--posi-muted)' }}>Current Record Timestamps</p>
+          <div className="space-y-1.5">
+            {historyEvents.map(e => (
+              <div key={e.label} className="flex justify-between text-[11px]">
+                <span style={{ color: 'var(--posi-muted)' }}>{e.label}</span>
+                <span className="font-mono" style={{ color: 'var(--posi-text)' }}>{e.date.slice(0, 10)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 
@@ -732,24 +789,6 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
         <span>/</span>
         <span style={{ color: 'var(--posi-text)' }}>{journal.short_title}</span>
       </nav>
-
-      {/* COI notice — PSG journals only */}
-      {journal.publisher?.toLowerCase().includes('panorama') && !journal.id.startsWith('j-disc-') && (
-        <div
-          className="px-4 py-3 text-xs leading-relaxed text-justify"
-          style={{ background: '#fefce8', border: '1px solid #fde68a', borderLeft: '3px solid #d97706' }}
-        >
-          <strong style={{ color: '#92400e' }}>Conflict of Interest: </strong>
-          <span style={{ color: '#78350f' }}>
-            This journal is affiliated with the organization that operates POSI. Its PQF score, citation
-            metrics (PCI/PCS), and Automated Rating are nevertheless calculated by the same published
-            methodology and versioned calculation engine applied to every eligible journal. No publisher,
-            editor, reviewer, sponsor, or POSI administrator can directly alter its numerical score,
-            percentile, or quartile; independent verification is encouraged.
-          </span>{' '}
-          <Link href="/about" className="underline" style={{ color: '#92400e' }}>Governance disclosure →</Link>
-        </div>
-      )}
 
       {/* Header */}
       <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
@@ -783,6 +822,7 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
                 : { icon: Barcode, label: 'pISSN', value: journal.issn_print || 'N/A' },
             ...(publisherLocation ? [{ icon: Globe, label: 'ISSN Reg.', value: publisherLocation }] : []),
             ...(frequency ? [{ icon: FileText, label: 'Frequency', value: frequency }] : []),
+            ...(journal.posi_id ? [{ icon: Barcode, label: 'POSI Journal ID', value: journal.posi_id }] : []),
             { icon: Users, label: 'Peer Review', value: journal.peer_review_type },
             { icon: Globe, label: 'Language', value: journal.language },
           ].map(item => (
@@ -811,6 +851,52 @@ export default async function JournalPage(props: { params: Promise<{ code: strin
           </div>
         )}
       </div>
+
+      {/* Current POSI Status — a one-glance summary of the explainability
+          chain (§15 of the Stage 2 brief), generated entirely from data
+          already computed above, not hand-authored per journal. Skipped for
+          discovered journals — they carry no PQF/lifecycle/citation data. */}
+      {!isDiscovered && (
+        <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] mb-3" style={{ color: 'var(--posi-muted)' }}>Current POSI Status</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: 'Core Collection', node: <Badge label={isCandidate ? 'Candidate' : 'Indexed'} variant={isCandidate ? 'pending' : 'core-collection'} /> },
+              { label: 'Lifecycle', node: rating ? earlyStageLifecycleLabel(rating) : 'Unknown' },
+              { label: 'PQF', node: (journal.pqf ?? journal.ojqf ?? journal.auto_pqf)?.grade ?? 'Not yet evaluated' },
+              {
+                label: 'AJR-E',
+                node: earlyStageDisplayTotal(rating) != null ? `${earlyStageDisplayTotal(rating)}/100` : (ratingStatus?.label ?? 'Not applicable'),
+              },
+              {
+                label: 'Lifecycle Quartile',
+                node: earlyStageQuartile(rating) ?? (cohortInfo ? 'Not assigned' : 'Not applicable'),
+              },
+              { label: 'PCI', node: pciEntry?.pci != null ? pciEntry.pci.toFixed(2) : 'Not available' },
+              { label: 'Citation Quartile', node: citationQ?.quartile ?? 'Not citation eligible' },
+              { label: 'Data Snapshot', node: DATA_SNAPSHOT_LABEL.replace('DATA SNAPSHOT · ', '') },
+            ].map(item => (
+              <div key={item.label}>
+                <p className="text-[9px] uppercase tracking-[0.08em]" style={{ color: 'var(--posi-muted)' }}>{item.label}</p>
+                <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--posi-text)' }}>{item.node}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* COI notice — PSG journals only. Placed directly below the identity/
+          status header (§23 of the Stage 2 brief), housed in the shared
+          DisclosurePanel rather than a bespoke inline block. */}
+      {journal.publisher?.toLowerCase().includes('panorama') && !journal.id.startsWith('j-disc-') && (
+        <DisclosurePanel title="Conflict of Interest" href="/about" cta="View governance disclosure →">
+          This journal is affiliated with the organization that operates POSI. Its PQF score, citation
+          metrics (PCI/PCS), and Automated Rating are nevertheless calculated by the same published
+          methodology and versioned calculation engine applied to every eligible journal. No publisher,
+          editor, reviewer, sponsor, or POSI administrator can directly alter its numerical score,
+          percentile, or quartile; independent verification is encouraged.
+        </DisclosurePanel>
+      )}
 
       {/* Tabbed profile body — see src/components/JournalProfileTabs.tsx.
           Panels are computed above from the same data fetched for the old

@@ -103,3 +103,27 @@ export function getLifecycleRatedCount(): number {
 export function getAllTrackedRecordsTotal(): number {
   return getStats().total_journals
 }
+
+/**
+ * Publisher-catalog bulk-expansion total whose citation_preview evidence
+ * rules OUT "mature" (see filterNotYetMature in publisher-catalog-client.ts)
+ * — i.e. the "not yet mature" reference population shown on
+ * /ratings/early-stage. Wraps publisherCatalogMeta.not_yet_mature so pages
+ * stop importing that JSON file directly (the one gap in this module's own
+ * "compose, don't re-import raw JSON per-page" convention, found during the
+ * Stage 2 audit).
+ */
+export function getNotYetMatureTotal(): number {
+  return publisherCatalogMeta.not_yet_mature
+}
+
+/**
+ * Publisher-catalog bulk-expansion total whose citation_preview evidence
+ * confirms "mature" (see filterMatureEvidence) — the Global Benchmark
+ * reference population shown on /ratings/mature. Wraps
+ * publisherCatalogMeta.mature_evidence for the same reason as
+ * getNotYetMatureTotal above.
+ */
+export function getMatureEvidenceTotal(): number {
+  return publisherCatalogMeta.mature_evidence
+}

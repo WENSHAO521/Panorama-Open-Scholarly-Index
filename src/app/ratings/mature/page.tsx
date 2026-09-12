@@ -1,24 +1,26 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
-import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
-import { isMatureStage } from '@/lib/early-stage'
+import { isMatureStage, MATURE_WINDOW_LABEL } from '@/lib/early-stage'
+import { getMatureEvidenceTotal } from '@/lib/site-metrics'
 
 export const metadata = {
   title: 'POSI Mature Journal Rankings — AJR-M',
   description: 'Journals 60+ months after first regular scholarly publication. AJR-M 1.0 methodology is implemented but has not yet been run against real evidence/citation data — no M-Q has been published.',
 }
 
+const AJR_M_SPEC_URL = 'https://github.com/WENSHAO521/posi-data/blob/master/AJR-M-1.0-SPEC.md'
+
 export default function MatureRankingsPage() {
   const core = getCoreCollection()
     .filter(j => isMatureStage(j.early_stage_rating))
   const curatedBenchmark = BENCHMARK_JOURNALS.filter(j => isMatureStage(j.early_stage_rating))
   const journals = [...core, ...curatedBenchmark]
-  const benchmarkTotal = publisherCatalogMeta.mature_evidence
+  const benchmarkTotal = getMatureEvidenceTotal()
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -63,7 +65,7 @@ export default function MatureRankingsPage() {
           but has not been run against real evidence/citation data for any journal yet — no AJR-M score or M-Q
           exists to display. <strong>A mature journal is never scored with the AJR-E rubric</strong> (the
           early-stage 100-point evidence model) — any interim AJR-E-based figure computed for a mature journal
-          earlier in POSI's history is retained only in historical data, never shown here as a current mature
+          earlier in POSI&apos;s history is retained only in historical data, never shown here as a current mature
           score. The {benchmarkTotal} Global Benchmark rows below (no evidence crawl run at this scale) show a
           diagnostic OpenAlex citation preview only — not a score, not ranked; see the Citation Preview column
           and <Link href="/citation-reports" className="underline">Citation Rankings</Link>.
@@ -72,13 +74,24 @@ export default function MatureRankingsPage() {
 
       <Callout variant="info">
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
-          <p><strong>Lifecycle window:</strong> 60+ months since first publication</p>
+          <p><strong>Lifecycle window:</strong> {MATURE_WINDOW_LABEL} since first publication</p>
           <p><strong>Core Collection mature journals:</strong> {core.length}</p>
           <p><strong>Global Benchmark mature journals (evidence-rated):</strong> {curatedBenchmark.length}</p>
           <p><strong>Global Benchmark mature journals (citation preview only):</strong> {benchmarkTotal}</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
         </div>
       </Callout>
+
+      <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+        {/* All three point at the same AJR-M-1.0-SPEC.md — it is the single
+            document defining methodology, eligibility, and calculation;
+            no section anchors are guessed since this file isn't vendored
+            into this repo to confirm them against. */}
+        <a href={AJR_M_SPEC_URL} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Methodology →</a>
+        <a href={AJR_M_SPEC_URL} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Eligibility definition →</a>
+        <a href={AJR_M_SPEC_URL} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Open calculation specification →</a>
+        <Link href="/open-data" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>Data release status →</Link>
+      </div>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         {journals.length > 0 ? (
@@ -105,7 +118,7 @@ export default function MatureRankingsPage() {
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Global Benchmark rows (Collection: Benchmark, no AJR Score) are the 2026-08 Elsevier/Frontiers
           publisher-catalog expansion — bulk-ingested, not individually vetted, never an admission candidate,
-          loaded client-side from a separate data file (not part of this page's initial HTML). Their Citation
+          loaded client-side from a separate data file (not part of this page&apos;s initial HTML). Their Citation
           Preview is diagnostic only (OpenAlex 2yr mean citedness, not PCI, not ranked) — see{' '}
           <Link href="/coverage/global-benchmark" className="underline">Global Benchmark Collection</Link>.
         </p>

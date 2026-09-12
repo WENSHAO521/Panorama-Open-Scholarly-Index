@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { getCoreCollection } from '@/lib/data'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
-import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
+import { getNotYetMatureTotal } from '@/lib/site-metrics'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
-import { isInEarlyStageWindow, hasRealEarlyStageScore, isOfficiallyRated, earlyStageQuartile, isBlockedOrNotRateable } from '@/lib/early-stage'
+import { isInEarlyStageWindow, hasRealEarlyStageScore, isOfficiallyRated, earlyStageQuartile, isBlockedOrNotRateable, EARLY_STAGE_WINDOW_LABEL } from '@/lib/early-stage'
 
 export const metadata = {
   title: 'POSI Early-Stage Journal Rankings — AJR-E',
@@ -45,7 +45,7 @@ export default function EarlyStageRankingsPage() {
         </span>
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Early-Stage Journal Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
-          Journals 12–59 months after their first regular scholarly publication, evaluated through{' '}
+          Journals {EARLY_STAGE_WINDOW_LABEL} after their first regular scholarly publication, evaluated through{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR-E</strong>, the early-stage track of{' '}
           <strong style={{ color: 'var(--posi-text)' }}>AJR (POSI Automated Rating)</strong>. E-Q1–E-Q4
           quartiles are assigned once a minimum same-category, same-cohort PSC (POSI Subject
@@ -55,7 +55,7 @@ export default function EarlyStageRankingsPage() {
 
       <Callout variant="info">
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
-          <p><strong>Lifecycle window:</strong> 12–59 months since first publication</p>
+          <p><strong>Lifecycle window:</strong> {EARLY_STAGE_WINDOW_LABEL} since first publication</p>
           <p><strong>Methodology:</strong> AJR-E (AJR 1.0 Lifecycle Framework)</p>
           <p><strong>Scoring:</strong> 100% rules-driven, from crawled site evidence and sampled Crossref articles</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
@@ -63,9 +63,9 @@ export default function EarlyStageRankingsPage() {
           <p><strong>Journals evaluated (real score):</strong> {evaluated.length} of {core.length}</p>
           <p><strong>Currently in Early-Stage window:</strong> {inWindow.length} of {core.length}</p>
           {notRateable.length > 0 && (
-            <p><strong>In window, not rateable:</strong> {notRateable.length} — below the minimum evidence bar, see each journal's page for its specific reason</p>
+            <p><strong>In window, not rateable:</strong> {notRateable.length} — below the minimum evidence bar, see each journal&apos;s page for its specific reason</p>
           )}
-          <p><strong>Global Benchmark, pending FPD verification:</strong> {publisherCatalogMeta.not_yet_mature}</p>
+          <p><strong>Global Benchmark, pending FPD verification:</strong> {getNotYetMatureTotal()}</p>
         </div>
       </Callout>
 
@@ -74,18 +74,20 @@ export default function EarlyStageRankingsPage() {
           <LifecycleRatingsTable
             journals={core}
             benchmarkMode="not-yet-mature"
-            columns={['collection', 'e-q']}
+            columns={['collection', 'age-stage', 'e-q', 'evidence']}
             title="Early-Stage Track"
             methodologyHref="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
             methodologyLabel="Methodology (AJR-E)"
+            enableFilters
+            enableSort
           />
         </Suspense>
         <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
           Every Core Collection journal is listed here regardless of lifecycle stage or eligibility, so the
           full status distribution stays visible — journals in Observation Stage (0–11 months) or below the
           minimum evidence bar have no score yet, and that is expected. Global Benchmark rows (Collection:
-          Benchmark, status "Pending FPD Verification") are the 2026-08 publisher-catalog expansion journals
-          with no OpenAlex-visible evidence of publishing activity 5+ years ago — that rules out "mature," but
+          Benchmark, status &quot;Pending FPD Verification&quot;) are the 2026-08 publisher-catalog expansion journals
+          with no OpenAlex-visible evidence of publishing activity 5+ years ago — that rules out &quot;mature,&quot; but
           is not proof the journal is actually 12–59 months old, so these rows are <strong>not</strong> displayed
           as genuinely evaluated Early-Stage journals: no first-publication-date has been resolved, no AJR-E
           score, no E-Q. Loaded client-side from a separate data file; full corpus — see{' '}

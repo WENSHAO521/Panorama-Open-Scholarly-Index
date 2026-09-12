@@ -13,6 +13,14 @@
 // answers one specific real question instead.
 
 import type { EarlyStageRating, EarlyStageRatingV1_1 } from './types'
+import type { BadgeVariant } from '@/components/Badge'
+
+// Lifecycle-window bounds as prose — previously re-typed as a raw string on
+// every rankings page (ratings/page.tsx, ratings/early-stage/page.tsx,
+// ratings/mature/page.tsx). AJR-SPEC.md defines these bounds; this is just
+// the one shared place to spell them out.
+export const EARLY_STAGE_WINDOW_LABEL = '12–59 months'
+export const MATURE_WINDOW_LABEL = '60+ months'
 
 export function isEarlyStageV1_1(r: EarlyStageRating | null | undefined): r is EarlyStageRatingV1_1 {
   return !!r && r.version === 'AJR-E-1.1'
@@ -157,5 +165,47 @@ export function earlyStageStatus(r: EarlyStageRating | null | undefined): EarlyS
         case 'unknown':
         default: return { label: 'Unknown', color: 'var(--posi-muted)', notable: false }
       }
+  }
+}
+
+// Maps earlyStageStatus()'s label to a Badge.tsx variant, so rankings/
+// profile surfaces can render <Badge> instead of a raw styled <span> while
+// keeping the exact same status vocabulary/colors defined above (this is a
+// presentation-only lookup — it never re-derives eligibility itself).
+export function earlyStageBadgeVariant(status: EarlyStageStatusDisplay): BadgeVariant {
+  switch (status.label) {
+    case 'Evaluated': return 'published'
+    case 'Observation Stage': return 'observation-stage'
+    case 'Pending AJR-M': return 'mature-stage'
+    case 'Not Yet Rateable': return 'not-rateable'
+    case 'Not Rateable': return 'not-rateable'
+    case 'Provisional': return 'provisional'
+    case 'Unknown':
+    default: return 'default'
+  }
+}
+
+export interface EarlyStageCohortInfo {
+  cohortKey: string | null
+  cohortLevel: string | null
+  cohortSize: number | null
+  rankingMethod: string
+  sampleAdequacy: EarlyStageRatingV1_1['sample_adequacy']
+}
+
+// Real peer-cohort context for an AJR-E-1.1 record with a displayed score
+// (official or provisional) — cohort_key/cohort_level/cohort_size/
+// sample_adequacy already exist on the data but were previously computed
+// and then never read by any page. Returns null for the legacy shape (no
+// equivalent fields exist there) and for records with no displayed score.
+export function earlyStageCohortInfo(r: EarlyStageRating | null | undefined): EarlyStageCohortInfo | null {
+  if (!r || !isEarlyStageV1_1(r)) return null
+  if (r.rating_status !== 'official' && r.rating_status !== 'provisional') return null
+  return {
+    cohortKey: r.cohort_key,
+    cohortLevel: r.cohort_level,
+    cohortSize: r.cohort_size,
+    rankingMethod: r.ranking_method,
+    sampleAdequacy: r.sample_adequacy,
   }
 }

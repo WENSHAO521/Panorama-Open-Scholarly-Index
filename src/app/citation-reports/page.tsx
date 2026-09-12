@@ -1,8 +1,9 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { getCoreCollection } from '@/lib/data'
 import { getCitationStats } from '@/lib/citation-stats'
 import { getPcsEntry } from '@/lib/pcs'
+import { getCitationRanking } from '@/lib/citation-rankings'
 import { primarySubject } from '@/lib/subject-keywords'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
@@ -17,7 +18,7 @@ export const metadata = {
 const METHODOLOGY_PRINCIPLES = [
   {
     title: 'Only PCI determines Citation Rank, Percentile, and Quartile',
-    body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6) — computed under a formal PJR release, which has not yet been produced (no POSI-R-* release exists — see POSI-R-1.0-SPEC.md). The 2-Year Citedness figure shown here is OpenAlex\'s own summary_stats.2yr_mean_citedness, taken as-is — a source-level preview indicator only, not PCI, and it does not determine any Citation Rank, Citation Percentile, or Citation Quartile.',
+    body: 'PCI[Y] = citations received during Y to citable items published in Y-1 and Y-2, divided by citable items published in Y-1 and Y-2 (PJR-SPEC.md § 5-6). Real, but not yet from a formal PJR/POSI-R release (no POSI-R-* release exists — see POSI-R-1.0-SPEC.md), so today\'s Citation Q column reflects real PCI-based ranking, not an official release-backed one. The 2-Year Citedness figure shown here is OpenAlex\'s own summary_stats.2yr_mean_citedness, taken as-is — a source-level preview indicator only, not PCI, and it does not determine any Citation Rank, Citation Percentile, or Citation Quartile.',
   },
   {
     title: 'PCI is now real for Global Benchmark — still not for Core Collection',
@@ -55,6 +56,12 @@ export default async function CitationReportsPage() {
   const withStats = journals.map(j => {
     const entry = getCitationStats(j.journal_code)
     const pcsEntry = getPcsEntry(j.posi_id)
+    // Real Citation Q (PJR-SPEC.md § 8) — the same lookup CitationImpactCard
+    // uses on the journal profile page, so this listing and that profile
+    // can never disagree about which journals carry a real citation
+    // quartile. getCitationRanking() already returns null when
+    // ranking_method is 'unavailable', so no extra gating is needed here.
+    const citationQ = getCitationRanking(j.posi_id)
     return {
       title: j.title,
       short_title: j.short_title,
@@ -66,6 +73,9 @@ export default async function CitationReportsPage() {
       pcs: pcsEntry?.pcs ?? null,
       pcs_window_start_year: pcsEntry?.pcs_window_start_year ?? null,
       pcs_window_end_year: pcsEntry?.pcs_window_end_year ?? null,
+      citation_q: citationQ?.quartile ?? null,
+      citation_percentile: citationQ?.percentile ?? null,
+      citation_cohort_size: citationQ?.category_size ?? null,
     }
   })
 
@@ -96,6 +106,7 @@ export default async function CitationReportsPage() {
   // at build time and produced a multi-MB static page that broke a live
   // Cloudflare Pages deployment ("Failed to publish assets").
   const withData = coreRows.filter(r => r.two_yr_mean_citedness != null).length
+  const citationQCount = coreRows.filter(r => r.citation_q).length
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
@@ -118,8 +129,8 @@ export default async function CitationReportsPage() {
         </div>
         <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Citation Rankings</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
-          Three independently-sourced citation indicators, none of them a POSI ranking yet: OpenAlex 2-Year
-          Citedness (a source-level preview indicator, not{' '}
+          Independent of lifecycle stage or AJR score — citation rankings measure citation performance within
+          POSI subject cohorts only, using OpenAlex 2-Year Citedness (a source-level preview indicator, not{' '}
           <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>PCI</Link>),{' '}
           <strong style={{ color: 'var(--posi-text)' }}>PCS</strong> (POSI Citation Score, a real,
           spec-compliant Crossref indicator — see{' '}
@@ -127,19 +138,21 @@ export default async function CitationReportsPage() {
           and real <strong style={{ color: 'var(--posi-text)' }}>PCI</strong> (OpenAlex-sourced, now computed for
           990 of 993 curated Global Benchmark journals — see{' '}
           <Link href="/pci" className="font-semibold underline" style={{ color: 'var(--posi-text)' }}>the full PCI table</Link>).
-          Core Collection below shows 2-Year Citedness and PCS; the Global Benchmark publisher-catalog expansion
-          shows 2-Year Citedness only (no PCS, no total-citations figure).{' '}
-          <strong style={{ color: 'var(--posi-text)' }}>Only PCI determines POSI Citation Rank, Citation
-          Percentile, and Citation Quartile</strong> — no figure shown here does yet, for either collection: no
-          POSI-R-* release has been produced, and Global Benchmark is never assigned a Citation Rank, Percentile,
-          or Quartile regardless of PCI's status, since it's an external validation corpus, not a POSI-admitted
-          collection. See PJR-SPEC.md for the official methodology.
+          Core Collection below shows 2-Year Citedness, PCS, and Citation Q; the Global Benchmark publisher-catalog
+          expansion shows 2-Year Citedness only (no PCS, no Citation Q, no total-citations figure).{' '}
+          <strong style={{ color: 'var(--posi-text)' }}>Only PCI-based Citation Q determines POSI Citation Rank,
+          Percentile, and Quartile</strong> — real today for {citationQCount} of {coreRows.length} Core Collection
+          journals whose PSC category peer pool has reached the minimum size, but not yet from a formal POSI-R
+          release. Global Benchmark is never assigned a Citation Rank, Percentile, or Quartile regardless of PCI&apos;s
+          status, since it&apos;s an external validation corpus, not a POSI-admitted collection. Citation rankings do
+          not measure editorial quality and are independent of PQF and AJR. See PJR-SPEC.md for the official
+          methodology.
         </p>
       </div>
 
       <Callout variant="info">
         <strong>OpenAlex 2-Year Citedness</strong> and <strong>PCS</strong> (mean Crossref citations per
-        article, full 4-year window, no article-sample cap — PCS-1.0-SPEC.md) are POSI's own independently-defined,
+        article, full 4-year window, no article-sample cap — PCS-1.0-SPEC.md) are POSI&apos;s own independently-defined,
         reproducible citation indicators — two separately-sourced numbers, not one blended score, the same way
         WoS and Scopus report independently of each other. POSI does not license or use Web of Science or
         Scopus data. {withData} of {coreRows.length} Core Collection journals have a resolvable OpenAlex source

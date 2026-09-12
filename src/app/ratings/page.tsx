@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Callout } from '@/components/Callout'
 import { getCoreCollection } from '@/lib/data'
 import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
-import { hasRealEarlyStageScore } from '@/lib/early-stage'
+import { hasRealEarlyStageScore, EARLY_STAGE_WINDOW_LABEL, MATURE_WINDOW_LABEL } from '@/lib/early-stage'
 import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
 
 export const metadata = {
@@ -78,7 +78,7 @@ export default function RatingsPage() {
           <TrackCard
             eyebrow="Track 01"
             title="Early-Stage"
-            window="12–59 months"
+            window={EARLY_STAGE_WINDOW_LABEL}
             methodology="AJR-E"
             quartile="E-Q1–E-Q4"
             desc={`${earlyStageCount} journals currently evaluated. Scored on editorial governance, research integrity, infrastructure, publishing stability, output signals, reach, and transparency.`}
@@ -91,7 +91,7 @@ export default function RatingsPage() {
           <TrackCard
             eyebrow="Track 02"
             title="Mature"
-            window="60+ months"
+            window={MATURE_WINDOW_LABEL}
             methodology="AJR-M"
             quartile="M-Q1–M-Q4"
             desc="AJR-M 1.0 methodology is implemented but has not yet been run against real evidence/citation data — no AJR-M score or M-Q has been published. Ranked separately from Citation Q."
@@ -105,7 +105,7 @@ export default function RatingsPage() {
             eyebrow="Track 03"
             title="Citation"
             window="Metric Eligible"
-            methodology="PCI / PCI-5 / PNCI"
+            methodology="PCI / PCI-5"
             quartile="Citation Q1–Q4"
             desc="Independent of lifecycle stage or AJR score — ranks purely on citation performance within a PSC (POSI Subject Classification) category once a real citation window exists."
             href="/citation-reports"
