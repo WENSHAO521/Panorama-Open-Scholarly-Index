@@ -449,7 +449,7 @@ function IsbnLookupForm() {
             <Books className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--posi-muted)' }} />
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--posi-text)' }}>Not Found</p>
-              <p className="text-xs" style={{ color: 'var(--posi-muted)' }}>{error}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{error}</p>
               {mode === 'isbn' && (
                 <button
                   onClick={() => setMode('title')}

@@ -94,14 +94,14 @@ export function BadgeLookupForm({ journals, siteUrl }: { journals: EligibleJourn
       )}
 
       {query.trim() && !match && suggestions.length === 0 && (
-        <div className="p-3 text-[11px]" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
+        <div className="p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
           No Core Collection journal matches "{query}". Badges are only issued to reviewed journals — see{' '}
           <a href="/pqf#eligibility" className="underline">PQF Eligibility</a>.
         </div>
       )}
 
       {match && match.collectionStatus === 'candidate' && (
-        <div className="mt-4 p-3 text-[11px]" style={{ background: '#fffbeb', border: '1px solid #B8870A', color: '#78350f' }}>
+        <div className="mt-4 p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#fffbeb', border: '1px solid #B8870A', color: '#78350f' }}>
           <strong>{match.title} is a candidate, not a Core Collection member.</strong> These badges are
           deliberately gold-styled and say "POSI Candidate" / "NOT VERIFIED" — not the same design as a Core
           Collection badge, so a reader can't mistake one for the other.

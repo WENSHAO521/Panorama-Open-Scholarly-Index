@@ -811,7 +811,7 @@ function CitePage() {
             <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#9B1C31' }} />
             <div>
               <p className="text-sm font-semibold mb-1" style={{ color: '#9B1C31' }}>Not Found</p>
-              <p className="text-xs" style={{ color: '#7f1d1d' }}>{error}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: '#7f1d1d' }}>{error}</p>
             </div>
           </div>
         </div>

@@ -57,7 +57,7 @@ export function VerifyLookupForm({ journals, releaseId }: { journals: Verifiable
       />
 
       {query.trim() && !match && (
-        <div className="mt-3 p-3 text-[11px]" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
+        <div className="mt-3 p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
           No POSI record matches "{query}". Only journals with an actual POSI record can be verified — there is no
           way to produce a valid result for a code that doesn't exist.
         </div>

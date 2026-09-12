@@ -60,7 +60,7 @@ export default function CviPage() {
 
       {/* Pointer to real citation-impact numbers */}
       <div className="p-4 text-xs leading-relaxed flex items-start justify-between gap-3 flex-wrap" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-        <span style={{ color: '#166534' }}>
+        <span className="text-justify" style={{ color: '#166534' }}>
           Looking for citation impact numbers? See <Link href="/pci" className="underline font-semibold">PCI</Link> (POSI Citation Impact), h-index, and total citations. CVI does not measure these by design (see notice below).
         </span>
         <Link href="/citation-reports" className="font-medium shrink-0 hover:underline" style={{ color: '#1F7A4D' }}>
