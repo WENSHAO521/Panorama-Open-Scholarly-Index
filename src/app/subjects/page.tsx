@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { Callout } from '@/components/Callout'
-import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
 import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import { isInEarlyStageWindow, isMatureStage } from '@/lib/early-stage'
+import { getPscTaxonomy, PSC_PINNED_COMMIT } from '@/lib/site-metrics'
 
 export const metadata = {
   title: 'PSC Subject Classification',
@@ -18,38 +18,8 @@ interface PscCategory {
   aliases?: string[]
 }
 
-interface PscTaxonomy {
-  version: string
-  released: string
-  basis: string
-  note: string
-  categories: PscCategory[]
-}
-
-// Pinned to a specific posi-data commit, not the moving `master` branch or
-// `current.json` pointer — reproducibility means this page shows the same
-// taxonomy on every rebuild until this constant is deliberately bumped
-// (posi-data's own governance rule is "never edit a released version file
-// in place," so pinning a commit is a belt-and-suspenders match for that).
-const PINNED_COMMIT = '2f099e80ee1d6ee553fddf0b4bef478f6fc2d889'
-const TAXONOMY_URL = `https://raw.githubusercontent.com/WENSHAO521/posi-data/${PINNED_COMMIT}/taxonomy/psc/v1.0.json`
-
-async function getTaxonomy(): Promise<{ taxonomy: PscTaxonomy; usedFallback: boolean }> {
-  try {
-    const res = await fetch(TAXONOMY_URL, { signal: AbortSignal.timeout(10000) })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return { taxonomy: await res.json(), usedFallback: false }
-  } catch (err) {
-    // Never let a GitHub timeout/rate-limit fail the whole site build — fall
-    // back to the vendored snapshot (same pinned commit) and say so loudly
-    // in the build log, not silently.
-    console.warn(`[subjects] Live fetch of PSC taxonomy failed (${err instanceof Error ? err.message : err}) — using vendored snapshot at src/lib/psc-v1.0.snapshot.json instead.`)
-    return { taxonomy: pscSnapshot as PscTaxonomy, usedFallback: true }
-  }
-}
-
 export default async function SubjectsPage() {
-  const { taxonomy, usedFallback } = await getTaxonomy()
+  const { taxonomy, usedFallback } = await getPscTaxonomy()
   const domains = taxonomy.categories.filter(c => c.level === 1)
   const byParent = new Map<string, PscCategory[]>()
   for (const c of taxonomy.categories) {
@@ -97,7 +67,7 @@ export default async function SubjectsPage() {
         <a href="https://github.com/WENSHAO521/posi-data/blob/master/PSC-CROSSWALK.md" target="_blank" rel="noopener noreferrer" className="underline">PSC-CROSSWALK.md →</a>.
         PSC is not yet wired into ranking cohorts (E-Q/M-Q/Citation Q peer groups) — the counts below are
         classification coverage, not ranked cohorts. Taxonomy pinned to{' '}
-        <a href={`https://github.com/WENSHAO521/posi-data/commit/${PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PINNED_COMMIT.slice(0, 7)}</a>{' '}
+        <a href={`https://github.com/WENSHAO521/posi-data/commit/${PSC_PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PSC_PINNED_COMMIT.slice(0, 7)}</a>{' '}
         — the same taxonomy on every rebuild, not whatever happens to be on <span className="font-mono">master</span> that day.
       </Callout>
 

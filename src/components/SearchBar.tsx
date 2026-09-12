@@ -94,7 +94,7 @@ export function SearchBar() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search articles, journals, authors, DOI..."
-          className="flex-1 px-4 py-3 focus:outline-none transition-colors duration-200 bg-[rgba(255,255,255,0.08)] border-[rgba(255,255,255,0.12)] focus:bg-[rgba(255,255,255,0.12)] focus:border-[rgba(255,255,255,0.25)]"
+          className="flex-1 min-w-0 px-4 py-3 focus:outline-none transition-colors duration-200 bg-[rgba(255,255,255,0.08)] border-[rgba(255,255,255,0.12)] focus:bg-[rgba(255,255,255,0.12)] focus:border-[rgba(255,255,255,0.25)]"
           style={{
             borderWidth: '1px',
             borderStyle: 'solid',

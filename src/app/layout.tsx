@@ -84,8 +84,15 @@ export default function RootLayout({
         className="min-h-full flex flex-col antialiased"
         style={{ background: "var(--posi-bg)", color: "var(--posi-text)" }}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
+          style={{ background: 'var(--posi-accent)', color: '#fff' }}
+        >
+          Skip to content
+        </a>
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
         <Footer />
       </body>
     </html>

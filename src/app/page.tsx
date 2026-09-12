@@ -1,14 +1,19 @@
 import Link from 'next/link'
 import { SearchBar } from '@/components/SearchBar'
 import { Reveal, FadeIn } from '@/components/Reveal'
-import { getStats, PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
-import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
-import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
+import { MetricCard } from '@/components/MetricCard'
+import { FeatureCard } from '@/components/FeatureCard'
+import { LifecycleStage } from '@/components/LifecycleStage'
+import { DisclosurePanel } from '@/components/DisclosurePanel'
+import { getStats, getCoreCollection } from '@/lib/data'
 import { getLatestAnnouncements } from '@/lib/announcements'
-import { DATA_CUTOFF } from '@/lib/release'
-import { earlyStageDisplayTotal, isInObservationStage, isInEarlyStageWindow, isMatureStage } from '@/lib/early-stage'
-import { getCitationStats } from '@/lib/citation-stats'
-import { getAllPcsEntries } from '@/lib/pcs'
+import { DATA_CUTOFF, METHODOLOGY_VERSION, RELEASE_LABEL, IS_OFFICIAL_RELEASE } from '@/lib/release'
+import {
+  getGlobalBenchmarkTotal,
+  getPscCategoryCount,
+  getCoreCollectionLifecycleCounts,
+  getLifecycleRatedCount,
+} from '@/lib/site-metrics'
 
 export const revalidate = 3600
 
@@ -23,26 +28,17 @@ export default async function HomePage() {
     ...getStats(),
     last_updated: new Date().toISOString().slice(0, 10),
   }
-  const coreCollection = getCoreCollection()
-  // "Lifecycle Rated" — has a real, currently-shown AJR-E total (see
-  // earlyStageDisplayTotal: also guards v1.1's not_rateable/not_applicable
-  // rating_status against ever counting a fabricated total).
-  const lifecycleRated = coreCollection.filter(j => earlyStageDisplayTotal(j.early_stage_rating) != null).length
-  // These three counts are lifecycle-WINDOW membership (the age brackets in
-  // the labels below), not "has a real score" — a v1.1 Early-Stage-window
-  // journal with rating_status 'not_rateable' still belongs in the
-  // Early-Stage bucket here, same as it always did under the legacy shape
-  // (which had no way to tell the two apart).
-  const observationCount = coreCollection.filter(j => isInObservationStage(j.early_stage_rating)).length
-  const earlyStageCount = coreCollection.filter(j => isInEarlyStageWindow(j.early_stage_rating)).length
-  const matureCount = coreCollection.filter(j => isMatureStage(j.early_stage_rating)).length
-    + BENCHMARK_JOURNALS.filter(j => isMatureStage(j.early_stage_rating)).length
+  // The single definition of "Core Collection" (data.ts) — excludes any
+  // journal currently flagged 'candidate' pending re-review. Using this,
+  // not a raw psg+indexed sum, is what keeps this number matching every
+  // other page (About, Ratings, Core Collection) that already reads
+  // getCoreCollection() directly.
+  const coreCollectionCount = getCoreCollection().length
+  const globalBenchmarkTotal = getGlobalBenchmarkTotal()
+  const pscCategoryCount = await getPscCategoryCount()
+  const lifecycle = getCoreCollectionLifecycleCounts()
+  const lifecycleRatedCount = getLifecycleRatedCount()
   const announcements = getLatestAnnouncements(3)
-  const globalBenchmarkTotal = BENCHMARK_JOURNALS.length + publisherCatalogMeta.count
-  // Real counts, not estimates — replaces the old articles*0.3/articles*0.6
-  // heuristic placeholders this section used to show.
-  const openAlexMatchedCount = coreCollection.filter(j => getCitationStats(j.journal_code)?.stats?.two_yr_mean_citedness != null).length
-  const pcsComputedCount = getAllPcsEntries().filter(e => e.pcs != null).length
 
   return (
     <div className="min-h-screen" style={{ minHeight: '100dvh' }}>
@@ -50,8 +46,6 @@ export default async function HomePage() {
       {/* ── HERO ── */}
       <section style={{ background: 'var(--posi-primary)' }}>
         <div className="max-w-[1400px] mx-auto">
-
-          {/* Asymmetric split: POSI pillar (left) | content (right) */}
           <div className="flex flex-col md:flex-row">
 
             {/* Left: POSI brand pillar */}
@@ -72,62 +66,69 @@ export default async function HomePage() {
                 >
                   POSI
                 </div>
-
-                {/* Structural rule stack — Bauhaus horizontal rhythm */}
                 <div className="mt-5 space-y-2">
                   <div style={{ height: '1px', width: '100%', background: 'rgba(255,255,255,0.12)' }} />
                   <div style={{ height: '1px', width: '62%',  background: 'rgba(255,255,255,0.06)' }} />
                   <div style={{ height: '1px', width: '30%',  background: 'rgba(255,255,255,0.03)' }} />
                 </div>
-
                 <p
                   className="mt-5 text-[9px] uppercase"
-                  style={{
-                    color: 'rgba(255,255,255,0.2)',
-                    fontFamily: 'var(--font-mono)',
-                    letterSpacing: '0.24em',
-                  }}
+                  style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)', letterSpacing: '0.24em' }}
                 >
                   Open Scholarly Infrastructure
                 </p>
               </div>
             </FadeIn>
 
-            {/* Vertical divider — desktop only */}
-            <div
-              className="hidden md:block w-px shrink-0"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
-            />
+            <div className="hidden md:block w-px shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
 
             {/* Right: Platform content */}
-            <FadeIn delay={0.1} y={12} className="px-6 sm:px-8 lg:px-12 pt-2 md:pt-16 pb-12 flex-1 flex flex-col justify-center">
+            <FadeIn delay={0.1} y={12} className="px-6 sm:px-8 lg:px-12 pt-2 md:pt-16 pb-12 flex-1 min-w-0 flex flex-col justify-center">
+              <p
+                className="text-[10px] uppercase mb-3"
+                style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', letterSpacing: '0.22em' }}
+              >
+                Panorama Open Scholarly Index
+              </p>
               <h1
                 className="font-bold leading-tight mb-4"
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(1.5rem, 3.2vw, 2.75rem)',
-                  color: 'rgba(255,255,255,0.92)',
+                  fontSize: 'clamp(1.75rem, 3.6vw, 3rem)',
+                  color: 'rgba(255,255,255,0.94)',
                   letterSpacing: '0.01em',
                 }}
               >
-                Open Journal Evaluation by Lifecycle
+                Open scholarly indexing and reproducible journal evaluation
               </h1>
               <p
-                className="mb-8 leading-relaxed text-justify"
-                style={{
-                  color: 'rgba(255,255,255,0.45)',
-                  maxWidth: '56ch',
-                  fontSize: '0.9375rem',
-                }}
+                className="mb-7 leading-relaxed text-justify"
+                style={{ color: 'rgba(255,255,255,0.45)', maxWidth: '58ch', fontSize: '0.9375rem' }}
               >
-                Open journal indexing, lifecycle-based automated ratings, subject rankings, and
-                citation analytics — built from versioned evidence and reproducible methodology.
+                Explore journal coverage, lifecycle ratings, citation indicators, subject
+                rankings, and the public evidence behind every result.
               </p>
+
+              {/* Primary CTAs */}
+              <div className="flex flex-wrap items-center gap-3 mb-7">
+                <Link
+                  href="/core-collection"
+                  className="tactile px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-body)' }}
+                >
+                  Explore Journals
+                </Link>
+                <Link
+                  href="/ratings"
+                  className="tactile px-6 py-3 text-sm font-semibold transition-colors hover:bg-white/10"
+                  style={{ border: '1px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-body)' }}
+                >
+                  View Rankings
+                </Link>
+              </div>
+
               <SearchBar />
-              <nav
-                className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2"
-                aria-label="Quick links"
-              >
+              <nav className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Quick links">
                 {[
                   { href: '/ratings/early-stage', label: 'Early-Stage Rankings' },
                   { href: '/ratings/mature',      label: 'Mature Rankings' },
@@ -146,115 +147,310 @@ export default async function HomePage() {
               </nav>
             </FadeIn>
           </div>
-
-          {/* Stats strip */}
-          <Reveal style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="stats-grid grid grid-cols-2 sm:grid-cols-4">
-              {[
-                { value: (stats.psg_journals + stats.indexed_journals).toLocaleString(), label: 'Core Collection',      note: 'Admitted through published editorial selection' },
-                { value: globalBenchmarkTotal.toLocaleString(),                          label: 'Global Benchmark',     note: 'External validation corpus, not Core Collection' },
-                { value: lifecycleRated.toLocaleString(),                                label: 'Lifecycle Rated',      note: 'Core Collection, Early + Mature — see Ratings & Rankings' },
-                { value: '48',                                                            label: 'PSC Subject Categories', note: 'v1.0 taxonomy — see PSC Subjects' },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="py-7 px-6"
-                >
-                  <p
-                    className="text-3xl md:text-4xl font-bold text-white leading-none"
-                    style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {s.value}
-                  </p>
-                  <p
-                    className="text-[9px] uppercase tracking-[0.16em] mt-2.5"
-                    style={{ color: 'rgba(255,255,255,0.28)', fontFamily: 'var(--font-mono)' }}
-                  >
-                    {s.label}
-                  </p>
-                  <p
-                    className="text-[8px] mt-1"
-                    style={{ color: 'rgba(255,255,255,0.14)', fontFamily: 'var(--font-mono)' }}
-                  >
-                    {s.note}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p
-              className="pb-2 px-6 text-[9px] flex flex-wrap items-center gap-2"
-              style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font-mono)' }}
-            >
-              <span>Updated {stats.last_updated}</span>
-              <Link
-                href="/about"
-                className="px-1.5 py-0.5 transition-colors hover:text-white"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
-              >
-                POSI IS LIVE · DATA SNAPSHOT {DATA_CUTOFF} · DATA COVERAGE EXPANDING
-              </Link>
-              <Link
-                href="/open-data"
-                className="px-1.5 py-0.5 transition-colors hover:text-white"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.55)' }}
-              >
-                Identity migration to permanent POSI-J ids complete (24,205 records) — see Open Data
-              </Link>
-            </p>
-            <p
-              className="pb-4 px-6 text-[9px] leading-relaxed max-w-3xl text-justify"
-              style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font-mono)' }}
-            >
-              POSI Core Collection = journals admitted through POSI's published editorial selection
-              criteria (see Methodology). Discovered Journal Records are found via DOAJ/Crossref/OpenAlex
-              but not yet reviewed — POSI has a record of them, that is not the same as POSI indexing
-              them. Search itself additionally reaches Crossref/OpenAlex's much larger open corpus beyond
-              either count; that external search scope is not a POSI-reviewed figure and isn't reported here.
-            </p>
-          </Reveal>
         </div>
       </section>
 
-      {/* ── ANNOUNCEMENTS ── */}
+      {/* ── CURRENT POSI COVERAGE ── */}
+      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <p
+            className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"
+            style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
+          >
+            Current POSI Coverage
+          </p>
+          <div className="metric-grid grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: 'var(--posi-border)' }}>
+            <MetricCard
+              value={coreCollectionCount.toLocaleString()}
+              label="Core Collection"
+              scope="Editorially admitted and reviewed journals"
+              href="/core-collection"
+            />
+            <MetricCard
+              value={globalBenchmarkTotal.toLocaleString()}
+              label="Global Benchmark"
+              scope="External comparison corpus"
+              href="/coverage/global-benchmark"
+            />
+            <MetricCard
+              value={stats.discovered_journals.toLocaleString()}
+              label="Discovered Records"
+              scope="Metadata records awaiting POSI review"
+              href="/journals?tab=discovered"
+            />
+            <MetricCard
+              value={pscCategoryCount.toLocaleString()}
+              label="PSC Categories"
+              scope="Subject classification categories"
+              href="/subjects"
+            />
+          </div>
+          <p className="text-xs leading-relaxed mt-6 max-w-3xl text-justify" style={{ color: 'var(--posi-muted)' }}>
+            <strong style={{ color: 'var(--posi-text)' }}>Discovered ≠ indexed.</strong> Discovered
+            records are metadata records identified through external scholarly infrastructure. They
+            are not part of the POSI Core Collection unless they pass POSI editorial selection.{' '}
+            <Link href="/coverage/policy" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
+              Learn how POSI coverage works →
+            </Link>
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ── DATA STATUS ── */}
+      <section style={{ background: 'var(--posi-primary)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-x-8 gap-y-3">
+            {[
+              { label: 'Data Snapshot', value: DATA_CUTOFF },
+              { label: 'Methodology', value: METHODOLOGY_VERSION },
+              { label: 'Latest Release', value: IS_OFFICIAL_RELEASE ? RELEASE_LABEL : 'No formal POSI-R release yet' },
+              { label: 'Data Coverage', value: 'Expanding' },
+            ].map(item => (
+              <div key={item.label}>
+                <p className="text-[9px] uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.28)', fontFamily: 'var(--font-mono)' }}>
+                  {item.label}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-mono)' }}>
+                  {item.value}
+                </p>
+              </div>
+            ))}
+            <p className="sm:ml-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'var(--font-mono)' }}>
+              Site updated {stats.last_updated}
+            </p>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── HOW POSI WORKS ── */}
+      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <h2
+            className="font-bold mb-2 leading-tight"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', color: 'var(--posi-text)' }}
+          >
+            How POSI works
+          </h2>
+          <p className="text-sm leading-relaxed mb-8 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
+            Selection, lifecycle evaluation, and citation analytics are three independent steps —
+            not one combined score.
+          </p>
+          <div className="feature-grid grid md:grid-cols-3 gap-px" style={{ background: 'var(--posi-border)' }}>
+            <FeatureCard
+              badge="01 · PQF"
+              title="Editorial Selection"
+              desc="Determines whether a journal has sufficient public evidence, metadata quality, governance transparency, and technical discoverability for Core Collection admission."
+              href="/pqf"
+              cta="Eligibility — not citation impact →"
+            />
+            <FeatureCard
+              badge="02 · AJR"
+              title="Lifecycle Rating"
+              desc="Evaluates journals using lifecycle-specific frameworks so that new journals are not directly compared with long-established journals."
+              href="/ratings"
+              cta="AJR-E · AJR-M →"
+            />
+            <FeatureCard
+              badge="03 · PCI / PCS"
+              title="Citation Analytics"
+              desc="Reports citation performance independently from editorial selection and lifecycle evaluation."
+              href="/pci"
+              cta="Citation indicators — not accreditation →"
+            />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── LIFECYCLE EVALUATION ── */}
+      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <div className="flex items-baseline justify-between flex-wrap gap-2 mb-6">
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+              Lifecycle Evaluation — Core Collection
+            </p>
+            <p className="text-[10px] font-mono" style={{ color: 'var(--posi-muted)' }}>
+              {lifecycleRatedCount} AJR-E Rated
+            </p>
+          </div>
+          <div className="lifecycle-strip flex flex-col md:flex-row items-stretch" style={{ border: '1px solid var(--posi-border)' }}>
+            <LifecycleStage
+              stage="Observation"
+              window={`0–11 months · ${lifecycle.observation} journals`}
+              status="No quartile"
+              accent="#6B7280"
+              showConnector
+            />
+            <LifecycleStage
+              stage="Early Stage"
+              window={`12–59 months · ${lifecycle.earlyStage} journals`}
+              methodology="AJR-E"
+              status="E-Q1–E-Q4 when eligible"
+              accent="var(--posi-accent)"
+              showConnector
+            />
+            <LifecycleStage
+              stage="Mature"
+              window={`60+ months · ${lifecycle.mature} journals`}
+              methodology="AJR-M"
+              status="Current status: Pending production data"
+              accent="#B45309"
+              showConnector={false}
+            />
+          </div>
+          <p className="text-xs leading-relaxed mt-4 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
+            {lifecycleRatedCount} Core Collection journals carry a published AJR-E lifecycle rating
+            today. AJR-M methodology is implemented but has not yet been run against production
+            evidence and citation data — no journal currently holds a published M-Q. Citation
+            Quartiles are reported independently through PCI once metric eligibility requirements
+            are met, regardless of lifecycle track.
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ── EXPLORE POSI ── */}
+      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+            Explore POSI
+          </p>
+          <div className="feature-grid grid md:grid-cols-4 gap-px" style={{ background: 'var(--posi-border)' }}>
+            <FeatureCard
+              title="Lifecycle Ratings"
+              desc="AJR-E and AJR-M lifecycle evaluation."
+              href="/ratings/early-stage"
+              cta="View Lifecycle Ratings →"
+            />
+            <FeatureCard
+              title="Citation Rankings"
+              desc="Citation performance within PSC subject categories."
+              href="/citation-reports"
+              cta="View Citation Rankings →"
+            />
+            <FeatureCard
+              title="Core Collection"
+              desc="Journals admitted through POSI editorial selection."
+              href="/core-collection"
+              cta="Browse Core Collection →"
+            />
+            <FeatureCard
+              title="PSC Subjects"
+              desc="Explore journals by POSI Subject Classification."
+              href="/subjects"
+              cta="Browse Subjects →"
+            />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── OPEN INFRASTRUCTURE ── */}
+      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <h2
+            className="font-bold mb-3 leading-tight"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', color: 'var(--posi-text)' }}
+          >
+            Every metric is reproducible
+          </h2>
+          <p className="text-sm leading-relaxed mb-8 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
+            POSI does not compute rankings behind closed doors. The journal data, the PCI/PNCI
+            formulas, the subject taxonomy, and the ranking engine are fully open and independently
+            verifiable — re-run the calculation yourself and you should get the same number POSI
+            published.
+          </p>
+          <div className="feature-grid grid md:grid-cols-3 gap-px mb-8" style={{ background: 'var(--posi-border)' }}>
+            <FeatureCard
+              title="Open Data"
+              desc="Versioned journal records, subject classifications, metric snapshots, and rankings."
+              href="/open-data"
+              cta="Explore Open Data →"
+            />
+            <FeatureCard
+              title="Open Methodology"
+              desc="Published formulas, eligibility rules, evidence requirements, tie handling, and ranking procedures."
+              href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
+              cta="View Methodology →"
+            />
+            <FeatureCard
+              title="Open Engine"
+              desc="Open-source calculation code designed to reproduce published POSI results."
+              href="https://github.com/WENSHAO521/posi-engine"
+              cta="View Source Code →"
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-6" style={{ borderTop: '1px solid var(--posi-border)' }}>
+            <span className="text-[9px] font-bold uppercase tracking-[0.18em] shrink-0" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+              Data Sources
+            </span>
+            <div className="flex flex-wrap gap-x-5 gap-y-1">
+              {['Crossref', 'OpenAlex', 'OpenCitations', 'DOAJ', 'ROR', 'ORCID'].map(src => (
+                <span key={src} className="text-xs" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+                  {src}
+                </span>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── GOVERNANCE & CONFLICT DISCLOSURE ── */}
+      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <DisclosurePanel title="Governance & Conflict Disclosure" href="/coi" cta="Read full disclosure →">
+            <p>
+              POSI is operated by Panorama Scholarly Group, which also publishes journals
+              represented in the POSI Core Collection.
+            </p>
+            <p className="mt-2">
+              Evaluation outputs are generated through versioned methodology and calculation code.
+              No published numerical result may be manually overridden.
+            </p>
+          </DisclosurePanel>
+        </Reveal>
+      </section>
+
+      {/* ── RESPONSIBLE USE ── */}
+      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
+        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <DisclosurePanel title="Responsible Use" href="/responsible-use" cta="Responsible Use →">
+            <p>
+              POSI indicators describe journal-level metadata, transparency, infrastructure,
+              lifecycle, and citation signals.
+            </p>
+            <p className="mt-2">
+              They are not accreditation decisions and should not be used as the sole basis for
+              researcher hiring, promotion, funding, or institutional evaluation.
+            </p>
+          </DisclosurePanel>
+        </Reveal>
+      </section>
+
+      {/* ── LATEST UPDATES ── */}
       {announcements.length > 0 && (
-        <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-          <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section style={{ background: 'var(--posi-surface)' }}>
+          <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="flex items-center justify-between mb-4">
-              <p
-                className="text-[9px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-              >
-                Announcements
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+                Latest Updates
               </p>
-              <Link
-                href="/announcements"
-                className="text-xs hover:underline transition-colors"
-                style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-              >
+              <Link href="/announcements" className="text-xs hover:underline transition-colors" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>
                 View All →
               </Link>
             </div>
             <div style={{ border: '1px solid var(--posi-border)' }}>
-              {announcements.map((a, i) => (
+              {announcements.slice(0, 3).map((a, i) => (
                 <Link
                   key={a.slug}
                   href={`/announcements/${a.slug}`}
                   className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-4 p-4 sm:p-5 transition-colors hover:bg-[#fafafa] group"
-                  style={{ borderBottom: i < announcements.length - 1 ? '1px solid var(--posi-border-light)' : 'none' }}
+                  style={{ borderBottom: i < Math.min(announcements.length, 3) - 1 ? '1px solid var(--posi-border-light)' : 'none' }}
                 >
-                  <span
-                    className="shrink-0 text-[10px] font-mono mt-0.5"
-                    style={{ color: 'var(--posi-muted)' }}
-                  >
+                  <span className="shrink-0 text-[10px] font-mono mt-0.5" style={{ color: 'var(--posi-muted)' }}>
                     {a.date}
                   </span>
                   <div>
-                    <h2
-                      className="text-sm font-semibold group-hover:underline leading-snug"
-                      style={{ color: 'var(--posi-text)' }}
-                    >
+                    <h3 className="text-sm font-semibold group-hover:underline leading-snug" style={{ color: 'var(--posi-text)' }}>
                       {a.title}
-                    </h2>
+                    </h3>
                     <p className="text-xs leading-relaxed mt-1 text-justify" style={{ color: 'var(--posi-muted)' }}>
                       {a.summary}
                     </p>
@@ -265,305 +461,6 @@ export default async function HomePage() {
           </Reveal>
         </section>
       )}
-
-      {/* ── FOUR PRODUCT ENTRY POINTS ── */}
-      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <Reveal className="max-w-[1400px] mx-auto">
-          <div className="indicators-grid grid md:grid-cols-4">
-            {[
-              {
-                abbr: '01',
-                label: 'Early-Stage Rankings',
-                desc: 'Journals 12–59 months after first regular scholarly publication, evaluated through AJR-E and ranked within comparable PSC peer groups.',
-                href: '/ratings/early-stage',
-                cta: 'Explore E-Q Rankings →',
-              },
-              {
-                abbr: '02',
-                label: 'Mature Journal Rankings',
-                desc: 'Journals with at least 60 months of publishing history, evaluated through AJR-M using scholarly performance, citation impact, governance, and infrastructure.',
-                href: '/ratings/mature',
-                cta: 'Explore M-Q Rankings →',
-              },
-              {
-                abbr: '03',
-                label: 'Citation Rankings',
-                desc: 'Independent citation-impact rankings based on PCI, PCI-5, and PNCI within PSC subject categories.',
-                href: '/citation-reports',
-                cta: 'Explore Citation Rankings →',
-              },
-              {
-                abbr: '04',
-                label: 'Open Methodology & Data',
-                desc: 'Every rating, evidence source, methodology version, and ranking release is documented and independently reproducible.',
-                href: '/open-data',
-                cta: 'Inspect Methodology →',
-              },
-            ].map((f) => (
-              <Link
-                key={f.abbr}
-                href={f.href}
-                className="tactile p-7 h-full flex flex-col transition-all duration-300 hover:bg-[#fafafa] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-20px_rgba(17,17,17,0.3)] group"
-              >
-                {/* DIN-style: mono abbreviation + rule divider */}
-                <div className="mb-5">
-                  <span
-                    className="block font-bold leading-none"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--posi-accent)',
-                      fontSize: '1.5rem',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    {f.abbr}
-                  </span>
-                  <div
-                    className="mt-3"
-                    style={{ height: '1px', width: '2rem', background: 'var(--posi-border)' }}
-                  />
-                </div>
-                <h2
-                  className="text-sm font-semibold mb-3 leading-tight"
-                  style={{ color: 'var(--posi-text)' }}
-                >
-                  {f.label}
-                </h2>
-                <p className="text-xs leading-relaxed mb-4 text-justify" style={{ color: 'var(--posi-muted)' }}>
-                  {f.desc}
-                </p>
-                <span
-                  className="mt-auto text-[11px] font-semibold transition-opacity opacity-80 group-hover:opacity-100"
-                  style={{ color: 'var(--posi-accent)' }}
-                >
-                  {f.cta}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── LIFECYCLE STRIP ── */}
-      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
-        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <p
-            className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"
-            style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-          >
-            Why POSI Has Two Rating Tracks
-          </p>
-          <div className="lifecycle-strip flex flex-col md:flex-row items-stretch gap-0" style={{ border: '1px solid var(--posi-border)' }}>
-            {[
-              { stage: 'Observation', window: '0–11 months', note: 'No quartile — too early to evaluate', accent: '#6B7280' },
-              { stage: 'Early-Stage', window: '12–59 months', note: 'AJR-E · E-Q1–E-Q4', accent: 'var(--posi-accent)' },
-              { stage: 'Mature', window: '60+ months', note: 'AJR-M · M-Q1–M-Q4', accent: '#B45309' },
-            ].map((s, i) => (
-              <div
-                key={s.stage}
-                className="flex-1 p-6"
-                style={{ background: 'var(--posi-surface)', borderLeft: i > 0 ? '1px solid var(--posi-border)' : 'none' }}
-              >
-                <p className="text-sm font-bold uppercase tracking-[0.08em]" style={{ color: s.accent }}>{s.stage}</p>
-                <p className="text-xs mt-1.5" style={{ color: 'var(--posi-muted)' }}>{s.window}</p>
-                <p className="text-[10px] font-mono mt-2" style={{ color: 'var(--posi-text)' }}>{s.note}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs leading-relaxed mt-4 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
-            Citation Quartiles are reported independently through PCI once metric eligibility requirements
-            are met — regardless of which lifecycle track a journal is in.
-          </p>
-        </Reveal>
-      </section>
-
-      {/* ── REPRODUCIBILITY CTA ── */}
-      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div
-            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pl-7"
-            style={{ borderLeft: '3px solid var(--posi-accent)' }}
-          >
-            <div className="max-w-2xl">
-              <h2
-                className="font-bold mb-3 leading-tight"
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
-                  color: 'var(--posi-text)',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                Every metric is reproducible
-              </h2>
-              <p
-                className="text-sm leading-relaxed mb-5 text-justify"
-                style={{ color: 'var(--posi-muted)', maxWidth: '60ch' }}
-              >
-                POSI does not compute rankings behind closed doors. The journal data, the PCI/PNCI
-                formulas, the subject taxonomy, and the ranking engine are fully open and independently
-                verifiable — re-run the calculation yourself and you should get the same number POSI published.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { code: 'DATA',   label: 'Open journal & metric records' },
-                  { code: 'CODE',   label: 'Open calculation engine' },
-                  { code: 'AUDIT',  label: 'Published migration audits' },
-                  { code: 'VERSION',label: 'Every result independently reproducible' },
-                ].map(d => (
-                  <div
-                    key={d.code}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5"
-                    style={{ border: '1px solid var(--posi-border)' }}
-                  >
-                    <span
-                      className="text-[9px] font-bold"
-                      style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-                    >
-                      {d.code}
-                    </span>
-                    <span className="text-[9px]" style={{ color: 'var(--posi-muted)' }}>
-                      {d.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <Link
-              href="/open-data"
-              className="tactile shrink-0 px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-body)' }}
-            >
-              View Open Data
-            </Link>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── PLATFORM COVERAGE ── */}
-      <section style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
-        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div className="coverage-grid grid sm:grid-cols-3 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
-            {[
-              {
-                title: 'Coverage',
-                items: [
-                  { label: 'Core Collection',               value: stats.psg_journals + stats.indexed_journals },
-                  { label: 'Global Benchmark',               value: globalBenchmarkTotal },
-                  { label: 'Discovered (not yet reviewed)',  value: stats.discovered_journals },
-                ],
-              },
-              {
-                title: 'Lifecycle Evaluation',
-                items: [
-                  { label: 'Observation (0–11mo)',   value: observationCount },
-                  { label: 'Early-Stage (12–59mo)',  value: earlyStageCount },
-                  { label: 'Mature (60mo+)',         value: matureCount },
-                ],
-              },
-              {
-                title: 'Citation Analytics',
-                items: [
-                  { label: 'PCS Computed',                    value: pcsComputedCount },
-                  { label: 'OpenAlex Matched (Core Collection)', value: openAlexMatchedCount },
-                  { label: 'DOAJ-listed Records',             value: stats.doaj_listed },
-                ],
-              },
-            ].map((group) => (
-              <div
-                key={group.title}
-                className="p-7"
-                style={{ background: 'var(--posi-surface)' }}
-              >
-                <p
-                  className="text-[9px] font-bold uppercase tracking-[0.18em] mb-6"
-                  style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-                >
-                  {group.title}
-                </p>
-                <div className="space-y-5">
-                  {group.items.map(item => (
-                    <div key={item.label} className="flex justify-between items-baseline gap-4">
-                      <span className="text-xs" style={{ color: 'var(--posi-muted)' }}>
-                        {item.label}
-                      </span>
-                      <span
-                        className="text-xl font-bold shrink-0"
-                        style={{ color: 'var(--posi-text)', fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}
-                      >
-                        {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── DATA SOURCES STRIP ── */}
-      <section style={{ background: 'var(--posi-surface)', borderBottom: '1px solid var(--posi-border)' }}>
-        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <span
-              className="text-[9px] font-bold uppercase tracking-[0.18em] shrink-0"
-              style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-            >
-              Data Sources
-            </span>
-            <div className="flex flex-wrap gap-x-5 gap-y-1">
-              {['Crossref', 'OpenAlex', 'OpenCitations', 'DOAJ', 'ROR', 'ORCID'].map(src => (
-                <span
-                  key={src}
-                  className="text-xs"
-                  style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}
-                >
-                  {src}
-                </span>
-              ))}
-            </div>
-            <Link
-              href="/open-data"
-              className="sm:ml-auto shrink-0 text-xs hover:underline transition-colors"
-              style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-            >
-              Open Data & Provenance →
-            </Link>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── RESPONSIBLE USE NOTICE ── */}
-      <section style={{ background: 'var(--posi-bg)' }}>
-        <Reveal className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div
-            className="p-5 pl-6"
-            style={{
-              background: 'var(--posi-surface)',
-              border: '1px solid var(--posi-border)',
-              borderLeftWidth: '3px',
-              borderLeftColor: 'var(--posi-accent)',
-            }}
-          >
-            <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-              <strong style={{ color: 'var(--posi-text)', fontWeight: 600 }}>
-                Responsible Use Notice:{' '}
-              </strong>
-              POSI is an open scholarly citation index. PQF indicates a journal's transparency,
-              metadata quality, and technical discoverability — it supports Core Collection admission,
-              it is not a citation-impact score. PCI/PCS indicate citation volume — they are not
-              quality certifications. Neither should be used as the sole or primary basis for
-              individual researcher evaluation, hiring, promotion, or funding decisions. POSI is not
-              affiliated with Web of Science, Scopus, or DOAJ. Some journals in POSI are published by
-              Panorama Scholarly Group, which also operates this platform.{' '}
-              <Link href="/coi" style={{ color: 'var(--posi-accent)' }}>
-                Read our conflict of interest disclosure.
-              </Link>
-            </p>
-          </div>
-        </Reveal>
-      </section>
 
     </div>
   )

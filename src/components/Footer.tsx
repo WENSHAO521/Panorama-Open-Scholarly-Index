@@ -2,42 +2,41 @@ import Link from 'next/link'
 
 const NAV_COLUMNS = [
   {
-    heading: 'Ratings & Rankings',
+    heading: 'Explore',
     links: [
-      { href: '/ratings',              label: 'Ratings Overview' },
-      { href: '/ratings/early-stage',  label: 'Early-Stage Rankings' },
-      { href: '/ratings/mature',       label: 'Mature Journal Rankings' },
-      { href: '/citation-reports',     label: 'Citation Rankings' },
-      { href: '/subjects',             label: 'PSC Subjects' },
-    ],
-  },
-  {
-    heading: 'Coverage',
-    links: [
+      { href: '/search',                    label: 'Search' },
+      { href: '/ratings',                   label: 'Rankings' },
       { href: '/core-collection',           label: 'Core Collection' },
-      { href: '/coverage/global-benchmark', label: 'Global Benchmark Collection' },
-      { href: '/submit-journal',            label: 'Submit Journal' },
+      { href: '/subjects',                  label: 'PSC Subjects' },
     ],
   },
   {
-    heading: 'Methodology & Data',
+    heading: 'Methodology',
     links: [
-      { href: '/pci',          label: 'PCI Methodology' },
-      { href: '/pqf',          label: 'Editorial Selection' },
+      { href: 'https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md', label: 'AJR', external: true },
+      { href: '/pci',          label: 'PCI' },
+      { href: '/pqf',          label: 'PQF (Editorial Selection)' },
       { href: '/evidence',     label: 'Evidence' },
+    ],
+  },
+  {
+    heading: 'Open Infrastructure',
+    links: [
       { href: '/open-data',    label: 'Open Data' },
-      { href: '/journals',     label: 'All Journal Records' },
+      { href: '/api',          label: 'API & Exports' },
+      { href: '/data-sources', label: 'Data Sources' },
+      { href: 'https://github.com/WENSHAO521/posi-data',   label: 'GitHub — posi-data', external: true },
+      { href: 'https://github.com/WENSHAO521/posi-engine', label: 'GitHub — posi-engine', external: true },
     ],
   },
   {
     heading: 'Organization',
     links: [
       { href: '/about',             label: 'About POSI' },
+      { href: '/operator',          label: 'Governance' },
       { href: '/coi',               label: 'Conflict of Interest' },
       { href: '/responsible-use',   label: 'Responsible Use' },
       { href: '/contact',           label: 'Contact' },
-      { href: '/privacy',           label: 'Privacy Policy' },
-      { href: '/terms',             label: 'Terms of Use' },
     ],
   },
 ]
@@ -49,11 +48,6 @@ const OPEN_INFRA = [
   { label: 'ROR',           href: 'https://ror.org' },
   { label: 'ORCID',         href: 'https://orcid.org' },
   { label: 'OpenCitations', href: 'https://opencitations.net' },
-]
-
-const POSI_REPOS = [
-  { label: 'posi-data',   href: 'https://github.com/WENSHAO521/posi-data' },
-  { label: 'posi-engine', href: 'https://github.com/WENSHAO521/posi-engine' },
 ]
 
 export function Footer() {
@@ -139,13 +133,25 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {col.links.map(link => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-[11px] transition-colors hover:text-white"
-                      style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
-                    >
-                      {link.label}
-                    </Link>
+                    {'external' in link && link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] transition-colors hover:text-white"
+                        style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
+                      >
+                        {link.label} ↗
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-[11px] transition-colors hover:text-white"
+                        style={{ color: 'rgba(255,255,255,0.38)', fontFamily: 'var(--font-mono)' }}
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -182,32 +188,6 @@ export function Footer() {
               }}
             >
               {src.label}
-            </a>
-          ))}
-          <span
-            className="text-[9px] uppercase shrink-0 ml-4 mr-1"
-            style={{
-              color: 'rgba(255,255,255,0.18)',
-              fontFamily: 'var(--font-mono)',
-              letterSpacing: '0.18em',
-            }}
-          >
-            POSI Open Data
-          </span>
-          {POSI_REPOS.map(repo => (
-            <a
-              key={repo.label}
-              href={repo.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] px-2 py-0.5 transition-all hover:text-white"
-              style={{
-                color: 'var(--posi-accent)',
-                border: '1px solid rgba(196,30,58,0.3)',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              {repo.label} ↗
             </a>
           ))}
         </div>

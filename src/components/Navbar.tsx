@@ -13,20 +13,20 @@ type SubItem = { label: string; href: string; external?: boolean }
 type NavItem = { label: string; href?: string; children?: SubItem[] }
 
 const navItems: NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Announcements', href: '/announcements' },
   {
-    label: 'Explore',
+    label: 'Search',
     children: [
       { label: 'Journal Search',              href: '/search' },
       { label: 'All Journal Records',         href: '/journals' },
       { label: 'PSC Subjects',                href: '/subjects' },
       { label: 'DOI Lookup',                  href: '/doi-lookup' },
+      { label: 'Book Search',                 href: '/isbn-lookup' },
+      { label: 'Citation Generator',          href: '/cite' },
       { label: 'PSG Author–Date Citation Format', href: '/psg-format' },
     ],
   },
   {
-    label: 'Ratings & Rankings',
+    label: 'Rankings',
     children: [
       { label: 'Ratings Overview',        href: '/ratings' },
       { label: 'Early-Stage Rankings',    href: '/ratings/early-stage' },
@@ -64,16 +64,10 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'Tools',
-    children: [
-      { label: 'Book Search',        href: '/isbn-lookup' },
-      { label: 'Citation Generator', href: '/cite' },
-    ],
-  },
-  {
     label: 'About',
     children: [
       { label: 'About POSI',              href: '/about' },
+      { label: 'Announcements',           href: '/announcements' },
       { label: 'Conflict of Interest',    href: '/coi' },
       { label: 'Responsible Use',         href: '/responsible-use' },
       { label: 'Contact',                 href: '/contact' },
@@ -98,7 +92,7 @@ function NavSearch() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="hidden lg:flex items-center relative">
+    <form onSubmit={handleSubmit} className="hidden xl:flex items-center relative">
       <MagnifyingGlass
         className="absolute left-2.5 h-3.5 w-3.5 pointer-events-none"
         style={{ color: 'rgba(255,255,255,0.3)' }}
@@ -173,10 +167,15 @@ export function Navbar() {
             />
           </Link>
 
-          <div className="hidden md:block h-5 w-px shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }} />
+          <div className="hidden xl:block h-5 w-px shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center flex-1 gap-0">
+          {/* Desktop nav — kicks in at xl (1280px). 6 top-level items +
+              quick-search + Submit Journal don't reliably fit in one row
+              at md/lg (768-1023px, even 1024px itself overflowed by
+              ~25px) — caught by real-browser QA, not visible in static
+              markup. Tablet and small-laptop widths (below 1280px) use
+              the hamburger menu instead, same as mobile. */}
+          <nav className="hidden xl:flex items-center flex-1 gap-0">
             {navItems.map(item => {
               const active = isItemActive(item)
               const isOpen = openDropdown === item.label
@@ -277,7 +276,7 @@ export function Navbar() {
             })}
           </nav>
 
-          <div className="hidden md:flex items-center gap-3 ml-auto shrink-0">
+          <div className="hidden xl:flex items-center gap-3 ml-auto shrink-0">
             <Suspense>
               <NavSearch />
             </Suspense>
@@ -290,9 +289,9 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile toggle */}
+          {/* Mobile toggle — visible through tablet/small-laptop widths too, see the xl: note above */}
           <button
-            className="md:hidden ml-auto p-1.5 transition-colors"
+            className="xl:hidden ml-auto p-1.5 transition-colors"
             style={{ color: 'rgba(255,255,255,0.6)' }}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
@@ -310,7 +309,7 @@ export function Navbar() {
           animate={{ height: 'auto', opacity: 1 }}
           exit={reduce ? undefined : { height: 0, opacity: 0 }}
           transition={{ duration: 0.25, ease: EASE }}
-          className="md:hidden overflow-hidden"
+          className="xl:hidden overflow-hidden"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#1a1a1a' }}
         >
         <div className="px-4 py-3">

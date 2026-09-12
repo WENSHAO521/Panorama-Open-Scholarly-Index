@@ -22,6 +22,16 @@ type BadgeVariant =
   | 'doaj-pending'
   | 'doaj-not'
   | 'core-collection'
+  | 'published'
+  | 'status-pending'
+  | 'preview'
+  | 'eligible'
+  | 'not-eligible'
+  | 'observation-stage'
+  | 'early-stage'
+  | 'mature-stage'
+  | 'discovered'
+  | 'indexed'
   | 'default'
 
 const VARIANT_STYLES: Record<BadgeVariant, string> = {
@@ -46,6 +56,26 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
   'doaj-pending': 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
   'doaj-not': 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
   'core-collection': 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
+  // Token-driven variants (share globals.css's --posi-* semantic tokens with
+  // Callout.tsx, rather than another one-off hardcoded tint) — the unified
+  // status vocabulary from the Stage 1 brief (§29): Published / Pending /
+  // Preview / Eligible / Not Eligible / Observation / Early Stage / Mature /
+  // Discovered / Indexed can all be expressed here without a page defining
+  // its own raw color. Stage 1 only *added* these variants for the
+  // homepage's new sections — existing pages still using status-colors.ts's
+  // raw {bg,color,border} triples or their own local color maps (evidence,
+  // data-sources, journal/[code], policies, source-status) are unchanged;
+  // migrating them onto this component is Stage 2 work, not done here.
+  published: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
+  'status-pending': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
+  preview: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
+  eligible: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
+  'not-eligible': 'bg-[var(--posi-danger-bg)] text-[var(--posi-danger)] ring-1 ring-[var(--posi-danger-border)]',
+  'observation-stage': 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
+  'early-stage': 'bg-[var(--posi-danger-bg)] text-[var(--posi-accent)] ring-1 ring-[var(--posi-danger-border)]',
+  'mature-stage': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
+  discovered: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
+  indexed: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
   default: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
 }
 

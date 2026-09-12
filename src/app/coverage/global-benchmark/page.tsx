@@ -5,6 +5,7 @@ import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
 import { Callout } from '@/components/Callout'
 import { earlyStageDisplayTotal, isBlockedOrNotRateable, isUnknownLifecycle } from '@/lib/early-stage'
+import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
 
 export const metadata = {
   title: 'POSI Global Benchmark Collection',
@@ -60,7 +61,7 @@ export default function GlobalBenchmarkPage() {
 
       <div className="coverage-grid grid sm:grid-cols-5 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
         {[
-          { label: 'Total Journals', value: BENCHMARK_JOURNALS.length + publisherCatalogMeta.count },
+          { label: 'Total Journals', value: getGlobalBenchmarkTotal() },
           { label: 'Curated Seed', value: CURATED_BENCHMARK_JOURNALS.length },
           { label: 'Rated', value: rated.length },
           { label: 'Blocked / Insufficient Evidence', value: blocked.length },

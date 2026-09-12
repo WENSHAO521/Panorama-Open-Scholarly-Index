@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import { Callout } from '@/components/Callout'
 import { getCoreCollection } from '@/lib/data'
-import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
-import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
 import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
 import { hasRealEarlyStageScore } from '@/lib/early-stage'
+import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
 
 export const metadata = {
   title: `POSI Journal Lifecycle Ratings — ${DATA_SNAPSHOT_LABEL}`,
@@ -121,7 +120,7 @@ export default function RatingsPage() {
           <p><strong>Data snapshot:</strong> {DATA_CUTOFF} (no POSI-R-* release has been produced yet — see POSI-R-1.0-SPEC.md)</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
           <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
-          <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {(BENCHMARK_JOURNALS.length + publisherCatalogMeta.count)} Global Benchmark journals</p>
+          <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {getGlobalBenchmarkTotal()} Global Benchmark journals</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>
           <p><strong>Quartiles:</strong> Assigned only once a minimum same-category PSC peer group exists</p>

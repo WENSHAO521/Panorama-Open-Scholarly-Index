@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PSG_JOURNALS, getCoreCollection } from '@/lib/data'
-import { DATA_CUTOFF } from '@/lib/release'
+import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 import { Callout } from '@/components/Callout'
 
 export const metadata = {
@@ -24,8 +24,11 @@ export default function AboutPage() {
           <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: 'var(--posi-accent)', color: '#fff' }}>
             v2.0
           </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: '#92400e', color: '#fff' }}>
-            LIVE · DATA SNAPSHOT {DATA_CUTOFF} · DATA COVERAGE EXPANDING
+          <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: 'var(--posi-info)', color: '#fff' }}>
+            {DATA_SNAPSHOT_LABEL}
+          </span>
+          <span className="text-[10px] font-bold px-2 py-0.5 tracking-wide" style={{ background: '#6B7280', color: '#fff' }}>
+            DATA COVERAGE EXPANDING
           </span>
         </div>
         <p className="text-sm leading-relaxed max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
@@ -36,11 +39,10 @@ export default function AboutPage() {
           External database inclusion (DOAJ, Scopus, Web of Science, PubMed) does not determine POSI
           admission, scores, rankings, or quartiles.
         </p>
-        <Callout variant="warning" className="max-w-2xl mt-3">
-          <strong>Officially Launched, Data Coverage Expanding:</strong> POSI is formally live as of August
-          2026 — this is not a trial that could be discontinued. What&apos;s still in progress is coverage, not
-          the platform itself: some lifecycle ratings, citation metrics, and subject rankings remain under
-          methodological validation and may not yet be available for all journals — pages that aren&apos;t
+        <Callout variant="info" className="max-w-2xl mt-3">
+          <strong>Operational Status:</strong> POSI has been operational since August 2026. Coverage
+          expansion and methodological validation remain ongoing — some lifecycle ratings, citation
+          metrics, and subject rankings are not yet available for all journals. Pages that aren&apos;t
           finalized say so explicitly (e.g. &quot;Preview&quot; or &quot;Not Yet Released&quot;) rather than showing a
           placeholder as if it were final.
         </Callout>
@@ -55,8 +57,9 @@ export default function AboutPage() {
           evaluation methodology that no person can hand-adjust, and publish the results — data, engine,
           and methodology alike — as versioned open infrastructure. Our goal is to help researchers,
           librarians, and institutions make better-informed decisions about where to publish and what to
-          cite. POSI is designed as an independent open infrastructure with its own coverage,
-          methodology, ratings, and citation analytics.
+          cite. POSI is an openly documented scholarly indexing and evaluation infrastructure operated
+          by Panorama Scholarly Group, with its own coverage, methodology, ratings, and citation
+          analytics.
         </p>
       </div>
 
