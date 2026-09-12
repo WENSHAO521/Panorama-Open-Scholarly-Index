@@ -34,7 +34,7 @@ export function Callout({
   const Icon = v.icon
   return (
     <div
-      className={`p-4 text-xs leading-relaxed flex items-start gap-2.5 ${className}`}
+      className={`p-4 text-xs leading-relaxed text-justify flex items-start gap-2.5 ${className}`}
       style={{ background: v.bg, border: `1px solid ${v.border}` }}
     >
       <Icon className="h-3.5 w-3.5 shrink-0 mt-px" weight={variant === 'danger' ? 'fill' : 'regular'} style={{ color: v.color }} />
