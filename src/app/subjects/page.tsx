@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Info, WarningCircle } from '@phosphor-icons/react/dist/ssr'
+import { Callout } from '@/components/Callout'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
 import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
@@ -91,28 +91,22 @@ export default async function SubjectsPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <span style={{ color: '#1d4ed8' }}>
-          {classifiedCount.toLocaleString()} of {allJournals.length.toLocaleString()} journals (Core Collection +
-          Global Benchmark) have been classified against this taxonomy via OpenAlex topic data — see{' '}
-          <a href="https://github.com/WENSHAO521/posi-data/blob/master/PSC-CROSSWALK.md" target="_blank" rel="noopener noreferrer" className="underline">PSC-CROSSWALK.md →</a>.
-          PSC is not yet wired into ranking cohorts (E-Q/M-Q/Citation Q peer groups) — the counts below are
-          classification coverage, not ranked cohorts. Taxonomy pinned to{' '}
-          <a href={`https://github.com/WENSHAO521/posi-data/commit/${PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PINNED_COMMIT.slice(0, 7)}</a>{' '}
-          — the same taxonomy on every rebuild, not whatever happens to be on <span className="font-mono">master</span> that day.
-        </span>
-      </div>
+      <Callout variant="info">
+        {classifiedCount.toLocaleString()} of {allJournals.length.toLocaleString()} journals (Core Collection +
+        Global Benchmark) have been classified against this taxonomy via OpenAlex topic data — see{' '}
+        <a href="https://github.com/WENSHAO521/posi-data/blob/master/PSC-CROSSWALK.md" target="_blank" rel="noopener noreferrer" className="underline">PSC-CROSSWALK.md →</a>.
+        PSC is not yet wired into ranking cohorts (E-Q/M-Q/Citation Q peer groups) — the counts below are
+        classification coverage, not ranked cohorts. Taxonomy pinned to{' '}
+        <a href={`https://github.com/WENSHAO521/posi-data/commit/${PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PINNED_COMMIT.slice(0, 7)}</a>{' '}
+        — the same taxonomy on every rebuild, not whatever happens to be on <span className="font-mono">master</span> that day.
+      </Callout>
 
       {usedFallback && (
-        <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-          <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#92400e' }} />
-          <span style={{ color: '#92400e' }}>
-            Live fetch from GitHub failed at build time — showing a vendored snapshot of the same pinned
-            commit (<span className="font-mono">src/lib/psc-v1.0.snapshot.json</span>) instead. Content is
-            identical; this notice just means the build fell back rather than failing outright.
-          </span>
-        </div>
+        <Callout variant="warning">
+          Live fetch from GitHub failed at build time — showing a vendored snapshot of the same pinned
+          commit (<span className="font-mono">src/lib/psc-v1.0.snapshot.json</span>) instead. Content is
+          identical; this notice just means the build fell back rather than failing outright.
+        </Callout>
       )}
 
       <section className="space-y-3">

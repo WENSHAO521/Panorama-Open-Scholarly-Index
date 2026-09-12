@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'API & Export | POSI',
@@ -62,14 +63,12 @@ export default function ApiPage() {
       </div>
 
       {/* Status notice */}
-      <div className="p-4 mb-6" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1d4ed8' }}>
-          <strong>API Status:</strong> The POSI public API is currently in planning phase.
-          Endpoints listed below represent the intended specification. Currently, data can be accessed
-          through the DOI Lookup tool, journal pages, and article pages on this site.
-          API availability will be announced on this page.
-        </p>
-      </div>
+      <Callout variant="info" className="mb-6">
+        <strong>API Status:</strong> The POSI public API is currently in planning phase.
+        Endpoints listed below represent the intended specification. Currently, data can be accessed
+        through the DOI Lookup tool, journal pages, and article pages on this site.
+        API availability will be announced on this page.
+      </Callout>
 
       {/* Base URL */}
       <section className="bg-white border border-gray-200 mb-6">

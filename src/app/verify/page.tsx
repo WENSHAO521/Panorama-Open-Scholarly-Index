@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
+import { Callout } from '@/components/Callout'
 import { getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF, verificationCode } from '@/lib/release'
 import { VerifyLookupForm, type VerifiableJournal } from '@/components/VerifyLookupForm'
@@ -73,15 +73,14 @@ export default function VerifyPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
+      <Callout variant="info">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Release:</strong> {RELEASE_LABEL}</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
           <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
           <p><strong>Records verifiable:</strong> {journals.length.toLocaleString()}</p>
         </div>
-      </div>
+      </Callout>
 
       <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
         <VerifyLookupForm journals={journals} releaseId={RELEASE_ID} />

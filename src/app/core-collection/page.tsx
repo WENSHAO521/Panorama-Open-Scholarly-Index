@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection} from '@/lib/data'
 import { earlyStageLifecycleLabel, earlyStageDisplayTotal, isEarlyStageV1_1 } from '@/lib/early-stage'
+import { Callout } from '@/components/Callout'
 
 export const metadata = {
   title: 'POSI Core Collection',
@@ -64,14 +64,11 @@ export default function CoreCollectionPage() {
         <Link href="/subjects" className="underline">PSC Subjects →</Link>.
       </p>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <span style={{ color: '#1d4ed8' }}>
-          {discoveredCount.toLocaleString()} journals are Discovered but not reviewed — they are not
-          counted as part of POSI's indexed coverage. See{' '}
-          <Link href="/journals?tab=discovered" className="underline">Auto-discovered Records →</Link> to browse them anyway.
-        </span>
-      </div>
+      <Callout variant="info">
+        {discoveredCount.toLocaleString()} journals are Discovered but not reviewed — they are not
+        counted as part of POSI's indexed coverage. See{' '}
+        <Link href="/journals?tab=discovered" className="underline">Auto-discovered Records →</Link> to browse them anyway.
+      </Callout>
 
       <section className="grid sm:grid-cols-3 gap-4">
         {STATES.map(s => (

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Export Formats | POSI',
@@ -75,14 +76,12 @@ export default function ExportFormatsPage() {
         </p>
       </div>
 
-      <div className="p-4" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1d4ed8' }}>
-          <strong>Export Status:</strong> Bulk exports are planned alongside the POSI public API.
-          Currently, individual records are accessible via the{' '}
-          <Link href="/doi-lookup" className="underline">DOI Lookup</Link>,{' '}
-          <Link href="/journals" className="underline">Journal pages</Link>.
-        </p>
-      </div>
+      <Callout variant="info">
+        <strong>Export Status:</strong> Bulk exports are planned alongside the POSI public API.
+        Currently, individual records are accessible via the{' '}
+        <Link href="/doi-lookup" className="underline">DOI Lookup</Link>,{' '}
+        <Link href="/journals" className="underline">Journal pages</Link>.
+      </Callout>
 
       {/* Format cards */}
       <div className="space-y-4">

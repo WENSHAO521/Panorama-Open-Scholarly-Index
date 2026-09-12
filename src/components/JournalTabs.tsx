@@ -4,6 +4,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from './Badge'
+import { Callout } from './Callout'
 import { MetadataQualityBar } from './MetadataQualityBar'
 import { JournalBrowser } from './JournalBrowser'
 import { ArticleCountBadge } from './ArticleCountBadge'
@@ -379,19 +380,13 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
 
       {/* Core Collection explainer — shown for the two manually-reviewable tabs */}
       {(activeTab === 'psg' || activeTab === 'indexed') && (
-        <div
-          className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed text-justify"
-          style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a' }}
-        >
-          <span className="font-bold shrink-0 mt-px">i</span>
-          <span>
-            <Badge label="Core Collection" variant="core-collection" className="mr-1.5 align-middle" /> journals have undergone manual PQF review.
-            Rows marked PQF* are auto-assessed from direct site crawling (DOAJ used only as a disclosed
-            fallback when a site can't be crawled) and have not been manually reviewed — see{' '}
-            <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>. Citation-impact metrics for this collection are ranked in{' '}
-            <Link href="/citation-reports" className="underline">POSI Citation Reports →</Link>
-          </span>
-        </div>
+        <Callout variant="info" className="mb-4">
+          <Badge label="Core Collection" variant="core-collection" className="mr-1.5 align-middle" /> journals have undergone manual PQF review.
+          Rows marked PQF* are auto-assessed from direct site crawling (DOAJ used only as a disclosed
+          fallback when a site can't be crawled) and have not been manually reviewed — see{' '}
+          <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>. Citation-impact metrics for this collection are ranked in{' '}
+          <Link href="/citation-reports" className="underline">POSI Citation Reports →</Link>
+        </Callout>
       )}
 
       {/* PSG Collection */}
@@ -449,18 +444,12 @@ export function JournalTabs({ psgRows, indexedRows, discoveredRows }: Props) {
       {/* Auto-discovered Records */}
       {activeTab === 'discovered' && (
         <div>
-          <div
-            className="flex items-start gap-2.5 px-3.5 py-2.5 mb-4 text-xs leading-relaxed text-justify"
-            style={{ background: '#FFFBEB', border: '1px solid #F59E0B', color: '#78350F' }}
-          >
-            <span className="font-bold shrink-0 mt-px">!</span>
-            <span>
-              These records are <strong>pending manual verification</strong> by the POSI team and may contain inaccuracies.
-              A DOAJ listing, where shown, is external reference metadata only — it does not promote a
-              record to Verified Records. PQF* grades are auto-assessed from OpenAlex and direct site
-              signals and have not been manually reviewed.
-            </span>
-          </div>
+          <Callout variant="warning" className="mb-4">
+            These records are <strong>pending manual verification</strong> by the POSI team and may contain inaccuracies.
+            A DOAJ listing, where shown, is external reference metadata only — it does not promote a
+            record to Verified Records. PQF* grades are auto-assessed from OpenAlex and direct site
+            signals and have not been manually reviewed.
+          </Callout>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <select
               value={activeSubject}

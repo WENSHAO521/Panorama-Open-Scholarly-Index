@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { PSG_JOURNALS, getCoreCollection } from '@/lib/data'
 import { DATA_CUTOFF } from '@/lib/release'
+import { Callout } from '@/components/Callout'
 
 export const metadata = {
   title: 'About POSI | Panorama Open Scholarly Index',
@@ -35,14 +36,14 @@ export default function AboutPage() {
           External database inclusion (DOAJ, Scopus, Web of Science, PubMed) does not determine POSI
           admission, scores, rankings, or quartiles.
         </p>
-        <p className="text-sm leading-relaxed max-w-2xl mt-3 p-3 text-justify" style={{ color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a' }}>
+        <Callout variant="warning" className="max-w-2xl mt-3">
           <strong>Officially Launched, Data Coverage Expanding:</strong> POSI is formally live as of August
           2026 — this is not a trial that could be discontinued. What&apos;s still in progress is coverage, not
           the platform itself: some lifecycle ratings, citation metrics, and subject rankings remain under
           methodological validation and may not yet be available for all journals — pages that aren&apos;t
           finalized say so explicitly (e.g. &quot;Preview&quot; or &quot;Not Yet Released&quot;) rather than showing a
           placeholder as if it were final.
-        </p>
+        </Callout>
       </div>
 
       {/* Mission */}

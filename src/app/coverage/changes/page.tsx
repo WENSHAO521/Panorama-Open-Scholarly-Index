@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Info } from '@phosphor-icons/react/dist/ssr'
 import { DATA_SNAPSHOT_LABEL, DATA_CUTOFF } from '@/lib/release'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Coverage Changes | POSI',
@@ -43,15 +43,12 @@ export default function CoverageChangesPage() {
         </p>
       </div>
 
-      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-        <span>
-          <strong>No status changes have been recorded</strong> as of the {DATA_CUTOFF} data cutoff.
-          Every Core Collection journal is currently in Continuing Review — this log will be updated
-          the first time any journal moves to Warning, Suspension, Withdrawal, Ceased, Delisting, or
-          Reinstatement. An empty log means exactly that, not that nothing has happened to check.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>No status changes have been recorded</strong> as of the {DATA_CUTOFF} data cutoff.
+        Every Core Collection journal is currently in Continuing Review — this log will be updated
+        the first time any journal moves to Warning, Suspension, Withdrawal, Ceased, Delisting, or
+        Reinstatement. An empty log means exactly that, not that nothing has happened to check.
+      </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>

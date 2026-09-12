@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Citation Visibility Index (CVI) | POSI',
@@ -49,14 +50,12 @@ export default function CviPage() {
       </div>
 
       {/* Important notice */}
-      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <strong style={{ color: '#1d4ed8' }}>CVI is not a citation impact metric.</strong>
-        <span style={{ color: '#1d4ed8' }}>
-          {' '}CVI measures citation infrastructure readiness — whether citations are open and machine-readable.
-          It does not measure citation frequency, h-index, or academic influence.
-          High CVI means a journal participates in open citation standards; it does not mean the journal is highly cited.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>CVI is not a citation impact metric.</strong>
+        {' '}CVI measures citation infrastructure readiness — whether citations are open and machine-readable.
+        It does not measure citation frequency, h-index, or academic influence.
+        High CVI means a journal participates in open citation standards; it does not mean the journal is highly cited.
+      </Callout>
 
       {/* Pointer to real citation-impact numbers */}
       <div className="p-4 text-xs leading-relaxed flex items-start justify-between gap-3 flex-wrap" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>

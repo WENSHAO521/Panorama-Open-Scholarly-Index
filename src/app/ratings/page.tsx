@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
+import { Callout } from '@/components/Callout'
 import { getCoreCollection } from '@/lib/data'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
@@ -116,9 +116,8 @@ export default function RatingsPage() {
         </div>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1" style={{ color: '#1d4ed8' }}>
+      <Callout variant="info">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Data snapshot:</strong> {DATA_CUTOFF} (no POSI-R-* release has been produced yet — see POSI-R-1.0-SPEC.md)</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
           <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
@@ -127,7 +126,7 @@ export default function RatingsPage() {
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>
           <p><strong>Quartiles:</strong> Assigned only once a minimum same-category PSC peer group exists</p>
         </div>
-      </div>
+      </Callout>
 
       <div className="flex flex-wrap gap-5 text-xs">
         <Link href="/pcs" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Citation Score (PCS) →</Link>

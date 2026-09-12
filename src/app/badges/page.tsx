@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { Info } from '@phosphor-icons/react/dist/ssr'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { BadgeLookupForm } from '@/components/BadgeLookupForm'
+import { Callout } from '@/components/Callout'
 
 const SITE_URL = 'https://posi.panorama-sg.com'
 
@@ -51,16 +51,13 @@ export default function BadgesPage() {
         </p>
       </div>
 
-      <div className="p-4 text-xs leading-relaxed flex items-start gap-2.5 text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <Info className="h-3.5 w-3.5 shrink-0 mt-px" style={{ color: '#1d4ed8' }} />
-        <span style={{ color: '#1d4ed8' }}>
-          <strong>Eligibility is enforced, not just requested.</strong> Badge images are generated only for
-          journals with a real POSI record — Core Collection (manually or auto-PQF reviewed, see{' '}
-          <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>) or candidate. A badge URL
-          for any other journal code returns a 404 — there is no way to display a valid POSI badge without an
-          actual POSI record, and no way to make a candidate badge render as a Core Collection one.
-        </span>
-      </div>
+      <Callout variant="info">
+        <strong>Eligibility is enforced, not just requested.</strong> Badge images are generated only for
+        journals with a real POSI record — Core Collection (manually or auto-PQF reviewed, see{' '}
+        <Link href="/pqf#eligibility" className="underline">PQF Eligibility</Link>) or candidate. A badge URL
+        for any other journal code returns a 404 — there is no way to display a valid POSI badge without an
+        actual POSI record, and no way to make a candidate badge render as a Core Collection one.
+      </Callout>
 
       {/* Example preview */}
       {example && (

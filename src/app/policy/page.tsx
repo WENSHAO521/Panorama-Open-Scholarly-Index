@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Journal Inclusion and Verification Policy | POSI',
@@ -386,10 +387,10 @@ export default function PolicyPage() {
             Publisher-owned journals are evaluated using the same public criteria as all other records.
             When a journal is published by Panorama Scholarly Group, this relationship must be clearly disclosed on the journal record page.
           </p>
-          <div className="mt-4 p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
+          <Callout variant="info" className="mt-4">
             <strong>Required disclosure:</strong> This journal is published by Panorama Scholarly Group, the operator of POSI.
             The record is evaluated using the same public evidence criteria as all other POSI records.
-          </div>
+          </Callout>
         </div>
       </section>
 

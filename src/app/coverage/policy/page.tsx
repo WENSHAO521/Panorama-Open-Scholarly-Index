@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Coverage Policy | POSI',
@@ -92,15 +92,12 @@ export default function CoveragePolicyPage() {
         </p>
       </div>
 
-      <div className="flex items-start gap-3 p-4 text-xs leading-relaxed text-justify" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
-        <WarningCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-        <span>
-          <strong>Launch note:</strong> this policy is in effect from launch. No Core Collection
-          journal has moved past Admission / Continuing Review yet — see{' '}
-          <Link href="/coverage/changes" className="underline">Coverage Changes</Link> for the current,
-          empty log.
-        </span>
-      </div>
+      <Callout variant="warning">
+        <strong>Launch note:</strong> this policy is in effect from launch. No Core Collection
+        journal has moved past Admission / Continuing Review yet — see{' '}
+        <Link href="/coverage/changes" className="underline">Coverage Changes</Link> for the current,
+        empty log.
+      </Callout>
 
       <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
         <SectionHeader num="1" title="Lifecycle States" />

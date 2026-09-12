@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PSG_JOURNALS, INDEXED_JOURNALS, SHIHARR_JOURNALS, OTHER_INDEXED_JOURNALS, getCoreCollection} from '@/lib/data'
+import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
   title: 'Policy Coverage Estimate | POSI',
@@ -107,7 +108,7 @@ export default function PoliciesPage() {
       </div>
 
       {/* Notice */}
-      <div className="p-4 text-xs leading-relaxed text-justify" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
+      <Callout variant="info">
         <strong>Methodology:</strong> Per-policy-type status below is derived algorithmically from each
         journal's aggregate transparency evidence (JTF score), not from checking each policy type's URL
         individually. <em>Verified</em> and <em>Partial</em> indicate strong or moderate aggregate
@@ -115,7 +116,7 @@ export default function PoliciesPage() {
         checked</em> means this policy type is not independently modeled and defaults to an unassessed
         state. Treat this page as a coverage estimate for prioritizing manual review, not as confirmation
         that any specific policy document was individually located and read.
-      </div>
+      </Callout>
 
       {/* Policy type definitions */}
       <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
