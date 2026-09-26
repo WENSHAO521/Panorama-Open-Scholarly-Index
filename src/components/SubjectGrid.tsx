@@ -15,7 +15,7 @@ export function SubjectGrid({ cats, count = c => c.count, query = '' }: { cats: 
             {shown.filter(c => c.domain === d).map((c, i) => (
               <li key={c.code} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
                 <Link href={`/journals/subject/${c.code}/${query}`} className="grid grid-cols-[52px_minmax(0,1fr)_auto] gap-2 items-baseline px-3 py-2 transition-colors hover:bg-[var(--hover)]">
-                  <span className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{c.code}</span>
+                  <span className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{c.code === 'multidisciplinary' ? 'GEN' : c.code}</span>
                   <span className="text-[14px] truncate" style={{ color: 'var(--ink)' }}>{c.name}</span>
                   <span className="font-mono text-[12px] tnum" style={{ color: 'var(--muted)' }}>{fmt(count(c))}</span>
                 </Link>

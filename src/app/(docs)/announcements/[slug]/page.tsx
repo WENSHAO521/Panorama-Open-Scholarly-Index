@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ANNOUNCEMENTS, getAnnouncementBySlug } from '@/lib/announcements'
+import { PageHeader } from '@/components/db'
+
+export const dynamicParams = false
 
 export async function generateStaticParams() {
   return ANNOUNCEMENTS.map(a => ({ slug: a.slug }))
@@ -8,56 +11,25 @@ export async function generateStaticParams() {
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params
-  const announcement = getAnnouncementBySlug(slug)
-  if (!announcement) return { title: 'Announcement Not Found' }
-  return {
-    title: `${announcement.title}`,
-    description: announcement.summary,
-  }
+  const a = getAnnouncementBySlug(slug)
+  return a ? { title: a.title, description: a.summary } : { title: 'News item not found' }
 }
 
 export default async function AnnouncementDetailPage(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params
-  const announcement = getAnnouncementBySlug(slug)
-  if (!announcement) notFound()
+  const a = getAnnouncementBySlug(slug)
+  if (!a) notFound()
+  const date = new Date(`${a.date}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
-      <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-        <Link href="/" className="hover:text-gray-700">Home</Link>
-        <span>/</span>
-        <Link href="/announcements" className="hover:text-gray-700">Announcements</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>{announcement.title}</span>
-      </nav>
-
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
-        <p
-          className="text-[10px] font-mono uppercase tracking-[0.14em] mb-2"
-          style={{ color: 'var(--posi-muted)' }}
-        >
-          {announcement.date}
-        </p>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>
-          {announcement.title}
-        </h1>
+    <div className="pb-12">
+      <PageHeader title={a.title} crumbs={[{ label: 'POSI', href: '/' }, { label: 'News', href: '/announcements/' }, { label: date }]}>
+        <time dateTime={a.date} className="font-mono text-[13px]" style={{ color: 'var(--muted)' }}>{date}</time>
+      </PageHeader>
+      <div className="doc">
+        {a.body.map((p, i) => <p key={i}>{p}</p>)}
+        <p className="pt-4"><Link href="/announcements/">All news</Link></p>
       </div>
-
-      <div className="bg-white p-5 space-y-4" style={{ border: '1px solid var(--posi-border)' }}>
-        {announcement.body.map((paragraph, i) => (
-          <p key={i} className="text-sm leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-            {paragraph}
-          </p>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-5 text-xs">
-        <Link href="/announcements" style={{ color: 'var(--posi-accent)' }} className="hover:underline">
-          ← All Announcements
-        </Link>
-      </div>
-
     </div>
   )
 }

@@ -3,8 +3,8 @@
 # Evidence/Not Eligible status (see /pqf) — a ranked leaderboard conflicts
 # with AJR (Ratings & Rankings), which is now the comparative-evaluation
 # track. See posi-data/AJR-SPEC.md.
-/pqf-scores /pqf 301
-/pqf-scores/ /pqf/ 301
+/pqf-scores /editorial-policy/ 301
+/pqf-scores/ /editorial-policy/ 301
 
 # 2026-09 open-database redesign: retired routes and their replacements.
 # Publication search, DOI lookup and article pages now run client-side
@@ -21,11 +21,75 @@
 /isbn-lookup/ /publications/ 301
 /open-data /datasets/ 301
 /open-data/ /datasets/ 301
-/ojqf /pqf/ 301
-/ojqf/ /pqf/ 301
-/metrics /ratings/ 301
-/metrics/ /ratings/ 301
+/ojqf /editorial-policy/ 301
+/ojqf/ /editorial-policy/ 301
+/metrics /rankings/ 301
+/metrics/ /rankings/ 301
 /submit-journal /certification/ 301
 /submit-journal/ /certification/ 301
 /rankings/global /rankings/ 301
 /rankings/global/ /rankings/ 301
+
+# Journal profiles moved from /source/ (live OpenAlex) to /journal/ (static profiles).
+/source /journal/ 301
+/source/ /journal/ 301
+
+# 2026-09 documentation consolidation: legacy pages and their replacements.
+/what-posi-is /about/ 301
+/what-posi-is/ /about/ 301
+/what-posi-is-not /about/ 301
+/what-posi-is-not/ /about/ 301
+/operator /about/ 301
+/operator/ /about/ 301
+/pqf /editorial-policy/ 301
+/pqf/ /editorial-policy/ 301
+/policy /editorial-policy/ 301
+/policy/ /editorial-policy/ 301
+/policies /editorial-policy/ 301
+/policies/ /editorial-policy/ 301
+/evidence /docs/provenance/ 301
+/evidence/ /docs/provenance/ 301
+/journal-evidence /docs/provenance/ 301
+/journal-evidence/ /docs/provenance/ 301
+/coverage/policy /editorial-policy/ 301
+/coverage/policy/ /editorial-policy/ 301
+/coverage/changes /announcements/ 301
+/coverage/changes/ /announcements/ 301
+/coverage/global-benchmark /journals/ 301
+/coverage/global-benchmark/ /journals/ 301
+/coverage /editorial-policy/ 301
+/coverage/ /editorial-policy/ 301
+/ratings /rankings/ 301
+/ratings/ /rankings/ 301
+/ratings/early-stage /rankings/ 301
+/ratings/early-stage/ /rankings/ 301
+/ratings/mature /rankings/ 301
+/ratings/mature/ /rankings/ 301
+/citation-reports /rankings/ 301
+/citation-reports/ /rankings/ 301
+/pcs /methodology/ 301
+/pcs/ /methodology/ 301
+/pci /methodology/ 301
+/pci/ /methodology/ 301
+/mqs /editorial-policy/ 301
+/mqs/ /editorial-policy/ 301
+/irs /editorial-policy/ 301
+/irs/ /editorial-policy/ 301
+/cvi /editorial-policy/ 301
+/cvi/ /editorial-policy/ 301
+/data-sources /docs/data/ 301
+/data-sources/ /docs/data/ 301
+/source-status /docs/data/ 301
+/source-status/ /docs/data/ 301
+/api /docs/data/ 301
+/api/ /docs/data/ 301
+/export-formats /docs/data/ 301
+/export-formats/ /docs/data/ 301
+/psg-format /about/ 301
+/psg-format/ /about/ 301
+/badges /certification/ 301
+/badges/ /certification/ 301
+/cite /publications/ 301
+/cite/ /publications/ 301
+/verify /certificate/verify/ 301
+/verify/ /certificate/verify/ 301

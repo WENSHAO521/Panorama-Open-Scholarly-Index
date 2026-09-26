@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { searchWorks, typeFacets, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type SortKey, type Facet } from '@/lib/openalex'
+import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { WorkItem } from './WorkItem'
 
@@ -25,7 +26,7 @@ const PRESETS = [
   { key: '5y', label: 'Last 5 years', from: () => `${new Date().getFullYear() - 5}-01-01` },
 ]
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ok'; count: number; results: Work[] }
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ok'; count: number; results: Work[]; via?: 'crossref' }
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -67,6 +68,7 @@ export function PublicationSearch() {
   // Results and facets are keyed by the query they answer; anything else reads as loading.
   const queryKey = JSON.stringify(query)
   const [res, setRes] = useState<{ key: string; status: Status } | null>(null)
+  const [attempt, setAttempt] = useState(0)
   const [fac, setFac] = useState<{ key: string; facets: Facet[] } | null>(null)
   const status: Status = res?.key === queryKey ? res.status : { kind: 'loading' }
   const facets = fac?.key === queryKey ? fac.facets : null
@@ -76,9 +78,9 @@ export function PublicationSearch() {
     searchWorks(query, ctrl.signal)
       .then(r => setRes({ key: queryKey, status: { kind: 'ok', ...r } }))
       .catch(e => { if (e.name !== 'AbortError') setRes({ key: queryKey, status: { kind: 'error', message: String(e.message || e) } }) })
-    typeFacets(query, ctrl.signal).then(f => setFac({ key: queryKey, facets: f })).catch(() => {})
+    typeFacets(query, ctrl.signal).then(f => setFac({ key: queryKey, facets: f })).catch(e => { if (e.name !== 'AbortError') setFac({ key: queryKey, facets: [] }) })
     return () => ctrl.abort()
-  }, [query, queryKey])
+  }, [query, queryKey, attempt])
 
   function update(patch: Record<string, string | null>, resetPage = true) {
     const n = new URLSearchParams(sp.toString())
@@ -177,7 +179,7 @@ export function PublicationSearch() {
       )}
 
       <p className="text-[12px] leading-relaxed" style={{ color: 'var(--soft)' }}>
-        Publication metadata: OpenAlex (CC0).
+        Publication metadata: OpenAlex (CC0), with Crossref as a fallback.
       </p>
     </div>
   )
@@ -251,11 +253,20 @@ export function PublicationSearch() {
 
           {status.kind === 'error' && (
             <div className="panel p-6 mt-2">
-              <p className="font-medium">OpenAlex did not answer</p>
+              <p className="font-medium">Search is temporarily unavailable</p>
               <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>
-                {status.message}. The service may be rate limiting anonymous requests. Wait a moment and try again.
+                Neither OpenAlex nor Crossref answered ({status.message}). This usually clears within a minute.
               </p>
-              <button type="button" className="btn btn-sm mt-4" onClick={() => router.refresh()}>Try again</button>
+              <button type="button" className="btn btn-sm mt-4" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Search again</button>
+            </div>
+          )}
+
+          {status.kind === 'ok' && status.via === 'crossref' && (
+            <div className="mt-2 mb-3">
+              <Note>
+                OpenAlex is busy, so these results come from Crossref. Abstracts, open access status and type
+                filters may be incomplete. <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>
+              </Note>
             </div>
           )}
 

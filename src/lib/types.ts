@@ -91,7 +91,7 @@ export interface CitationPreview {
   h_index: number | null
   works_count: number | null
   psc_category: string | null
-  psc_confidence: 'high' | 'medium' | 'low' | 'unclassified'
+  psc_confidence: 'high' | 'medium' | 'low' | 'multidisciplinary' | 'unclassified'
   history_evidence: {
     // Real, checkable evidence of publishing activity >=5 years before
     // this preview was computed - NOT the real FPD-1.0/LIFECYCLE-1.1

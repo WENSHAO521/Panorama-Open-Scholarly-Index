@@ -1,6 +1,9 @@
 // Browser-side client for the OpenAlex works API (CC0 data, open CORS).
-// POSI has no backend: publication search and publication pages call
-// OpenAlex directly from the visitor's browser.
+// Publication search and publication pages call OpenAlex from the visitor's
+// browser. Busy responses (429, 5xx) are retried once or twice, honouring
+// Retry-After; if OpenAlex still does not answer, search and publication
+// pages fall back to Crossref (see crossref* below). Answers are cached for
+// the browser session so back/forward and repeat queries cost nothing.
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -60,6 +63,8 @@ export interface WorkQuery {
 export interface WorkPage {
   count: number
   results: Work[]
+  /** set when OpenAlex was unavailable and Crossref answered instead */
+  via?: 'crossref'
 }
 
 export interface Facet { key: string; label: string; count: number }
@@ -81,13 +86,169 @@ function url(path: string, params: Record<string, string | number | undefined>) 
   return `${API}${path}?${sp}`
 }
 
-async function get<T>(u: string, signal?: AbortSignal): Promise<T> {
-  const r = await fetch(u, { signal })
-  if (!r.ok) throw new Error(`OpenAlex ${r.status}`)
-  return r.json()
+export class RegistryError extends Error {
+  constructor(readonly service: string, readonly status: number) {
+    super(`${service} ${status || 'unreachable'}`)
+  }
+  get busy() { return this.status === 0 || this.status === 429 || this.status >= 500 }
+}
+
+const CACHE_TTL = 10 * 60 * 1000
+function cacheGet<T>(u: string): T | null {
+  try {
+    const raw = sessionStorage.getItem(`oa:${u}`)
+    if (!raw) return null
+    const { t, v } = JSON.parse(raw)
+    return Date.now() - t < CACHE_TTL ? v : null
+  } catch { return null }
+}
+function cacheSet(u: string, v: unknown) {
+  try { sessionStorage.setItem(`oa:${u}`, JSON.stringify({ t: Date.now(), v })) } catch { /* quota or disabled */ }
+}
+
+const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((res, rej) => {
+  const t = setTimeout(res, ms)
+  signal?.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Aborted', 'AbortError')) }, { once: true })
+})
+
+// A long Retry-After means the visitor's daily budget is spent: skip the
+// service for the rest of the session instead of waiting on it.
+const BLOCK_KEY = (service: string) => `blocked:${service}`
+function blockedUntil(service: string): number {
+  try { return Number(sessionStorage.getItem(BLOCK_KEY(service))) || 0 } catch { return 0 }
+}
+function block(service: string, seconds: number) {
+  try { sessionStorage.setItem(BLOCK_KEY(service), String(Date.now() + seconds * 1000)) } catch { /* disabled */ }
+}
+
+/** GET with session cache and up to two short retries on busy responses. */
+async function fetchJson<T>(u: string, service: string, signal?: AbortSignal): Promise<T> {
+  const hit = cacheGet<T>(u)
+  if (hit) return hit
+  if (blockedUntil(service) > Date.now()) throw new RegistryError(service, 429)
+  for (let attempt = 0; ; attempt++) {
+    let status = 0
+    let retryAfter = 0
+    try {
+      const r = await fetch(u, { signal })
+      if (r.ok) { const v = await r.json(); cacheSet(u, v); return v }
+      status = r.status
+      retryAfter = Number(r.headers.get('Retry-After')) || 0
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') throw e
+    }
+    const err = new RegistryError(service, status)
+    if (status === 429 && retryAfter > 30) { block(service, retryAfter); throw err }
+    if (!err.busy || attempt >= 2) throw err
+    const ms = retryAfter ? Math.min(retryAfter * 1000, 8000) : 800 * 2 ** attempt + Math.random() * 400
+    await wait(ms, signal)
+  }
+}
+
+function get<T>(u: string, signal?: AbortSignal): Promise<T> {
+  return fetchJson<T>(u, 'OpenAlex', signal)
+}
+
+// Crossref fallback. Crossref has no abstracts index, topics or OA status,
+// so fallback results are thinner, and the page says where they came from.
+
+const CROSSREF = 'https://api.crossref.org'
+
+interface CrItem {
+  DOI: string
+  title?: string[]
+  type?: string
+  'container-title'?: string[]
+  ISSN?: string[]
+  publisher?: string
+  issued?: { 'date-parts'?: (number | null)[][] }
+  author?: { given?: string; family?: string; name?: string; ORCID?: string; affiliation?: { name: string }[] }[]
+  'is-referenced-by-count'?: number
+  'references-count'?: number
+  volume?: string
+  issue?: string
+  page?: string
+  abstract?: string
+  license?: { URL: string }[]
+  URL?: string
+  language?: string
+}
+
+const CR_TYPE: Record<string, string> = {
+  'journal-article': 'article', 'proceedings-article': 'article', 'book-chapter': 'book-chapter', book: 'book',
+  'posted-content': 'preprint', dataset: 'dataset', 'peer-review': 'peer-review', dissertation: 'dissertation',
+  'reference-entry': 'reference-entry', report: 'report', standard: 'standard', component: 'other',
+}
+
+function crToWork(m: CrItem): Work {
+  const parts = m.issued?.['date-parts']?.[0] ?? []
+  const [y, mo, d] = parts
+  const date = y ? [y, mo, d].filter(Boolean).map((n, i) => (i ? String(n).padStart(2, '0') : String(n))).join('-') : null
+  const [first, last] = (m.page ?? '').split(/[-–]/)
+  const abstract = m.abstract ? m.abstract.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''
+  const inv: Record<string, number[]> = {}
+  abstract.split(' ').forEach((w, i) => { if (w) (inv[w] ??= []).push(i) })
+  const issn = m.ISSN ?? []
+  return {
+    id: m.DOI,
+    doi: `https://doi.org/${m.DOI}`,
+    title: m.title?.[0] ?? null,
+    publication_date: date,
+    publication_year: y ?? null,
+    type: CR_TYPE[m.type ?? ''] ?? m.type ?? null,
+    language: m.language ?? null,
+    open_access: { is_oa: false, oa_status: 'unknown', oa_url: null },
+    cited_by_count: m['is-referenced-by-count'] ?? 0,
+    referenced_works_count: m['references-count'],
+    authorships: (m.author ?? []).map(a => ({
+      author: { id: '', display_name: a.name ?? [a.given, a.family].filter(Boolean).join(' '), orcid: a.ORCID ?? null },
+      institutions: (a.affiliation ?? []).map(x => ({ id: '', display_name: x.name, country_code: null })),
+    })),
+    primary_location: {
+      source: m['container-title']?.[0]
+        ? { id: issn[0] ?? '', display_name: m['container-title'][0], issn_l: issn[0] ?? null, issn, host_organization_name: m.publisher ?? null, type: 'journal' }
+        : null,
+      landing_page_url: m.URL ?? null, pdf_url: null, license: m.license?.[0]?.URL ?? null,
+    },
+    biblio: { volume: m.volume ?? null, issue: m.issue ?? null, first_page: first || null, last_page: last || null },
+    abstract_inverted_index: abstract ? inv : null,
+  }
+}
+
+function crUrl(path: string, params: Record<string, string | number | undefined>) {
+  const sp = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') sp.set(k, String(v))
+  sp.set('mailto', MAILTO)
+  return `${CROSSREF}${path}?${sp}`
+}
+
+async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  const f: string[] = []
+  if (qy.from) f.push(`from-pub-date:${qy.from}`)
+  if (qy.to) f.push(`until-pub-date:${qy.to}`)
+  if (qy.issn) f.push(`issn:${qy.issn}`)
+  if (qy.type?.length === 1 && qy.type[0] === 'article') f.push('type:journal-article')
+  const sort = qy.sort === 'cited' ? 'is-referenced-by-count' : qy.sort === 'newest' || !qy.q ? 'published' : undefined
+  const j = await fetchJson<{ message: { 'total-results': number; items: CrItem[] } }>(crUrl('/works', {
+    'query.bibliographic': qy.q || undefined,
+    filter: f.join(',') || undefined,
+    sort, order: sort ? 'desc' : undefined,
+    rows: qy.perPage,
+    offset: Math.min((qy.page - 1) * qy.perPage, 9000),
+  }), 'Crossref', signal)
+  return { count: j.message['total-results'], results: j.message.items.map(crToWork), via: 'crossref' }
 }
 
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  try {
+    return await openalexSearch(qy, signal)
+  } catch (e) {
+    if (e instanceof RegistryError && e.busy) return crossrefSearch(qy, signal)
+    throw e
+  }
+}
+
+async function openalexSearch(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
   const sort = qy.sort === 'newest' ? 'publication_date:desc' : qy.sort === 'cited' ? 'cited_by_count:desc' : qy.q ? 'relevance_score:desc' : 'publication_date:desc'
   const j = await get<{ meta: { count: number }; results: Work[] }>(url('/works', {
     search: qy.q || undefined,
@@ -112,8 +273,16 @@ export async function typeFacets(qy: WorkQuery, signal?: AbortSignal): Promise<F
 }
 
 export async function getWork(id: string, signal?: AbortSignal): Promise<Work> {
-  const key = /^10\./.test(id) ? `doi:${id}` : id.replace('https://openalex.org/', '')
-  return get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
+  const doi = /^10\./.test(id)
+  const key = doi ? `doi:${id}` : id.replace('https://openalex.org/', '')
+  try {
+    return await get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
+  } catch (e) {
+    // A DOI can still be resolved through Crossref while OpenAlex is busy.
+    if (!doi || !(e instanceof RegistryError) || !e.busy) throw e
+    const j = await fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(id)}`, {}), 'Crossref', signal)
+    return crToWork(j.message)
+  }
 }
 
 export async function getTotalWorks(signal?: AbortSignal): Promise<number> {
@@ -259,7 +428,7 @@ export function sourceId(s: Pick<Source, 'id'>): string {
 export function sourceHref(src: { id?: string | null; issn_l?: string | null } | null | undefined, curated?: string | null): string | null {
   if (curated) return curated
   if (!src) return null
-  if (src.id) return `/source/?id=${src.id.replace('https://openalex.org/', '')}`
-  if (src.issn_l) return `/source/?issn=${src.issn_l}`
+  if (src.id) return `/journal/?id=${src.id.replace('https://openalex.org/', '')}`
+  if (src.issn_l) return `/journal/?issn=${src.issn_l}`
   return null
 }

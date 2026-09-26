@@ -25,10 +25,8 @@ export default function ProvenancePage() {
     <div className="pb-10 space-y-12 max-w-[900px]">
       <PageHeader title="Provenance and verification" crumbs={[{ label: 'Docs', href: '/docs/' }, { label: 'Provenance' }]}>
         <p>
-          Every record states how much of it has been confirmed and how recently it changed. The rules follow the
-          provenance discipline of{' '}
-          <span>scholarly-corpus-builder</span>:
-          identifiers before plausibility, open sources before anything else, and no value upgraded because it merely looks right.
+          Every record states how much of it has been confirmed and how recently it changed. Identifiers are checked
+          before anything else, open sources come first, and no value is upgraded because it merely looks right.
         </p>
       </PageHeader>
 

@@ -1,11 +1,12 @@
 'use client'
 
 import { useRef, useState, type FormEvent } from 'react'
-import { CheckCircle, XCircle, Printer, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
+import { CheckCircle, XCircle, DownloadSimple, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import {
   MAX_DOIS, SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, parseDoiList, todayIso, verifyPath, type CertItem,
 } from '@/lib/certificate'
 import { CertificateDocument, type CertificateData } from './CertificateDocument'
+import { downloadCertificatePdf } from '@/lib/certificate-download'
 import { Note } from './db'
 
 type Phase = 'form' | 'checking' | 'done'
@@ -21,6 +22,20 @@ export function CertificateTool() {
   const [cert, setCert] = useState<CertificateData | null>(null)
   const [formError, setFormError] = useState('')
   const abort = useRef<AbortController | null>(null)
+  const sheet = useRef<HTMLDivElement | null>(null)
+  const [pdfState, setPdfState] = useState<'idle' | 'working' | 'error'>('idle')
+
+  async function downloadPdf() {
+    const el = sheet.current?.querySelector<HTMLElement>('.cert')
+    if (!el || !cert) return
+    setPdfState('working')
+    try {
+      await downloadCertificatePdf(el, { code: cert.code, issued: cert.issued })
+      setPdfState('idle')
+    } catch {
+      setPdfState('error')
+    }
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -155,10 +170,15 @@ export function CertificateTool() {
             <h2 id="cert-heading" className="text-[17px] font-semibold tracking-tight">Certificate</h2>
             <div className="flex gap-2">
               <a href={cert.verifyUrl} target="_blank" rel="noopener noreferrer" className="btn">Verify <ArrowSquareOut className="h-4 w-4" /></a>
-              <button type="button" className="btn btn-primary" onClick={() => window.print()}><Printer className="h-4 w-4" /> Print or save PDF</button>
+              <button type="button" className="btn btn-primary" onClick={downloadPdf} disabled={pdfState === 'working'} aria-busy={pdfState === 'working'}>
+                <DownloadSimple className="h-4 w-4" /> {pdfState === 'working' ? 'Preparing PDF…' : 'Download PDF'}
+              </button>
             </div>
           </div>
-          <CertificateDocument data={cert} />
+          {pdfState === 'error' && (
+            <p className="no-print mb-3 text-[13.5px]" style={{ color: 'var(--check)' }}>The PDF could not be created in this browser. Try again, or use another browser.</p>
+          )}
+          <div ref={sheet}><CertificateDocument data={cert} /></div>
         </section>
       )}
     </div>

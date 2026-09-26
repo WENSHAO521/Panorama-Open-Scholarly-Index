@@ -1,114 +1,87 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
+import { PageHeader } from '@/components/db'
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'What data posi.panorama-sg.com collects, what it does not collect, and how to reach POSI with a privacy question.',
+export const metadata = {
+  title: 'Privacy policy',
+  description: 'What information posi.panorama-sg.com processes, what it does not collect, and how to contact POSI about privacy.',
 }
-
-const SECTIONS = [
-  {
-    heading: 'What POSI Is, Technically',
-    body: [
-      'POSI (posi.panorama-sg.com) is a statically generated website: every page is built in advance from public journal, citation, and metadata records and served as plain files. There is no user login system, no database that stores visitor information, and no server-side application processing requests on a per-visitor basis.',
-    ],
-  },
-  {
-    heading: 'Data We Do Not Collect',
-    body: [
-      'POSI does not set cookies, does not use browser local storage or session storage to track you, does not run any third-party analytics or advertising script, and does not build visitor profiles. You do not need to create an account or provide any personal information to search, browse, or read any journal record on this site.',
-    ],
-  },
-  {
-    heading: 'Hosting-Level Server Logs',
-    body: [
-      'POSI is hosted on Cloudflare Pages. Like virtually any web host, Cloudflare’s edge network processes standard connection metadata (IP address, requested URL, timestamp, user agent) to serve pages and protect the site from abuse. POSI does not have a separate analytics layer on top of this - if this changes (for example, if we enable Cloudflare Web Analytics or a similar privacy-respecting, cookie-less tool to understand traffic during the pre-operational period), this policy will be updated first.',
-    ],
-  },
-  {
-    heading: 'Information You Choose to Send Us',
-    body: [
-      'The Contact and Submit Journal pages route to posi@panorama-sg.com as a plain email link (mailto:) - POSI does not operate a web form that stores your message on our servers. Whatever you include in an email to us (name, institution, journal details, correction requests) is handled the same way as any other business correspondence: used to respond to your inquiry, and not sold or shared with third parties for marketing purposes.',
-    ],
-  },
-  {
-    heading: 'Journal and Publication Metadata',
-    body: [
-      'The bibliographic metadata POSI indexes - journal records, article DOIs, author names as they appear in published metadata, citation counts - is sourced from public infrastructure (Crossref, OpenAlex, DOAJ, ROR, ORCID, OpenCitations) and is not personal data collected from site visitors. See ',
-    ],
-    links: [{ href: '/data-sources', label: 'Data Sources' }, { href: '/open-data', label: 'Open Data' }],
-  },
-  {
-    heading: 'External Links',
-    body: [
-      'Journal records and citation pages link out to publisher websites, DOI resolvers, and other external services. Those sites have their own privacy practices, which POSI does not control and this policy does not cover.',
-    ],
-  },
-  {
-    heading: 'Changes to This Policy',
-    body: [
-      'POSI is in a pre-operational phase, and its technical infrastructure may change (for example, adding cookie-less analytics or an API with authenticated access). Material changes to what data is collected will be reflected on this page with an updated date below.',
-    ],
-  },
-]
 
 export default function PrivacyPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
-      <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-        <Link href="/" className="hover:text-gray-700">Home</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Privacy Policy</span>
-      </nav>
-
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Privacy Policy</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
-          POSI is operated by Panorama Scholarly Group Ltd. This page describes, in plain terms,
-          what data posi.panorama-sg.com collects and does not collect. It is an operational
-          summary, not a substitute for independent legal advice about a specific jurisdiction.
+    <div className="pb-12">
+      <PageHeader title="Privacy policy" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Legal' }, { label: 'Privacy policy' }]}>
+        <p className="max-w-[68ch]">
+          POSI is published by Panorama Scholarly Group Ltd., Hong Kong SAR. This policy describes what information
+          is processed when you use posi.panorama-sg.com.
         </p>
-      </div>
+      </PageHeader>
 
-      {SECTIONS.map(section => (
-        <section key={section.heading} className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-          <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>{section.heading}</h2>
-          {section.body.map((p, i) => (
-            <p key={i} className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-              {p}
-              {section.links && section.links.map((l, j) => (
-                <span key={l.href}>
-                  {j > 0 && ' and '}
-                  <Link href={l.href} className="hover:underline" style={{ color: 'var(--posi-accent)' }}>{l.label}</Link>
-                </span>
-              ))}
-              {section.links ? '.' : ''}
-            </p>
-          ))}
+      <div className="doc">
+        <section aria-labelledby="accounts">
+          <h2 id="accounts">No accounts, no tracking</h2>
+          <p>
+            You do not need an account to use POSI. POSI sets no cookies, runs no analytics or advertising scripts,
+            and builds no visitor profiles.
+          </p>
         </section>
-      ))}
 
-      <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Contact</h2>
-        <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-          Questions about this policy can be sent to{' '}
-          <a href="mailto:posi@panorama-sg.com" className="hover:underline" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>
-            posi@panorama-sg.com
-          </a>.
-        </p>
-      </section>
+        <section aria-labelledby="browser">
+          <h2 id="browser">Information kept in your browser</h2>
+          <p>
+            To avoid repeating the same request, recent search results are kept in your browser’s session storage
+            and are deleted when you close the tab. This information stays on your device and is not sent to POSI.
+          </p>
+        </section>
 
-      <p className="text-[11px]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
-        Last updated: 2026-08-12
-      </p>
+        <section aria-labelledby="registries">
+          <h2 id="registries">Requests to scholarly registries</h2>
+          <p>
+            Publication search, publication pages and certificate checks send your query directly from your
+            browser to OpenAlex (api.openalex.org) and Crossref (api.crossref.org). These services receive your
+            query and your IP address as part of the request, under their own privacy policies. Journal search and
+            journal profiles are served by POSI and do not contact these services.
+          </p>
+        </section>
 
-      <div className="flex flex-wrap gap-5 text-xs">
-        <Link href="/terms" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Terms of Use →</Link>
-        <Link href="/responsible-use" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Responsible Use Notice →</Link>
-        <Link href="/coi" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Conflict of Interest Disclosure →</Link>
+        <section aria-labelledby="hosting">
+          <h2 id="hosting">Hosting</h2>
+          <p>
+            POSI is hosted on Cloudflare. Cloudflare processes standard connection information, such as IP address,
+            requested page, time and browser type, to deliver pages and protect the site from abuse. POSI adds no
+            logging of its own.
+          </p>
+        </section>
+
+        <section aria-labelledby="email">
+          <h2 id="email">Information you send us</h2>
+          <p>
+            Certification applications, certificates and enquiries are sent by email to posi@panorama-sg.com; POSI
+            has no web forms that store your message. We use what you send only to handle your request, and keep it
+            as long as needed for that purpose and for the record of editorial decisions.
+          </p>
+          <p>
+            The name, affiliation and purpose you enter when issuing a certificate are printed on the certificate in
+            your browser and are not sent to POSI.
+          </p>
+        </section>
+
+        <section aria-labelledby="metadata">
+          <h2 id="metadata">Bibliographic metadata</h2>
+          <p>
+            Author names and affiliations shown with publications come from published metadata in Crossref and
+            OpenAlex. To correct them, contact the publisher or the registry; see{' '}
+            <Link href="/docs/data/#corrections">data sources and access</Link>.
+          </p>
+        </section>
+
+        <section aria-labelledby="contact">
+          <h2 id="contact">Contact and changes</h2>
+          <p>
+            Questions about privacy can be sent to <a href="mailto:posi@panorama-sg.com">posi@panorama-sg.com</a>.
+            Changes to this policy are published on this page.
+          </p>
+        </section>
       </div>
-
     </div>
   )
 }

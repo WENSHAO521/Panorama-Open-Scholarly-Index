@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
+import { THEME_SCRIPT } from '@/lib/theme'
 import { SiteFooter } from "@/components/SiteFooter";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   publisher: "Panorama Scholarly Group Ltd",
   authors: [{ name: "Panorama Scholarly Group Ltd", url: "https://panorama-sg.com" }],
-  keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "PSC", "AJR", "PCI", "provenance"],
+  keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "journal rankings", "citation index", "PSC", "provenance"],
   icons: { icon: "/favicon.svg" },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
@@ -55,7 +56,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"

@@ -11,7 +11,7 @@
  * Shape rule: every surface, control and table uses --radius (6px); status
  * chips are the only pill shape.
  *
- * Theme: follows prefers-color-scheme. Tokens are redefined for dark below;
+ * Theme: follows prefers-color-scheme, overridable with the header toggle. Tokens are redefined for dark below;
  * components read tokens, never raw hex.
  */
 :root {
@@ -63,8 +63,10 @@
   --font-display: var(--font-body);
 }
 
+/* Dark tokens: the system setting, unless the visitor chose light with the
+   header toggle (data-theme on <html>, set before first paint). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
     --paper: #0e1415;
     --surface: #141c1e;
@@ -103,6 +105,46 @@
     --code-ink: #cfe0dc;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0e1415;
+  --surface: #141c1e;
+  --surface-2: #1a2427;
+  --surface-3: #222e31;
+  --hover: #182225;
+  --line: #2a373a;
+  --line-soft: #212c2f;
+
+  --ink: #e6ecec;
+  --ink-2: #c3cdcf;
+  --muted: #97a4a8;
+  --soft: #72818a;
+
+  --teal: #5cb8b4;
+  --teal-hover: #7dcac6;
+  --teal-soft: #173033;
+  --teal-line: #2b5256;
+  --on-teal: #0b1a1b;
+
+  --verified: #6cc59a;
+  --verified-soft: #16291f;
+  --partial: #d4bb5c;
+  --partial-soft: #2a2614;
+  --check: #e4955f;
+  --check-soft: #2f2016;
+  --rejected: #ec8a98;
+  --rejected-soft: #331a1f;
+  --info: #86b1dd;
+  --info-soft: #18242f;
+
+  --band: #0a1011;
+  --band-ink: #dfe7e7;
+  --band-muted: #8a9a9d;
+  --code-bg: #0a1213;
+  --code-ink: #cfe0dc;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 :root {
@@ -332,3 +374,20 @@ pre.code {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Documentation prose: policy, methodology and about pages. */
+@layer components {
+  .doc { max-width: 760px; color: var(--ink-2); font-size: 15px; line-height: 1.7; }
+  .doc > section + section { margin-top: 2.75rem; }
+  .doc h2 { color: var(--ink); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; scroll-margin-top: 7rem; }
+  .doc h3 { color: var(--ink); font-size: 15.5px; font-weight: 600; margin-top: 1.5rem; }
+  .doc p, .doc ul, .doc ol, .doc table, .doc dl, .doc .panel { margin-top: 0.75rem; }
+  .doc ul { list-style: disc; padding-left: 1.25rem; }
+  .doc ol { list-style: decimal; padding-left: 1.25rem; }
+  .doc li + li { margin-top: 0.35rem; }
+
+  .doc code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.9em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
+  .doc .formula { font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem 1rem; overflow-x: auto; }
+}
+/* Unlayered: the global a {} reset is unlayered too. */
+.doc a:not(.btn) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }

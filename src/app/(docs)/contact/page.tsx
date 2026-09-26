@@ -1,141 +1,56 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
-import { Envelope, MapPin, Globe } from '@phosphor-icons/react/dist/ssr'
+import { PageHeader } from '@/components/db'
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Contact',
-  description: 'Contact the POSI team for journal submissions, record corrections, data inquiries, and governance questions.',
+  description: 'Contact the POSI editorial team about certification, record corrections, certificates and data.',
 }
 
-const CONTACT_TOPICS = [
-  {
-    topic: 'Journal Submission',
-    address: 'posi@panorama-sg.com',
-    subject: 'POSI Journal Submission: [Journal Title]',
-    desc: 'Submit a new open access journal record for POSI review and PQF assessment.',
-    cta: { label: 'Apply for certification', href: '/certification/' },
-  },
-  {
-    topic: 'Report Data or Evidence Issue',
-    address: 'posi@panorama-sg.com',
-    subject: 'POSI Data/Evidence Issue: [Journal Title or ISSN]',
-    desc: 'Report incorrect metadata, wrong ISSN, broken links or evidence sources, misclassified PSC subject, outdated policy information, or a dispute over evidence used in an automated assessment - for any existing journal record. Coverage note: most rating/quartile figures are still under methodological validation, so this is for factual and evidence corrections, not a formal appeal of a published rating (there is no published rating to appeal yet).',
-    cta: null,
-  },
-  {
-    topic: 'Data Inquiry',
-    address: 'posi@panorama-sg.com',
-    subject: 'POSI Data Inquiry',
-    desc: 'Questions about data provenance, bulk data access, institutional data agreements, or API access for research purposes.',
-    cta: { label: 'API & Export Roadmap →', href: '/api' },
-  },
-  {
-    topic: 'Governance & COI',
-    address: 'posi@panorama-sg.com',
-    subject: 'POSI Governance Inquiry',
-    desc: 'Questions about POSI\'s conflict of interest policy, scoring independence, or platform governance.',
-    cta: { label: 'COI Disclosure →', href: '/coi' },
-  },
+const TOPICS = [
+  { topic: 'Core Collection certification', subject: 'POSI Certification: [Journal title]', body: 'Apply through the certification form, which prepares the message for you.', href: '/certification/', cta: 'Apply for certification' },
+  { topic: 'Record correction', subject: 'POSI Correction: [Journal title or ISSN]', body: 'Wrong ISSN, publisher, subject category or other details on a POSI record. Registry data is corrected at Crossref or OpenAlex; see data sources.', href: '/docs/data/#corrections', cta: 'Data sources and access' },
+  { topic: 'Appeal', subject: 'POSI Appeal: [Journal title]', body: 'Appeals against a certification decision, warning, suspension or delisting, with supporting evidence.', href: '/editorial-policy/#appeals', cta: 'Appeals process' },
+  { topic: 'Certificates of indexing', subject: 'POSI Certificate: [Certificate number]', body: 'Questions about a certificate or its verification.', href: '/docs/certificates/', cta: 'How certificates work' },
+  { topic: 'Data and licensing', subject: 'POSI Data', body: 'Bulk data, reuse and attribution.', href: '/datasets/', cta: 'Data downloads' },
 ]
 
 export default function ContactPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
-      <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-        <Link href="/" className="hover:text-gray-700">Home</Link>
-        <span>/</span>
-        <Link href="/about" className="hover:text-gray-700">About</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Contact</span>
-      </nav>
-
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Contact POSI</h1>
-        <p className="text-sm leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
-          The POSI team handles journal submissions, record corrections, data inquiries, and governance questions.
-          Use the appropriate subject line to ensure your message is routed correctly.
+    <div className="pb-12">
+      <PageHeader title="Contact" crumbs={[{ label: 'POSI', href: '/' }, { label: 'About', href: '/about/' }, { label: 'Contact' }]}>
+        <p className="max-w-[68ch]">
+          Write to <a href="mailto:posi@panorama-sg.com" className="link">posi@panorama-sg.com</a> with the subject line
+          for your request. Enquiries are acknowledged within two to three business days.
         </p>
-      </div>
+      </PageHeader>
 
-      {/* Operator contact */}
-      <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--posi-text)' }}>Panorama Scholarly Group Ltd.</h2>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <div className="flex items-start gap-2.5">
-              <MapPin className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--posi-muted)' }} />
-              <div className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-                Room 1508, 15/F., Office Tower Two<br />
-                Grand Plaza, 625 Nathan Road<br />
-                Kowloon, Hong Kong SAR
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Envelope className="h-4 w-4 shrink-0" style={{ color: 'var(--posi-muted)' }} />
-              <a
-                href="mailto:posi@panorama-sg.com"
-                className="text-xs hover:underline"
-                style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-              >
-                posi@panorama-sg.com
-              </a>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Globe className="h-4 w-4 shrink-0" style={{ color: 'var(--posi-muted)' }} />
-              <a
-                href="https://panorama-sg.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs hover:underline"
-                style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-              >
-                panorama-sg.com
-              </a>
-            </div>
-          </div>
-          <div className="p-3 text-xs leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
-            <p style={{ color: 'var(--posi-muted)' }}>
-              <strong style={{ color: 'var(--posi-text)' }}>Response time: </strong>
-              We aim to acknowledge all inquiries within 2-3 business days.
-              Journal submission reviews take 10-20 business days.
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] max-w-[1000px]">
+        <ul className="panel divide-y" style={{ borderColor: 'var(--line-soft)' }}>
+          {TOPICS.map(t => (
+            <li key={t.topic} className="p-5" style={{ borderColor: 'var(--line-soft)' }}>
+              <h2 className="text-[15.5px] font-semibold">{t.topic}</h2>
+              <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{t.body}</p>
+              <p className="mt-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                Subject: <span className="font-mono" style={{ color: 'var(--ink-2)' }}>{t.subject}</span>
+              </p>
+              <Link href={t.href} className="link mt-2 inline-block text-[13.5px]">{t.cta}</Link>
+            </li>
+          ))}
+        </ul>
+
+        <aside>
+          <address className="not-italic panel p-5 text-[14px] leading-relaxed">
+            <p className="font-semibold" style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</p>
+            <p className="mt-1" style={{ color: 'var(--ink-2)' }}>
+              Room 1508, 15/F., Office Tower Two, Grand Plaza<br />
+              625 Nathan Road, Kowloon<br />
+              Hong Kong SAR
             </p>
-          </div>
-        </div>
+            <p className="mt-3"><a href="mailto:posi@panorama-sg.com" className="link">posi@panorama-sg.com</a></p>
+            <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>Certification reviews take ten to twenty business days.</p>
+          </address>
+        </aside>
       </div>
-
-      {/* Contact topics */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold" style={{ color: 'var(--posi-text)' }}>Contact by Topic</h2>
-        {CONTACT_TOPICS.map(item => (
-          <div key={item.topic} className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="text-xs font-bold" style={{ color: 'var(--posi-text)' }}>{item.topic}</h3>
-              {item.cta && (
-                <Link href={item.cta.href} className="text-[10px] hover:underline shrink-0" style={{ color: 'var(--posi-accent)' }}>
-                  {item.cta.label}
-                </Link>
-              )}
-            </div>
-            <p className="text-xs leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>{item.desc}</p>
-            <a
-              href={`mailto:${item.address}?subject=${encodeURIComponent(item.subject)}`}
-              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 text-white transition-opacity hover:opacity-80"
-              style={{ background: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}
-            >
-              <Envelope className="h-3 w-3" />
-              Email with subject: {item.subject}
-            </a>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-5 text-xs">
-        <Link href="/about" style={{ color: 'var(--posi-accent)' }} className="hover:underline">About POSI →</Link>
-        <Link href="/coi" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Conflict of Interest →</Link>
-        <Link href="/certification/" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Apply for certification</Link>
-      </div>
-
     </div>
   )
 }

@@ -1,5 +1,10 @@
 import raw from './citation-stats.json'
-import type { OpenAlexSourceStats } from './api'
+
+export interface OpenAlexSourceStats {
+  two_yr_mean_citedness: number | null
+  h_index: number | null
+  cited_by_count: number | null
+}
 
 // Precomputed snapshot - see scripts/fetch-citation-stats.mjs. Both
 // /citation-reports and /journal/[code] read from this single file so

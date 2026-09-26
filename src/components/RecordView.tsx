@@ -164,7 +164,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 value={ajrTotal !== null ? ajrTotal.toFixed(1) : <span className="text-[16px] font-medium" style={{ color: status.color }}>{status.label}</span>}
                 sub={ajrTotal !== null ? <>{status.label}{ajrQ ? `, ${ajrQ}` : ''}. {earlyStageLifecycleLabel(r)}</> : earlyStageLifecycleLabel(r)}
                 version={r?.version ?? null}
-                href="/ratings/"
+                href="/rankings/"
               />
               <Metric
                 name="Citation score (PCS)"
@@ -172,7 +172,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 sub={pcs ? `${pcs.pcs_window_start_year} to ${pcs.pcs_window_end_year}, ${fmt(pcs.pcs_eligible_items)} items` : 'Not computed for this record'}
                 sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
                 version={pcs?.pcs_methodology_version}
-                href="/pcs/"
+                href="/methodology/#pcs"
               />
               <Metric
                 name="Citation impact (PCI)"
@@ -180,14 +180,14 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 sub={pci ? `${pci.pci_window_start_year} to ${pci.pci_window_end_year}, ${fmt(pci.pci_citable_items)} citable items` : 'Not computed for this record'}
                 sample={pci ? sampleLabel(pci.pci_citable_items) : null}
                 version={pci?.pci_methodology_version}
-                href="/pci/"
+                href="/methodology/"
               />
               <Metric
                 name={pqf ? 'Editorial selection (PQF)' : 'PQF (automated)'}
                 value={pqf ? pqf.total : autoPqf ? autoPqf.total : 'n/a'}
                 sub={pqf ? `Grade ${pqf.grade}, evaluated ${pqf.evaluated_at}` : autoPqf ? 'Automated pre-screen, not an admission decision' : 'Not assessed'}
                 version={(pqf ?? autoPqf)?.version ?? null}
-                href="/pqf/"
+                href="/editorial-policy/#certification"
               />
             </div>
             {ranking && (

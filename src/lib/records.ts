@@ -37,7 +37,7 @@ export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 // The internal collection keys (core / candidate / benchmark / discovered)
 // stay as they are in the data files; they only say where a curated record
 // came from. A journal with no curated record at all is still indexed and is
-// served from OpenAlex at /source/.
+// served as journal profiles at /journal/.
 export type Tier = 'core' | 'indexed'
 
 export function tierOf(k: Collection): Tier {

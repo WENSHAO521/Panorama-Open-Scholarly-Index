@@ -22,7 +22,7 @@ export function QuartileBadge({ q }: { q: Quartile | null }) {
 
 function journalHref(r: RankedJournal) {
   if (r.code) return `/journal/${r.code}/`
-  return r.issn[0] ? `/source/?issn=${r.issn[0]}` : null
+  return r.issn[0] ? `/journal/?issn=${r.issn[0]}` : null
 }
 
 function csv(rows: RankedJournal[], overall: boolean) {

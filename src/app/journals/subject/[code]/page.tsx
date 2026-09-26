@@ -25,14 +25,16 @@ export default async function SubjectJournalsPage(props: { params: Promise<{ cod
     <div className="wrap pb-10">
       <PageHeader
         title={cat.name}
-        crumbs={[{ label: 'POSI', href: '/' }, { label: 'Journals', href: '/journals/' }, { label: code === 'unclassified' ? 'Not yet classified' : code }]}
-        actions={code !== 'unclassified' ? <Link href={`/rankings/${code}/`} className="btn">Rankings in this category</Link> : undefined}
+        crumbs={[{ label: 'POSI', href: '/' }, { label: 'Journals', href: '/journals/' }, { label: code === 'unclassified' ? 'Not yet classified' : code === 'multidisciplinary' ? 'Multidisciplinary' : code }]}
+        actions={code !== 'unclassified' && code !== 'multidisciplinary' ? <Link href={`/rankings/${code}/`} className="btn">Rankings in this category</Link> : undefined}
       >
         <p className="max-w-[68ch]">
           {fmt(cat.count)} indexed journals{cat.core ? `, ${cat.core} in the Core Collection` : ''}.
           {code === 'unclassified'
             ? ' These journals have no subject profile yet, usually because they are registered with Crossref but not described by OpenAlex.'
-            : ` ${cat.domainName}.`}
+            : code === 'multidisciplinary'
+              ? ' General journals whose output spans several fields, such as Science, Nature and The Lancet. They are not ranked within a single subject category.'
+              : ` ${cat.domainName}.`}
         </p>
       </PageHeader>
       <Suspense fallback={<TableSkeleton />}>

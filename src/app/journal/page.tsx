@@ -1,0 +1,17 @@
+import { Suspense } from 'react'
+import { JournalProfileView } from './JournalProfileView'
+
+export const metadata = {
+  title: 'Journal',
+  description: 'Journal profile in the Panorama Open Scholarly Index: identifiers, publications and citations per year, subject, topics and PCS-Q ranking.',
+}
+
+export default function JournalProfilePage() {
+  return (
+    <div className="wrap">
+      <Suspense fallback={null}>
+        <JournalProfileView />
+      </Suspense>
+    </div>
+  )
+}

@@ -58,7 +58,7 @@ export function WorkViewer() {
         <p className="mt-2" style={{ color: 'var(--muted)' }}>
           {state.notFound
             ? `OpenAlex has no work for "${id}".`
-            : 'OpenAlex did not answer. It may be rate limiting anonymous requests. Try again shortly.'}
+            : 'Neither OpenAlex nor Crossref answered. This usually clears within a minute; reload the page to try again.'}
         </p>
         <Link href={`/publications/?q=${encodeURIComponent(id)}`} className="btn btn-primary mt-6">Search publications</Link>
       </div>
@@ -118,14 +118,14 @@ export function WorkViewer() {
           <div className="mt-6 flex flex-wrap gap-2">
             {doi && <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Publisher page <ArrowSquareOut className="h-4 w-4" /></a>}
             {w.open_access?.oa_url && <a href={w.open_access.oa_url} target="_blank" rel="noopener noreferrer" className="btn">Full text <ArrowSquareOut className="h-4 w-4" /></a>}
-            <a href={w.id} target="_blank" rel="noopener noreferrer" className="btn">OpenAlex <ArrowSquareOut className="h-4 w-4" /></a>
+            {w.id.startsWith('https://openalex.org/') && <a href={w.id} target="_blank" rel="noopener noreferrer" className="btn">OpenAlex <ArrowSquareOut className="h-4 w-4" /></a>}
           </div>
 
           <section className="mt-10" aria-labelledby="abstract">
             <SectionTitle id="abstract">Abstract</SectionTitle>
             {abs
               ? <p className="text-[15.5px] leading-[1.75] max-w-[75ch]" style={{ color: 'var(--ink-2)' }}>{abs}</p>
-              : <p className="text-[14px]" style={{ color: 'var(--muted)' }}>No abstract is available in OpenAlex for this publication.</p>}
+              : <p className="text-[14px]" style={{ color: 'var(--muted)' }}>No abstract is available for this publication.</p>}
           </section>
 
           {!!w.keywords?.length && (
@@ -176,7 +176,7 @@ export function WorkViewer() {
           <div className="panel p-4">
             <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Published in</p>
             {src ? (
-              <Link href={posi ? recordHref(posi) : `/source/?id=${src.id.replace('https://openalex.org/', '')}`} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
+              <Link href={posi ? recordHref(posi) : `/journal/?id=${src.id.replace('https://openalex.org/', '')}`} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
             ) : <p className="mt-1 font-medium">No source recorded</p>}
             {src?.host_organization_name && <p style={{ color: 'var(--muted)' }}>{src.host_organization_name}</p>}
             <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">
