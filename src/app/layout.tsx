@@ -27,7 +27,7 @@ const geistMono = localFont({
 
 const SITE_URL = "https://posi.panorama-sg.com";
 const SITE_DESCRIPTION =
-  "Panorama Open Scholarly Index is an open, static scholarly database. Search publications, journals and publishers; every journal record carries published provenance and every file is downloadable.";
+  "The Panorama Open Scholarly Index (POSI) is a scholarly database published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -36,6 +36,8 @@ export const metadata: Metadata = {
     template: "%s · POSI",
   },
   description: SITE_DESCRIPTION,
+  publisher: "Panorama Scholarly Group Ltd",
+  authors: [{ name: "Panorama Scholarly Group Ltd", url: "https://panorama-sg.com" }],
   keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "PSC", "AJR", "PCI", "provenance"],
   icons: { icon: "/favicon.svg" },
   alternates: { canonical: "/" },

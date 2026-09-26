@@ -142,7 +142,7 @@ export function CertificateVerifier() {
 
       <p className="text-[13px] leading-relaxed max-w-[75ch]" style={{ color: 'var(--muted)' }}>
         Verification recomputes the certificate number from its contents and re-checks each publication against
-        Crossref, OpenAlex and the live POSI index in your browser. The requester&apos;s name is not part of the link and is not
+        Crossref, OpenAlex and the current POSI index. The requester&apos;s name is not part of the link and is not
         verified. <Link href="/docs/certificates/" className="link">How certificates work</Link>.
       </p>
     </div>

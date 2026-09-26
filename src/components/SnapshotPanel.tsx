@@ -48,7 +48,7 @@ export function SnapshotPanel() {
   if (error) {
     return (
       <div className="panel p-5 text-[14px]" style={{ color: 'var(--muted)' }}>
-        The data layer at <span className="font-mono">{BASE}</span> could not be reached from your browser. The files
+        The data layer at <span className="font-mono">{BASE}</span> could not be reached. The files
         are also mirrored in the <a className="link" href="https://github.com/WENSHAO521/posi-data-delivery" target="_blank" rel="noopener noreferrer">posi-data-delivery</a> repository.
       </div>
     )

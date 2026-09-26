@@ -177,7 +177,7 @@ export function PublicationSearch() {
       )}
 
       <p className="text-[12px] leading-relaxed" style={{ color: 'var(--soft)' }}>
-        Publication data from OpenAlex (CC0), queried directly from your browser.
+        Publication metadata: OpenAlex (CC0).
       </p>
     </div>
   )

@@ -11,7 +11,7 @@ import { SnapshotPanel } from '@/components/SnapshotPanel'
 
 export const metadata = {
   title: 'Datasets',
-  description: 'Download every POSI file: record indexes in JSON and CSV, full record JSON, the PSC taxonomy and the checksummed canonical snapshot. Static files, no API key.',
+  description: 'Download every POSI file: journal records in JSON and CSV, rankings, the PSC subject classification and the checksummed canonical snapshot.',
 }
 
 function kb(bytes: number) {
@@ -58,8 +58,8 @@ export default function DatasetsPage() {
     <div className="wrap">
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
-          Everything POSI shows is published as static files. There is no API server, key or rate limit: fetch a
-          file, mirror it, or load it into a notebook. Snapshot cutoff <span className="font-mono">{DATA_CUTOFF}</span>.
+          POSI journal records, rankings and the subject classification are available for download under open
+          licenses. Data cutoff <span className="font-mono">{DATA_CUTOFF}</span>.
         </p>
       </PageHeader>
 
@@ -67,7 +67,7 @@ export default function DatasetsPage() {
         <section aria-labelledby="site-files">
           <SectionTitle id="site-files">Files on this site</SectionTitle>
           <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
-            Regenerated on every build from the vendored corpus. Index files use short keys, documented in the{' '}
+            Index files use short keys, documented in the{' '}
             <Link href="/docs/schema/" className="link">record schema</Link>.
           </p>
           <div className="panel overflow-x-auto">
@@ -95,9 +95,8 @@ export default function DatasetsPage() {
         <section aria-labelledby="canonical">
           <SectionTitle id="canonical">Canonical snapshot</SectionTitle>
           <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
-            The authoritative, immutable copy lives at <span className="font-mono">data.posi.panorama-sg.com</span>. Each
-            snapshot pins the exact data and engine commits it was computed from, and ships SHA-256 checksums.
-            Read live from your browser:
+            The authoritative, immutable copy is published at <span className="font-mono">data.posi.panorama-sg.com</span>.
+            Each snapshot records the data and engine versions it was computed from, with SHA-256 checksums.
           </p>
           <SnapshotPanel />
         </section>

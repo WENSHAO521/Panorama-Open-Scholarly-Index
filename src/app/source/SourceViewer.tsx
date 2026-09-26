@@ -172,7 +172,7 @@ export function SourceViewer() {
             <dt style={{ color: 'var(--muted)' }}>Publishing</dt><dd className="font-mono">{s.first_publication_year ?? '?'} to {s.last_publication_year ?? '?'}</dd>
             <dt style={{ color: 'var(--muted)' }}>OpenAlex id</dt><dd className="font-mono">{sourceId(s)}</dd>
           </dl>
-          <p className="mt-3 text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Registry data from OpenAlex (CC0), read live in your browser.</p>
+          <p className="mt-3 text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Coverage data: OpenAlex (CC0).</p>
         </aside>
       </div>
     </article>

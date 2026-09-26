@@ -7,7 +7,7 @@ import { PageHeader, fmt } from '@/components/db'
 
 export const metadata = {
   title: 'Sources',
-  description: 'Search and filter every journal record in POSI: Core Collection, Global Benchmark and Discovered. Runs entirely in your browser against static open-data files.',
+  description: 'Search and filter journals indexed in POSI, from the Core Collection to every journal registered with Crossref or OpenAlex.',
 }
 
 export default function JournalsPage() {
@@ -26,8 +26,8 @@ export default function JournalsPage() {
         actions={<Link href="/datasets/" className="btn">Bulk download</Link>}
       >
         <p>
-          {fmt(idx.length)} journals across three collections, each with published provenance. Search and filters run in your browser
-          against the same files you can <Link href="/datasets/" className="link">download</Link>.
+          {fmt(idx.length)} curated journal records, plus every journal registered with Crossref or OpenAlex. Records
+          can also be <Link href="/datasets/" className="link">downloaded</Link>.
         </p>
       </PageHeader>
       <Suspense fallback={<BrowserSkeleton />}>

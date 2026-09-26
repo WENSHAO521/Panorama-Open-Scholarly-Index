@@ -56,8 +56,8 @@ export function SiteFooter() {
         <div className="space-y-4 max-w-sm">
           <Logo inverted />
           <p className="text-[13px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
-            An open, file-backed index of scholarly journals. Records, scores and classifications are
-            computed offline from open registries and published as static files. No server, no account.
+            A scholarly database of publications, journals and journal rankings, published by Panorama
+            Scholarly Group Ltd.
           </p>
           <p className="text-[12px] font-mono" style={{ color: 'var(--band-muted)' }}>
             Data cutoff {DATA_CUTOFF}
@@ -81,7 +81,7 @@ export function SiteFooter() {
       <div style={{ borderTop: '1px solid var(--band-line)' }}>
         <div className="wrap py-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-[12px]" style={{ color: 'var(--band-muted)' }}>
           <p>
-            POSI-curated data{' '}
+            &copy; {new Date().getFullYear()} Panorama Scholarly Group Ltd. POSI data{' '}
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline hover:underline">CC BY 4.0</a>
             {', '}source code MIT. Third-party metadata keeps its original license.
           </p>

@@ -3,7 +3,7 @@ import { SourceViewer } from './SourceViewer'
 
 export const metadata = {
   title: 'Journal',
-  description: 'An indexed journal: identifiers, coverage, works per year and topics from open registry data, read live in your browser.',
+  description: 'An indexed journal: identifiers, coverage, works per year and topics.',
 }
 
 export default function SourcePage() {

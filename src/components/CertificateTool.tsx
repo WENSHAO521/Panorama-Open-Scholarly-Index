@@ -66,7 +66,7 @@ export function CertificateTool() {
         <div className="flex flex-col gap-2">
           <label htmlFor="req" className="text-[13.5px] font-medium">Requester name</label>
           <input id="req" className="input" value={requester} onChange={e => setRequester(e.target.value)} autoComplete="name" />
-          <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Printed on the certificate only. Never sent anywhere or put in the verification link.</p>
+          <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Printed on the certificate. Not included in the verification link.</p>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="aff" className="text-[13.5px] font-medium">Affiliation <span style={{ color: 'var(--muted)', fontWeight: 400 }}>optional</span></label>
@@ -96,7 +96,7 @@ export function CertificateTool() {
           <button type="submit" className="btn btn-primary" disabled={phase === 'checking'}>
             {phase === 'checking' ? 'Checking' : 'Check and issue'}
           </button>
-          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Runs in your browser against Crossref, OpenAlex and the POSI index.</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Each DOI is checked against Crossref, OpenAlex and the POSI index.</span>
         </div>
       </form>
 

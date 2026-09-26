@@ -63,7 +63,7 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
           <Mark />
           <div>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Panorama Open Scholarly Index</div>
-            <div style={{ color: MUTED, fontSize: 11 }}>posi.panorama-sg.com</div>
+            <div style={{ color: MUTED, fontSize: 11 }}>Panorama Scholarly Group Ltd, posi.panorama-sg.com</div>
           </div>
         </div>
         <dl style={{ display: 'grid', gridTemplateColumns: 'auto auto', gap: '2px 12px', fontSize: 11, margin: 0 }}>
@@ -137,7 +137,7 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
           <p style={{ margin: '4px 0 0', fontFamily: MONO, color: TEAL, wordBreak: 'break-all' }}>{data.verifyUrl}</p>
           <p style={{ margin: '8px 0 0' }}>
             This certificate states indexing status only. It is not an assessment of the quality of any publication or
-            journal. Issued automatically by POSI from open registry data.
+            journal. Issued by the Panorama Open Scholarly Index, Panorama Scholarly Group Ltd.
           </p>
         </div>
         <div style={{ textAlign: 'center' }}>

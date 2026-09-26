@@ -51,7 +51,7 @@ export default function CertificatesDoc() {
         </p>
 
         <h2>How verification works</h2>
-        <p>POSI has no server and keeps no register of issued certificates. Verification re-derives the certificate instead of looking it up:</p>
+        <p>Verification does not depend on a register of issued certificates. It re-derives each certificate from its contents:</p>
         <ul>
           <li>The certificate number is recomputed from the date, snapshot and DOI list in the link. A mismatch means the certificate was altered.</li>
           <li>Every DOI is re-checked against Crossref, OpenAlex and the current POSI index. Changes since issue, such as a journal leaving the Core Collection, are reported.</li>

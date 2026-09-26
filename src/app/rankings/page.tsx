@@ -5,7 +5,7 @@ import { RankingTable } from '@/components/RankingTable'
 
 export const metadata = {
   title: 'Journal Rankings',
-  description: 'Open journal rankings by subject category: POSI Citation Score, category rank, percentile and quartile for every ranked journal, Core and indexed. Reproducible from published data.',
+  description: 'Journal rankings by subject category: POSI Citation Score, category rank, percentile and PCS quartile for every ranked journal.',
 }
 
 export default function RankingsPage() {

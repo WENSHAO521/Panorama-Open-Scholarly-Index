@@ -9,9 +9,9 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { DownloadSimple, MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
-import { TIERS, VERIFICATION, recordHref, tierOf, type Collection, type IndexRecord, type Tier, type Verification } from '@/lib/records'
+import { VERIFICATION, recordHref, tierOf, type Collection, type IndexRecord, type Tier, type Verification } from '@/lib/records'
 import { searchSources, sourceId, type Source } from '@/lib/openalex'
-import { CollectionTag, VerificationPill, fmt } from './db'
+import { CollectionTag, fmt } from './db'
 
 const PAGE_SIZE = 50
 const GROUPS = ['core', 'benchmark', 'discovered'] as const
@@ -100,7 +100,7 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
   })
   const [vers, setVers] = useState<Set<Verification>>(new Set())
   const [domains, setDomains] = useState<Set<string>>(() => new Set(params.get('psc')?.split(',').filter(Boolean) ?? []))
-  const [oa, setOa] = useState<Set<'oa' | 'doaj'>>(new Set())
+  const [oa, setOa] = useState<Set<'oa' | 'doaj'>>(() => new Set(params.get('oa') === '1' ? ['oa'] : []))
   const [pub, setPub] = useState(params.get('pub') ?? '')
   const [sort, setSort] = useState<SortKey>('relevance')
 
@@ -290,11 +290,10 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
             )}
             {failed.length > 0 && <span className="ml-3" style={{ color: 'var(--check)' }}>Could not load: {failed.join(', ')}</span>}
           </p>
-          <p className="font-mono text-[12px]">source: /data/index/*.json</p>
         </div>
 
         <div className="panel overflow-x-auto">
-          <table className="dtable min-w-[760px]">
+          <table className="dtable min-w-[680px]">
             <thead>
               <tr>
                 <th>Title</th>
@@ -302,7 +301,6 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
                 <th>PSC</th>
                 <th className="text-right">Articles</th>
                 <th>Status</th>
-                <th>Verification</th>
               </tr>
             </thead>
             <tbody>
@@ -320,18 +318,17 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
                   </td>
                   <td className="text-right font-mono text-[12.5px] tnum">{fmt(r.n)}</td>
                   <td><CollectionTag k={r.k} /></td>
-                  <td><VerificationPill v={r.v} /></td>
                 </tr>
               ))}
               {!shown.length && loading.length === GROUPS.length && Array.from({ length: 8 }).map((_, i) => (
                 <tr key={`sk-${i}`} aria-hidden="true">
-                  {Array.from({ length: 6 }).map((__, j) => (
+                  {Array.from({ length: 5 }).map((__, j) => (
                     <td key={j}><div className="h-3.5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)', width: j === 0 ? '80%' : '60%' }} /></td>
                   ))}
                 </tr>
               ))}
               {!shown.length && loading.length < GROUPS.length && (
-                <tr><td colSpan={6} className="py-14 text-center">
+                <tr><td colSpan={5} className="py-14 text-center">
                   <p className="font-medium" style={{ color: 'var(--ink)' }}>No records match</p>
                   <p className="text-[13px] mt-1" style={{ color: 'var(--muted)' }}>
                     Try a shorter query or clear a filter. Journals beyond the curated records appear below when OpenAlex has a match.
