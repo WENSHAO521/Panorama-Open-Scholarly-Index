@@ -8,9 +8,9 @@ export const PRIMARY_NAV: NavGroup[] = [
   {
     label: 'Journals',
     links: [
-      { label: 'Browse journals', href: '/journals/', description: 'Every indexed journal, with filters by subject and access' },
+      { label: 'Browse journals', href: '/journals/', description: 'Every indexed journal, by subject category' },
       { label: 'Core Collection', href: '/core-collection/', description: 'Journals certified after editorial evaluation' },
-      { label: 'Open access directory', href: '/journals/?oa=1', description: 'Open access journals, licences and charges' },
+      { label: 'Open access directory', href: '/journals/open-access/', description: 'Open access journals by subject' },
       { label: 'Publishers', href: '/publishers/', description: 'Publishers and their journals' },
       { label: 'Subject categories', href: '/subjects/', description: 'The PSC subject classification' },
     ],

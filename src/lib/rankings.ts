@@ -2,7 +2,7 @@
 //
 // This module does not compute ranks. It reads the PCS-Q edition published
 // by posi-engine (scripts/run-pcs-q.mjs, posi-data/PCS-Q-1.0-SPEC.md). The
-// edition is downloaded before each build by scripts/sync-rankings.mjs into
+// edition is downloaded before each build by scripts/sync-live-data.mjs into
 // src/lib/generated/pcs-q.json; src/lib/pcs-q.json is the committed fallback. The
 // algorithm (RANK-1.0: mid-rank ties, percentile from mid-rank, quartile
 // thresholds, MIN_CATEGORY_SIZE, rank-eligible PSC confidence) lives only

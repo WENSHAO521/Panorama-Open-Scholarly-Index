@@ -1,52 +1,60 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { toIndexRecord } from '@/lib/records'
-import { getAllRecords } from '@/lib/records-data'
-import { RecordBrowser } from '@/components/RecordBrowser'
-import { PageHeader, fmt } from '@/components/db'
+import { getDirectory, getDirectoryCategories } from '@/lib/global-journals'
+import { JournalSearch } from '@/components/JournalSearch'
+import { PageHeader, SectionTitle, fmt } from '@/components/db'
+import { SubjectGrid } from '@/components/SubjectGrid'
 
 export const metadata = {
-  title: 'Sources',
-  description: 'Search and filter journals indexed in POSI, from the Core Collection to every journal registered with Crossref or OpenAlex.',
+  title: 'Journals',
+  description: 'Every journal indexed in the Panorama Open Scholarly Index, organised by subject category, with open access and DOAJ status and the Core Collection marked.',
 }
 
 export default function JournalsPage() {
-  const idx = getAllRecords().map(toIndexRecord)
-  const expected = {
-    core: idx.filter(r => r.k === 'core' || r.k === 'candidate').length,
-    benchmark: idx.filter(r => r.k === 'benchmark').length,
-    discovered: idx.filter(r => r.k === 'discovered').length,
-  }
+  const { records } = getDirectory()
+  const cats = getDirectoryCategories()
+  const classified = cats.filter(c => c.code !== 'unclassified' && c.count > 0)
+  const unclassified = cats.find(c => c.code === 'unclassified')
+  const core = records.filter(r => r.core).length
+  const oa = records.filter(r => r.oa).length
 
   return (
-    <div className="wrap">
-      <PageHeader
-        title="Sources"
-        crumbs={[{ label: 'POSI', href: '/' }, { label: 'Sources' }]}
-        actions={<Link href="/datasets/" className="btn">Bulk download</Link>}
-      >
-        <p>
-          {fmt(idx.length)} curated journal records, plus every journal registered with Crossref or OpenAlex. Records
-          can also be <Link href="/datasets/" className="link">downloaded</Link>.
+    <div className="wrap pb-10">
+      <PageHeader title="Journals" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Journals' }]}>
+        <p className="max-w-[68ch]">
+          {fmt(records.length)} indexed journals, organised by subject category. Search by title, publisher or ISSN,
+          or open a category to browse, filter and download its journals.
         </p>
       </PageHeader>
-      <Suspense fallback={<BrowserSkeleton />}>
-        <RecordBrowser expected={expected} />
-      </Suspense>
-    </div>
-  )
-}
 
-function BrowserSkeleton() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]" aria-hidden="true">
-      <div className="hidden lg:block space-y-3">
-        {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-4 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />)}
-      </div>
-      <div className="space-y-3">
-        <div className="h-16 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-        {Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-11 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />)}
-      </div>
+      <Suspense fallback={null}>
+        <JournalSearch />
+      </Suspense>
+
+      <dl className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+        {[
+          ['Indexed journals', fmt(records.length), null],
+          ['Core Collection', fmt(core), '/core-collection/'],
+          ['Open access', fmt(oa), '/journals/open-access/'],
+          ['Subject categories', fmt(classified.length), '/subjects/'],
+        ].map(([label, value, href]) => {
+          const body = <><dt className="text-[13px]" style={{ color: 'var(--muted)' }}>{label}</dt><dd className="mt-1 font-mono text-[22px] tnum">{value}</dd></>
+          return href
+            ? <Link key={label} href={href} className="block p-4 hover:bg-[var(--hover)]" style={{ background: 'var(--surface)' }}>{body}</Link>
+            : <div key={label} className="p-4" style={{ background: 'var(--surface)' }}>{body}</div>
+        })}
+      </dl>
+
+      <section aria-labelledby="by-subject" className="mt-14">
+        <SectionTitle id="by-subject">Browse by subject</SectionTitle>
+        <SubjectGrid cats={cats} />
+        {unclassified && unclassified.count > 0 && (
+          <p className="mt-6 text-[14px]" style={{ color: 'var(--ink-2)' }}>
+            <Link href="/journals/subject/unclassified/" className="link">{fmt(unclassified.count)} journals not yet classified</Link>{' '}
+            <span style={{ color: 'var(--muted)' }}>are listed alphabetically.</span>
+          </p>
+        )}
+      </section>
     </div>
   )
 }

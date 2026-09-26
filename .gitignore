@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Ranking edition downloaded before each build (scripts/sync-rankings.mjs)
+# Ranking edition downloaded before each build (scripts/sync-live-data.mjs)
 /src/lib/generated/

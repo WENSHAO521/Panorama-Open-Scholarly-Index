@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Certificate, ChartBar, Database, LockOpen, Quotes, SealCheck } from '@phosphor-icons/react/dist/ssr'
-import { HomeSearch, LiveWorksCount, LiveJournalsCount } from '@/components/HomeSearch'
+import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
+import { getDirectory } from '@/lib/global-journals'
 import { getCoreCollection } from '@/lib/data'
 import { getRankings, getCategories, getCategoryRanking } from '@/lib/rankings'
 import { collectionOf } from '@/lib/records'
@@ -32,7 +33,7 @@ const INDEXES = [
   {
     title: 'Open Access Journal Directory',
     Icon: LockOpen,
-    href: '/journals/?oa=1',
+    href: '/journals/open-access/',
     cta: 'Browse open access journals',
     body: 'Open access status, licensing, publication charges and DOAJ listing for every indexed journal.',
   },
@@ -53,6 +54,7 @@ export default function HomePage() {
   ].filter((j): j is NonNullable<typeof j> => !!j)
   const news = getSortedAnnouncements().slice(0, 3)
   const coreCount = getCoreCollection().length
+  const directoryTotal = getDirectory().records.length
   const { ranked, year: rankingYear } = getRankings()
   const rankedCount = ranked.length
   const cats = getCategories().filter(c => c.ranked > 0)
@@ -108,7 +110,7 @@ export default function HomePage() {
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
           {[
             { label: 'Publications', value: <LiveWorksCount />, href: '/publications/', note: 'in the Citation Index' },
-            { label: 'Indexed journals', value: <LiveJournalsCount />, href: '/journals/', note: 'all subject areas' },
+            { label: 'Indexed journals', value: fmt(directoryTotal), href: '/journals/', note: 'all subject areas' },
             { label: 'Ranked journals', value: fmt(rankedCount), href: '/rankings/', note: `${rankingYear} edition` },
             { label: 'Core Collection', value: fmt(coreCount), href: '/core-collection/', note: 'certified journals' },
           ].map(s => (
@@ -156,7 +158,7 @@ export default function HomePage() {
           <div className="grid gap-px rounded-[6px] overflow-hidden sm:grid-cols-2" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
             <Link href="/journals/" className="block p-6 transition-colors hover:bg-[var(--hover)]" style={{ background: 'var(--surface)' }}>
               <p className="text-[13px]" style={{ color: 'var(--muted)' }}>Indexed journals</p>
-              <p className="mt-1 font-mono text-[28px] tnum" style={{ color: 'var(--ink)' }}><LiveJournalsCount /></p>
+              <p className="mt-1 font-mono text-[28px] tnum" style={{ color: 'var(--ink)' }}>{fmt(directoryTotal)}</p>
               <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Searchable, ranked when citation data allows, and eligible for certificates of indexing.</p>
             </Link>
             <Link href="/core-collection/" className="block p-6 transition-colors" style={{ background: 'var(--teal-soft)' }}>

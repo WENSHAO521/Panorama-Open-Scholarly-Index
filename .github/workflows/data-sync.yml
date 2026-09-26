@@ -7,7 +7,7 @@ name: Daily data sync
 #   2. refreshes the committed ranking fallback (src/lib/pcs-q.json) and the
 #      journal-name table;
 #   3. triggers a Cloudflare Pages rebuild, whose prebuild step downloads the
-#      current ranking edition (scripts/sync-rankings.mjs).
+#      current ranking edition (scripts/sync-live-data.mjs).
 #
 # Upstream, posi-engine's "Global index and rankings" workflow computes new
 # editions and posi-data's "Publish data snapshot" workflow publishes them.
@@ -42,7 +42,7 @@ jobs:
 
       - name: Sync ranking edition and journal names
         run: |
-          node scripts/sync-rankings.mjs
+          node scripts/sync-live-data.mjs
           cp src/lib/generated/pcs-q.json src/lib/pcs-q.json
           node scripts/sync-ranking-titles.mjs || echo "Journal names unchanged (data layer unreachable)"
 

@@ -74,9 +74,10 @@ export function LiveWorksCount() {
   const [n, setN] = useState<number | null>(null)
   useEffect(() => {
     const c = new AbortController()
-    getTotalWorks(c.signal).then(setN).catch(() => {})
+    getTotalWorks(c.signal).then(setN).catch(() => { if (!c.signal.aborted) setN(-1) })
     return () => c.abort()
   }, [])
+  if (n === -1) return <span className="text-[15px]">Over 300 million</span>
   return n === null
     ? <span className="inline-block h-6 w-28 align-middle rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
     : <>{n.toLocaleString('en-US')}</>
