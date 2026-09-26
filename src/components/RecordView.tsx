@@ -126,6 +126,9 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 OpenAlex <ArrowSquareOut className="h-3.5 w-3.5" />
               </a>
             )}
+            {k === 'core' && (
+              <Link href="/certificate/" className="btn">Indexing certificate</Link>
+            )}
             {jsonHref && (
               <a href={jsonHref} className="btn" download>
                 <DownloadSimple className="h-4 w-4" /> Record JSON

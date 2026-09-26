@@ -18,6 +18,7 @@ export const DOCS_NAV: DocsSection[] = [
     links: [
       { label: 'Record schema', href: '/docs/schema/' },
       { label: 'Provenance & verification', href: '/docs/provenance/' },
+      { label: 'Indexing certificates', href: '/docs/certificates/' },
       { label: 'Data sources', href: '/data-sources/' },
       { label: 'Source status', href: '/source-status/' },
       { label: 'Programmatic access', href: '/api/' },

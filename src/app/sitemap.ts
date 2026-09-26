@@ -10,7 +10,7 @@ const BASE = 'https://posi.panorama-sg.com'
 // Built entirely from vendored data: no network calls at build time.
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
-  const top = ['/', '/publications/', '/journals/', '/publishers/', '/subjects/', '/datasets/', '/verify/', '/cite/']
+  const top = ['/', '/publications/', '/journals/', '/publishers/', '/subjects/', '/datasets/', '/verify/', '/cite/', '/certificate/', '/certificate/verify/']
   const docs = DOCS_NAV.flatMap(s => s.links.map(l => l.href))
   const paths = [...new Set([...top, ...docs])]
   return [

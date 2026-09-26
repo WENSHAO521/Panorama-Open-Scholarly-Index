@@ -12,6 +12,7 @@ const NAV = [
   { label: 'Publishers', href: '/publishers/' },
   { label: 'Subjects', href: '/subjects/' },
   { label: 'Rankings', href: '/ratings/' },
+  { label: 'Certificates', href: '/certificate/' },
   { label: 'Datasets', href: '/datasets/' },
   { label: 'Docs', href: '/docs/' },
 ]
@@ -91,7 +92,10 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden md:block ml-auto w-[240px] xl:w-[280px]"><HeaderSearch /></div>
+        <div className="hidden xl:block ml-auto w-[260px]"><HeaderSearch /></div>
+        <Link href="/publications/" aria-label="Search publications" className="hidden md:inline-flex xl:hidden ml-auto btn btn-sm px-2">
+          <MagnifyingGlass className="h-4 w-4" />
+        </Link>
         <a
           href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index"
           target="_blank"

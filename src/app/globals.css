@@ -318,6 +318,17 @@ pre.code {
 .text-gray-700, .text-gray-800, .text-gray-900 { color: var(--ink-2) !important; }
 .border-gray-100, .border-gray-200, .border-gray-300 { border-color: var(--line) !important; }
 
+/* Printing: only the certificate (or page content) goes to paper. */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #ffffff !important; }
+  header.sticky, footer, .no-print, nextjs-portal { display: none !important; }
+  main { padding: 0 !important; }
+  .wrap { padding: 0 !important; max-width: none !important; }
+  .cert { box-shadow: none !important; padding: 0 !important; max-width: none !important; border-radius: 0 !important; }
+  .cert tr { break-inside: avoid; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
