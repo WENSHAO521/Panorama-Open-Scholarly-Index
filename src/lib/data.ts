@@ -4,18 +4,18 @@ export { DISCOVERED_JOURNALS }
 import coreCollectionRaw from './core-collection.json'
 
 // Canonical source: posi-data's corpus/core-collection.json (see that
-// repo's corpus/README.md) — this file is a vendored snapshot, synced
+// repo's corpus/README.md) - this file is a vendored snapshot, synced
 // deliberately via scripts/sync-corpus.mjs, not regenerated on every
 // build. Moved out of this file's old ~1000-line TypeScript-literal form
 // (with inline pqf(...) constructor calls) specifically so re-rating/
-// re-classification runs stop growing *this* repo's git history — that
+// re-classification runs stop growing *this* repo's git history - that
 // churn now happens in posi-data instead, and this repo's copy only
 // updates at deliberate sync points (see corpus/README.md's "Update
 // workflow").
 const coreCollectionJournals = coreCollectionRaw as (Journal & { source_group: 'psg' | 'indexed' | 'shiharr' | 'other_indexed' })[]
 
 // source_group preserves which original curation batch a journal came
-// from — a handful of pages still read these four exports directly
+// from - a handful of pages still read these four exports directly
 // (coi.tsx's PSG-only conflict-of-interest list, journal-evidence.tsx,
 // evidence.tsx, policies.tsx) rather than getCoreCollection().
 export const PSG_JOURNALS: Journal[] = coreCollectionJournals.filter(j => j.source_group === 'psg')
@@ -25,14 +25,14 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = coreCollectionJournals.filter(j
 
 export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...DISCOVERED_JOURNALS]
 
-// The single definition of "Core Collection" — a journal admitted through
+// The single definition of "Core Collection" - a journal admitted through
 // PQF editorial selection that has since fallen below the eligibility bar
 // (collection_status: 'candidate') keeps its record and journal page, but
 // is not counted as, or treated with the privileges of, full Core
 // Collection membership (badges, certificates, ranking-page inclusion)
 // until re-review restores it. See scripts/rate-early-stage.mjs's PQF
 // eligibility bands (Eligible/Review Required/Insufficient Evidence/Not
-// Eligible) — 'candidate' is set manually after a Not Eligible finding,
+// Eligible) - 'candidate' is set manually after a Not Eligible finding,
 // not computed automatically by any script.
 export function getCoreCollection(): Journal[] {
   return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]

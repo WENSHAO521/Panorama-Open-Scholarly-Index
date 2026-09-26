@@ -2,7 +2,7 @@
 // (data.ts, benchmark-journals.ts, early-stage.ts, release.ts) for the
 // handful of derived numbers that were previously either hardcoded
 // independently per-page or recomputed with a slightly different
-// expression on each page — both of which let numbers drift out of sync
+// expression on each page - both of which let numbers drift out of sync
 // (e.g. the homepage's old hardcoded PSC category count, and its hero
 // prose citing a stale total-records figure). Nothing here is a new data
 // source: every export is a pure composition of exports that already
@@ -30,7 +30,7 @@ export interface PscTaxonomy {
   categories: PscCategory[]
 }
 
-// The single pinned posi-data commit for the PSC taxonomy — bump this
+// The single pinned posi-data commit for the PSC taxonomy - bump this
 // (deliberately, alongside a matching update to the vendored snapshot) to
 // move to a new taxonomy version. subjects/page.tsx imports this same
 // constant so its "pinned to <commit>" disclosure line can never drift
@@ -40,7 +40,7 @@ const TAXONOMY_URL = `https://raw.githubusercontent.com/WENSHAO521/posi-data/${P
 
 /**
  * Live-fetches the pinned PSC taxonomy, falling back to the vendored
- * snapshot (same pinned commit) if the fetch fails — mirrors
+ * snapshot (same pinned commit) if the fetch fails - mirrors
  * subjects/page.tsx's own fetch-with-fallback so both pages show the same
  * taxonomy without duplicating that logic.
  */
@@ -50,7 +50,7 @@ export async function getPscTaxonomy(): Promise<{ taxonomy: PscTaxonomy; usedFal
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return { taxonomy: await res.json(), usedFallback: false }
   } catch (err) {
-    console.warn(`[site-metrics] Live fetch of PSC taxonomy failed (${err instanceof Error ? err.message : err}) — using vendored snapshot at src/lib/psc-v1.0.snapshot.json instead.`)
+    console.warn(`[site-metrics] Live fetch of PSC taxonomy failed (${err instanceof Error ? err.message : err}) - using vendored snapshot at src/lib/psc-v1.0.snapshot.json instead.`)
     return { taxonomy: pscSnapshot as PscTaxonomy, usedFallback: true }
   }
 }
@@ -65,12 +65,12 @@ export async function getPscCategoryCount(): Promise<number> {
  * expansion. For a *total*, always prefer this over recomputing
  * `BENCHMARK_JOURNALS.length + publisherCatalogMeta.count` inline.
  *
- * This is NOT a replacement for `BENCHMARK_JOURNALS` itself — pages that
+ * This is NOT a replacement for `BENCHMARK_JOURNALS` itself - pages that
  * need the actual per-journal membership list (e.g. counting Global
  * Benchmark journals by PSC category, as /subjects does) only have real
  * Journal objects for the curated 993-record seed, not the ~3,300-record
  * publisher-catalog bulk expansion (which is fetched client-side and never
- * vendored into this repo — see benchmark-journals.ts). Those pages should
+ * vendored into this repo - see benchmark-journals.ts). Those pages should
  * keep operating on `BENCHMARK_JOURNALS` directly; this helper is for
  * total-only surfaces (homepage coverage cards, ratings-overview coverage
  * line), not a universal substitute for the list.
@@ -81,7 +81,7 @@ export function getGlobalBenchmarkTotal(): number {
 
 /**
  * Lifecycle-window membership counts, scoped strictly to the Core
- * Collection — never blended with Global Benchmark journals. Mixing those
+ * Collection - never blended with Global Benchmark journals. Mixing those
  * two populations under one unlabeled number is exactly the kind of
  * denominator confusion this module exists to prevent.
  */
@@ -94,12 +94,12 @@ export function getCoreCollectionLifecycleCounts() {
   }
 }
 
-/** Core Collection journals carrying a real, currently-published AJR-E score (never Mature — see hasRealEarlyStageScore). */
+/** Core Collection journals carrying a real, currently-published AJR-E score (never Mature - see hasRealEarlyStageScore). */
 export function getLifecycleRatedCount(): number {
   return getCoreCollection().filter(j => hasRealEarlyStageScore(j.early_stage_rating)).length
 }
 
-/** All journal records POSI tracks in any form — Core Collection, curated Global Benchmark, and Discovered. Not a POSI-reviewed figure; see getGlobalBenchmarkTotal/getCoreCollection for reviewed subsets. */
+/** All journal records POSI tracks in any form - Core Collection, curated Global Benchmark, and Discovered. Not a POSI-reviewed figure; see getGlobalBenchmarkTotal/getCoreCollection for reviewed subsets. */
 export function getAllTrackedRecordsTotal(): number {
   return getStats().total_journals
 }
@@ -107,7 +107,7 @@ export function getAllTrackedRecordsTotal(): number {
 /**
  * Publisher-catalog bulk-expansion total whose citation_preview evidence
  * rules OUT "mature" (see filterNotYetMature in publisher-catalog-client.ts)
- * — i.e. the "not yet mature" reference population shown on
+ * - i.e. the "not yet mature" reference population shown on
  * /ratings/early-stage. Wraps publisherCatalogMeta.not_yet_mature so pages
  * stop importing that JSON file directly (the one gap in this module's own
  * "compose, don't re-import raw JSON per-page" convention, found during the
@@ -119,7 +119,7 @@ export function getNotYetMatureTotal(): number {
 
 /**
  * Publisher-catalog bulk-expansion total whose citation_preview evidence
- * confirms "mature" (see filterMatureEvidence) — the Global Benchmark
+ * confirms "mature" (see filterMatureEvidence) - the Global Benchmark
  * reference population shown on /ratings/mature. Wraps
  * publisherCatalogMeta.mature_evidence for the same reason as
  * getNotYetMatureTotal above.

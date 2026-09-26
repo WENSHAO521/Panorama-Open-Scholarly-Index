@@ -1,7 +1,7 @@
 // Shared {bg, color, border} triples for status badges/pills.
 //
 // These exact hex values were independently copy-pasted across
-// data-sources, evidence, journal/[code], policies, and source-status —
+// data-sources, evidence, journal/[code], policies, and source-status -
 // the same duplication problem an earlier audit found and fixed for
 // full-width notice boxes (see Callout.tsx), one level down for badges.
 // Each page keeps its own domain-specific status labels/keys; only the

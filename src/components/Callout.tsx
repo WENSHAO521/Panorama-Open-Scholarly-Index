@@ -3,10 +3,10 @@ import { Info, WarningCircle, WarningOctagon, CheckCircle } from '@phosphor-icon
 /**
  * Shared info/warning/danger/success callout box. Replaces the pattern of
  * copy-pasting inline hex colors per page (a 2026-08 audit found the exact
- * blue '#eff6ff'/'#1d4ed8' pair hardcoded independently in 21 files and
- * the amber '#fffbeb'/'#92400e' pair in 18 more, plus several more
+ * blue 'var(--info-soft)'/'var(--info)' pair hardcoded independently in 21 files and
+ * the amber 'var(--check-soft)'/'var(--check)' pair in 18 more, plus several more
  * near-duplicate one-off tints for the same four semantic purposes across
- * the rest of the site) — one component, one set of tokens
+ * the rest of the site) - one component, one set of tokens
  * (globals.css's --posi-info/-warning/-danger/-success and their -bg/
  * -border pairs), used everywhere a page needs to flag something to the
  * reader. A Server Component (no interactivity), safe to use from any

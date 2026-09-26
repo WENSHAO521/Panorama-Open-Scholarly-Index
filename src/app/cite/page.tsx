@@ -117,7 +117,7 @@ function chicagoIntext(authors: ManualAuthor[], year: string): string {
 
 function mlaIntext(authors: ManualAuthor[], pages: string): string {
   const v = authors.filter(a => a.last || a.first)
-  const pg = pages ? fmtPages(pages).split('–')[0] : ''
+  const pg = pages ? fmtPages(pages).split('-')[0] : ''
   if (!v.length) return pg ? `(${pg})` : ''
   const nm = v.length === 1 ? v[0].last : v.length === 2
     ? `${v[0].last} and ${v[1].last}` : `${v[0].last} et al.`
@@ -125,7 +125,7 @@ function mlaIntext(authors: ManualAuthor[], pages: string): string {
 }
 
 function fmtPages(p: string): string {
-  return p.trim().replace(/\s*[-–—]+\s*/, '–')
+  return p.trim().replace(/\s*[---]+\s*/, '-')
 }
 
 function cp(html: string, intext: string): CitPair {
@@ -379,8 +379,8 @@ function CopyBtn({ text }: { text: string }) {
       className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-colors"
       style={{
         border: '1px solid var(--posi-border)', fontFamily: 'var(--font-mono)',
-        color: copied ? '#1F7A4D' : 'var(--posi-muted)',
-        background: copied ? '#E8F5EE' : '#fff',
+        color: copied ? 'var(--verified)' : 'var(--posi-muted)',
+        background: copied ? 'var(--verified-soft)' : '#fff',
       }}
     >
       {copied ? <Check className="h-3 w-3" weight="bold" /> : <Copy className="h-3 w-3" />}
@@ -391,14 +391,14 @@ function CopyBtn({ text }: { text: string }) {
 
 const FMT_LABELS: Record<string, string> = { psg: 'PSG Format', apa: 'APA 7th', mla: 'MLA 9th', chicago: 'Chicago 17th' }
 const FMT_COLORS: Record<string, [string, string]> = {
-  psg: ['#fef2f4', '#c41e3a'],
-  apa: ['#EFF6FF', '#1D4ED8'],
-  mla: ['#F0FDF4', '#166534'],
-  chicago: ['#FEFCE8', '#92400E'],
+  psg: ['#fef2f4', 'var(--teal)'],
+  apa: ['var(--info-soft)', 'var(--info)'],
+  mla: ['var(--verified-soft)', 'var(--verified)'],
+  chicago: ['var(--check-soft)', 'var(--check)'],
 }
 
 function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
-  const [bg, color] = FMT_COLORS[fmt] ?? ['#f5f5f5', '#333']
+  const [bg, color] = FMT_COLORS[fmt] ?? ['var(--surface-2)', '#333']
   return (
     <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border)', background: bg }}>
@@ -486,7 +486,7 @@ function GenBtn({ disabled }: { disabled?: boolean }) {
   return (
     <button type="submit" disabled={disabled}
       className="w-full py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-colors"
-      style={{ background: '#c41e3a' }}>
+      style={{ background: 'var(--teal)' }}>
       Generate Citations
     </button>
   )
@@ -504,11 +504,11 @@ function ArticleForm({
       <AuthorList authors={form.authors} onChange={authors => setForm({ ...form, authors })} />
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <FL>Article Title <span style={{ color: '#c41e3a' }}>*</span></FL>
+          <FL>Article Title <span style={{ color: 'var(--teal)' }}>*</span></FL>
           <FInput value={form.title} onChange={s('title')} placeholder="Title of the article" required />
         </div>
         <div>
-          <FL>Journal Name <span style={{ color: '#c41e3a' }}>*</span></FL>
+          <FL>Journal Name <span style={{ color: 'var(--teal)' }}>*</span></FL>
           <FInput value={form.journal} onChange={s('journal')} placeholder="Name of the journal" required />
         </div>
         <div>
@@ -547,7 +547,7 @@ function BookForm({
       <AuthorList authors={form.authors} onChange={authors => setForm({ ...form, authors })} />
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <FL>Book Title <span style={{ color: '#c41e3a' }}>*</span></FL>
+          <FL>Book Title <span style={{ color: 'var(--teal)' }}>*</span></FL>
           <FInput value={form.title} onChange={s('title')} placeholder="Title of the book" required />
         </div>
         <div>
@@ -589,7 +589,7 @@ function WebsiteForm({
     <form onSubmit={onSubmit} className="space-y-3">
       <div className="grid sm:grid-cols-2 gap-3">
         <div>
-          <FL>Author / Organization <span style={{ color: '#c41e3a' }}>*</span></FL>
+          <FL>Author / Organization <span style={{ color: 'var(--teal)' }}>*</span></FL>
           <FInput value={form.authorName} onChange={s('authorName')} placeholder='"Smith, John" or "WHO"' required />
           <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer">
             <input type="checkbox" checked={form.isOrg}
@@ -598,7 +598,7 @@ function WebsiteForm({
           </label>
         </div>
         <div>
-          <FL>Page Title <span style={{ color: '#c41e3a' }}>*</span></FL>
+          <FL>Page Title <span style={{ color: 'var(--teal)' }}>*</span></FL>
           <FInput value={form.title} onChange={s('title')} placeholder="Title of the webpage" required />
         </div>
         <div>
@@ -735,15 +735,15 @@ function CitePage() {
 
   function handleManualArticle(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setManualResult({ citations: buildAllArticle(aForm), label: `Journal Article — ${aForm.title || 'Untitled'}` })
+    setManualResult({ citations: buildAllArticle(aForm), label: `Journal Article - ${aForm.title || 'Untitled'}` })
   }
   function handleManualBook(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setManualResult({ citations: buildAllBook(bForm), label: `Book — ${bForm.title || 'Untitled'}` })
+    setManualResult({ citations: buildAllBook(bForm), label: `Book - ${bForm.title || 'Untitled'}` })
   }
   function handleManualWebsite(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setManualResult({ citations: buildAllWebsite(wForm), label: `Website — ${wForm.title || 'Untitled'}` })
+    setManualResult({ citations: buildAllWebsite(wForm), label: `Website - ${wForm.title || 'Untitled'}` })
   }
 
   const TABS: { key: ManualSourceType; label: string; icon: React.ReactNode }[] = [
@@ -759,7 +759,7 @@ function CitePage() {
       <div>
         <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--posi-text)' }}>Citation Generator</h1>
         <p className="text-sm" style={{ color: 'var(--posi-muted)' }}>
-          Enter a DOI, ISBN, or URL — or fill in details manually. Generates PSG, APA, MLA, and Chicago formats.
+          Enter a DOI, ISBN, or URL - or fill in details manually. Generates PSG, APA, MLA, and Chicago formats.
         </p>
       </div>
 
@@ -789,7 +789,7 @@ function CitePage() {
             ['URL', 'any web address, e.g. https://example.com/page'],
           ].map(([k, v]) => (
             <p key={k} className="text-xs" style={{ color: 'var(--posi-muted)' }}>
-              <span className="font-mono font-medium" style={{ color: 'var(--posi-text)' }}>{k}</span> — {v}
+              <span className="font-mono font-medium" style={{ color: 'var(--posi-text)' }}>{k}</span> - {v}
             </p>
           ))}
         </div>
@@ -806,11 +806,11 @@ function CitePage() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="p-5" style={{ background: '#FBEAEC', border: '1px solid #F5C2CB' }}>
+        <div className="p-5" style={{ background: 'var(--rejected-soft)', border: '1px solid #F5C2CB' }}>
           <div className="flex items-start gap-3">
-            <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#9B1C31' }} />
+            <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--rejected)' }} />
             <div>
-              <p className="text-sm font-semibold mb-1" style={{ color: '#9B1C31' }}>Not Found</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--rejected)' }}>Not Found</p>
               <p className="text-xs leading-relaxed text-justify" style={{ color: '#7f1d1d' }}>{error}</p>
             </div>
           </div>
@@ -824,7 +824,7 @@ function CitePage() {
             <div className="flex items-center gap-2 mb-3">
               <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Article Found</p>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
-                style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? '#E8F5EE' : '#f5f5f5', color: autoResult.source === 'openalex' ? '#1F7A4D' : '#666', border: `1px solid ${autoResult.source === 'openalex' ? '#bbdece' : '#ddd'}` }}>
+                style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? 'var(--verified-soft)' : 'var(--surface-2)', color: autoResult.source === 'openalex' ? 'var(--verified)' : 'var(--muted)', border: `1px solid ${autoResult.source === 'openalex' ? '#bbdece' : '#ddd'}` }}>
                 via {autoResult.source === 'openalex' ? 'OpenAlex' : 'Crossref'}
               </span>
             </div>
@@ -896,7 +896,7 @@ function CitePage() {
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
-                <FL>Author or Organization <span style={{ color: '#c41e3a' }}>*</span></FL>
+                <FL>Author or Organization <span style={{ color: 'var(--teal)' }}>*</span></FL>
                 <FInput value={wpForm.author} onChange={e => setWpForm(f => ({ ...f, author: e.target.value }))} placeholder='"Smith, John" or "WHO"' required />
                 <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer">
                   <input type="checkbox" checked={wpForm.is_org} onChange={e => setWpForm(f => ({ ...f, is_org: e.target.checked }))} className="w-3 h-3" />
@@ -904,7 +904,7 @@ function CitePage() {
                 </label>
               </div>
               <div>
-                <FL>Page Title <span style={{ color: '#c41e3a' }}>*</span></FL>
+                <FL>Page Title <span style={{ color: 'var(--teal)' }}>*</span></FL>
                 <FInput value={wpForm.title} onChange={e => setWpForm(f => ({ ...f, title: e.target.value }))} placeholder="Title of the page" required />
               </div>
               <div>
@@ -922,7 +922,7 @@ function CitePage() {
             </div>
             <button type="submit" disabled={!wpForm.author.trim() || !wpForm.title.trim()}
               className="w-full py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: '#c41e3a' }}>
+              style={{ background: 'var(--teal)' }}>
               Generate Citations
             </button>
           </form>
@@ -968,8 +968,8 @@ function CitePage() {
                   onClick={() => { setManualType(tab.key); setManualResult(null) }}
                   className="flex items-center gap-1.5 px-4 py-3 text-xs font-medium transition-colors"
                   style={{
-                    borderBottom: manualType === tab.key ? '2px solid #c41e3a' : '2px solid transparent',
-                    color: manualType === tab.key ? '#c41e3a' : 'var(--posi-muted)',
+                    borderBottom: manualType === tab.key ? '2px solid var(--teal)' : '2px solid transparent',
+                    color: manualType === tab.key ? 'var(--teal)' : 'var(--posi-muted)',
                     marginBottom: '-1px',
                   }}
                 >

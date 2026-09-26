@@ -5,10 +5,10 @@ import { Badge } from './Badge'
 import { decodeHtml } from '@/lib/utils'
 
 function mqsColor(score: number): string {
-  if (score >= 75) return '#1F7A4D'
-  if (score >= 60) return '#B7791F'
+  if (score >= 75) return 'var(--verified)'
+  if (score >= 60) return 'var(--check)'
   if (score >= 40) return '#C05621'
-  return '#9B1C31'
+  return 'var(--rejected)'
 }
 
 const CR_STATUS: Record<string, { label: string; variant: 'verified' | 'registered' | 'pending' | 'not_found' | 'conflict' | 'broken' }> = {
@@ -81,7 +81,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
             </span>
           </div>
 
-          {/* DOI link — always visible on mobile, hover-fade on desktop */}
+          {/* DOI link - always visible on mobile, hover-fade on desktop */}
           {article.doi && (
             <a
               href={`https://doi.org/${article.doi}`}
@@ -163,7 +163,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
         )}
         {!article.journal_title && article.publication_year}
         {article.issue && `(${article.issue})`}
-        {article.first_page && `:${article.first_page}${article.last_page ? `–${article.last_page}` : ''}`}
+        {article.first_page && `:${article.first_page}${article.last_page ? `-${article.last_page}` : ''}`}
         {article.doi && (
           <>
             {' · '}
@@ -194,7 +194,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
           {article.keywords.slice(0, 3).map(kw => (
             <Link
               key={kw}
-              href={`/search?q=${encodeURIComponent(kw)}`}
+              href={`/publications/?q=${encodeURIComponent(kw)}`}
               className="text-[11px] px-1.5 py-0.5 transition-colors duration-200 bg-[var(--posi-bg)] text-[var(--posi-muted)] hover:bg-[var(--posi-accent-light)] hover:text-[var(--posi-accent)]"
             >
               {kw}
@@ -230,7 +230,7 @@ export function ArticleCard({ article, showAbstract = true, compact = false, cla
               Cite
             </Link>
             <Link
-              href={`/doi-lookup?doi=${encodeURIComponent(article.doi)}`}
+              href={`/work/?id=${encodeURIComponent(article.doi)}`}
               className="text-[10px] uppercase tracking-[0.06em] flex items-center gap-1 transition-colors duration-200 text-[var(--posi-muted)] hover:text-[var(--posi-accent)]"
               style={{ fontFamily: 'var(--font-mono)' }}
             >

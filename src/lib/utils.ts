@@ -18,7 +18,7 @@ export function extractDoi(query: string): string | null {
 }
 
 /**
- * Word-overlap similarity between two strings (0–1).
+ * Word-overlap similarity between two strings (0-1).
  * Ignores punctuation and stop-words shorter than 3 characters.
  * Used to detect when a search result is an exact/near-exact title match.
  */

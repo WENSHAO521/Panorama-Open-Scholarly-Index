@@ -18,13 +18,13 @@ const FORMATS: { id: CitationFormat; label: string }[] = [
 ]
 
 const FORMAT_NOTES: Record<CitationFormat, string> = {
-  psg:     'PSG Author–Date Citation Format — official citation standard of Panorama Scholarly Group',
-  apa:     'APA 7th Edition — Publication Manual of the American Psychological Association (7th ed.)',
-  mla:     'MLA 9th Edition — MLA Handbook (9th ed.), 2021',
-  chicago: 'Chicago 17th Edition Author-Date — The Chicago Manual of Style (17th ed.)',
-  gbt:     'GB/T 7714-2015 — Chinese national standard for bibliographic references',
-  bibtex:  'BibTeX format — for use with LaTeX reference management',
-  ris:     'RIS format — compatible with Zotero, Mendeley, EndNote, and RefWorks',
+  psg:     'PSG Author-Date Citation Format - official citation standard of Panorama Scholarly Group',
+  apa:     'APA 7th Edition - Publication Manual of the American Psychological Association (7th ed.)',
+  mla:     'MLA 9th Edition - MLA Handbook (9th ed.), 2021',
+  chicago: 'Chicago 17th Edition Author-Date - The Chicago Manual of Style (17th ed.)',
+  gbt:     'GB/T 7714-2015 - Chinese national standard for bibliographic references',
+  bibtex:  'BibTeX format - for use with LaTeX reference management',
+  ris:     'RIS format - compatible with Zotero, Mendeley, EndNote, and RefWorks',
 }
 
 function initials(name: string): string {
@@ -67,13 +67,13 @@ export function generateCitationText(article: Article, format: CitationFormat): 
   const lp          = article.last_page
   const doi         = article.doi
   const authors     = article.authors
-  const pages       = fp ? (lp ? `${fp}–${lp}` : fp) : null
+  const pages       = fp ? (lp ? `${fp}-${lp}` : fp) : null
   const doiUrl      = doi ? `https://doi.org/${doi}` : null
 
   switch (format) {
 
     case 'psg': {
-      // Reference list entry — all authors named regardless of count
+      // Reference list entry - all authors named regardless of count
       let refAuthorStr = ''
       if (authors.length === 1) {
         refAuthorStr = psgRefFirst(authors[0])
@@ -269,8 +269,8 @@ export function CitationFormatter({ article }: Props) {
             style={
               format === f.id
                 ? {
-                    color: f.id === 'psg' ? '#c41e3a' : 'var(--posi-accent)',
-                    borderBottom: `2px solid ${f.id === 'psg' ? '#c41e3a' : 'var(--posi-accent)'}`,
+                    color: f.id === 'psg' ? 'var(--teal)' : 'var(--posi-accent)',
+                    borderBottom: `2px solid ${f.id === 'psg' ? 'var(--teal)' : 'var(--posi-accent)'}`,
                     fontFamily: 'var(--font-mono)',
                     background: f.id === 'psg' ? '#fef2f4' : 'var(--posi-accent-light)',
                     marginBottom: '-1px',
@@ -306,8 +306,8 @@ export function CitationFormatter({ article }: Props) {
           className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.06em] transition-colors"
           style={{
             border: '1px solid var(--posi-border)',
-            color: copied ? '#1F7A4D' : 'var(--posi-muted)',
-            background: copied ? '#E8F5EE' : '#ffffff',
+            color: copied ? 'var(--verified)' : 'var(--posi-muted)',
+            background: copied ? 'var(--verified-soft)' : '#ffffff',
             fontFamily: 'var(--font-mono)',
           }}
           title="Copy to clipboard"

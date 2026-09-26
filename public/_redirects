@@ -5,3 +5,23 @@
 # track. See posi-data/AJR-SPEC.md.
 /pqf-scores /pqf 301
 /pqf-scores/ /pqf/ 301
+
+# 2026-09 open-database redesign: retired routes and their replacements.
+# Publication search, DOI lookup and article pages now run client-side
+# against OpenAlex (/publications/, /work/); the ISBN lookup depended on
+# Cloudflare Functions proxies and was removed along with /functions.
+/search /publications/ 301
+/search/ /publications/ 301
+/advanced-search /publications/ 301
+/advanced-search/ /publications/ 301
+/doi-lookup /publications/ 301
+/doi-lookup/ /publications/ 301
+/article/* /publications/ 301
+/isbn-lookup /publications/ 301
+/isbn-lookup/ /publications/ 301
+/open-data /datasets/ 301
+/open-data/ /datasets/ 301
+/ojqf /pqf/ 301
+/ojqf/ /pqf/ 301
+/metrics /ratings/ 301
+/metrics/ /ratings/ 301

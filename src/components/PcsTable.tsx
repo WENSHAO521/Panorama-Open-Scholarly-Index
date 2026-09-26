@@ -25,8 +25,8 @@ type SortKey = 'title' | 'pcs' | 'pcs_eligible_items' | 'pcs_coverage'
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
-  { key: 'pcs', label: 'PCS', title: 'Mean Crossref is-referenced-by-count over eligible items published in the 4-year window — PCS-1.0-SPEC.md § 6. Sorted by value, not an official rank.' },
-  { key: 'pcs_eligible_items', label: 'Eligible Items', title: 'Count of citable Crossref works in the 4-year window (PCS denominator) — no sampling cap.' },
+  { key: 'pcs', label: 'PCS', title: 'Mean Crossref is-referenced-by-count over eligible items published in the 4-year window - PCS-1.0-SPEC.md § 6. Sorted by value, not an official rank.' },
+  { key: 'pcs_eligible_items', label: 'Eligible Items', title: 'Count of citable Crossref works in the 4-year window (PCS denominator) - no sampling cap.' },
   { key: 'pcs_coverage', label: 'Coverage', title: 'Fraction of enumerated in-window DOIs successfully fetched from Crossref for this snapshot.' },
 ]
 
@@ -34,13 +34,13 @@ const PER_PAGE = 25
 
 /**
  * Sorted-by-value table, deliberately not a ranking display: no "#"
- * position column, no medal/tier badges — PCS-1.0-SPEC.md § 1 is explicit
+ * position column, no medal/tier badges - PCS-1.0-SPEC.md § 1 is explicit
  * that PCS never determines POSI Citation Rank/Percentile/Quartile.
  * Clicking a column header changes sort order, same interaction language
  * as CitationReportsTable/LifecycleRatingsTable, so nothing here reads as
  * an achievement ranking beyond "currently sorted by this column."
  *
- * Rows with pcs: null (60 of 1024 in the pcs-etl-v1-global1024-2026 run —
+ * Rows with pcs: null (60 of 1024 in the pcs-etl-v1-global1024-2026 run -
  * every one individually traced to a real, disclosed cause: 404/no-ISSN/
  * too-new/stale-ISSN/true-zero-output; see that audit's README) sort to
  * the bottom under any numeric column and show "No PCS available" rather
@@ -71,7 +71,7 @@ export function PcsTable({ rows }: { rows: PcsRow[] }) {
       }
       return sortDir === 'asc' ? (av as number) - (bv as number) : (bv as number) - (av as number)
     })
-    // pcs:null rows always trail, regardless of sort direction — a
+    // pcs:null rows always trail, regardless of sort direction - a
     // "computed, no PCS" journal should never appear to outrank a real,
     // low value just because ascending sort was chosen.
     return [...withValue, ...withoutValue]
@@ -120,7 +120,7 @@ export function PcsTable({ rows }: { rows: PcsRow[] }) {
           <option value="benchmark">Global Benchmark only</option>
         </select>
         <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}–${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
+          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}-${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
           {sorted.length.toLocaleString()} journals · {withPcs.toLocaleString()} with a computed PCS value
         </span>
       </div>
@@ -151,11 +151,11 @@ export function PcsTable({ rows }: { rows: PcsRow[] }) {
               <tr key={row.journal_id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                 <td className="px-4 py-3">
                   {row.is_external_benchmark ? (
-                    <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                    <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                       {row.title}
                     </a>
                   ) : (
-                    <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                    <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                       {row.title}
                     </Link>
                   )}
@@ -165,10 +165,10 @@ export function PcsTable({ rows }: { rows: PcsRow[] }) {
                   {row.pcs != null ? row.pcs.toFixed(2) : <span className="font-normal" style={{ color: 'var(--posi-muted)' }}>No PCS available</span>}
                 </td>
                 <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                  {row.pcs_eligible_items != null ? row.pcs_eligible_items.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  {row.pcs_eligible_items != null ? row.pcs_eligible_items.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                 </td>
                 <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                  {row.pcs_coverage != null ? `${Math.round(row.pcs_coverage * 100)}%` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  {row.pcs_coverage != null ? `${Math.round(row.pcs_coverage * 100)}%` : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                 </td>
                 <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>
                   {row.collection === 'core' ? 'Core Collection' : 'Global Benchmark'}

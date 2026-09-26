@@ -14,7 +14,7 @@ import { Badge } from './Badge'
 import { Pagination } from './Pagination'
 
 // Status label/color/notability per row now comes from earlyStageStatus()
-// (src/lib/early-stage.ts) — it reads legacy (`eligibility`) and AJR-E-1.1
+// (src/lib/early-stage.ts) - it reads legacy (`eligibility`) and AJR-E-1.1
 // (`lifecycle_stage` + `rating_status`) records on their own terms, since
 // the two shapes split what used to be one field differently. See that
 // module's comments for the full mapping (Observation Stage / Evaluated /
@@ -23,11 +23,11 @@ import { Pagination } from './Pagination'
 // Amber/bold notability is reserved for states that are genuinely
 // exceptional and worth flagging (a real crawl failure, or AJR-E-1.1's
 // not_rateable/provisional). 'mature' and 'unknown' are structural,
-// expected states — nearly every row in a Benchmark/Mature-track page
+// expected states - nearly every row in a Benchmark/Mature-track page
 // lands there simply because AJR-M hasn't been run against real data yet,
 // not because anything is wrong with that specific row.
 
-// Declarative column kinds, not function props — a Server Component page
+// Declarative column kinds, not function props - a Server Component page
 // cannot pass a function prop to a Client Component like this one (React
 // Server Components can't serialize functions across that boundary, only
 // plain, serializable props like this string union), so the render logic
@@ -44,14 +44,14 @@ const COLUMN_HEADERS: Record<ColumnKind, string> = {
 }
 
 // Evidence-coverage thresholds mirror the ones already used on the journal
-// profile page's lifecycle panel (≥80 / ≥60) — a label on a number that
+// profile page's lifecycle panel (≥80 / ≥60) - a label on a number that
 // already exists (evidence_coverage), not a new metric.
 function evidenceStatus(j: Journal): { value: string; title: string } {
   const ec = j.early_stage_rating?.evidence_coverage
-  if (ec == null) return { value: '—', title: 'No evidence-coverage figure on record for this journal.' }
-  if (ec >= 80) return { value: 'Verified', title: `Evidence coverage ${ec.toFixed(1)}% — at or above the verified threshold.` }
-  if (ec >= 60) return { value: 'Partial', title: `Evidence coverage ${ec.toFixed(1)}% — partial, below the verified threshold.` }
-  return { value: 'Review required', title: `Evidence coverage ${ec.toFixed(1)}% — below the ranking-eligible threshold.` }
+  if (ec == null) return { value: '-', title: 'No evidence-coverage figure on record for this journal.' }
+  if (ec >= 80) return { value: 'Verified', title: `Evidence coverage ${ec.toFixed(1)}% - at or above the verified threshold.` }
+  if (ec >= 60) return { value: 'Partial', title: `Evidence coverage ${ec.toFixed(1)}% - partial, below the verified threshold.` }
+  return { value: 'Review required', title: `Evidence coverage ${ec.toFixed(1)}% - below the ranking-eligible threshold.` }
 }
 
 function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: string } {
@@ -59,20 +59,20 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
     case 'collection':
       return { value: j.is_external_benchmark ? 'Benchmark' : 'Core' }
     case 'm-q':
-      // Always unscored — AJR-M 1.0 is implemented but has not been run
+      // Always unscored - AJR-M 1.0 is implemented but has not been run
       // against real data (see earlyStageStatus()'s 'mature' branch in
       // src/lib/early-stage.ts). Deliberately does NOT read any quartile
-      // field here even when populated — for a mature-eligible record,
+      // field here even when populated - for a mature-eligible record,
       // that value is the old interim AJR-E-based quartile (legacy shape)
       // or simply not applicable (v1.1 shape), and AJR-M-1.0-SPEC.md
       // forbids displaying either as a mature journal's score.
-      return { value: 'Not yet published', title: 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet — no journal has a published M-Q.' }
+      return { value: 'Not yet published', title: 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet - no journal has a published M-Q.' }
     case 'e-q': {
       const quartile = earlyStageQuartile(j.early_stage_rating)
       const cohort = earlyStageCohortInfo(j.early_stage_rating)
       if (quartile) {
         const cohortNote = cohort?.cohortSize != null ? ` (cohort ${cohort.cohortSize})` : ''
-        return { value: `${quartile}${cohortNote}`, title: 'Ranked within its PSC peer cohort — RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
+        return { value: `${quartile}${cohortNote}`, title: 'Ranked within its PSC peer cohort - RANK-1.0 midrank-percentile, see AJR-SPEC.md § 5' }
       }
       if (cohort) {
         const reason = cohort.cohortSize != null
@@ -80,7 +80,7 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
           : 'No same-category peer cohort has formed yet for this record.'
         return { value: 'Not assigned', title: reason }
       }
-      return { value: 'Not assigned', title: 'Not assigned — either insufficient peer cohort, not yet evaluated, provisional (not ranking-eligible), or no AJR score exists for this record at all.' }
+      return { value: 'Not assigned', title: 'Not assigned - either insufficient peer cohort, not yet evaluated, provisional (not ranking-eligible), or no AJR score exists for this record at all.' }
     }
     case 'age-stage': {
       const label = earlyStageLifecycleLabel(j.early_stage_rating)
@@ -91,7 +91,7 @@ function renderColumn(kind: ColumnKind, j: Journal): { value: string; title?: st
       return evidenceStatus(j)
     case 'citation-preview': {
       const cp = j.citation_preview
-      if (cp?.value != null) return { value: cp.value.toFixed(2), title: 'OpenAlex 2-year mean citedness — diagnostic preview only, not PCI, not ranked. See /pci.' }
+      if (cp?.value != null) return { value: cp.value.toFixed(2), title: 'OpenAlex 2-year mean citedness - diagnostic preview only, not PCI, not ranked. See /pci.' }
       if (cp) return { value: 'Unavailable', title: 'No OpenAlex citation figure for this record' }
       return { value: 'Not released', title: 'No citation preview computed for this record' }
     }
@@ -108,9 +108,9 @@ function applyBenchmarkMode(all: Journal[], mode: BenchmarkMode): Journal[] {
 }
 
 // Real AJR-E score first (highest first) for non-mature rows, falling back
-// to the raw citation preview value (not a rank) — display ordering only,
+// to the raw citation preview value (not a rank) - display ordering only,
 // never a claim of ranking. Mature rows never sort by early_stage_rating's
-// total, even when populated — see the AJR Score column's own comment for
+// total, even when populated - see the AJR Score column's own comment for
 // why (that number is the old interim AJR-E score, not a real AJR-M one).
 function scoreForSort(j: Journal): number {
   return earlyStageDisplayTotal(j.early_stage_rating) ?? j.citation_preview?.value ?? -1
@@ -163,8 +163,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'default', label: 'Rated first, AJR-E descending' },
   { value: 'ajr-desc', label: 'AJR-E (high to low)' },
   { value: 'ajr-asc', label: 'AJR-E (low to high)' },
-  { value: 'name-asc', label: 'Journal name (A–Z)' },
-  { value: 'name-desc', label: 'Journal name (Z–A)' },
+  { value: 'name-asc', label: 'Journal name (A-Z)' },
+  { value: 'name-desc', label: 'Journal name (Z-A)' },
   { value: 'age-desc', label: 'Lifecycle age (oldest first)' },
   { value: 'age-asc', label: 'Lifecycle age (newest first)' },
   { value: 'eq-asc', label: 'E-Q (E-Q1 first)' },
@@ -189,26 +189,26 @@ function sortComparator(key: SortKey): (a: Journal, b: Journal) => number {
 
 /**
  * Shared table for /ratings/early-stage, /ratings/mature and
- * /coverage/global-benchmark — same journal-identity + AJR score + status
+ * /coverage/global-benchmark - same journal-identity + AJR score + status
  * columns everywhere, with 0-2 track-specific columns (E-Q, M-Q, Citation Preview,
  * Collection) appended per caller. See AJR-SPEC.md § 5 for why the ranking
- * shape is identical across tracks — only the input score/label differs.
+ * shape is identical across tracks - only the input score/label differs.
  *
- * `journals` (Core Collection / curated benchmark — small, real
+ * `journals` (Core Collection / curated benchmark - small, real
  * evidence-based data) renders immediately, server-side. `benchmarkMode`,
  * when given, fetches the much larger publisher-catalog expansion
  * (~3,300 records) client-side at runtime and merges in ALL matching rows
- * once loaded (no display cap) — NOT statically bundled, see
+ * once loaded (no display cap) - NOT statically bundled, see
  * publisher-catalog-client.ts's header for why (an earlier version baked
  * all of it into the static build and broke a live Cloudflare Pages
  * deployment). Paginated (`?page=`, PER_PAGE rows/page, same
  * Pagination/pageWindow pattern as JournalTabs.tsx/the journals listing)
- * so every row is reachable no matter how large the merged set grows —
+ * so every row is reachable no matter how large the merged set grows -
  * never truncated to a fixed top-N cap.
  *
  * `enableFilters`/`enableSort` opt a caller into PSC/status/evidence/
  * publisher filters and sortable ordering, both synced to the URL
- * (?psc=&status=&evidence=&publisher=&sort=) — off by default so
+ * (?psc=&status=&evidence=&publisher=&sort=) - off by default so
  * /ratings/mature and /coverage/global-benchmark keep their existing
  * fixed-order presentation unless explicitly upgraded.
  */
@@ -301,14 +301,14 @@ export function LifecycleRatingsTable({
   return (
     <div>
       {/* Title + row-range live in one row, same as CitationReportsTable's
-          toolbar — a range indicator on its own row reads as an orphaned
+          toolbar - a range indicator on its own row reads as an orphaned
           strip of empty space, not a caption attached to anything. */}
       <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1" style={{ background: 'var(--posi-bg)', borderBottom: '1px solid var(--posi-border)' }}>
         <div className="flex items-baseline gap-3 min-w-0">
           <h2 className="text-xs font-bold uppercase tracking-[0.1em] whitespace-nowrap" style={{ color: 'var(--posi-muted)' }}>{title}</h2>
           {allRows.length > 0 && (
             <span className="text-[11px] font-mono whitespace-nowrap" style={{ color: 'var(--posi-muted)' }}>
-              {((page - 1) * PER_PAGE + 1).toLocaleString()}–{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
+              {((page - 1) * PER_PAGE + 1).toLocaleString()}-{Math.min(page * PER_PAGE, allRows.length).toLocaleString()} of {allRows.length.toLocaleString()}
             </span>
           )}
         </div>
@@ -382,11 +382,11 @@ export function LifecycleRatingsTable({
             {rows.map(j => {
               const r = j.early_stage_rating
               // A Global Benchmark row merged in via filterNotYetMature() has no
-              // early_stage_rating at all — it was never evaluated. Its only
+              // early_stage_rating at all - it was never evaluated. Its only
               // signal is the ABSENCE of >=5-year-old OpenAlex activity, which
               // rules out "mature" but does NOT prove the journal is actually
               // 12-59 months old (it could just as easily be unlisted/missing
-              // history for other reasons) — so it must never be shown as if it
+              // history for other reasons) - so it must never be shown as if it
               // were a genuinely evaluated Early-Stage record. Distinct from the
               // generic 'unknown' case (a Core Collection record with a real,
               // unresolved FPD lookup).
@@ -397,11 +397,11 @@ export function LifecycleRatingsTable({
                 <tr key={j.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                   <td className="px-4 py-3">
                     {j.is_external_benchmark ? (
-                      <a href={j.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                      <a href={j.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                         {j.title}
                       </a>
                     ) : (
-                      <Link href={`/journal/${j.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                      <Link href={`/journal/${j.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                         {j.title}
                       </Link>
                     )}
@@ -411,7 +411,7 @@ export function LifecycleRatingsTable({
                     {(() => {
                       // citation_preview carries its own PSC classification for
                       // journals with no evidence-based rating (Global Benchmark
-                      // publisher-catalog expansion) — fall back to it when the
+                      // publisher-catalog expansion) - fall back to it when the
                       // primary field is unset.
                       const category = j.psc_category ?? j.citation_preview?.psc_category
                       const lowConfidence = j.psc_category ? j.psc_confidence === 'low' : (j.citation_preview && j.citation_preview.psc_confidence !== 'high')
@@ -425,7 +425,7 @@ export function LifecycleRatingsTable({
                   </td>
                   <td className="px-3 py-3 text-center font-mono font-semibold" style={{ color: 'var(--posi-text)' }}>
                     {/* isMatureStage(r) never shows a score here, even if
-                        r.total is populated — for the legacy shape that value
+                        r.total is populated - for the legacy shape that value
                         is the old interim AJR-E score, and AJR-M-1.0-SPEC.md
                         forbids scoring mature journals with the AJR-E rubric.
                         AJR-M is implemented but has not been run against real
@@ -433,17 +433,17 @@ export function LifecycleRatingsTable({
                         guards the v1.1 shape's not_rateable/not_applicable
                         rating_status against ever showing a fabricated total. */}
                     {isMatureStage(r)
-                      ? <span style={{ color: 'var(--posi-muted)' }} title="AJR-M 1.0 is implemented but has not been run against real evidence/citation data yet">—</span>
+                      ? <span style={{ color: 'var(--posi-muted)' }} title="AJR-M 1.0 is implemented but has not been run against real evidence/citation data yet">-</span>
                       : displayTotal != null
                         ? `${displayTotal}/100`
-                        : <span style={{ color: 'var(--posi-muted)' }} title="No AJR-E score on record — see the Status column for the reason.">—</span>}
+                        : <span style={{ color: 'var(--posi-muted)' }} title="No AJR-E score on record - see the Status column for the reason.">-</span>}
                   </td>
                   <td className="px-3 py-3 text-center">
                     {/* pendingFpd reads as quiet/muted, same tier as the other
-                        structural states — it's the expected state for nearly
+                        structural states - it's the expected state for nearly
                         every Benchmark-track row, not an anomaly. status.notable
                         (from earlyStageStatus(), src/lib/early-stage.ts) marks
-                        genuine signal: an achieved result or a real anomaly —
+                        genuine signal: an achieved result or a real anomaly -
                         legacy 'early_stage'/'not_yet_rateable', or v1.1
                         'official'/'provisional'/'not_rateable'. Rendered via
                         the shared Badge vocabulary (earlyStageBadgeVariant)
@@ -452,7 +452,7 @@ export function LifecycleRatingsTable({
                       <Badge
                         label="Pending FPD Verification"
                         variant="default"
-                        title='No OpenAlex evidence of publishing activity >=5 years ago rules out "mature," but does not prove this journal is 12-59 months old — absence of proof of maturity is not proof of Early-Stage. No first-publication-date has been resolved for this record.'
+                        title='No OpenAlex evidence of publishing activity >=5 years ago rules out "mature," but does not prove this journal is 12-59 months old - absence of proof of maturity is not proof of Early-Stage. No first-publication-date has been resolved for this record.'
                       />
                     ) : (
                       <Badge label={status.label} variant={earlyStageBadgeVariant(status)} title={status.title} />
@@ -473,7 +473,7 @@ export function LifecycleRatingsTable({
         </table>
       </div>
 
-      {/* Mobile compact cards — the full desktop table is unreadable at
+      {/* Mobile compact cards - the full desktop table is unreadable at
           390px (§29 of the Stage 2 brief); every row still surfaces
           Journal / AJR Score / E-Q (or track-specific column) / Status. */}
       <div className="md:hidden divide-y" style={{ borderColor: 'var(--posi-border-light)' }}>
@@ -491,7 +491,7 @@ export function LifecycleRatingsTable({
                   <Link href={`/journal/${j.journal_code}`} className="font-medium text-sm leading-tight" style={{ color: 'var(--posi-text)' }}>{j.title}</Link>
                 )}
                 <span className="font-mono text-xs font-semibold shrink-0" style={{ color: 'var(--posi-text)' }}>
-                  {isMatureStage(r) ? '—' : displayTotal != null ? `${displayTotal}/100` : '—'}
+                  {isMatureStage(r) ? '-' : displayTotal != null ? `${displayTotal}/100` : '-'}
                 </span>
               </div>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--posi-muted)' }}>{j.publisher}</p>
@@ -515,9 +515,9 @@ export function LifecycleRatingsTable({
       {benchmarkMode && (
         <p className="px-4 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: rows.length > 0 ? '1px solid var(--posi-border-light)' : undefined }}>
           {loading && 'Loading Global Benchmark rows…'}
-          {!loading && failed && 'Global Benchmark rows failed to load — showing Core Collection only.'}
+          {!loading && failed && 'Global Benchmark rows failed to load - showing Core Collection only.'}
           {!loading && !failed && benchmarkRows && (
-            `${benchmarkRows.length.toLocaleString()} Global Benchmark row${benchmarkRows.length === 1 ? '' : 's'} loaded — all reachable via the pages below.`
+            `${benchmarkRows.length.toLocaleString()} Global Benchmark row${benchmarkRows.length === 1 ? '' : 's'} loaded - all reachable via the pages below.`
           )}
         </p>
       )}

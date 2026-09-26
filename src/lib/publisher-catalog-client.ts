@@ -3,11 +3,11 @@
 import type { Journal } from './types'
 
 // Client-side loader for the 2026-08 Elsevier/Frontiers bulk publisher-
-// catalog expansion (~3300 records) — deliberately NOT a static import,
+// catalog expansion (~3300 records) - deliberately NOT a static import,
 // and as of 2026-08-13 no longer even a same-origin static asset copied
 // into this repo's own Cloudflare Pages deployment. It's fetched directly
 // from posi-data-delivery (https://github.com/WENSHAO521/posi-data-delivery),
-// a dedicated public GitHub-Pages-hosted data layer — so this repo never
+// a dedicated public GitHub-Pages-hosted data layer - so this repo never
 // vendors the file at all, not even as a build artifact. See that repo's
 // README for the current.json -> manifest -> collection fetch pattern
 // this follows, and scripts/sync-corpus.mjs's header for the earlier
@@ -52,7 +52,7 @@ export function fetchPublisherCatalogJournals(): Promise<Journal[]> {
 }
 
 // Real, checkable evidence of >=5 years of OpenAlex-visible publishing
-// activity. NOT a ranking split — every citation_preview record is
+// activity. NOT a ranking split - every citation_preview record is
 // status: "diagnostic_only", so there is no "ranked" subset any more (see
 // posi-data's audits/migrations/citation-preview-correction-2026/ for why
 // the earlier ranked/unclassified split was withdrawn). Sorted by the raw
@@ -64,7 +64,7 @@ export function filterMatureEvidence(journals: Journal[]): Journal[] {
     .sort((a, b) => (b.citation_preview!.value ?? 0) - (a.citation_preview!.value ?? 0))
 }
 
-// Not yet 5+ years of OpenAlex-visible publishing history — this is
+// Not yet 5+ years of OpenAlex-visible publishing history - this is
 // absence of proof of maturity, not proof of Early-Stage (12-59 months);
 // callers must not display these as genuinely evaluated Early-Stage rows.
 export function filterNotYetMature(journals: Journal[]): Journal[] {

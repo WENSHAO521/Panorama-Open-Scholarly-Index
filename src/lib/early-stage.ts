@@ -1,4 +1,4 @@
-// Shared reads over the EarlyStageRating union (see types.ts) — every page
+// Shared reads over the EarlyStageRating union (see types.ts) - every page
 // that renders or counts by lifecycle stage / rating status goes through
 // these instead of re-deriving the branch locally, so the two real shapes
 // (legacy single `eligibility` field vs AJR-E-1.1's split
@@ -7,7 +7,7 @@
 // README.md for the full methodology this is reading.
 //
 // Deliberately NOT a single flattened "eligibility" value for the v1.1
-// shape — collapsing lifecycle_stage and rating_status back into one field
+// shape - collapsing lifecycle_stage and rating_status back into one field
 // would silently re-introduce the exact conflation AJR-E-1.1 was built to
 // remove (see types.ts's EarlyStageRatingV1_1 comment). Each helper below
 // answers one specific real question instead.
@@ -15,18 +15,18 @@
 import type { EarlyStageRating, EarlyStageRatingV1_1 } from './types'
 import type { BadgeVariant } from '@/components/Badge'
 
-// Lifecycle-window bounds as prose — previously re-typed as a raw string on
+// Lifecycle-window bounds as prose - previously re-typed as a raw string on
 // every rankings page (ratings/page.tsx, ratings/early-stage/page.tsx,
 // ratings/mature/page.tsx). AJR-SPEC.md defines these bounds; this is just
 // the one shared place to spell them out.
-export const EARLY_STAGE_WINDOW_LABEL = '12–59 months'
+export const EARLY_STAGE_WINDOW_LABEL = '12-59 months'
 export const MATURE_WINDOW_LABEL = '60+ months'
 
 export function isEarlyStageV1_1(r: EarlyStageRating | null | undefined): r is EarlyStageRatingV1_1 {
   return !!r && r.version === 'AJR-E-1.1'
 }
 
-// True only for the 60+ month "mature" lifecycle stage — used to withhold
+// True only for the 60+ month "mature" lifecycle stage - used to withhold
 // any AJR-E-scored total (AJR-M-1.0-SPEC.md: a mature journal must never be
 // scored with the early-stage rubric), for both shapes.
 export function isMatureStage(r: EarlyStageRating | null | undefined): boolean {
@@ -36,7 +36,7 @@ export function isMatureStage(r: EarlyStageRating | null | undefined): boolean {
 
 // True when the journal is currently in the 12-59mo Early-Stage lifecycle
 // window. NOT the same as "has a real score" for the v1.1 shape (a window
-// member can still be rating_status 'not_rateable') — the legacy shape had
+// member can still be rating_status 'not_rateable') - the legacy shape had
 // no way to distinguish the two, so 'early_stage' there already implied a
 // real score existed.
 export function isInEarlyStageWindow(r: EarlyStageRating | null | undefined): boolean {
@@ -49,7 +49,7 @@ export function isInObservationStage(r: EarlyStageRating | null | undefined): bo
   return isEarlyStageV1_1(r) ? r.lifecycle_stage === 'observation' : r.eligibility === 'observation'
 }
 
-// Below the minimum evidence bar — legacy 'not_yet_rateable' eligibility,
+// Below the minimum evidence bar - legacy 'not_yet_rateable' eligibility,
 // or v1.1 rating_status 'not_rateable' (in-window but failed a
 // mandatory-evidence gate; see not_rateable_reason on the v1.1 shape for
 // the real, journal-specific reason).
@@ -63,7 +63,7 @@ export function isUnknownLifecycle(r: EarlyStageRating | null | undefined): bool
   return isEarlyStageV1_1(r) ? r.lifecycle_stage === 'unknown' : r.eligibility === 'unknown'
 }
 
-// True when a record carries a real, currently-shown AJR-E total — v1.1
+// True when a record carries a real, currently-shown AJR-E total - v1.1
 // rating_status 'official' or 'provisional' (a provisional score is real
 // and displayed, just not ranking-eligible, AJR-SPEC.md § 6), or legacy
 // eligibility 'early_stage' (the only legacy state that ever carried a
@@ -73,7 +73,7 @@ export function hasRealEarlyStageScore(r: EarlyStageRating | null | undefined): 
   return isEarlyStageV1_1(r) ? (r.rating_status === 'official' || r.rating_status === 'provisional') : r.eligibility === 'early_stage'
 }
 
-// True only when a record is ranking-eligible today — v1.1 rating_status
+// True only when a record is ranking-eligible today - v1.1 rating_status
 // 'official' only (AJR-SPEC.md § 6 explicitly excludes 'provisional' from
 // E-Q/M-Q ranking even though its score is shown). Legacy has no such
 // distinction, so 'early_stage' is the closest equivalent.
@@ -82,7 +82,7 @@ export function isOfficiallyRated(r: EarlyStageRating | null | undefined): boole
   return isEarlyStageV1_1(r) ? r.rating_status === 'official' : r.eligibility === 'early_stage'
 }
 
-// The real, currently-displayable AJR-E total — null for mature records
+// The real, currently-displayable AJR-E total - null for mature records
 // (see isMatureStage), legacy 'observation'/'not_yet_rateable'/'unknown',
 // and v1.1 rating_status values other than 'official'/'provisional'. A
 // belt-and-suspenders guard on top of the data contract (not_rateable/
@@ -94,17 +94,17 @@ export function earlyStageDisplayTotal(r: EarlyStageRating | null | undefined): 
   return r.total
 }
 
-// The real, ranking-eligible quartile — null unless isOfficiallyRated(r).
+// The real, ranking-eligible quartile - null unless isOfficiallyRated(r).
 // Prefers the v1.1 shape's human-readable quartile_label when present.
 export function earlyStageQuartile(r: EarlyStageRating | null | undefined): string | null {
   if (!r || !isOfficiallyRated(r)) return null
   return isEarlyStageV1_1(r) ? (r.quartile_label ?? r.quartile) : r.provisional_quartile
 }
 
-// "Lifecycle" meaning lifecycle-window membership — Observation /
+// "Lifecycle" meaning lifecycle-window membership - Observation /
 // Early-Stage / Mature / Unknown. Legacy's 'not_yet_rateable' isn't a
 // lifecycle window at all (an evidence-bar failure that can happen inside
-// the Early-Stage window) — kept as its own label for continuity with the
+// the Early-Stage window) - kept as its own label for continuity with the
 // old single-field display, since the legacy shape has no separate axis to
 // pull a truer window value from.
 export function earlyStageLifecycleLabel(r: EarlyStageRating | null | undefined): string {
@@ -127,14 +127,14 @@ export interface EarlyStageStatusDisplay {
   title?: string
 }
 
-const PENDING_AJR_M_TITLE = 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet — no journal has a published M-Q.'
-const NOT_YET_RATEABLE_TITLE = 'Below the minimum evidence bar — often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.'
+const PENDING_AJR_M_TITLE = 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet - no journal has a published M-Q.'
+const NOT_YET_RATEABLE_TITLE = 'Below the minimum evidence bar - often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.'
 const PROVISIONAL_TITLE = 'Real AJR-E score, shown, but evidence coverage is below the threshold required for E-Q ranking eligibility (AJR-SPEC.md § 6).'
 
 // A single label/color/notability/title tuple for a one-line lifecycle
 // status badge (LifecycleRatingsTable's Status column, and anywhere else a
 // journal's rating state needs a compact summary). Each shape is read on
-// its own terms, per its own real fields — see the module comment above for
+// its own terms, per its own real fields - see the module comment above for
 // why this can't be one flat eligibility map once the v1.1 shape splits
 // lifecycle_stage from rating_status.
 export function earlyStageStatus(r: EarlyStageRating | null | undefined): EarlyStageStatusDisplay {
@@ -171,7 +171,7 @@ export function earlyStageStatus(r: EarlyStageRating | null | undefined): EarlyS
 // Maps earlyStageStatus()'s label to a Badge.tsx variant, so rankings/
 // profile surfaces can render <Badge> instead of a raw styled <span> while
 // keeping the exact same status vocabulary/colors defined above (this is a
-// presentation-only lookup — it never re-derives eligibility itself).
+// presentation-only lookup - it never re-derives eligibility itself).
 export function earlyStageBadgeVariant(status: EarlyStageStatusDisplay): BadgeVariant {
   switch (status.label) {
     case 'Evaluated': return 'published'
@@ -194,7 +194,7 @@ export interface EarlyStageCohortInfo {
 }
 
 // Real peer-cohort context for an AJR-E-1.1 record with a displayed score
-// (official or provisional) — cohort_key/cohort_level/cohort_size/
+// (official or provisional) - cohort_key/cohort_level/cohort_size/
 // sample_adequacy already exist on the data but were previously computed
 // and then never read by any page. Returns null for the legacy shape (no
 // equivalent fields exist there) and for records with no displayed score.

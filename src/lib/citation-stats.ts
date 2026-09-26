@@ -1,7 +1,7 @@
 import raw from './citation-stats.json'
 import type { OpenAlexSourceStats } from './api'
 
-// Precomputed snapshot — see scripts/fetch-citation-stats.mjs. Both
+// Precomputed snapshot - see scripts/fetch-citation-stats.mjs. Both
 // /citation-reports and /journal/[code] read from this single file so
 // their PCI figures for the same journal can never diverge, unlike
 // the old approach of each page fetching OpenAlex live at build
