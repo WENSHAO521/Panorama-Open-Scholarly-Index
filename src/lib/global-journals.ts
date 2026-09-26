@@ -55,9 +55,12 @@ interface GlobalCorpusRecord {
   works_count: number | null
   crossref_total_dois: number | null
   psc_category: string | null
+  psc_confidence?: string | null
 }
 
 export const UNCLASSIFIED = 'unclassified'
+/** General journals whose output spans several domains (PSC-CROSSWALK-0.3). Not ranked by subject. */
+export const MULTIDISCIPLINARY = 'multidisciplinary'
 
 const PSC = psc.categories as { code: string; name: string; level: number; parent: string | null }[]
 const PSC_NAME: Record<string, string> = Object.fromEntries(PSC.map(c => [c.code, c.name]))
@@ -93,7 +96,7 @@ export function getDirectory() {
         oa: g.open_access,
         dj: g.in_doaj,
         w: g.works_count ?? g.crossref_total_dois ?? null,
-        s: g.psc_category ?? c?.psc_category ?? null,
+        s: g.psc_confidence === 'multidisciplinary' ? MULTIDISCIPLINARY : g.psc_category ?? c?.psc_category ?? null,
         core: k === 'core',
         h: href,
       }
@@ -122,15 +125,19 @@ export function getDirectoryCategories(): DirCategory[] {
   const { records } = getDirectory()
   const counts = new Map<string, { n: number; core: number; oa: number }>()
   for (const r of records) {
-    const k = r.s && PSC_NAME[r.s] ? r.s : UNCLASSIFIED
+    const k = r.s && (PSC_NAME[r.s] || r.s === MULTIDISCIPLINARY) ? r.s : UNCLASSIFIED
     const c = counts.get(k) ?? { n: 0, core: 0, oa: 0 }
     c.n++; if (r.core) c.core++; if (r.oa) c.oa++
     counts.set(k, c)
   }
-  const cats: DirCategory[] = PSC.filter(c => c.level === 2).map(c => ({
+  const multi = counts.get(MULTIDISCIPLINARY)
+  const cats: DirCategory[] = multi
+    ? [{ code: MULTIDISCIPLINARY, name: 'Multidisciplinary', domain: 'P0', domainName: 'General', count: multi.n, core: multi.core, oa: multi.oa }]
+    : []
+  cats.push(...PSC.filter(c => c.level === 2).map(c => ({
     code: c.code, name: c.name, domain: c.parent!, domainName: PSC_NAME[c.parent!] ?? c.parent!,
     count: counts.get(c.code)?.n ?? 0, core: counts.get(c.code)?.core ?? 0, oa: counts.get(c.code)?.oa ?? 0,
-  }))
+  })))
   const un = counts.get(UNCLASSIFIED)
   if (un) cats.push({ code: UNCLASSIFIED, name: 'Not yet classified', domain: 'X', domainName: 'Other', count: un.n, core: un.core, oa: un.oa })
   return cats
@@ -139,11 +146,12 @@ export function getDirectoryCategories(): DirCategory[] {
 export function getCategoryJournals(code: string): DirRecord[] {
   const { records } = getDirectory()
   return code === UNCLASSIFIED
-    ? records.filter(r => !r.s || !PSC_NAME[r.s])
+    ? records.filter(r => !r.s || (!PSC_NAME[r.s] && r.s !== MULTIDISCIPLINARY))
     : records.filter(r => r.s === code)
 }
 
 export function categoryLabel(code: string): string {
+  if (code === MULTIDISCIPLINARY) return 'Multidisciplinary'
   return code === UNCLASSIFIED ? 'Not yet classified' : PSC_NAME[code] ?? code
 }
 

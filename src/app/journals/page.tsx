@@ -13,7 +13,7 @@ export const metadata = {
 export default function JournalsPage() {
   const { records } = getDirectory()
   const cats = getDirectoryCategories()
-  const classified = cats.filter(c => c.code !== 'unclassified' && c.count > 0)
+  const classified = cats.filter(c => c.code !== 'unclassified' && c.code !== 'multidisciplinary' && c.count > 0)
   const unclassified = cats.find(c => c.code === 'unclassified')
   const core = records.filter(r => r.core).length
   const oa = records.filter(r => r.oa).length

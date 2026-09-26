@@ -42,7 +42,7 @@ function slim(corpus) {
     issns: r.issns ?? [], issn_l: r.issn_l ?? null, openalex_source_id: r.openalex_source_id ?? null,
     country: r.country ?? null, open_access: r.open_access ?? null, in_doaj: r.in_doaj ?? null,
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
-    psc_category: r.psc_category ?? null,
+    psc_category: r.psc_category ?? null, psc_confidence: r.psc_confidence ?? null,
   }))
 }
 

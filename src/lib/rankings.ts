@@ -65,6 +65,7 @@ export const EXCLUSION_TEXT: Record<string, string> = {
   too_few_items: `Fewer than ${E.parameters.min_items} eligible items`,
   incomplete_fetch: 'Citation data fetch incomplete',
   no_psc_category: 'No subject category assigned',
+  multidisciplinary: 'Multidisciplinary journal, not ranked by subject',
   psc_confidence_not_rank_eligible: 'Subject assignment not high-confidence',
   category_below_min_size: `Category has fewer than ${E.parameters.min_category_size} ranked journals`,
 }
