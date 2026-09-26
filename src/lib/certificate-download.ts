@@ -18,6 +18,8 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
   sheet.style.margin = '0'
   sheet.style.boxShadow = 'none'
   sheet.style.borderRadius = '0'
+  // At least one full A4 page, so a short certificate keeps its footer at the bottom.
+  sheet.style.minHeight = `${Math.floor(SHEET_PX * (A4.h / A4.w))}px`
   host.appendChild(sheet)
   document.body.appendChild(host)
 
@@ -40,16 +42,20 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
     pdf.setCreationDate(new Date(`${meta.issued}T00:00:00Z`))
 
     const pagePx = SHEET_PX * (A4.h / A4.w)
+    // A few pixels past the page (borders, rounding) are squeezed onto it
+    // rather than starting a near-empty page.
+    const SLACK = 24
     let start = 0
     while (start < heightPx - 1) {
       let end = Math.min(start + pagePx, heightPx)
+      if (heightPx - end <= SLACK) end = heightPx
       if (end < heightPx) {
         const fit = breaks.filter(b => b > start + 40 && b <= end)
         if (fit.length) end = fit[fit.length - 1]
       }
       const slice = document.createElement('canvas')
       slice.width = canvas.width
-      slice.height = Math.round(pagePx * SCALE)
+      slice.height = Math.round(Math.max(pagePx, end - start) * SCALE)
       const ctx = slice.getContext('2d')!
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, slice.width, slice.height)
@@ -57,7 +63,10 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
 
       const jpg = await pdf.embedJpg(slice.toDataURL('image/jpeg', 0.92))
       const page = pdf.addPage([A4.w, A4.h])
-      page.drawImage(jpg, { x: 0, y: 0, width: A4.w, height: A4.h })
+      // A slightly taller slice is scaled down evenly (never stretched) and centred.
+      const k = Math.min(1, pagePx / (end - start))
+      const w = A4.w * k
+      page.drawImage(jpg, { x: (A4.w - w) / 2, y: 0, width: w, height: A4.h })
       start = end
     }
 
