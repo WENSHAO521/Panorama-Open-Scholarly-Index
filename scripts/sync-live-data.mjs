@@ -10,7 +10,7 @@
  *                         (data.posi.panorama-sg.com -> current.json ->
  *                         manifest -> collections/pcs-q.json)
  *   journals-global.json  the global journal corpus (every Crossref and
- *                         OpenAlex journal), from the newest posi-data release
+ *                         OpenAlex journal), from the newest posi-engine release
  *                         tagged global-index-* (asset global-corpus.json.gz)
  *
  * Never fails the build. Rankings fall back to the committed
@@ -25,7 +25,7 @@ import { gunzipSync } from 'zlib'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
 const DATA = 'https://data.posi.panorama-sg.com'
-const RELEASES = 'https://api.github.com/repos/WENSHAO521/posi-data/releases?per_page=30'
+const RELEASES = 'https://api.github.com/repos/WENSHAO521/posi-engine/releases?per_page=30'
 
 mkdirSync(GEN, { recursive: true })
 
