@@ -22,7 +22,7 @@ const MUTED = rgb(0.34, 0.37, 0.39)
 const SOFT = rgb(0.55, 0.59, 0.61)
 const RULE = rgb(0.8, 0.82, 0.83)
 const BRAND_RED = rgb(0.89, 0.024, 0.075)
-const TEAL = rgb(0.043, 0.369, 0.4)
+const TEAL = rgb(0.11, 0.31, 0.561) // #1c4f8f, the site accent
 const GOLD = rgb(0.62, 0.45, 0.05)
 const SEAL_INK = hex(SEAL.ink)
 

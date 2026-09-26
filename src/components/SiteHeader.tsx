@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
-import { PRIMARY_NAV, type NavGroup } from '@/lib/site-nav'
+import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
 import { ThemeToggle } from './ThemeToggle'
 
 /**
@@ -16,16 +16,16 @@ import { ThemeToggle } from './ThemeToggle'
 export function Logo({ inverted = false }: { inverted?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2.5" style={{ color: inverted ? 'var(--band-ink)' : 'var(--ink)' }}>
-      <svg width="24" height="24" viewBox="20 20 54 54" aria-hidden="true">
+      <svg width="22" height="22" viewBox="20 20 54 54" aria-hidden="true">
         <rect x="20" y="20" width="24" height="24" fill="currentColor" />
         <rect x="50" y="20" width="24" height="24" fill="var(--brand-red)" />
         <rect x="20" y="50" width="24" height="24" fill="currentColor" />
         <rect x="50" y="50" width="24" height="8" fill="currentColor" />
       </svg>
-      <span className="leading-none">
-        <span className="block text-[15px] font-semibold tracking-tight">POSI</span>
-        <span className="block text-[11px] mt-0.5" style={{ color: inverted ? 'var(--band-muted)' : 'var(--muted)' }}>
-          Panorama Open Scholarly Index
+      <span className="leading-none whitespace-nowrap">
+        <span className="text-[15px] font-semibold tracking-tight">Panorama Open Scholarly Index</span>
+        <span className="hidden xl:inline text-[12px] font-medium ml-2 pl-2" style={{ color: inverted ? 'var(--band-muted)' : 'var(--muted)', borderLeft: `1px solid ${inverted ? 'var(--band-line)' : 'var(--line)'}` }}>
+          POSI
         </span>
       </span>
     </span>
@@ -51,8 +51,8 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
         id="header-search"
         value={q}
         onChange={e => setQ(e.target.value)}
-        placeholder="Search publications or DOI"
-        className="input pl-8 h-[34px] text-[13.5px]"
+        placeholder="Search publications, or enter a DOI"
+        className="input pl-8 h-8 text-[13px]"
       />
     </form>
   )
@@ -82,20 +82,20 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
         aria-expanded={open}
         aria-controls={id}
         onClick={onOpen}
-        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[14px] rounded-[6px] transition-colors hover:bg-[var(--hover)]"
-        style={active ? { color: 'var(--teal)', fontWeight: 500 } : { color: 'var(--ink-2)' }}
+        className="inline-flex h-14 items-center gap-1 px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
+        style={{ color: active || open ? 'var(--ink)' : 'var(--ink-2)', boxShadow: active ? 'inset 0 -2px 0 var(--teal)' : undefined }}
       >
         {group.label}
         <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
       </button>
       {open && (
-        <div id={id} className="absolute left-0 top-full pt-2 z-50">
-          <ul className="panel w-[300px] p-1.5" style={{ boxShadow: '0 8px 28px rgba(20, 40, 44, 0.14)' }}>
+        <div id={id} className="absolute left-0 top-full z-50">
+          <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--teal)', boxShadow: '0 6px 18px rgba(15, 23, 32, 0.12)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
-                <Link href={l.href} onClick={onClose} className="block rounded-[6px] px-3 py-2 transition-colors hover:bg-[var(--hover)]">
-                  <span className="block text-[14px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
-                  {l.description && <span className="block text-[12.5px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
+                <Link href={l.href} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
+                  <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
+                  {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
                 </Link>
               </li>
             ))}
@@ -119,13 +119,26 @@ export function SiteHeader() {
   }, [])
 
   return (
+    <>
+    <div className="hidden md:block" style={{ background: 'var(--band)', color: 'var(--band-muted)' }}>
+      <div className="wrap flex h-8 items-center justify-between text-[12px]">
+        <span>Panorama Scholarly Group Ltd.</span>
+        <nav aria-label="Utility" className="flex items-center gap-4">
+          {UTILITY_NAV.map(l => (
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</Link>
+          ))}
+          <span aria-hidden="true" className="h-3" style={{ borderLeft: '1px solid var(--band-line)' }} />
+          <ThemeToggle band />
+        </nav>
+      </div>
+    </div>
     <header
       className="sticky top-0 z-40"
-      style={{ background: 'color-mix(in srgb, var(--paper) 92%, transparent)', backdropFilter: 'saturate(1.4) blur(8px)', borderBottom: '1px solid var(--line)' }}
+      style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="wrap flex items-center gap-6 h-16">
+      <div className="wrap flex items-center gap-5 h-14">
         <Link href="/" aria-label="POSI home" className="shrink-0"><Logo /></Link>
-        <nav aria-label="Primary" className="hidden lg:flex items-center gap-0.5">
+        <nav aria-label="Primary" className="hidden lg:flex items-center">
           {PRIMARY_NAV.map(g => g.links ? (
             <Dropdown
               key={g.label}
@@ -140,15 +153,15 @@ export function SiteHeader() {
               key={g.label}
               href={g.href!}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
-              className="px-2.5 py-1.5 text-[14px] rounded-[6px] transition-colors hover:bg-[var(--hover)]"
-              style={groupActive(g, pathname) ? { color: 'var(--teal)', fontWeight: 500 } : { color: 'var(--ink-2)' }}
+              className="inline-flex h-14 items-center px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
+              style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--teal)' : undefined }}
             >
               {g.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden md:block ml-auto w-[240px] xl:w-[280px]"><HeaderSearch /></div>
-        <ThemeToggle className="ml-auto md:ml-2 shrink-0" />
+        <div className="hidden md:block ml-auto w-[240px] xl:w-[300px]"><HeaderSearch /></div>
+        <ThemeToggle className="ml-auto md:hidden shrink-0" />
         <button
           type="button"
           className="lg:hidden ml-2 btn btn-sm"
@@ -161,7 +174,7 @@ export function SiteHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden max-h-[calc(100dvh-64px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--paper)' }}>
+        <div className="lg:hidden max-h-[calc(100dvh-56px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
           <div className="wrap py-3 space-y-3">
             <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
             <nav aria-label="Mobile">
@@ -201,5 +214,6 @@ export function SiteHeader() {
         </div>
       )}
     </header>
+    </>
   )
 }

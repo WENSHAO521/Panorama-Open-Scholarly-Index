@@ -93,12 +93,12 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
     <article>
       <header className="pt-8 pb-6 md:pt-10">
         <div className="min-w-0">
-          <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] font-mono" style={{ color: 'var(--muted)' }}>
+          <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
             <Link href="/journals/" className="hover:underline">Sources</Link>
             <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>
             <Link href={`/journals/?collection=${k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
           </nav>
-          <h1 className="text-[26px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
+          <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
           <p className="mt-1.5 text-[15px]" style={{ color: 'var(--muted)' }}>
             {[j.publisher, countryName(j.registration_country || j.country)].filter(Boolean).join(', ')}
           </p>
@@ -198,7 +198,6 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                       {' '}(<span className="font-semibold">PCS-{ranking.q}</span>, percentile {ranking.pct?.toFixed(1)}), and{' '}
                       <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall, by PCS.</>
                   : <>Ranked <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall by PCS; no category rank.</>}
-                <span className="block mt-1 text-[12px]" style={{ color: 'var(--muted)' }}>PCS determines the PCS-Q ranking only; it does not determine Citation Rank, Citation Percentile or Citation Quartile.</span>
               </p>
             )}
             {oa && (

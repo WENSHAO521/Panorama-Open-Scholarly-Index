@@ -17,16 +17,17 @@ type Entry = [string, string, string | null, number, 0 | 1]
 const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
 
 export function titleWords(t: string): string[] {
-  return t.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !STOP_WORDS.has(w))
+  return t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !STOP_WORDS.has(w))
 }
 
 const ISSN_RE = /^\d{4}-?\d{3}[\dXx]$/
 
+// Shared between callers: never tied to one caller's AbortSignal.
 const cache = new Map<string, Promise<Entry[]>>()
-function loadPrefix(p: string, signal?: AbortSignal): Promise<Entry[]> {
+function loadPrefix(p: string): Promise<Entry[]> {
   let hit = cache.get(p)
   if (!hit) {
-    hit = fetch(`/data/jt/${p}.json`, { signal })
+    hit = fetch(`/data/jt/${p}.json`)
       .then(r => (r.ok ? r.json() : []))
       .catch(e => { cache.delete(p); throw e })
     cache.set(p, hit)
@@ -49,7 +50,8 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   if (!words.length) return { hits: [], total: 0 }
   // The longest word narrows the candidate file the most.
   const anchor = [...words].sort((a, b) => b.length - a.length)[0]
-  const entries = await loadPrefix(anchor.slice(0, 2), signal)
+  const entries = await loadPrefix(anchor.slice(0, 2))
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
   const full = words.join(' ')
   const scored: { e: Entry; score: number }[] = []

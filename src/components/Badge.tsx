@@ -126,7 +126,7 @@ export function Badge({ label, variant = 'default', className, title }: BadgePro
     <span
       title={title}
       className={clsx(
-        'inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium',
+        'inline-flex items-center px-2 py-0.5 rounded-[2px] text-xs font-medium',
         VARIANT_STYLES[variant],
         className
       )}

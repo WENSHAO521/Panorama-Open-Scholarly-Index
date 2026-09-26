@@ -25,7 +25,7 @@ function subscribe(cb: () => void) {
   return () => { mq.removeEventListener('change', cb); window.removeEventListener(EVENT, cb) }
 }
 
-export function ThemeToggle({ className = '' }: { className?: string }) {
+export function ThemeToggle({ className = '', band = false }: { className?: string; band?: boolean }) {
   const theme = useSyncExternalStore<Theme | null>(subscribe, current, () => null)
 
   function toggle() {
@@ -39,8 +39,18 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 
   const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
   return (
-    <button type="button" onClick={toggle} className={`btn btn-sm h-9 w-9 px-0 justify-center ${className}`} aria-label={label} title={label}>
-      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
+      className={band
+        ? `inline-flex h-6 items-center gap-1.5 px-1.5 text-[12px] transition-colors hover:text-[var(--band-ink)] ${className}`
+        : `btn btn-sm h-8 w-8 px-0 justify-center ${className}`}
+      style={band ? { color: 'var(--band-muted)' } : undefined}
+    >
+      {theme === 'dark' ? <Sun className={band ? 'h-3.5 w-3.5' : 'h-4 w-4'} /> : <Moon className={band ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
+      {band && <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>}
     </button>
   )
 }

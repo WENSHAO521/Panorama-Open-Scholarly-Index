@@ -31,7 +31,7 @@ export default function JournalsPage() {
         <JournalSearch />
       </Suspense>
 
-      <dl className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Indexed journals', fmt(records.length), null],
           ['Core Collection', fmt(core), '/core-collection/'],

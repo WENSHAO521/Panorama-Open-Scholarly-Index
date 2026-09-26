@@ -61,12 +61,12 @@ export function JournalProfileView() {
   return (
     <article className="pb-12">
       <header className="pt-8 pb-6 md:pt-10">
-        <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] font-mono" style={{ color: 'var(--muted)' }}>
+        <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           <Link href="/" className="hover:underline">POSI</Link>
-          <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>
+          <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
           <Link href="/journals/" className="hover:underline">Journals</Link>
           {catName && catHref && <>
-            <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>
+            <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
             <Link href={catHref} className="hover:underline">{catName}</Link>
           </>}
         </nav>
@@ -78,7 +78,7 @@ export function JournalProfileView() {
           {j.dj && <span className="chip">DOAJ</span>}
           {j.sc === 'multidisciplinary' && <span className="chip">Multidisciplinary</span>}
         </div>
-        <h1 className="text-[28px] md:text-[36px] font-semibold leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
+        <h1 className="text-[24px] md:text-[28px] font-semibold leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
         <p className="mt-2 text-[15.5px]" style={{ color: 'var(--ink-2)' }}>
           {[j.pub ?? curated?.p, country].filter(Boolean).join(' · ') || 'Publisher not recorded'}
         </p>
@@ -101,7 +101,7 @@ export function JournalProfileView() {
         </div>
       </header>
 
-      <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {([
           ['Publications', fmt(j.w ?? j.cr)],
           ['Citations', fmt(j.c)],
@@ -145,8 +145,8 @@ export function JournalProfileView() {
                           <span className="min-w-0 truncate" style={{ color: 'var(--ink)' }}>{topic}</span>
                           <span className="font-mono tnum shrink-0" style={{ color: 'var(--muted)' }}>{fmt(n)}</span>
                         </div>
-                        <div className="mt-1 h-1.5 rounded-full" style={{ background: 'var(--surface-2)' }}>
-                          <div className="h-1.5 rounded-full" style={{ width: `${Math.max(2, (n / max) * 100)}%`, background: 'var(--teal)' }} />
+                        <div className="mt-1 h-1.5 rounded-[1px]" style={{ background: 'var(--surface-2)' }}>
+                          <div className="h-1.5 rounded-[1px]" style={{ width: `${Math.max(2, (n / max) * 100)}%`, background: 'var(--teal)' }} />
                         </div>
                         <p className="mt-0.5 text-[12px]" style={{ color: 'var(--soft)' }}>{[field, subfield].filter(Boolean).join(' › ')}</p>
                       </li>
@@ -284,13 +284,13 @@ function YearChart({ rows }: { rows: [number, number, number][] }) {
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4" aria-busy="true" aria-label="Loading journal">
-      <div className="h-4 w-48 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-9 w-2/3 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-4 w-1/3 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-20 rounded-[6px] animate-pulse mt-6" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-4 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-9 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-4 w-1/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-20 rounded-[2px] animate-pulse mt-6" style={{ background: 'var(--surface-2)' }} />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="h-64 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-        <div className="h-64 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-64 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-64 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
       </div>
     </div>
   )

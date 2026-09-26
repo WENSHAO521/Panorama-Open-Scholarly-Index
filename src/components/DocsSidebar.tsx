@@ -27,7 +27,7 @@ export function DocsSidebar() {
                     href={l.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className="block px-2 py-1.5 rounded text-[13.5px] leading-snug"
+                    className="block px-2 py-1.5 rounded-[2px] text-[13.5px] leading-snug"
                     style={active
                       ? { background: 'var(--teal-soft)', color: 'var(--teal)', fontWeight: 500, boxShadow: 'inset 2px 0 0 var(--teal)' }
                       : { color: 'var(--ink-2)' }}
