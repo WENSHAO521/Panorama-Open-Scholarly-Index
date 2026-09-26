@@ -1,5 +1,5 @@
 // Windowed page-number list with ellipsis gaps: always shows page 1 and the
-// last page, plus a window around the current page — avoids rendering
+// last page, plus a window around the current page - avoids rendering
 // hundreds of page-number buttons for a large dataset. Shared by every
 // paginated list on the site (previously duplicated per-component).
 export function pageWindow(page: number, totalPages: number): (number | '…')[] {

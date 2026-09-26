@@ -1,0 +1,66 @@
+name: Daily data sync
+
+# Keeps the site on the latest published data edition without manual steps:
+#   1. pulls the small collections (Core Collection, curated Global Benchmark,
+#      PCS, PCI, Citation Q) from data.posi.panorama-sg.com and commits them
+#      if they changed;
+#   2. refreshes the committed ranking fallback (src/lib/pcs-q.json) and the
+#      journal-name table;
+#   3. triggers a Cloudflare Pages rebuild, whose prebuild step downloads the
+#      current ranking edition (scripts/sync-live-data.mjs).
+#
+# Upstream, posi-engine's "Global index and rankings" workflow computes new
+# editions and posi-data's "Publish data snapshot" workflow publishes them.
+#
+# Optional secret: CLOUDFLARE_DEPLOY_HOOK_URL (a Cloudflare Pages deploy hook).
+
+on:
+  schedule:
+    - cron: '30 4 * * *'   # daily, 04:30 UTC, after the upstream jobs
+  workflow_dispatch:
+
+concurrency:
+  group: data-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Sync collections
+        run: node scripts/sync-corpus.mjs
+
+      - name: Sync ranking edition and journal names
+        run: |
+          node scripts/sync-live-data.mjs
+          cp src/lib/generated/pcs-q.json src/lib/pcs-q.json
+          node scripts/sync-ranking-titles.mjs || echo "Journal names unchanged (data layer unreachable)"
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "posi-sync-bot"
+          git config user.email "posi-sync-bot@users.noreply.github.com"
+          git add src/lib/core-collection.json src/lib/global-benchmark.json src/lib/pcs.json src/lib/pci.json \
+                  src/lib/citation-rankings.json src/lib/pcs-q.json src/lib/ranking-titles.json
+          if git diff --staged --quiet; then
+            echo "No data changes"
+          else
+            git commit -m "chore(data): sync data edition $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Trigger Cloudflare Pages rebuild
+        env:
+          HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -sf -X POST "$HOOK"; else echo "No deploy hook configured"; fi

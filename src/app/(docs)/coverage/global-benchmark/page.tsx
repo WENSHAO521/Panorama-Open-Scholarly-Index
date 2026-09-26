@@ -1,0 +1,116 @@
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { BENCHMARK_JOURNALS, CURATED_BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
+import publisherCatalogMeta from '@/lib/publisher-catalog-meta.json'
+import { LifecycleRatingsTable } from '@/components/LifecycleRatingsTable'
+import { Callout } from '@/components/Callout'
+import { earlyStageDisplayTotal, isBlockedOrNotRateable, isUnknownLifecycle } from '@/lib/early-stage'
+import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
+
+export const metadata = {
+  title: 'POSI Global Benchmark Collection',
+  description: 'A curated set of internationally established journals, plus a larger publisher-catalog expansion, used as an external validation corpus for AJR - not part of the POSI Core Collection, not an admission candidate.',
+}
+
+export default function GlobalBenchmarkPage() {
+  // All Global Benchmark journals carry the legacy pre-AJR-E-1.1 shape today
+  // (src/lib/global-benchmark.json - see types.ts's EarlyStageRating union
+  // comment); these helpers are shape-aware anyway so this page keeps
+  // working unchanged if/when a v1.1 record ever lands here.
+  const sorted = [...BENCHMARK_JOURNALS].sort((a, b) => (earlyStageDisplayTotal(b.early_stage_rating) ?? -1) - (earlyStageDisplayTotal(a.early_stage_rating) ?? -1))
+  const rated = sorted.filter(j => earlyStageDisplayTotal(j.early_stage_rating) != null)
+  const blocked = sorted.filter(j => isBlockedOrNotRateable(j.early_stage_rating))
+  const unknown = sorted.filter(j => isUnknownLifecycle(j.early_stage_rating))
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
+        <Link href="/" className="hover:text-gray-700">Home</Link>
+        <span>/</span>
+        <span style={{ color: 'var(--posi-text)' }}>Global Benchmark Collection</span>
+      </nav>
+
+      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--muted)' }}>
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>POSI Global Benchmark Collection</h1>
+        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
+          {CURATED_BENCHMARK_JOURNALS.length} internationally established journals, rated by the identical{' '}
+          <Link href="/ratings" className="underline">AJR (POSI Automated Rating)</Link> pipeline used on
+          the Core Collection - an external validation corpus, used to check the
+          methodology against journals already broadly agreed to be excellent. Selected using only
+          OpenAlex&apos;s own open signals (is_core, citation activity, topic-domain balance) - no Web of
+          Science or Scopus data anywhere in selection or scoring.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {['Not the POSI Core Collection', 'Not an admission candidate', 'Not counted in Indexed/Metric Eligible stats'].map(t => (
+            <span key={t} className="text-[10px] font-mono px-2 py-1" style={{ color: 'var(--muted)', border: '1px solid var(--posi-border)' }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <Callout variant="info">
+        <strong>2026-08 publisher-catalog expansion:</strong> {publisherCatalogMeta.count}{' '}
+        additional records were added from full active-journal exports (Elsevier&apos;s <code>jnlactive.csv</code>, Frontiers&apos;
+        title list) to validate the ingestion/identity pipeline against real, messy publisher data at scale -
+        not because every title in a publisher&apos;s complete catalog is individually &quot;internationally
+        established.&quot; These records are unrated (no AJR score is computed for them) and their presence here
+        never makes a journal ranking-eligible on its own - see the identity/registry documentation in{' '}
+        <span>posi-data</span>.
+      </Callout>
+
+      <div className="coverage-grid grid sm:grid-cols-5 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
+        {[
+          { label: 'Total Journals', value: getGlobalBenchmarkTotal() },
+          { label: 'Curated Seed', value: CURATED_BENCHMARK_JOURNALS.length },
+          { label: 'Rated', value: rated.length },
+          { label: 'Blocked / Insufficient Evidence', value: blocked.length },
+          { label: 'Unknown', value: unknown.length },
+        ].map(s => (
+          <div key={s.label} className="p-5" style={{ background: 'var(--posi-surface)', borderLeft: '1px solid var(--posi-border)' }}>
+            <p className="text-2xl font-bold" style={{ color: 'var(--posi-text)', fontFamily: 'var(--font-mono)' }}>{s.value}</p>
+            <p className="text-[10px] uppercase mt-1" style={{ color: 'var(--posi-muted)' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] -mt-3" style={{ color: 'var(--posi-muted)' }}>
+        Curated Seed + Publisher Catalog Expansion ({publisherCatalogMeta.count}, unrated by design) = Total. Rated + Blocked + Unknown = Curated Seed.
+      </p>
+
+      <Callout variant="warning">
+        <strong>Evidence acquisition finding:</strong> the first benchmark run scored only 5 of 200 journals. Extending
+        the evidence crawl to check policy subpages (not just the homepage) and widening the ethics-keyword
+        set raised this to 22 of 200 (Nature now scores 71/100) - a real improvement. Expanding the corpus to
+        600 journals held at the same ~9% rate, ruling out sample size as the cause. A direct investigation
+        found the real bottleneck: <strong>73% of a sampled batch of still-failing journals return HTTP 403 on
+        the first request</strong> - Elsevier, Wiley, ACS, APS, AIP, Oxford, and IOP platforms among them.
+        No amount of subpage-guessing or keyword-widening can fix that; it&apos;s a structural ceiling of a
+        plain-HTTP-only crawl, not evidence those journals lack real governance. <strong>&quot;Not Yet Rateable&quot; on a
+        bot-protected platform means POSI&apos;s crawl was blocked - not that no evidence of governance exists.</strong>{' '}
+        Published here rather than quietly smoothed over, per POSI&apos;s own no-hidden-adjustment principle.
+      </Callout>
+
+      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
+          <LifecycleRatingsTable
+            journals={rated}
+            title={`${rated.length} Rated`}
+            headerStat={`${rated.length} of ${CURATED_BENCHMARK_JOURNALS.length} curated-seed journals scored`}
+          />
+        </Suspense>
+        <p className="px-5 py-3 text-[10px]" style={{ color: 'var(--posi-muted)', borderTop: '1px solid var(--posi-border-light)' }}>
+          Benchmark journals never receive an E-Q or M-Q - the Core Collection quartile systems don't apply
+          here. The publisher-catalog expansion's OpenAlex citation figure is a diagnostic preview only, not
+          PCI, not ranked (see <Link href="/citation-reports" className="underline">Citation Rankings</Link>).
+          Full corpus and per-journal evidence: see{' '}
+          <span>benchmark-journals.ts →</span>
+        </p>
+      </section>
+
+      <div className="flex flex-wrap gap-5 text-xs">
+        <Link href="/ratings" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Ratings Overview →</Link>
+        <Link href="/core-collection" style={{ color: 'var(--posi-accent)' }} className="hover:underline">POSI Core Collection →</Link>
+      </div>
+    </div>
+  )
+}

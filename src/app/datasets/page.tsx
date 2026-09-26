@@ -1,0 +1,134 @@
+import Link from 'next/link'
+import { getAllRecords } from '@/lib/records-data'
+import { toIndexRecord, type Collection } from '@/lib/records'
+import { DISCOVERED_JOURNALS } from '@/lib/data'
+import { getStaticRecordJournals } from '@/lib/records-data'
+import psc from '@/lib/psc-v1.0.snapshot.json'
+import { PageHeader, SectionTitle, fmt } from '@/components/db'
+import { SnapshotPanel } from '@/components/SnapshotPanel'
+
+export const metadata = {
+  title: 'Datasets',
+  description: 'Download every POSI file: journal records in JSON and CSV, rankings, the PSC subject classification and the checksummed canonical snapshot.',
+}
+
+function kb(bytes: number) {
+  return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
+const AUDITS = [
+  {
+    name: 'Initial journal migration',
+    desc: '23,822 legacy source records audited in two independent dry runs with byte-identical output. 171 possible-duplicate groups resolved by live OpenAlex ISSN-L lookups: 166 merged, 5 kept distinct. 23,331 POSI-J ids minted, 0 collisions.',
+  },
+  {
+    name: 'OpenAlex enrichment',
+    desc: 'OpenAlex source id and ISSN-L enrichment over all 23,819 candidate entities (23,674 verified). Superseded by the completed migration above.',
+  },
+  {
+    name: 'Core and Benchmark identity migration',
+    desc: 'Extended permanent ids to the ~1,031 curated Core Collection and Global Benchmark records: 874 newly minted, 157 resolved to existing ids, 0 flagged for manual review.',
+  },
+]
+
+export default function DatasetsPage() {
+  const idx = getAllRecords().map(toIndexRecord)
+  const group = (ks: Collection[]) => idx.filter(r => ks.includes(r.k))
+  const core = group(['core', 'candidate'])
+  const bench = group(['benchmark'])
+  const disc = group(['discovered'])
+
+  const files = [
+    { path: '/data/index/core.json', alt: '/data/index/core.csv', rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection and Candidate records, compact index' },
+    { path: '/data/index/benchmark.json', alt: '/data/index/benchmark.csv', rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
+    { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered records, compact index' },
+    { path: '/data/journal/{code}.json', rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
+    { path: '/data/records/discovered-{a-z,0}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 27 shards by first character of the record key' },
+    { path: '/data/meta/psc.json', rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
+    { path: '/data/meta/schema.json', rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },
+    { path: '/data/meta/stats.json', rows: null, bytes: null, what: 'Record counts by collection and verification state' },
+  ]
+
+  return (
+    <div className="wrap">
+      <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
+        <p className="max-w-[65ch]">
+          POSI journal records, rankings and the subject classification are available for download under open
+          licences. Files are regenerated whenever the data are updated.
+        </p>
+      </PageHeader>
+
+      <div className="space-y-14">
+        <section aria-labelledby="site-files">
+          <SectionTitle id="site-files">Files on this site</SectionTitle>
+          <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
+            Index files use short keys, documented in the{' '}
+            <Link href="/docs/schema/" className="link">record schema</Link>.
+          </p>
+          <div className="panel overflow-x-auto">
+            <table className="dtable min-w-[720px]">
+              <thead><tr><th>Path</th><th>Contents</th><th className="text-right">Records</th><th className="text-right">Size</th><th>Formats</th></tr></thead>
+              <tbody>
+                {files.map(f => (
+                  <tr key={f.path}>
+                    <td className="font-mono text-[13px] whitespace-nowrap">
+                      {f.path.includes('{') ? f.path : <a className="link" href={f.path}>{f.path}</a>}
+                    </td>
+                    <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
+                    <td className="text-right font-mono tnum text-[13px]">{f.rows === null ? '' : fmt(f.rows)}</td>
+                    <td className="text-right font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{f.bytes ? kb(f.bytes) : ''}</td>
+                    <td className="text-[13px] whitespace-nowrap">
+                      JSON{f.alt && <>, <a className="link" href={f.alt}>CSV</a></>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section aria-labelledby="canonical">
+          <SectionTitle id="canonical">Canonical snapshot</SectionTitle>
+          <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
+            The authoritative, immutable copy is published at <span className="font-mono">data.posi.panorama-sg.com</span>.
+            Each snapshot records the data and engine versions it was computed from, with SHA-256 checksums.
+          </p>
+          <SnapshotPanel />
+        </section>
+
+        <section aria-labelledby="licences" className="max-w-[760px]">
+          <div>
+            <SectionTitle id="licences">Licences</SectionTitle>
+            <div className="panel overflow-hidden">
+              <table className="dtable">
+                <tbody>
+                  <tr><td>POSI-produced data (PSC, scores, rankings, curated metadata)</td><td className="font-mono whitespace-nowrap">CC BY 4.0</td></tr>
+                  <tr><td>Source code of this site and posi-engine</td><td className="font-mono whitespace-nowrap">MIT</td></tr>
+                  <tr><td>Upstream metadata (Crossref, OpenAlex, DOAJ, ROR, ORCID)</td><td className="whitespace-nowrap">Source license</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>POSI is open source. Third-party open data are credited and keep their original licences.</p>
+          </div>
+        </section>
+
+        <section aria-labelledby="audits">
+          <SectionTitle id="audits">Published audits</SectionTitle>
+          <ul className="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr]">
+            {AUDITS.map(a => (
+              <li key={a.name} className="panel p-5 flex flex-col">
+                <p className="font-medium" style={{ color: 'var(--ink)' }}>{a.name}</p>
+                <p className="mt-2 text-[13.5px] leading-relaxed flex-1" style={{ color: 'var(--muted)' }}>{a.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="cite" className="max-w-[820px]">
+          <SectionTitle id="cite">Cite the dataset</SectionTitle>
+          <pre className="code whitespace-pre-wrap"><code>{`Panorama Open Scholarly Index (${new Date().getFullYear()}). POSI journal records. Panorama Scholarly Group. https://posi.panorama-sg.com/datasets/. Accessed [date]. Licence: CC BY 4.0.`}</code></pre>
+        </section>
+      </div>
+    </div>
+  )
+}

@@ -23,25 +23,25 @@ type SortKey = 'title' | 'pci' | 'pci_citable_items' | 'pci_5yr'
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
-  { key: 'pci', label: 'PCI (2yr)', title: 'Citations received in the metric year to citable items published in the prior 2 years, divided by that citable-item count — PJR-SPEC.md § 5-6. Sorted by value, not an official rank.' },
-  { key: 'pci_citable_items', label: 'Citable Items', title: 'Count of citable OpenAlex works (article/review) in the 2-year window — PCI denominator, always an exact, uncapped count.' },
-  { key: 'pci_5yr', label: 'PCI-5', title: '5-year window variant of PCI. The older 3 years of this window can be capped for very high-volume journals — see the audit README.' },
+  { key: 'pci', label: 'PCI (2yr)', title: 'Citations received in the metric year to citable items published in the prior 2 years, divided by that citable-item count - PJR-SPEC.md § 5-6. Sorted by value, not an official rank.' },
+  { key: 'pci_citable_items', label: 'Citable Items', title: 'Count of citable OpenAlex works (article/review) in the 2-year window - PCI denominator, always an exact, uncapped count.' },
+  { key: 'pci_5yr', label: 'PCI-5', title: '5-year window variant of PCI. The older 3 years of this window can be capped for very high-volume journals - see the audit README.' },
 ]
 
 const PER_PAGE = 25
 
 /**
- * Sorted-by-value table, deliberately not a ranking display — same
+ * Sorted-by-value table, deliberately not a ranking display - same
  * PJR-SPEC.md non-overclaiming posture as PcsTable: no "#" position
  * column, no medal/tier badges. This real PCI data still does not
  * determine POSI Citation Rank/Percentile/Quartile, because no
  * POSI-R-* release has been produced and PNCI (which needs every
  * metric-eligible journal in a PSC category computed together) hasn't
- * been computed for this run — see /pci for the full positioning
+ * been computed for this run - see /pci for the full positioning
  * statement.
  *
  * Rows with pci: null (3 of 993 in the pjr-seed-corpus-global993-2026
- * run — a real, checked zero-eligible-items outcome, not a fabricated
+ * run - a real, checked zero-eligible-items outcome, not a fabricated
  * reason) sort to the bottom under any numeric column and show "No PCI
  * available" rather than 0.
  */
@@ -116,7 +116,7 @@ export function PciTable({ rows }: { rows: PciRow[] }) {
           <option value="benchmark">Global Benchmark only</option>
         </select>
         <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}–${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
+          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}-${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
           {sorted.length.toLocaleString()} journals · {withPci.toLocaleString()} with a computed PCI value
         </span>
       </div>
@@ -147,11 +147,11 @@ export function PciTable({ rows }: { rows: PciRow[] }) {
               <tr key={row.journal_id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                 <td className="px-4 py-3">
                   {row.is_external_benchmark ? (
-                    <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                    <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                       {row.title}
                     </a>
                   ) : (
-                    <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                    <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                       {row.title}
                     </Link>
                   )}
@@ -161,10 +161,10 @@ export function PciTable({ rows }: { rows: PciRow[] }) {
                   {row.pci != null ? row.pci.toFixed(2) : <span className="font-normal" style={{ color: 'var(--posi-muted)' }}>No PCI available</span>}
                 </td>
                 <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                  {row.pci_citable_items != null ? row.pci_citable_items.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  {row.pci_citable_items != null ? row.pci_citable_items.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                 </td>
                 <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                  {row.pci_5yr != null ? row.pci_5yr.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                  {row.pci_5yr != null ? row.pci_5yr.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                 </td>
                 <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>
                   {row.collection === 'core' ? 'Core Collection' : 'Global Benchmark'}

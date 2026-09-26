@@ -22,9 +22,9 @@ const STATUS_LABEL: Record<VerifiableJournal['collectionStatus'], string> = {
   discovered: 'Discovered (not yet reviewed)',
 }
 const STATUS_COLOR: Record<VerifiableJournal['collectionStatus'], string> = {
-  core: '#1F7A4D',
-  candidate: '#B45309',
-  discovered: '#6B7280',
+  core: 'var(--verified)',
+  candidate: 'var(--check)',
+  discovered: 'var(--muted)',
 }
 
 function normalize(s: string): string {
@@ -57,17 +57,17 @@ export function VerifyLookupForm({ journals, releaseId }: { journals: Verifiable
       />
 
       {query.trim() && !match && (
-        <div className="mt-3 p-3 text-[11px] leading-relaxed text-justify" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
-          No POSI record matches "{query}". Only journals with an actual POSI record can be verified — there is no
+        <div className="mt-3 p-3 text-[11px] leading-relaxed text-justify" style={{ background: 'var(--rejected-soft)', border: '1px solid #fecaca', color: 'var(--rejected)' }}>
+          No POSI record matches "{query}". Only journals with an actual POSI record can be verified - there is no
           way to produce a valid result for a code that doesn't exist.
         </div>
       )}
 
       {match && (
         <div className="mt-4" style={{ border: '1px solid var(--posi-border)' }}>
-          <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
-            <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: '#1F7A4D' }}>✓ Record Verified</span>
-            <span className="text-[9px] font-mono" style={{ color: '#1F7A4D' }}>{releaseId}</span>
+          <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: 'var(--verified-soft)', borderBottom: '1px solid #bbf7d0' }}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--verified)' }}>✓ Record Verified</span>
+            <span className="text-[9px] font-mono" style={{ color: 'var(--verified)' }}>{releaseId}</span>
           </div>
           <div className="p-4 space-y-2 text-xs">
             <div className="flex justify-between">
@@ -100,7 +100,7 @@ export function VerifyLookupForm({ journals, releaseId }: { journals: Verifiable
             </div>
           </div>
           <div className="px-4 py-2 text-[10px]" style={{ borderTop: '1px solid var(--posi-border-light)', color: 'var(--posi-muted)' }}>
-            This reflects the record's current, live status — not a snapshot frozen at certificate issuance. Full
+            This reflects the record's current, live status - not a snapshot frozen at certificate issuance. Full
             detail: <Link href={`/journal/${match.code}`} className="underline">journal page →</Link>
           </div>
         </div>

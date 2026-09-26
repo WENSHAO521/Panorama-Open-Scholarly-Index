@@ -9,17 +9,17 @@ import { pageWindow } from '@/lib/pagination'
 /**
  * Shared Prev/Next + windowed page-number list + jump-to-page control, for
  * any list built from a fully-known, already-fetched array (client-side
- * slice, real `<Link>` navigation via `makeHref` — not a server refetch
+ * slice, real `<Link>` navigation via `makeHref` - not a server refetch
  * per page; see src/app/search/page.tsx for that different case, which
  * intentionally keeps its own button+refetch pagination rather than using
  * this component). Page state lives in the URL (`?page=`), not React
  * state, so a page is directly linkable/shareable and works without JS.
  *
  * Rendered as its own bordered white bar (not bare text on the page's gray
- * background) — a prior version had no background of its own, so it
+ * background) - a prior version had no background of its own, so it
  * inherited the page's gray directly and its hover states (which lit up
  * to that *same* gray) were invisible. Numbers stay ghost buttons with one
- * solid-fill accent for the current page — no per-item borders — while the
+ * solid-fill accent for the current page - no per-item borders - while the
  * jump-to-page control is grouped into a single bordered chip (label,
  * input, submit share one boundary) instead of three loose floating
  * pieces, matching the rest of the site's restrained black/white/red,
@@ -27,7 +27,7 @@ import { pageWindow } from '@/lib/pagination'
  *
  * The two clusters (page numbers, page-info+jump) sit centered as one
  * group with a hairline divider between them, not spread with
- * `justify-between` — on a wide table that put ~800px of dead white
+ * `justify-between` - on a wide table that put ~800px of dead white
  * space between them, reading as a broken/unfinished bar rather than a
  * single designed control. Sharp corners throughout (no border-radius)
  * to match the site's Bauhaus flat-block language; this isn't a

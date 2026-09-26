@@ -15,12 +15,12 @@ export default function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#111111',
+          background: '#13272b',
           padding: '72px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 10, height: 56, background: '#cc0000' }} />
+          <div style={{ width: 10, height: 56, background: '#5cb8b4' }} />
           <div
             style={{
               fontSize: 40,
@@ -54,8 +54,8 @@ export default function Image() {
               lineHeight: 1.4,
             }}
           >
-            Open journal indexing, lifecycle evaluation, subject ranking, and citation
-            analytics — built on versioned evidence and reproducible methodology.
+            Citation index, journal rankings and open access journal directory.
+            Published by Panorama Scholarly Group Ltd.
           </div>
         </div>
 

@@ -18,23 +18,23 @@ export interface CitationReportRow {
   cited_by_count: number | null
   subject_percentile: number | null
   // Real PCS-1.0 (PCS-1.0-SPEC.md), synced from posi-data-delivery's
-  // collections/pcs.json — full cursor-paginated Crossref count, no
+  // collections/pcs.json - full cursor-paginated Crossref count, no
   // article-sample cap. Replaced the earlier 200-article-capped Crossref
   // preview field here once the real PCS ETL ran (2026-08-14).
   pcs: number | null
   pcs_window_start_year: number | null
   pcs_window_end_year: number | null
   // Global Benchmark publisher-catalog rows have no internal /journal/
-  // page — link out to the publisher's own site instead, same pattern as
+  // page - link out to the publisher's own site instead, same pattern as
   // LifecycleRatingsTable.
   is_external_benchmark?: boolean
   website_url?: string | null
-  // Real Citation Q (PJR-SPEC.md § 8, src/lib/citation-rankings.ts) — the
+  // Real Citation Q (PJR-SPEC.md § 8, src/lib/citation-rankings.ts) - the
   // only field on this row that is an actual POSI citation ranking result,
   // not a diagnostic preview. null for every row except the ones whose
   // real-PCI peer pool reached MIN_CATEGORY_SIZE=20 (2 as of this snapshot);
   // Global Benchmark rows never get one (external validation corpus, never
-  // ranked — see CitationImpactCard.tsx's identical framing on the journal
+  // ranked - see CitationImpactCard.tsx's identical framing on the journal
   // profile page, which this table must stay consistent with).
   citation_q: string | null
   citation_percentile: number | null
@@ -45,34 +45,34 @@ type SortKey = 'title' | 'two_yr_mean_citedness' | 'pcs' | 'h_index' | 'cited_by
 
 const COLUMNS: { key: SortKey; label: string; title?: string }[] = [
   { key: 'title', label: 'Journal' },
-  { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness — a source-level preview indicator only, not PCI. Only PCI determines Citation Rank, Percentile, or Quartile.' },
-  { key: 'pcs', label: 'PCS', title: 'POSI Citation Score — mean Crossref is-referenced-by-count across every eligible work in the 4-year window (PCS-1.0-SPEC.md § 6), no article-sample cap. Independently reported; does not determine Citation Rank, Percentile, or Quartile.' },
+  { key: 'two_yr_mean_citedness', label: '2-Yr Citedness', title: 'OpenAlex 2-year mean citedness - a source-level preview indicator only, not PCI. Only PCI determines Citation Rank, Percentile, or Quartile.' },
+  { key: 'pcs', label: 'PCS', title: 'POSI Citation Score - mean Crossref is-referenced-by-count across every eligible work in the 4-year window (PCS-1.0-SPEC.md § 6), no article-sample cap. Independently reported; does not determine Citation Rank, Percentile, or Quartile.' },
   { key: 'h_index', label: 'h-index' },
   { key: 'cited_by_count', label: 'Total Citations' },
-  { key: 'citation_q', label: 'Citation Q', title: 'Real Citation Q — PCI-based, category-pooled peer ranking (PJR-SPEC.md § 8), not yet from a formal POSI-R release. "Not citation eligible" means either no real PCI exists for this journal yet, or its PSC category peer pool has not reached the minimum size.' },
-  { key: 'subject_percentile', label: 'Subject %ile (diagnostic)', title: 'Page-local diagnostic percentile within OpenAlex 2-Yr Citedness for this subject group — not an official POSI ranking. See Citation Q for the real, methodology-defined ranking status.' },
+  { key: 'citation_q', label: 'Citation Q', title: 'Real Citation Q - PCI-based, category-pooled peer ranking (PJR-SPEC.md § 8), not yet from a formal POSI-R release. "Not citation eligible" means either no real PCI exists for this journal yet, or its PSC category peer pool has not reached the minimum size.' },
+  { key: 'subject_percentile', label: 'Subject %ile (diagnostic)', title: 'Page-local diagnostic percentile within OpenAlex 2-Yr Citedness for this subject group - not an official POSI ranking. See Citation Q for the real, methodology-defined ranking status.' },
 ]
 
 const PER_PAGE = 25
 
 /**
- * `rows` (Core Collection — small, manually-reviewed, precomputed citation
+ * `rows` (Core Collection - small, manually-reviewed, precomputed citation
  * stats) renders immediately. `fetchBenchmark`, when true, loads the much
  * larger Global Benchmark publisher-catalog expansion (~3,300 records)
  * client-side at runtime and merges in ALL of its citation_preview figures
- * once loaded (no display cap) — NOT statically bundled, see
+ * once loaded (no display cap) - NOT statically bundled, see
  * publisher-catalog-client.ts's header for why (an earlier version baked
  * all of it into the static build and broke a live Cloudflare Pages
- * deployment). Paginated (`?page=`, PER_PAGE rows/page — same
+ * deployment). Paginated (`?page=`, PER_PAGE rows/page - same
  * Pagination/pageWindow pattern used elsewhere on the site) so every row
  * is reachable no matter how large the merged set grows.
  *
  * PCS for these benchmark rows (2026-08-14): fetched client-side too, via
- * pcs-client.ts's fetchAllPcsEntriesClient() — same reasoning as the
+ * pcs-client.ts's fetchAllPcsEntriesClient() - same reasoning as the
  * publisher-catalog fetch itself (this is a client component; a static
  * `import raw from './pcs.json'` here would ship the whole collection in
  * the client JS bundle, not just server-render it). Joined by posi_id.
- * Before this, every benchmark row hardcoded `pcs: null` unconditionally —
+ * Before this, every benchmark row hardcoded `pcs: null` unconditionally -
  * not because PCS didn't exist for these journals, but because it was
  * never looked up at all. Fixed once posi-data's pcs-etl-v1-global4289
  * run gave the full 4289-journal Global Benchmark real PCS coverage.
@@ -91,7 +91,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
     Promise.all([
       fetchPublisherCatalogJournals(),
       // PCS is a nice-to-have enrichment for this set, not a hard
-      // dependency — if it fails to load, the benchmark rows should still
+      // dependency - if it fails to load, the benchmark rows should still
       // render (with pcs: null, same as before this change) rather than
       // the whole table failing.
       fetchAllPcsEntriesClient().catch(() => [] as PcsClientEntry[]),
@@ -101,7 +101,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
         const pcsById = indexPcsEntriesByJournalId(pcsEntries)
         const classified = all.filter(j => j.citation_preview)
         const sorted = [...classified].sort((a, b) => (b.citation_preview!.value ?? 0) - (a.citation_preview!.value ?? 0))
-        // No subject_percentile for Global Benchmark rows — citation_preview
+        // No subject_percentile for Global Benchmark rows - citation_preview
         // is diagnostic-only (rank/percentile/quartile always null, see
         // types.ts's CitationPreview), never a real ranking.
         const mapped: CitationReportRow[] = sorted.map(j => {
@@ -121,7 +121,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
             is_external_benchmark: true,
             website_url: j.website_url,
             // Global Benchmark is never assigned a Citation Rank/Percentile/
-            // Quartile — external validation corpus, not a POSI-admitted or
+            // Quartile - external validation corpus, not a POSI-admitted or
             // ranked collection (types.ts's CitationPreview: always null).
             citation_q: null,
             citation_percentile: null,
@@ -162,7 +162,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
     return [...withValue, ...withoutValue]
   }, [filtered, sortKey, sortDir])
 
-  // Changing the subject filter or sort resets to page 1 — page 4 of an old
+  // Changing the subject filter or sort resets to page 1 - page 4 of an old
   // filter/sort almost never corresponds to anything meaningful once the
   // underlying row order changes.
   function resetPage() {
@@ -211,7 +211,7 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
           {subjectsPresent.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}–${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
+          {sorted.length > 0 && `${((page - 1) * PER_PAGE + 1).toLocaleString()}-${Math.min(page * PER_PAGE, sorted.length).toLocaleString()} of `}
           {sorted.length.toLocaleString()} journals
           {fetchBenchmark && loading && ' · loading Global Benchmark…'}
           {fetchBenchmark && !loading && failed && ' · Global Benchmark rows failed to load'}
@@ -245,38 +245,38 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
                 <tr key={row.journal_code} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: '1px solid var(--posi-border-light)' }}>
                   <td className="px-4 py-3">
                     {row.is_external_benchmark ? (
-                      <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                      <a href={row.website_url || '#'} target="_blank" rel="noopener noreferrer" className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                         {row.title}
                       </a>
                     ) : (
-                      <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[#c41e3a]" style={{ color: 'var(--posi-text)' }}>
+                      <Link href={`/journal/${row.journal_code}`} className="font-medium block leading-tight transition-colors hover:text-[var(--teal)]" style={{ color: 'var(--posi-text)' }}>
                         {row.title}
                       </Link>
                     )}
                     <span className="font-mono text-[10px]" style={{ color: 'var(--posi-muted)' }}>{row.short_title}</span>
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                    {row.two_yr_mean_citedness != null ? row.two_yr_mean_citedness.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {row.two_yr_mean_citedness != null ? row.two_yr_mean_citedness.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                   </td>
                   <td
                     className="px-4 py-3 text-center font-mono"
                     style={{ color: 'var(--posi-text)' }}
-                    title={row.pcs_window_start_year != null ? `${row.pcs_window_start_year}–${row.pcs_window_end_year}` : undefined}
+                    title={row.pcs_window_start_year != null ? `${row.pcs_window_start_year}-${row.pcs_window_end_year}` : undefined}
                   >
-                    {row.pcs != null ? row.pcs.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {row.pcs != null ? row.pcs.toFixed(2) : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                    {row.h_index != null ? row.h_index : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {row.h_index != null ? row.h_index : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                    {row.cited_by_count != null ? row.cited_by_count.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {row.cited_by_count != null ? row.cited_by_count.toLocaleString() : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
                     {row.citation_q ? (
                       <span
                         className="font-bold px-1.5 py-0.5 text-[10px]"
                         style={{ color: 'var(--posi-accent)', border: '1px solid var(--posi-accent)' }}
-                        title={`Real, category-pooled peer group of ${row.citation_cohort_size ?? '—'}${row.citation_percentile != null ? `; ${row.citation_percentile.toFixed(1)}th percentile` : ''} — not yet from a formal POSI-R release.`}
+                        title={`Real, category-pooled peer group of ${row.citation_cohort_size ?? '-'}${row.citation_percentile != null ? `; ${row.citation_percentile.toFixed(1)}th percentile` : ''} - not yet from a formal POSI-R release.`}
                       >
                         {row.citation_q}
                       </span>
@@ -285,9 +285,9 @@ export function CitationReportsTable({ rows, fetchBenchmark }: { rows: CitationR
                     )}
                   </td>
                   <td className="px-4 py-3 text-center font-mono" style={{ color: 'var(--posi-text)' }}>
-                    {row.subject_percentile != null ? `${row.subject_percentile}th` : <span style={{ color: 'var(--posi-muted)' }}>—</span>}
+                    {row.subject_percentile != null ? `${row.subject_percentile}th` : <span style={{ color: 'var(--posi-muted)' }}>-</span>}
                   </td>
-                  <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{row.subject ?? '—'}</td>
+                  <td className="px-3 py-3 text-xs" style={{ color: 'var(--posi-muted)' }}>{row.subject ?? '-'}</td>
                 </tr>
               ))}
             </tbody>

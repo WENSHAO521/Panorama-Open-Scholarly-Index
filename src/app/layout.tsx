@@ -1,26 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
-// environment hit a real, deterministic 404 on IBM Plex Sans's pinned URL
-// (Next.js's bundled font metadata pointed at a file Google Fonts no
-// longer serves at that hash), breaking every deploy. Vendoring the actual
-// woff2 files (latin subset only, matching the previous subsets: ["latin"]
-// config) removes the live-network dependency from the build entirely.
-const barlowCondensed = localFont({
-  variable: "--font-barlow",
-  display: "swap",
-  src: [
-    { path: "../fonts/barlow-condensed-600.woff2", weight: "600", style: "normal" },
-    { path: "../fonts/barlow-condensed-700.woff2", weight: "700", style: "normal" },
-    { path: "../fonts/barlow-condensed-800.woff2", weight: "800", style: "normal" },
-  ],
-});
-
+// environment hit a real, deterministic 404 on IBM Plex Sans's pinned URL.
+// Vendoring the woff2 files removes the live-network dependency.
 const ibmPlexSans = localFont({
   variable: "--font-ibm",
   display: "swap",
@@ -40,60 +27,46 @@ const geistMono = localFont({
 
 const SITE_URL = "https://posi.panorama-sg.com";
 const SITE_DESCRIPTION =
-  "Panorama Open Scholarly Index is an open journal indexing, lifecycle evaluation, subject ranking, and citation analytics infrastructure built on versioned evidence and reproducible methodology.";
+  "The Panorama Open Scholarly Index (POSI) is a scholarly database published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Panorama Open Scholarly Index",
-    template: "%s | POSI",
+    default: "Panorama Open Scholarly Index (POSI)",
+    template: "%s · POSI",
   },
   description: SITE_DESCRIPTION,
-  keywords: ["journal rankings", "journal evaluation", "academic journals", "citation analytics", "journal quartiles", "scholarly index", "open citation metrics", "PSC", "AJR", "PCI"],
+  publisher: "Panorama Scholarly Group Ltd",
+  authors: [{ name: "Panorama Scholarly Group Ltd", url: "https://panorama-sg.com" }],
+  keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "PSC", "AJR", "PCI", "provenance"],
   icons: { icon: "/favicon.svg" },
   alternates: { canonical: "/" },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   openGraph: {
     type: "website",
     url: SITE_URL,
-    siteName: "POSI — Panorama Open Scholarly Index",
-    title: "Panorama Open Scholarly Index",
+    siteName: "POSI - Panorama Open Scholarly Index",
+    title: "Panorama Open Scholarly Index (POSI)",
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Panorama Open Scholarly Index",
-    description: SITE_DESCRIPTION,
-  },
+  twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${barlowCondensed.variable} ${ibmPlexSans.variable} ${geistMono.variable} h-full`}
-    >
-      <body
-        className="min-h-full flex flex-col antialiased"
-        style={{ background: "var(--posi-bg)", color: "var(--posi-text)" }}
-      >
+    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+      <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
-          style={{ background: 'var(--posi-accent)', color: '#fff' }}
+          style={{ background: 'var(--teal)', color: '#fff' }}
         >
           Skip to content
         </a>
-        <Navbar />
+        <SiteHeader />
         <main id="main-content" className="flex-1">{children}</main>
-        <Footer />
+        <SiteFooter />
       </body>
     </html>
   );

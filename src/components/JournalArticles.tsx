@@ -50,8 +50,8 @@ export function JournalArticles({ issn, journalCode, initialArticles, initialTot
         <h2 className="text-sm font-bold" style={{ color: 'var(--posi-text)' }}>Recent Articles</h2>
         {[1, 2, 3].map(i => (
           <div key={i} className="bg-white p-4 animate-pulse space-y-2" style={{ border: '1px solid var(--posi-border)' }}>
-            <div className="h-3 rounded w-3/4" style={{ background: '#e5e5e5' }} />
-            <div className="h-2.5 rounded w-1/2" style={{ background: '#e5e5e5' }} />
+            <div className="h-3 rounded w-3/4" style={{ background: 'var(--surface-2)' }} />
+            <div className="h-2.5 rounded w-1/2" style={{ background: 'var(--surface-2)' }} />
           </div>
         ))}
       </div>
@@ -82,7 +82,7 @@ export function JournalArticles({ issn, journalCode, initialArticles, initialTot
       {total > 20 && (
         <p className="text-xs text-center" style={{ color: 'var(--posi-muted)' }}>
           Showing 20 of {total} articles ·{' '}
-          <Link href={`/search?journal=${journalCode}`} className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
+          <Link href={`/publications/?issn=${issn}&sort=newest`} className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
             Browse all →
           </Link>
         </p>

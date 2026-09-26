@@ -23,3 +23,11 @@
 # directly from data.posi.panorama-sg.com (posi-data-delivery) instead — see
 # src/lib/publisher-catalog-client.ts — so this repo no longer serves it at
 # all, and this cache rule is gone with it.
+
+# Static open-data files (see /datasets/). Short cache so a rebuild is
+# picked up quickly; CORS open so notebooks and other sites can read them.
+/data/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+/data/index/*.csv
+  Content-Type: text/csv; charset=utf-8

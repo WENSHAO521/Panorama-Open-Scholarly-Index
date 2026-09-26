@@ -248,7 +248,7 @@ export async function crossrefSearch(
   if (f.author)      params.set('query.author', f.author)
   if (f.journal)     params.set('query.container-title', f.journal)
   if (f.institution) params.set('query.affiliation', f.institution)
-  // Crossref has no separate abstract/keyword/publisher param — append to general query
+  // Crossref has no separate abstract/keyword/publisher param - append to general query
   const extra = [f.freeText, f.abstract, f.keyword, f.publisher]
     .filter(Boolean).join(' ')
   if (extra) params.set('query', extra)
@@ -950,7 +950,7 @@ const ZENODO = 'https://zenodo.org/api/records'
 // Finds Zenodo records (datasets, software, etc.) that declare a relation to the
 // given article DOI via their related_identifiers metadata (e.g. a dataset an
 // author deposited and linked back to the published article). Supplementary
-// evidence only — never folded into POSI's citation counts (see PCI methodology
+// evidence only - never folded into POSI's citation counts (see PCI methodology
 // on /citation-reports: one DOI per cited work, no proprietary blending).
 export async function zenodoGetRelatedRecords(articleDoi: string): Promise<ZenodoRecord[]> {
   try {
@@ -1138,7 +1138,7 @@ async function fetchBookLoc(clean: string): Promise<BookInfo | null> {
     const item = data.results?.[0]
     if (!item?.title) return null
 
-    // LOC titles often append " / Author Name." — strip that
+    // LOC titles often append " / Author Name." - strip that
     const title = item.title.replace(/\s*\/\s*[^/]+$/, '').replace(/\.$/, '').trim()
     if (!title) return null
 
@@ -1271,7 +1271,7 @@ async function fetchBookLibris(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 7: Finna — National Library of Finland consortium (JSON, no key needed)
+// Source 7: Finna - National Library of Finland consortium (JSON, no key needed)
 async function fetchBookFinna(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(
@@ -1311,7 +1311,7 @@ async function fetchBookFinna(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 8: Deutsche Nationalbibliothek (via CF proxy — SRU has CORS restrictions)
+// Source 8: Deutsche Nationalbibliothek (via CF proxy - SRU has CORS restrictions)
 async function fetchBookDnb(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/dnb-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1339,7 +1339,7 @@ async function fetchBookDnb(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 9: Bibliothèque nationale de France (via CF proxy — SRU has CORS restrictions)
+// Source 9: Bibliothèque nationale de France (via CF proxy - SRU has CORS restrictions)
 async function fetchBookBnf(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/bnf-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1368,7 +1368,7 @@ async function fetchBookBnf(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 10: Japan National Diet Library (via CF proxy — SRU has CORS restrictions)
+// Source 10: Japan National Diet Library (via CF proxy - SRU has CORS restrictions)
 async function fetchBookNdl(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/ndl-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1395,7 +1395,7 @@ async function fetchBookNdl(clean: string): Promise<BookInfo | null> {
   }
 }
 
-// Source 11: Europeana (via CF proxy — requires PERSONAL_API_KEY env var)
+// Source 11: Europeana (via CF proxy - requires PERSONAL_API_KEY env var)
 async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/europeana-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1406,7 +1406,7 @@ async function fetchBookEuropeana(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Source 12: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy — SRU, no key)
+// Source 12: Library and Archives Canada / Bibliothèque et Archives Canada (via CF proxy - SRU, no key)
 async function fetchBookLac(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/lac-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1417,7 +1417,7 @@ async function fetchBookLac(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Source 15: National Library of New Zealand Te Puna (via CF proxy — Alma SRU, no key)
+// Source 15: National Library of New Zealand Te Puna (via CF proxy - Alma SRU, no key)
 async function fetchBookNlnz(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/nlnz-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1428,7 +1428,7 @@ async function fetchBookNlnz(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Source 16: National Central Library of Taiwan 國立中央圖書館 (via CF proxy — SRU, no key)
+// Source 16: National Central Library of Taiwan 國立中央圖書館 (via CF proxy - SRU, no key)
 async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
   try {
     const res = await fetch(`/api/taiwan-isbn?isbn=${encodeURIComponent(clean)}`, { signal: AbortSignal.timeout(10000) })
@@ -1439,10 +1439,10 @@ async function fetchBookTaiwan(clean: string): Promise<BookInfo | null> {
   } catch { return null }
 }
 
-// Public entry point — two-phase parallel cascade across 14 international library sources.
-// Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland — all in parallel.
+// Public entry point - two-phase parallel cascade across 14 international library sources.
+// Phase 1 (JSON, fast): OL / Google / Norway / Sweden / Finland - all in parallel.
 // Detect likely language/region from ISBN registration-group prefix.
-// All requests still run in parallel — this only reorders which result is returned first.
+// All requests still run in parallel - this only reorders which result is returned first.
 function detectIsbnLang(clean: string): 'en' | 'fr' | 'de' | 'ja' | 'ko' | 'zh-tw' | 'zh-hk' | 'no' | 'sv' | 'fi' | 'other' {
   if (clean.startsWith('9780') || clean.startsWith('9781') || clean.startsWith('9798')) return 'en'
   if (clean.startsWith('9782') || clean.startsWith('97910'))                             return 'fr'
@@ -1488,7 +1488,7 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (ol?.title)     return ol
   if (google?.title) return google
 
-  // Phase 2: all remaining sources in parallel — 12 requests, no waterfalls
+  // Phase 2: all remaining sources in parallel - 12 requests, no waterfalls
   const [nb, libris, finna, loc, dnb, bnf, nlk, ndl, europeana, lac, nlnz, taiwan] = await Promise.all([
     fetchBookNb(clean),
     fetchBookLibris(clean),
@@ -1528,7 +1528,7 @@ export async function fetchBookByIsbn(isbn: string): Promise<BookInfo | null> {
   if (accept(libris)) return libris
   if (accept(finna))  return finna
 
-  // Nothing has authors — return the best title-only result we found
+  // Nothing has authors - return the best title-only result we found
   return partial
 }
 
@@ -1837,7 +1837,7 @@ export async function dnbBookSearch(
   }
 }
 
-/** Search Nasjonalbiblioteket (Norway) directly — CORS-native JSON API. */
+/** Search Nasjonalbiblioteket (Norway) directly - CORS-native JSON API. */
 export async function nbBookSearch(
   query: string,
   options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
@@ -1880,7 +1880,7 @@ export async function nbBookSearch(
       const isbn13 = meta.identifiers?.isbn13?.[0]?.replace(/[-\s]/g, '') ?? ''
       const isbn10 = meta.identifiers?.isbn10?.[0]?.replace(/[-\s]/g, '') ?? ''
       const isbn = isbn13 || isbn10
-      // issued may be "2006" or "20060101" — extract first 4-digit year
+      // issued may be "2006" or "20060101" - extract first 4-digit year
       const year = meta.originInfo?.issued?.match(/\d{4}/)?.[0]
       return {
         key: isbn || `nb-${i}`,
@@ -1903,7 +1903,7 @@ export async function nbBookSearch(
   }
 }
 
-/** Search Libris / KB (Sweden) directly — CORS-native JSON xsearch. */
+/** Search Libris / KB (Sweden) directly - CORS-native JSON xsearch. */
 export async function librisBookSearch(
   query: string,
   options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
@@ -1966,7 +1966,7 @@ export async function librisBookSearch(
   }
 }
 
-/** Search Finna (Finland) directly — CORS-native JSON API. */
+/** Search Finna (Finland) directly - CORS-native JSON API. */
 export async function finnaBookSearch(
   query: string,
   options: { limit?: number; field?: 'title' | 'author' | 'any' } = {}
@@ -1995,7 +1995,7 @@ export async function finnaBookSearch(
     const total = data.resultCount ?? 0
     const items: BookSearchResult[] = (data.records ?? []).map((r, i) => {
       if (!r.title) return null as unknown as BookSearchResult
-      // Finna author dict keys are "Name, role" — strip lowercase role word after last comma
+      // Finna author dict keys are "Name, role" - strip lowercase role word after last comma
       const authors = [
         ...Object.keys(r.authors?.primary ?? {}),
         ...Object.keys(r.authors?.secondary ?? {}),

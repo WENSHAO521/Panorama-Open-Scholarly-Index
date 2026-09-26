@@ -54,11 +54,11 @@ jobs:
         run: |
           git config user.name  "posi-sync-bot"
           git config user.email "posi-sync-bot@users.noreply.github.com"
-          git add src/lib/discovered-journals.ts src/lib/data.ts
+          git add src/lib/discovered-journals.json src/lib/data.ts
           if git diff --staged --quiet; then
             echo "No changes — skipping commit"
           else
-            JOURNAL_COUNT=$(node -e "const f=require('fs').readFileSync('src/lib/discovered-journals.ts','utf8'); console.log((f.match(/id: 'j-disc-/g)||[]).length)")
+            JOURNAL_COUNT=$(node -e "console.log(require('./src/lib/discovered-journals.json').length)")
             git commit -m "chore(data): daily sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
             git push
           fi
@@ -70,5 +70,7 @@ jobs:
       # 需要在 Cloudflare Pages 项目设置里创建一个 Deploy Hook，并把 URL 存进
       # Actions secret CLOUDFLARE_DEPLOY_HOOK_URL；没配置的话这步会跳过，不影响其余步骤。
       - name: Trigger Cloudflare Pages rebuild (refresh PCI + Zenodo data)
-        if: ${{ vars.CLOUDFLARE_DEPLOY_HOOK_URL != '' || secrets.CLOUDFLARE_DEPLOY_HOOK_URL != '' }}
-        run: curl -sf -X POST "${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL || vars.CLOUDFLARE_DEPLOY_HOOK_URL }}"
+        env:
+          HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL || vars.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -sf -X POST "$HOOK"; else echo "No deploy hook configured"; fi

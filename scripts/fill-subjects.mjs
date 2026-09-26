@@ -2,24 +2,23 @@
 /**
  * fill-subjects.mjs
  *
- * Fetches LCC subjects from DOAJ API for all journals in discovered-journals.ts
+ * Fetches LCC subjects from DOAJ API for all journals in discovered-journals.json
  * and patches the `subjects:` field in-place.
  *
  * Strategy: query DOAJ by country code (same as --doaj-sweep) to avoid the
  * Elasticsearch 1000-record limit. Build an ISSN→subjects map, then do a
- * single-pass string patch on discovered-journals.ts.
+ * single pass over the records in discovered-journals.json.
  *
  * Usage:
  *   node scripts/fill-subjects.mjs [--doaj-key KEY] [--dry-run]
  *   DOAJ_API_KEY=xxx node scripts/fill-subjects.mjs
  */
 
-import { readFileSync, writeFileSync } from 'fs'
+import { loadDiscovered, saveDiscovered } from './lib/discovered-store.mjs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_FILE  = join(__dirname, '../src/lib/discovered-journals.ts')
 
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
@@ -135,40 +134,26 @@ async function buildSubjectMap() {
   return map
 }
 
-// ── Patch discovered-journals.ts ────────────────────────────────────────────
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
+// ── Update discovered-journals.json ─────────────────────────────────────────
 
 function patchFile(subjectMap) {
-  let content = readFileSync(DATA_FILE, 'utf8')
+  const records = loadDiscovered()
+  const byIssn = new Map()
+  for (const r of records) {
+    if (r.issn_online) byIssn.set(r.issn_online, r)
+    if (r.issn_print) byIssn.set(r.issn_print, r)
+  }
   let patched = 0
   let already = 0
   let notFound = 0
 
   for (const [issn, subjects] of subjectMap) {
     if (!subjects.length) continue
-
-    // Match the entry block that contains this ISSN
-    // Insert subjects: [...] right before created_at: if not already present
-    const issnPattern = new RegExp(
-      `(issn_(?:online|print): "${escapeRegex(issn)}"[\\s\\S]*?)(\\n    created_at:)`,
-      'g'
-    )
-
-    let found = false
-    content = content.replace(issnPattern, (match, pre, rest) => {
-      found = true
-      if (pre.includes('subjects:')) {
-        already++
-        return match // already has subjects
-      }
-      patched++
-      return `${pre}\n    subjects: ${JSON.stringify(subjects)},${rest}`
-    })
-
-    if (!found) notFound++
+    const r = byIssn.get(issn)
+    if (!r) { notFound++; continue }
+    if (r.subjects?.length) { already++; continue }
+    r.subjects = subjects
+    patched++
   }
 
   process.stderr.write(`\nPatch results:\n`)
@@ -181,8 +166,8 @@ function patchFile(subjectMap) {
     return
   }
 
-  writeFileSync(DATA_FILE, content, 'utf8')
-  process.stderr.write(`\n✓  Wrote updated discovered-journals.ts\n`)
+  saveDiscovered(records)
+  process.stderr.write(`\n✓  Wrote updated discovered-journals.json\n`)
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────

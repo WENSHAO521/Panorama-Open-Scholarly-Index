@@ -2,16 +2,16 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Callout } from '@/components/Callout'
 import { getCoreCollection, getCandidateJournals } from '@/lib/data'
-import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF, verificationCode } from '@/lib/release'
+import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, verificationCode } from '@/lib/release'
 import { VerifyLookupForm, type VerifiableJournal } from '@/components/VerifyLookupForm'
 import { isEarlyStageV1_1, earlyStageDisplayTotal } from '@/lib/early-stage'
 import type { Journal } from '@/lib/types'
 
 // Short parenthetical shown next to the AJR total on the verify card (see
-// VerifyLookupForm.tsx) — only ever rendered when ajrTotal is non-null, i.e.
+// VerifyLookupForm.tsx) - only ever rendered when ajrTotal is non-null, i.e.
 // a real score exists. Legacy shape: the raw eligibility word ('early_stage'
 // / 'mature'). AJR-E-1.1: the lifecycle_stage, plus an explicit "provisional"
-// flag — a verifier reading this needs to know the score is real but NOT
+// flag - a verifier reading this needs to know the score is real but NOT
 // ranking-eligible (AJR-SPEC.md § 6), not just see a bare total.
 function ajrEligibilityLabel(journal: Journal): string | null {
   const r = journal.early_stage_rating
@@ -68,7 +68,7 @@ export default function VerifyPage() {
         <h1 className="text-2xl font-bold leading-tight mt-2" style={{ color: 'var(--posi-text)' }}>Verify a POSI Record</h1>
         <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Confirm a journal's current Core Collection, PQF, and AJR (POSI Automated Rating) status directly
-          from POSI's own data — the same source every other page on this site reads from, not a separate
+          from POSI's own data - the same source every other page on this site reads from, not a separate
           claims database that could drift out of sync.
         </p>
       </div>
@@ -77,7 +77,6 @@ export default function VerifyPage() {
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Release:</strong> {RELEASE_LABEL}</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
-          <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
           <p><strong>Records verifiable:</strong> {journals.length.toLocaleString()}</p>
         </div>
       </Callout>
@@ -88,7 +87,7 @@ export default function VerifyPage() {
 
       <p className="text-[10px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
         A verification code (e.g. <code className="font-mono">{RELEASE_ID}-GRHAS</code>) is deterministic, not a
-        claim of a sequentially-issued registry number — it's derived from the journal code and release ID, and
+        claim of a sequentially-issued registry number - it's derived from the journal code and release ID, and
         this page proves it by re-deriving it and checking the record it points to actually exists. Lookups
         always show the record's live current state, not a value frozen at certificate issuance.
       </p>

@@ -37,7 +37,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 
-const DATA_PATH = resolve('src/lib/discovered-journals.ts')
+import { loadDiscovered, saveDiscovered, autoPqf } from './lib/discovered-store.mjs'
 const WRITE = process.argv.includes('--write')
 const UA = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
 const CONCURRENCY = 5
@@ -341,82 +341,16 @@ function computeAutoPqf({ site, journal, crSample, sitemapOk, robotsOk, doiResol
 // No DOAJ-based eligibility filter — every discovered journal is scored, and
 // no DOAJ field is read into the scoring functions above.
 
-function parseDiscoveredListed(src) {
-  const startMarker = "// BEGIN:DISCOVERED_JOURNALS"
-  const start = src.indexOf(startMarker)
-  if (start === -1) throw new Error('BEGIN:DISCOVERED_JOURNALS marker not found')
-
-  const section = src.slice(start)
-  const lines = section.split('\n')
-
-  const journals = []
-  let current = null
-
-  const flush = () => {
-    if (current?.id) {
-      journals.push({
-        id: current.id,
-        code: current.code,
-        issnOnline: current.issnOnline,
-        issnPrint: current.issnPrint,
-        openalex_source_id: current.openalex,
-        article_count: current.articleCount,
-        website_url: current.websiteUrl,
-      })
-    }
-  }
-
-  for (const line of lines) {
-    const idM = /id:\s*'(j-disc-[^']+)'/.exec(line)
-    if (idM) {
-      flush()
-      current = { id: idM[1], code: null, issnOnline: null, issnPrint: null, doajStatus: null, openalex: null, articleCount: 0, websiteUrl: null }
-      continue
-    }
-    if (!current) continue
-
-    const codeM = /journal_code:\s*'([^']+)'/.exec(line)
-    if (codeM) { current.code = codeM[1]; continue }
-    const ionM = /issn_online:\s*["']([^"']+)["']/.exec(line)
-    if (ionM) { current.issnOnline = ionM[1]; continue }
-    const ipM = /issn_print:\s*["']([^"']+)["']/.exec(line)
-    if (ipM) { current.issnPrint = ipM[1]; continue }
-    const doajM = /doaj_status:\s*["']([^"']+)["']/.exec(line)
-    if (doajM) { current.doajStatus = doajM[1]; continue }
-    const oaM = /openalex_source_id:\s*'([^']+)'/.exec(line)
-    if (oaM) { current.openalex = oaM[1]; continue }
-    const acM = /article_count:\s*(\d+)/.exec(line)
-    if (acM) { current.articleCount = parseInt(acM[1], 10); continue }
-    const wsM = /website_url:\s*["']([^"']+)["']/.exec(line)
-    if (wsM) { current.websiteUrl = wsM[1]; continue }
-  }
-  flush()
-  return journals
-}
-
-// ─── Write auto_pqf into data.ts ─────────────────────────────────────────────
-
-function injectAutoPqf(src, id, scores) {
-  const { jtf, mqf, egf, tdf, cvf, rif } = scores
-
-  const idIdx = src.indexOf(`id: '${id}'`)
-  if (idIdx === -1) return src
-
-  const blockEnd = src.indexOf('created_at:', idIdx)
-  if (blockEnd === -1) return src
-
-  const blockContent = src.slice(idIdx, blockEnd)
-
-  const autoPqfLine = `  auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),\n`
-  if (blockContent.includes('auto_pqf:')) {
-    const autoIdx = src.indexOf('auto_pqf:', idIdx)
-    if (autoIdx < blockEnd) {
-      const lineEnd = src.indexOf('\n', autoIdx)
-      return src.slice(0, autoIdx) + `auto_pqf: autopqf(${jtf}, ${mqf}, ${egf}, ${tdf}, ${cvf}, ${rif}),` + src.slice(lineEnd)
-    }
-  }
-
-  return src.slice(0, blockEnd) + autoPqfLine + '  ' + src.slice(blockEnd)
+function parseDiscoveredListed(records) {
+  return records.map(r => ({
+    id: r.id,
+    code: r.journal_code,
+    issnOnline: r.issn_online ?? null,
+    issnPrint: r.issn_print ?? null,
+    openalex_source_id: r.openalex_source_id ?? null,
+    article_count: r.article_count ?? 0,
+    website_url: r.website_url || null,
+  }))
 }
 
 // ─── Batch runner ─────────────────────────────────────────────────────────────
@@ -437,8 +371,9 @@ async function runBatch(items, fn, concurrency) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const src = readFileSync(DATA_PATH, 'utf-8')
-  const allListed = parseDiscoveredListed(src)
+  const records = loadDiscovered()
+  const byId = new Map(records.map(r => [r.id, r]))
+  const allListed = parseDiscoveredListed(records)
   const listed = LIMIT ? allListed.slice(0, LIMIT) : allListed
   console.log(`Found ${allListed.length} DISCOVERED_JOURNALS (scoring prioritizes direct verification; DOAJ used only as a disclosed fallback when a site can't be crawled, never as an eligibility filter)${LIMIT ? ` — processing first ${listed.length}` : ''}\n`)
 
@@ -472,7 +407,6 @@ async function main() {
   let scored = 0
   let skipped = 0
   let fallbackCount = 0
-  let updated = src
 
   for (const { id, code, website_url, usedDoajFallback, ...rest } of results) {
     if (!rest.site) { skipped++; continue }  // no direct evidence and no DOAJ fallback available
@@ -484,17 +418,18 @@ async function main() {
     if (!WRITE) {
       console.log(`[${code}] JTF:${scores.jtf} MQF:${scores.mqf} EGF:${scores.egf} TDF:${scores.tdf} CVF:${scores.cvf} RIF:${scores.rif} → ${scores.total} ${scores.grade}${usedDoajFallback ? ' (DOAJ fallback)' : ''}`)
     } else {
-      updated = injectAutoPqf(updated, id, scores)
+      const rec = byId.get(id)
+      if (rec) rec.auto_pqf = autoPqf(scores)
     }
   }
 
   console.log(`\nScored: ${scored} (${fallbackCount} via DOAJ fallback)  Skipped (no evidence available): ${skipped}`)
 
   if (WRITE) {
-    writeFileSync(DATA_PATH, updated, 'utf-8')
-    console.log(`Written auto_pqf for ${scored} journals to data.ts`)
+    saveDiscovered(records)
+    console.log(`Written auto_pqf for ${scored} journals to discovered-journals.json`)
   } else {
-    console.log('\nDry run. Pass --write to update data.ts.')
+    console.log('\nDry run. Pass --write to update discovered-journals.json.')
   }
 }
 

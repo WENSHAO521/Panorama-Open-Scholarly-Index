@@ -1,17 +1,17 @@
 import raw from './pci.json'
 
-// PCI / PCI-5 (POSI Citation Impact, posi-data's PJR-SPEC.md § 5-6) — a
+// PCI / PCI-5 (POSI Citation Impact, posi-data's PJR-SPEC.md § 5-6) - a
 // real, OpenAlex-sourced citation-window indicator, synced from
 // posi-data-delivery's collections/pci.json (see scripts/sync-corpus.mjs).
 // Covers Core Collection and the curated Global Benchmark seed (~1,023
-// records) — Core Collection is overwhelmingly too young to have real
+// records) - Core Collection is overwhelmingly too young to have real
 // 2023-2024 output (most journals first published 2025-2026), so only 2
 // of 30 resolvable Core Collection journals have a non-null pci here; the
 // other 28 (and Global Benchmark's 3 zero-output journals) are pci: null
 // by real, checked cause, not "never attempted." See posi-data's
 // audits/pjr-seed-corpus/pjr-seed-corpus-global993-2026/README.md for
 // methodology and scope. No POSI-R-* release has been produced
-// (POSI-R-1.0-SPEC.md) — real Citation Q exists for exactly the 2 Core
+// (POSI-R-1.0-SPEC.md) - real Citation Q exists for exactly the 2 Core
 // Collection journals with both a real PCI and a real-PCI peer pool
 // reaching MIN_CATEGORY_SIZE=20 (see src/lib/citation-rankings.ts), not
 // for PCI generally. Every field below is passed through unmodified from
@@ -38,7 +38,7 @@ const BY_JOURNAL_ID: Record<string, PciEntry> = Object.fromEntries(
   PCI_RECORDS.map(r => [r.journal_id, r])
 )
 
-/** All synced PCI records — currently the curated Global Benchmark seed
+/** All synced PCI records - currently the curated Global Benchmark seed
  * only, including pci: null entries. */
 export function getAllPciEntries(): PciEntry[] {
   return PCI_RECORDS
