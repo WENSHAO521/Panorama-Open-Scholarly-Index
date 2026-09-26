@@ -30,7 +30,9 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 
   function toggle() {
     const next: Theme = current() === 'dark' ? 'light' : 'dark'
-    document.documentElement.dataset.theme = next
+    const root = document.documentElement
+    root.dataset.theme = next
+    root.style.colorScheme = next
     try { localStorage.setItem(THEME_KEY, next) } catch { /* storage unavailable */ }
     window.dispatchEvent(new Event(EVENT))
   }
