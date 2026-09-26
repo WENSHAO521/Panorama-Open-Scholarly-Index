@@ -12,15 +12,15 @@ interface Result { key: string; codeOk: boolean; items: CertItem[] }
 
 function Banner({ verdict }: { verdict: Verdict }) {
   const m = {
-    valid: { Icon: CheckCircle, color: 'var(--verified)', bg: 'var(--verified-soft)', title: 'Valid certificate', zh: '证明有效', body: 'The certificate is unaltered and every listed publication is indexed in the POSI Core Collection today.' },
-    changed: { Icon: WarningCircle, color: 'var(--check)', bg: 'var(--check-soft)', title: 'Authentic, but status has changed', zh: '证明未被篡改，但收录状态已变化', body: 'The certificate is unaltered, but at least one listed publication is no longer indexed. See the items below.' },
-    tampered: { Icon: XCircle, color: 'var(--rejected)', bg: 'var(--rejected-soft)', title: 'Not valid', zh: '证明无效', body: 'The certificate number does not match its date, snapshot and publication list. The certificate has been altered or the link is incomplete.' },
+    valid: { Icon: CheckCircle, color: 'var(--verified)', bg: 'var(--verified-soft)', title: 'Valid certificate', body: 'The certificate is unaltered and every listed publication is indexed in POSI today.' },
+    changed: { Icon: WarningCircle, color: 'var(--check)', bg: 'var(--check-soft)', title: 'Authentic, but status has changed', body: 'The certificate is unaltered, but at least one listed publication is no longer indexed. See the items below.' },
+    tampered: { Icon: XCircle, color: 'var(--rejected)', bg: 'var(--rejected-soft)', title: 'Not valid', body: 'The certificate number does not match its date, snapshot and publication list. The certificate has been altered or the link is incomplete.' },
   }[verdict]
   return (
     <div className="rounded-[6px] p-5 flex gap-4 items-start" style={{ background: m.bg, border: '1px solid var(--line)' }} role="status">
       <m.Icon className="h-7 w-7 shrink-0" style={{ color: m.color }} />
       <div>
-        <p className="text-[18px] font-semibold" style={{ color: m.color }}>{m.title} <span className="font-normal">/ {m.zh}</span></p>
+        <p className="text-[18px] font-semibold" style={{ color: m.color }}>{m.title}</p>
         <p className="mt-1 text-[14px]" style={{ color: 'var(--ink-2)' }}>{m.body}</p>
       </div>
     </div>
@@ -129,7 +129,7 @@ export function CertificateVerifier() {
                     {st ? (
                       <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
                         {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
-                        <span>{st.en}<br /><span style={{ color: 'var(--muted)' }}>{st.zh}</span></span>
+                        <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'}</span></>}</span>
                       </span>
                     ) : <span className="inline-block h-3.5 w-40 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
                   </td>
@@ -142,7 +142,7 @@ export function CertificateVerifier() {
 
       <p className="text-[13px] leading-relaxed max-w-[75ch]" style={{ color: 'var(--muted)' }}>
         Verification recomputes the certificate number from its contents and re-checks each publication against
-        Crossref and the live POSI index in your browser. The requester&apos;s name is not part of the link and is not
+        Crossref, OpenAlex and the live POSI index in your browser. The requester&apos;s name is not part of the link and is not
         verified. <Link href="/docs/certificates/" className="link">How certificates work</Link>.
       </p>
     </div>

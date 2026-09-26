@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useRef, useState, type FormEvent } from 'react'
 import { CheckCircle, XCircle, Printer, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import {
@@ -65,17 +64,17 @@ export function CertificateTool() {
     <div className="space-y-10">
       <form onSubmit={submit} className="no-print panel p-5 md:p-6 grid gap-5 md:grid-cols-2" noValidate>
         <div className="flex flex-col gap-2">
-          <label htmlFor="req" className="text-[13.5px] font-medium">Requester name <span style={{ color: 'var(--muted)', fontWeight: 400 }}>委托人</span></label>
+          <label htmlFor="req" className="text-[13.5px] font-medium">Requester name</label>
           <input id="req" className="input" value={requester} onChange={e => setRequester(e.target.value)} autoComplete="name" />
           <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Printed on the certificate only. Never sent anywhere or put in the verification link.</p>
         </div>
         <div className="flex flex-col gap-2">
-          <label htmlFor="aff" className="text-[13.5px] font-medium">Affiliation <span style={{ color: 'var(--muted)', fontWeight: 400 }}>单位, optional</span></label>
+          <label htmlFor="aff" className="text-[13.5px] font-medium">Affiliation <span style={{ color: 'var(--muted)', fontWeight: 400 }}>optional</span></label>
           <input id="aff" className="input" value={affiliation} onChange={e => setAffiliation(e.target.value)} autoComplete="organization" />
           <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Optional.</p>
         </div>
         <div className="flex flex-col gap-2 md:col-span-2">
-          <label htmlFor="pur" className="text-[13.5px] font-medium">Purpose <span style={{ color: 'var(--muted)', fontWeight: 400 }}>用途, optional</span></label>
+          <label htmlFor="pur" className="text-[13.5px] font-medium">Purpose <span style={{ color: 'var(--muted)', fontWeight: 400 }}>optional</span></label>
           <input id="pur" className="input" value={purpose} onChange={e => setPurpose(e.target.value)} />
         </div>
         <div className="flex flex-col gap-2 md:col-span-2">
@@ -97,7 +96,7 @@ export function CertificateTool() {
           <button type="submit" className="btn btn-primary" disabled={phase === 'checking'}>
             {phase === 'checking' ? 'Checking' : 'Check and issue'}
           </button>
-          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Runs in your browser against Crossref and the POSI index.</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Runs in your browser against Crossref, OpenAlex and the POSI index.</span>
         </div>
       </form>
 
@@ -129,7 +128,7 @@ export function CertificateTool() {
                         {st && (
                           <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
                             {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
-                            <span>{st.en}<br /><span style={{ color: 'var(--muted)' }}>{st.zh}</span></span>
+                            <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'}</span></>}</span>
                           </span>
                         )}
                       </td>
@@ -142,8 +141,8 @@ export function CertificateTool() {
           {phase === 'done' && !cert && (
             <div className="mt-4">
               <Note tone="warn">
-                None of these publications is in a Core Collection journal, so no certificate can be issued. Journals can
-                apply for inclusion through <Link href="/submit-journal/" className="link">Submit a journal</Link>.
+                None of these DOIs is an indexed journal publication, so no certificate can be issued. POSI indexes
+                journal publications registered with Crossref or OpenAlex.
               </Note>
             </div>
           )}

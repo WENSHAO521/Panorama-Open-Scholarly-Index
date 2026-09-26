@@ -10,6 +10,8 @@ const COLUMNS = [
       { label: 'Sources', href: '/journals/' },
       { label: 'Publishers', href: '/publishers/' },
       { label: 'PSC subjects', href: '/subjects/' },
+      { label: 'Rankings', href: '/rankings/' },
+      { label: 'Apply for certification', href: '/certification/' },
       { label: 'Indexing certificate', href: '/certificate/' },
       { label: 'Verify a certificate', href: '/certificate/verify/' },
       { label: 'Verify a record', href: '/verify/' },

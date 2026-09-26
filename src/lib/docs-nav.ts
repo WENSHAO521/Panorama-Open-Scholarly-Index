@@ -56,7 +56,7 @@ export const DOCS_NAV: DocsSection[] = [
       { label: 'Evidence registry', href: '/evidence/' },
       { label: 'Journal evidence records', href: '/journal-evidence/' },
       { label: 'Policy coverage estimate', href: '/policies/' },
-      { label: 'Submit a journal', href: '/submit-journal/' },
+      { label: 'Apply for certification', href: '/certification/' },
       { label: 'Badges', href: '/badges/' },
     ],
   },

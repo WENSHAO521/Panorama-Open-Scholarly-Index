@@ -11,7 +11,7 @@ const NAV = [
   { label: 'Sources', href: '/journals/' },
   { label: 'Publishers', href: '/publishers/' },
   { label: 'Subjects', href: '/subjects/' },
-  { label: 'Rankings', href: '/ratings/' },
+  { label: 'Rankings', href: '/rankings/' },
   { label: 'Certificates', href: '/certificate/' },
   { label: 'Datasets', href: '/datasets/' },
   { label: 'Docs', href: '/docs/' },

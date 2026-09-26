@@ -13,7 +13,7 @@ const CONTACT_TOPICS = [
     address: 'posi@panorama-sg.com',
     subject: 'POSI Journal Submission: [Journal Title]',
     desc: 'Submit a new open access journal record for POSI review and PQF assessment.',
-    cta: { label: 'Submit Journal →', href: '/submit-journal' },
+    cta: { label: 'Apply for certification', href: '/certification/' },
   },
   {
     topic: 'Report Data or Evidence Issue',
@@ -133,7 +133,7 @@ export default function ContactPage() {
       <div className="flex flex-wrap gap-5 text-xs">
         <Link href="/about" style={{ color: 'var(--posi-accent)' }} className="hover:underline">About POSI →</Link>
         <Link href="/coi" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Conflict of Interest →</Link>
-        <Link href="/submit-journal" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Submit Journal →</Link>
+        <Link href="/certification/" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Apply for certification</Link>
       </div>
 
     </div>

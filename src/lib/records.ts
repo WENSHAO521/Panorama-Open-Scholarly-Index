@@ -26,27 +26,65 @@ export type Verification = 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'NEEDS_CHECK' | '
 
 export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 
+// Two public tiers.
+//
+//   Indexed   Every journal with DOIs registered at Crossref or a source
+//             record in OpenAlex. Nothing to apply for; coverage is automatic.
+//   Core      Journals that applied for certification and passed the PQF
+//             editorial evaluation. Only Core journals are ranked, badged and
+//             certified.
+//
+// The internal collection keys (core / candidate / benchmark / discovered)
+// stay as they are in the data files; they only say where a curated record
+// came from. A journal with no curated record at all is still indexed and is
+// served from OpenAlex at /source/.
+export type Tier = 'core' | 'indexed'
+
+export function tierOf(k: Collection): Tier {
+  return k === 'core' ? 'core' : 'indexed'
+}
+
+export const TIERS: Record<Tier, { label: string; short: string; description: string }> = {
+  core: {
+    label: 'Core Collection',
+    short: 'Core',
+    description: 'Certified. The journal applied for certification and passed the PQF editorial evaluation. Core journals are ranked and can display POSI badges.',
+  },
+  indexed: {
+    label: 'Indexed',
+    short: 'Indexed',
+    description: 'Indexed from Crossref and OpenAlex. Not certified by POSI. The journal can apply for certification to enter the Core Collection.',
+  },
+}
+
+/** Where a curated record came from. Secondary detail under the tier. */
 export const COLLECTIONS: Record<Collection, { label: string; short: string; description: string }> = {
   core: {
     label: 'Core Collection',
     short: 'Core',
-    description: 'Admitted through the PQF editorial selection gate. Fully indexed, with article-level metadata and published evidence.',
+    description: TIERS.core.description,
   },
   candidate: {
-    label: 'Core Candidate',
-    short: 'Candidate',
-    description: 'Previously admitted; a PQF re-review found it below the eligibility bar. Record retained, excluded from Core counts, rankings and badges until re-review.',
+    label: 'Certification under review',
+    short: 'Indexed',
+    description: 'Indexed. Previously certified; a PQF re-review found it below the bar, so it is excluded from Core rankings and badges until re-review.',
   },
   benchmark: {
-    label: 'Global Benchmark',
-    short: 'Benchmark',
-    description: 'External validation corpus used to test POSI methodology against established journals. Never a POSI admission candidate.',
+    label: 'Indexed, benchmark set',
+    short: 'Indexed',
+    description: 'Indexed. Also in the Global Benchmark reference set that POSI uses to validate its methodology.',
   },
   discovered: {
-    label: 'Discovered',
-    short: 'Discovered',
-    description: 'Found in open registries (DOAJ, Crossref, OpenAlex). POSI holds a record; it has not reviewed or admitted the journal.',
+    label: 'Indexed, curated record',
+    short: 'Indexed',
+    description: 'Indexed. POSI holds a curated record with a permanent POSI-J id, built from DOAJ, Crossref and OpenAlex.',
   },
+}
+
+/** Journals indexed from Crossref/OpenAlex without a curated POSI record. */
+export const REGISTRY_TIER = {
+  label: 'Indexed',
+  description: 'Indexed from Crossref and OpenAlex registry data. POSI holds no curated record yet and has not certified this journal.',
 }
 
 export const VERIFICATION: Record<Verification, { label: string; rule: string; color: string; bg: string }> = {

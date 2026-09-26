@@ -471,7 +471,7 @@ export default function PolicyPage() {
       <div className="flex flex-wrap gap-4 text-xs">
         <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
         <Link href="/evidence" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Evidence Registry →</Link>
-        <Link href="/submit-journal" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Submit a Journal →</Link>
+        <Link href="/certification/" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Apply for certification</Link>
         <Link href="/about" style={{ color: 'var(--posi-accent)' }} className="hover:underline">About & Governance →</Link>
       </div>
     </div>

@@ -9,7 +9,8 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { DownloadSimple, MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr'
 import pscSnapshot from '@/lib/psc-v1.0.snapshot.json'
-import { COLLECTIONS, VERIFICATION, recordHref, type Collection, type IndexRecord, type Verification } from '@/lib/records'
+import { TIERS, VERIFICATION, recordHref, tierOf, type Collection, type IndexRecord, type Tier, type Verification } from '@/lib/records'
+import { searchSources, sourceId, type Source } from '@/lib/openalex'
 import { CollectionTag, VerificationPill, fmt } from './db'
 
 const PAGE_SIZE = 50
@@ -90,7 +91,13 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
   const [data, setData] = useState<Partial<Record<Group, Row[]>>>({})
   const [failed, setFailed] = useState<Group[]>([])
   const [q, setQ] = useState(params.get('q') ?? '')
-  const [cols, setCols] = useState<Set<Collection>>(() => new Set((params.get('collection')?.split(',').filter(Boolean) ?? []) as Collection[]))
+  // ?status=core|indexed. The old ?collection= links map onto the two tiers.
+  const [cols, setCols] = useState<Set<Tier>>(() => {
+    const st = params.get('status')?.split(',').filter(Boolean) as Tier[] | undefined
+    if (st?.length) return new Set(st)
+    const legacy = params.get('collection')?.split(',').filter(Boolean) as Collection[] | undefined
+    return new Set((legacy ?? []).map(tierOf))
+  })
   const [vers, setVers] = useState<Set<Verification>>(new Set())
   const [domains, setDomains] = useState<Set<string>>(() => new Set(params.get('psc')?.split(',').filter(Boolean) ?? []))
   const [oa, setOa] = useState<Set<'oa' | 'doaj'>>(new Set())
@@ -116,7 +123,7 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
   useEffect(() => {
     const sp = new URLSearchParams()
     if (q.trim()) sp.set('q', q.trim())
-    if (cols.size) sp.set('collection', [...cols].join(','))
+    if (cols.size) sp.set('status', [...cols].join(','))
     if (domains.size) sp.set('psc', [...domains].join(','))
     if (pub) sp.set('pub', pub)
     const s = sp.toString()
@@ -133,12 +140,25 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
   const loading = GROUPS.filter(g => !data[g] && !failed.includes(g))
 
   const dq = useDeferredValue(q)
+
+  // Every Crossref/OpenAlex journal is indexed, not only the curated records
+  // above, so a search also asks OpenAlex for matching journals.
+  const [more, setMore] = useState<{ q: string; count: number; results: Source[] } | null>(null)
+  useEffect(() => {
+    const term = dq.trim()
+    if (term.length < 3) return
+    const ctrl = new AbortController()
+    const t = setTimeout(() => {
+      searchSources(term, 10, ctrl.signal).then(r => setMore({ q: term, ...r })).catch(() => {})
+    }, 350)
+    return () => { clearTimeout(t); ctrl.abort() }
+  }, [dq])
   const qt = dq.trim()
   const qn = normalize(qt)
 
   // Rows matching everything except facet `skip` - for facet counts.
   const filterExcept = (skip: string) => all.filter(r =>
-    (skip === 'k' || !cols.size || cols.has(r.k)) &&
+    (skip === 'k' || !cols.size || cols.has(tierOf(r.k))) &&
     (skip === 'v' || !vers.size || vers.has(r.v)) &&
     (skip === 's' || !domains.size || (r.s && domains.has(r.s.split('.')[0]))) &&
     (skip === 'oa' || !oa.size || ((!oa.has('oa') || r.oa) && (!oa.has('doaj') || r.d === 'listed'))) &&
@@ -165,7 +185,7 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
     for (const r of filterExcept(skip)) { const v = key(r); if (v) m[v] = (m[v] ?? 0) + 1 }
     return m
   }
-  const kCounts = facetCount('k', r => r.k)
+  const kCounts = facetCount('k', r => tierOf(r.k))
   const vCounts = facetCount('v', r => r.v)
   const sCounts = facetCount('s', r => r.s?.split('.')[0] ?? null)
   const oaRows = filterExcept('oa')
@@ -185,8 +205,8 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
           )}
         </div>
         <Facet
-          title="Collection"
-          options={(['core', 'candidate', 'benchmark', 'discovered'] as Collection[]).map(k => ({ value: k, label: COLLECTIONS[k].label, count: kCounts[k] ?? 0 }))}
+          title="Status"
+          options={(['core', 'indexed'] as Tier[]).map(t => ({ value: t, label: t === 'core' ? 'Core (certified)' : 'Indexed', count: kCounts[t] ?? 0 }))}
           selected={cols}
           onToggle={v => setCols(s => toggle(s, v))}
         />
@@ -281,7 +301,7 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
                 <th>ISSN</th>
                 <th>PSC</th>
                 <th className="text-right">Articles</th>
-                <th>Collection</th>
+                <th>Status</th>
                 <th>Verification</th>
               </tr>
             </thead>
@@ -314,7 +334,7 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
                 <tr><td colSpan={6} className="py-14 text-center">
                   <p className="font-medium" style={{ color: 'var(--ink)' }}>No records match</p>
                   <p className="text-[13px] mt-1" style={{ color: 'var(--muted)' }}>
-                    Try a shorter query or clear a filter. Journals not yet in POSI can be proposed via <Link href="/submit-journal/" className="link">Submit a journal</Link>.
+                    Try a shorter query or clear a filter. Journals beyond the curated records appear below when OpenAlex has a match.
                   </p>
                 </td></tr>
               )}
@@ -329,6 +349,36 @@ export function RecordBrowser({ expected }: { expected: Record<Group, number> })
             <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => setPage(p => p + 1)}>Next →</button>
           </nav>
         )}
+
+        {more && more.q === dq.trim() && more.results.length > 0 && (() => {
+          const known = new Set(all.flatMap(r => r.i.map(i => i.toUpperCase())))
+          const extra = more.results.filter(src => !(src.issn ?? []).some(i => known.has(i.toUpperCase())))
+          if (!extra.length) return null
+          return (
+            <section aria-labelledby="registry-results" className="mt-10">
+              <h2 id="registry-results" className="text-[16px] font-semibold tracking-tight">
+                More indexed journals
+                <span className="ml-2 font-normal text-[13px]" style={{ color: 'var(--muted)' }}>{fmt(more.count)} matches in the full index (OpenAlex)</span>
+              </h2>
+              <ul className="mt-3 panel divide-y" style={{ borderColor: 'var(--line)' }}>
+                {extra.map(src => (
+                  <li key={src.id} className="px-4 py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" style={{ borderColor: 'var(--line-soft)' }}>
+                    <div className="min-w-0">
+                      <Link href={`/source/?id=${sourceId(src)}`} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{src.display_name}</Link>
+                      <p className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>
+                        {[src.host_organization_name, src.issn_l && `ISSN ${src.issn_l}`].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                      <span className="font-mono tnum">{fmt(src.works_count)} works</span>
+                      <span className="chip">Indexed</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        })()}
       </section>
     </div>
   )

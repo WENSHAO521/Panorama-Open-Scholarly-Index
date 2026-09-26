@@ -278,7 +278,7 @@ export default function EvidencePage() {
           Evidence status shown above reflects the aggregate state across PSG journals as of 2026-06-22.
           Individual journal evidence records are linked from each Journal Detail page.
           To report an incorrect evidence status, use the correction form on the relevant journal page or{' '}
-          <Link href="/submit-journal" style={{ color: 'var(--posi-accent)' }} className="underline">contact the POSI team</Link>.
+          <Link href="/certification/" style={{ color: 'var(--posi-accent)' }} className="underline">contact the POSI team</Link>.
         </p>
         <p className="text-[11px] leading-relaxed mt-2 text-justify" style={{ color: 'var(--posi-muted)' }}>
           All evidence is based on publicly available information. POSI does not claim to have verified internal journal processes,

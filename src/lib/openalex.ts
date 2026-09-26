@@ -196,3 +196,70 @@ export function download(name: string, body: string, type: string) {
   a.href = u; a.download = name; a.click()
   setTimeout(() => URL.revokeObjectURL(u), 1000)
 }
+
+// ── Sources (journals) ─────────────────────────────────────────
+
+export interface Source {
+  id: string
+  display_name: string
+  issn_l: string | null
+  issn: string[] | null
+  host_organization_name: string | null
+  works_count: number
+  cited_by_count: number
+  summary_stats?: { '2yr_mean_citedness': number | null; h_index: number | null; i10_index: number | null }
+  is_oa: boolean
+  is_in_doaj: boolean
+  homepage_url: string | null
+  country_code: string | null
+  apc_usd: number | null
+  type: string
+  first_publication_year: number | null
+  last_publication_year: number | null
+  alternate_titles?: string[]
+  topics?: { display_name: string; count: number; field?: { display_name: string } }[]
+  counts_by_year?: { year: number; works_count: number; cited_by_count: number }[]
+}
+
+const SOURCE_SELECT = [
+  'id', 'display_name', 'issn_l', 'issn', 'host_organization_name', 'works_count', 'cited_by_count', 'summary_stats',
+  'is_oa', 'is_in_doaj', 'homepage_url', 'country_code', 'apc_usd', 'type', 'first_publication_year',
+  'last_publication_year', 'alternate_titles', 'topics', 'counts_by_year',
+].join(',')
+
+export async function searchSources(q: string, perPage = 10, signal?: AbortSignal): Promise<{ count: number; results: Source[] }> {
+  const issn = q.trim().match(/^\d{4}-?\d{3}[\dXx]$/)
+  const j = await get<{ meta: { count: number }; results: Source[] }>(url('/sources', {
+    search: issn ? undefined : q,
+    filter: issn ? `type:journal,issn:${q.trim().toUpperCase().replace(/^(\d{4})(\d{3}[\dX])$/, '$1-$2')}` : 'type:journal',
+    per_page: perPage,
+    select: SOURCE_SELECT,
+  }), signal)
+  return { count: j.meta.count, results: j.results }
+}
+
+/** Look a journal up by OpenAlex id (S…) or by ISSN. */
+export async function getSource(key: string, signal?: AbortSignal): Promise<Source | null> {
+  const k = key.trim()
+  if (/^S\d+$/i.test(k)) return get<Source>(url(`/sources/${k.toUpperCase()}`, { select: SOURCE_SELECT }), signal)
+  const j = await get<{ results: Source[] }>(url('/sources', { filter: `issn:${k.toUpperCase()}`, per_page: 1, select: SOURCE_SELECT }), signal)
+  return j.results[0] ?? null
+}
+
+export async function getTotalJournals(signal?: AbortSignal): Promise<number> {
+  const j = await get<{ meta: { count: number } }>(url('/sources', { filter: 'type:journal', per_page: 1, select: 'id' }), signal)
+  return j.meta.count
+}
+
+export function sourceId(s: Pick<Source, 'id'>): string {
+  return s.id.replace('https://openalex.org/', '')
+}
+
+/** Link target for a journal: the curated POSI record when there is one, else the indexed-journal page. */
+export function sourceHref(src: { id?: string | null; issn_l?: string | null } | null | undefined, curated?: string | null): string | null {
+  if (curated) return curated
+  if (!src) return null
+  if (src.id) return `/source/?id=${src.id.replace('https://openalex.org/', '')}`
+  if (src.issn_l) return `/source/?issn=${src.issn_l}`
+  return null
+}

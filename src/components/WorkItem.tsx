@@ -47,7 +47,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
 
       <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
         {src ? <>
-          {posi ? <Link href={recordHref(posi)} className="font-medium hover:underline" style={{ color: 'var(--ink-2)' }}>{src.display_name}</Link> : <span style={{ color: 'var(--ink-2)' }}>{src.display_name}</span>}
+          <Link href={posi ? recordHref(posi) : `/source/?id=${src.id.replace('https://openalex.org/', '')}`} className="font-medium hover:underline" style={{ color: 'var(--ink-2)' }}>{src.display_name}</Link>
           {src.host_organization_name && <>, {src.host_organization_name}</>}
         </> : 'No source recorded'}
         {vol && <>. {vol}</>}
@@ -67,7 +67,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
         <span className="inline-flex items-center gap-1 ml-1" style={{ color: 'var(--muted)' }} title="Citations recorded in OpenAlex">
           <Quotes className="h-3.5 w-3.5" /> <span className="font-mono tnum">{w.cited_by_count.toLocaleString('en-US')}</span> citations
         </span>
-        {posi && <span className="ml-auto inline-flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>Journal in POSI <CollectionTag k={posi.k} /></span>}
+        {posi?.k === 'core' && <span className="ml-auto inline-flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>Journal <CollectionTag k="core" /></span>}
       </div>
     </article>
   )

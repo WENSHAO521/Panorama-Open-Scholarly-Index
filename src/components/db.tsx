@@ -14,18 +14,18 @@ export function VerificationPill({ v, withLabel = true }: { v: Verification; wit
   )
 }
 
-const COLLECTION_TONE: Record<Collection, { color: string; bg: string }> = {
-  core: { color: 'var(--teal)', bg: 'var(--teal-soft)' },
-  candidate: { color: 'var(--check)', bg: 'var(--check-soft)' },
-  benchmark: { color: 'var(--info)', bg: 'var(--info-soft)' },
-  discovered: { color: 'var(--muted)', bg: 'var(--surface-2)' },
-}
-
+/** Public tier chip: Core (certified) or Indexed. */
 export function CollectionTag({ k }: { k: Collection }) {
-  const t = COLLECTION_TONE[k]
+  const core = k === 'core'
   return (
-    <span className="chip" title={COLLECTIONS[k].description} style={{ color: t.color, background: t.bg, borderColor: 'transparent' }}>
-      {COLLECTIONS[k].short}
+    <span
+      className="chip"
+      title={COLLECTIONS[k].description}
+      style={core
+        ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' }
+        : { color: 'var(--ink-2)', background: 'var(--surface-2)' }}
+    >
+      {core ? 'Core' : 'Indexed'}
     </span>
   )
 }

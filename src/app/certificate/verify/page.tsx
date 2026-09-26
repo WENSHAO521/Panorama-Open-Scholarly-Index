@@ -11,7 +11,7 @@ export default function VerifyCertificatePage() {
   return (
     <div className="wrap pb-10">
       <PageHeader title="Verify a certificate" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Certificate', href: '/certificate/' }, { label: 'Verify' }]}>
-        <p className="max-w-[65ch]">核验论文收录检索证明. Open this page from the certificate&apos;s QR code, or paste its verification address.</p>
+        <p className="max-w-[65ch]">Open this page from the certificate&apos;s QR code, or paste its verification address.</p>
       </PageHeader>
       <Suspense fallback={null}>
         <CertificateVerifier />

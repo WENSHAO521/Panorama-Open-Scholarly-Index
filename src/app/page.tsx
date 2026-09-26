@@ -1,20 +1,18 @@
 import Link from 'next/link'
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr'
-import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
+import { HomeSearch, LiveWorksCount, LiveJournalsCount } from '@/components/HomeSearch'
 import { getCoreCollection } from '@/lib/data'
-import { getAllRecords, getPublishers } from '@/lib/records-data'
-import psc from '@/lib/psc-v1.0.snapshot.json'
-import { toIndexRecord, collectionOf, verificationOf, COLLECTIONS, VERIFICATION, type Collection, type Verification } from '@/lib/records'
+import { getAllRecords } from '@/lib/records-data'
+import { getRankings } from '@/lib/rankings'
+import { toIndexRecord, collectionOf, verificationOf, VERIFICATION, type Verification } from '@/lib/records'
 import { getSortedAnnouncements } from '@/lib/announcements'
-import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
-import { DATA_CUTOFF } from '@/lib/release'
 import { fmt, CollectionTag, VerificationPill } from '@/components/db'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const metadata = {
   title: { absolute: 'POSI: Open Scholarly Index' },
   description:
-    'Search scholarly publications, journals and publishers. An open, static database: every journal record carries published provenance and every file is downloadable.',
+    'An open scholarly database indexing every journal registered with Crossref or OpenAlex. Search publications and journals, open rankings, certificates of indexing and downloadable data.',
 }
 
 const PIPELINE = [
@@ -35,9 +33,7 @@ records
 
 export default function HomePage() {
   const idx = getAllRecords().map(toIndexRecord)
-  const byK = idx.reduce<Record<string, number>>((a, r) => { a[r.k] = (a[r.k] ?? 0) + 1; return a }, {})
   const byV = idx.reduce<Record<string, number>>((a, r) => { a[r.v] = (a[r.v] ?? 0) + 1; return a }, {})
-  const total = idx.length
   // One real record per collection, chosen deterministically.
   const samples = [
     getCoreCollection().find(j => j.posi_id && j.issn_online),
@@ -45,14 +41,10 @@ export default function HomePage() {
     getCoreCollection().find(j => j.collection_status === 'candidate') ?? getCoreCollection()[1],
   ].filter((j): j is NonNullable<typeof j> => !!j)
   const news = getSortedAnnouncements().slice(0, 3)
-  const publisherCount = getPublishers().length
-  const benchmarkAll = getGlobalBenchmarkTotal()
+  const coreCount = getCoreCollection().length
+  const { ranked, year: rankingYear } = getRankings()
+  const rankedCount = ranked.length
 
-  const collectionRows: { k: Collection; n: number; tone: string }[] = [
-    { k: 'core', n: (byK.core ?? 0) + (byK.candidate ?? 0), tone: 'var(--teal)' },
-    { k: 'benchmark', n: byK.benchmark ?? 0, tone: 'var(--info)' },
-    { k: 'discovered', n: byK.discovered ?? 0, tone: 'var(--soft)' },
-  ]
 
   return (
     <div>
@@ -101,9 +93,9 @@ export default function HomePage() {
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
           {[
             { label: 'Publications', value: <LiveWorksCount />, href: '/publications/', note: 'OpenAlex, live' },
-            { label: 'Sources', value: fmt(total), href: '/journals/', note: 'journal records in POSI' },
-            { label: 'Publishers', value: fmt(publisherCount), href: '/publishers/', note: 'with journals in POSI' },
-            { label: 'Subject categories', value: fmt(psc.categories.length), href: '/subjects/', note: `PSC v${psc.version}` },
+            { label: 'Indexed journals', value: <LiveJournalsCount />, href: '/journals/', note: 'OpenAlex journals, live' },
+            { label: 'Ranked journals', value: fmt(rankedCount), href: '/rankings/', note: `${rankingYear} edition` },
+            { label: 'Core Collection', value: fmt(coreCount), href: '/core-collection/', note: 'certified journals' },
           ].map(s => (
             <Link key={s.label} href={s.href} className="block p-5 transition-colors hover:bg-[var(--hover)]" style={{ background: 'var(--surface)' }}>
               <dt className="text-[13px]" style={{ color: 'var(--muted)' }}>{s.label}</dt>
@@ -114,41 +106,30 @@ export default function HomePage() {
         </dl>
       </section>
 
-      {/* Collections: proportional bar, then one row per collection. */}
+      {/* Two tiers: everything is indexed; Core is certified on application. */}
       <section style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
-        <div className="wrap py-14 md:py-20 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div className="wrap py-14 md:py-20 grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div>
             <h2 className="text-[26px] md:text-[30px] font-semibold tracking-tight leading-tight" style={{ color: 'var(--ink)' }}>
-              Three collections, never blended.
+              Indexed by default. Certified on application.
             </h2>
             <p className="mt-4 text-[15.5px] leading-relaxed max-w-[48ch]" style={{ color: 'var(--ink-2)' }}>
-              A reviewed journal, an external benchmark and a registry find are different kinds of record. POSI keeps
-              them apart in every count, ranking and file.
+              Every journal with DOIs at Crossref or a record in OpenAlex is in POSI. Journals that apply and pass the
+              PQF evaluation enter the Core Collection.
             </p>
-            <p className="mt-6 text-[13px] font-mono" style={{ color: 'var(--muted)' }}>Data cutoff {DATA_CUTOFF}</p>
+            <Link href="/certification/" className="btn btn-primary mt-6">Apply for certification</Link>
           </div>
-
-          <div>
-            <div className="flex h-3 rounded-[6px] overflow-hidden" role="img" aria-label="Share of records by collection">
-              {collectionRows.map(r => (
-                <span key={r.k} style={{ width: `${Math.max(0.6, (r.n / total) * 100)}%`, background: r.tone }} />
-              ))}
-            </div>
-            <ul className="mt-6">
-              {collectionRows.map((r, i) => (
-                <li key={r.k} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-1 py-4" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                  <Link href={`/journals/?collection=${r.k === 'core' ? 'core,candidate' : r.k}`} className="font-medium hover:underline" style={{ color: 'var(--ink)' }}>
-                    <span className="inline-block h-2.5 w-2.5 rounded-[2px] mr-2 align-middle" style={{ background: r.tone }} aria-hidden="true" />
-                    {COLLECTIONS[r.k].label}
-                  </Link>
-                  <span className="font-mono text-[15px] tnum text-right" style={{ color: 'var(--ink)' }}>{fmt(r.n)}</span>
-                  <p className="text-[13.5px] leading-relaxed max-w-[60ch]" style={{ color: 'var(--muted)' }}>
-                    {COLLECTIONS[r.k].description}
-                    {r.k === 'benchmark' && benchmarkAll > r.n && ` A further ${fmt(benchmarkAll - r.n)} publisher-catalog records are in the bulk dataset.`}
-                  </p>
-                </li>
-              ))}
-            </ul>
+          <div className="grid gap-px rounded-[6px] overflow-hidden sm:grid-cols-2" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+            <Link href="/journals/" className="block p-6 transition-colors hover:bg-[var(--hover)]" style={{ background: 'var(--surface)' }}>
+              <p className="text-[13px]" style={{ color: 'var(--muted)' }}>Indexed journals</p>
+              <p className="mt-1 font-mono text-[28px] tnum" style={{ color: 'var(--ink)' }}><LiveJournalsCount /></p>
+              <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Searchable, ranked when citation data allows, and eligible for certificates of indexing.</p>
+            </Link>
+            <Link href="/core-collection/" className="block p-6 transition-colors" style={{ background: 'var(--teal-soft)' }}>
+              <p className="text-[13px]" style={{ color: 'var(--teal)' }}>Core Collection</p>
+              <p className="mt-1 font-mono text-[28px] tnum" style={{ color: 'var(--ink)' }}>{fmt(coreCount)}</p>
+              <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>Certified after evidence review, with published PQF reports and lifecycle ratings.</p>
+            </Link>
           </div>
         </div>
       </section>

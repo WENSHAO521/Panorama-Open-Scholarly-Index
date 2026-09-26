@@ -19,6 +19,7 @@ import { DATA_CUTOFF } from '@/lib/release'
 import { BasisTag, CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
+  ranking?: { rank: number | null; n: number | null; pct: number | null; q: string | null; cat: string | null; catName: string | null; oRank: number; oN: number } | null
   pcs?: PcsEntry | null
   pci?: PciEntry | null
   citationStats?: CitationStatsEntry | null
@@ -86,7 +87,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
   const status = earlyStageStatus(r)
   const ajrTotal = earlyStageDisplayTotal(r)
   const ajrQ = earlyStageQuartile(r)
-  const { pcs, pci, citationStats, pscName } = metrics
+  const { pcs, pci, citationStats, pscName, ranking } = metrics
   const oa = citationStats?.stats
 
   return (
@@ -126,9 +127,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 OpenAlex <ArrowSquareOut className="h-3.5 w-3.5" />
               </a>
             )}
-            {k === 'core' && (
-              <Link href="/certificate/" className="btn">Indexing certificate</Link>
-            )}
+            <Link href="/certificate/" className="btn">Indexing certificate</Link>
             {jsonHref && (
               <a href={jsonHref} className="btn" download>
                 <DownloadSimple className="h-4 w-4" /> Record JSON
@@ -141,16 +140,17 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
       {k === 'discovered' && (
         <div className="mb-6">
           <Note tone="warn">
-            This is a Discovered record. POSI found it in an open registry and holds its metadata, but has not
-            reviewed or admitted the journal. Treat every field as <strong>needs check</strong>.
+            This journal is indexed but not certified. POSI built this record from open registries and has not
+            reviewed it, so treat each field as <strong>needs check</strong>. The journal can{' '}
+            <Link href="/certification/" className="link">apply for certification</Link>.
           </Note>
         </div>
       )}
       {k === 'candidate' && (
         <div className="mb-6">
           <Note tone="warn">
-            A PQF re-review found this journal below the eligibility bar. The record is kept, but it is excluded
-            from Core Collection counts, rankings and badges until re-review.
+            This journal was certified, but a PQF re-review found it below the bar. It remains indexed and is
+            excluded from the Core Collection and its badges until re-review.
           </Note>
         </div>
       )}
@@ -191,6 +191,16 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 href="/pqf/"
               />
             </div>
+            {ranking && (
+              <p className="mt-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>
+                {ranking.rank !== null
+                  ? <>Ranked <span className="font-mono">{ranking.rank}/{ranking.n}</span> in{' '}
+                      <Link href={`/rankings/${ranking.cat}/`} className="link">{ranking.catName ?? ranking.cat}</Link>
+                      {' '}(<span className="font-semibold">{ranking.q}</span>, percentile {ranking.pct?.toFixed(1)}), and{' '}
+                      <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall, by PCS.</>
+                  : <>Ranked <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall by PCS; no subject category assigned.</>}
+              </p>
+            )}
             {oa && (
               <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>
                 OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}

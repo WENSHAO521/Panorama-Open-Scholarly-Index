@@ -7,7 +7,7 @@ import { ArrowSquareOut, LockOpen, Warning } from '@phosphor-icons/react/dist/ss
 import { getWork, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work } from '@/lib/openalex'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { recordHref } from '@/lib/records'
-import { CollectionTag, VerificationPill, SectionTitle } from '@/components/db'
+import { CollectionTag, SectionTitle } from '@/components/db'
 
 type State = { kind: 'loading' } | { kind: 'error'; notFound: boolean } | { kind: 'ok'; w: Work }
 type CiteFormat = 'apa' | 'bibtex' | 'ris'
@@ -175,7 +175,9 @@ export function WorkViewer() {
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start text-[13.5px]">
           <div className="panel p-4">
             <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Published in</p>
-            <p className="mt-1 font-medium" style={{ color: 'var(--ink)' }}>{src?.display_name ?? 'No source recorded'}</p>
+            {src ? (
+              <Link href={posi ? recordHref(posi) : `/source/?id=${src.id.replace('https://openalex.org/', '')}`} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
+            ) : <p className="mt-1 font-medium">No source recorded</p>}
             {src?.host_organization_name && <p style={{ color: 'var(--muted)' }}>{src.host_organization_name}</p>}
             <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">
               {w.biblio?.volume && <><dt style={{ color: 'var(--muted)' }}>Volume</dt><dd className="font-mono">{w.biblio.volume}</dd></>}
@@ -190,15 +192,19 @@ export function WorkViewer() {
 
           <div className="panel p-4">
             <p className="font-medium" style={{ color: 'var(--ink)' }}>In POSI</p>
-            {posi ? (
+            {src?.type === 'journal' || posi ? (
               <>
-                <div className="mt-2 flex flex-wrap gap-2"><CollectionTag k={posi.k} /><VerificationPill v={posi.v} /></div>
-                <Link href={recordHref(posi)} className="mt-3 inline-block link">Open journal record</Link>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="chip" style={{ color: 'var(--verified)', background: 'var(--verified-soft)', borderColor: 'transparent' }}>Indexed</span>
+                  {posi?.k === 'core' && <CollectionTag k="core" />}
+                </div>
+                <p className="mt-2 leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  {posi?.k === 'core' ? 'Published in a Core Collection journal.' : 'Published in an indexed journal.'} Eligible for an indexing certificate.
+                </p>
+                <Link href="/certificate/" className="mt-2 inline-block link">Issue a certificate</Link>
               </>
             ) : (
-              <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>
-                {issnMap ? 'This source is not in the Core Collection or the Global Benchmark.' : 'Checking the index.'}
-              </p>
+              <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>Not a journal publication, so it is not certified.</p>
             )}
           </div>
 

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
-import { getTotalWorks } from '@/lib/openalex'
+import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
 
 const SCOPES = [
   { key: 'publications', label: 'Publications', placeholder: 'Title, author, keyword or DOI' },
@@ -79,5 +79,18 @@ export function LiveWorksCount() {
   }, [])
   return n === null
     ? <span className="inline-block h-6 w-28 align-middle rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
+    : <>{n.toLocaleString('en-US')}</>
+}
+
+/** Live total of journals in OpenAlex (every one is indexed by POSI). */
+export function LiveJournalsCount() {
+  const [n, setN] = useState<number | null>(null)
+  useEffect(() => {
+    const c = new AbortController()
+    getTotalJournals(c.signal).then(setN).catch(() => {})
+    return () => c.abort()
+  }, [])
+  return n === null
+    ? <span className="inline-block h-6 w-24 align-middle rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
     : <>{n.toLocaleString('en-US')}</>
 }

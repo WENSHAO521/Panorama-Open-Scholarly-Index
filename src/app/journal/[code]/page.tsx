@@ -6,6 +6,7 @@ import { getPciEntry } from '@/lib/pci'
 import { getCitationStats } from '@/lib/citation-stats'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { RecordView } from '@/components/RecordView'
+import { getJournalRanking, categoryName } from '@/lib/rankings'
 import { JournalArticles } from '@/components/JournalArticles'
 
 // Core, Candidate and Global Benchmark records get a static page. Discovered
@@ -49,6 +50,7 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
           pci: getPciEntry(j.posi_id),
           citationStats: getCitationStats(j.journal_code),
           pscName: j.psc_category ? PSC_NAME[j.psc_category] ?? null : null,
+          ranking: (() => { const r = getJournalRanking(j.posi_id); return r ? { ...r, catName: categoryName(r.cat) } : null })(),
         }}
       />
       {(k === 'core' || k === 'candidate') && (j.issn_online || j.issn_print) && (

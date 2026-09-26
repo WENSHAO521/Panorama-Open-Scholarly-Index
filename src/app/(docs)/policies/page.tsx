@@ -219,7 +219,7 @@ export default function PoliciesPage() {
       <div className="flex gap-4 text-xs">
         <Link href="/evidence" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Evidence Registry →</Link>
         <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
-        <Link href="/submit-journal" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Submit a Journal Record →</Link>
+        <Link href="/certification/" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Apply for certification</Link>
       </div>
     </div>
   )
