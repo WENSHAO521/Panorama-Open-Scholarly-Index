@@ -7,7 +7,7 @@ import { getCitationStats } from '@/lib/citation-stats'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { RecordView } from '@/components/RecordView'
 import { getJournalRanking, categoryName } from '@/lib/rankings'
-import { JournalArticles } from '@/components/JournalArticles'
+import Link from 'next/link'
 
 // Core, Candidate and Global Benchmark records get a static page. Discovered
 // records (~24k) are served by the in-browser viewer at /record/ to stay
@@ -38,7 +38,6 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
   const { code } = await props.params
   const j = find(code)
   if (!j) notFound()
-  const k = collectionOf(j)
 
   return (
     <div className="wrap">
@@ -53,10 +52,14 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
           ranking: (() => { const r = getJournalRanking(j.posi_id); return r ? { ...r, catName: categoryName(r.cat) } : null })(),
         }}
       />
-      {(k === 'core' || k === 'candidate') && (j.issn_online || j.issn_print) && (
-        <section className="mt-10 max-w-[900px]" aria-label="Recent articles">
-          <JournalArticles issn={j.issn_online ?? j.issn_print} journalCode={j.journal_code} initialArticles={[]} initialTotal={0} />
-        </section>
+      {(j.issn_online || j.issn_print) && (
+        <div className="mt-8 flex flex-wrap gap-2 pb-10">
+          <Link href={`/publications/?issn=${j.issn_online ?? j.issn_print}&sort=newest`} className="btn btn-primary">Browse publications</Link>
+          <Link href={`/journal/?issn=${j.issn_online ?? j.issn_print}`} className="btn">Journal profile</Link>
+          {collectionOf(j) === 'core' && (
+            <a href={`/api/certificate/${j.journal_code}/pdf`} className="btn" target="_blank" rel="noopener">Certification certificate (PDF)</a>
+          )}
+        </div>
       )}
     </div>
   )

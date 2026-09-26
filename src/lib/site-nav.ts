@@ -20,8 +20,7 @@ export const PRIMARY_NAV: NavGroup[] = [
     links: [
       { label: 'Journal Rankings', href: '/rankings/', description: 'Ranks, percentiles and quartiles by subject category' },
       { label: 'Overall ranking', href: '/rankings/all/', description: 'All ranked journals in one list' },
-      { label: 'Lifecycle ratings', href: '/ratings/', description: 'AJR ratings for Core Collection journals' },
-      { label: 'Citation Score (PCS)', href: '/pcs/', description: 'How the ranking metric is calculated' },
+      { label: 'Methodology', href: '/methodology/', description: 'How the POSI Citation Score and quartiles are calculated' },
     ],
   },
   {
@@ -30,19 +29,18 @@ export const PRIMARY_NAV: NavGroup[] = [
       { label: 'Certificate of indexing', href: '/certificate/', description: 'For authors of indexed publications' },
       { label: 'Verify a certificate', href: '/certificate/verify/', description: 'Check a certificate number' },
       { label: 'Journal certification', href: '/certification/', description: 'Apply for the Core Collection' },
-      { label: 'Journal badges', href: '/badges/', description: 'Badges for Core Collection journals' },
     ],
   },
   { label: 'Data', href: '/datasets/' },
   {
     label: 'About',
     links: [
-      { label: 'About POSI', href: '/about/' },
-      { label: 'Documentation', href: '/docs/' },
-      { label: 'Editorial policies', href: '/coverage/policy/' },
-      { label: 'Responsible use', href: '/responsible-use/' },
-      { label: 'News', href: '/announcements/' },
-      { label: 'Contact', href: '/contact/' },
+      { label: 'About POSI', href: '/about/', description: 'Publisher, coverage and independence' },
+      { label: 'Editorial policy', href: '/editorial-policy/', description: 'Indexing, certification and coverage changes' },
+      { label: 'Methodology', href: '/methodology/', description: 'Subjects, citation score and rankings' },
+      { label: 'Documentation', href: '/docs/', description: 'Data sources, schema and provenance' },
+      { label: 'News', href: '/announcements/', description: 'Updates and coverage changes' },
+      { label: 'Contact', href: '/contact/', description: 'Corrections, certification and data enquiries' },
     ],
   },
 ]
@@ -71,9 +69,9 @@ export const FOOTER_NAV: { title: string; links: NavLink[] }[] = [
     title: 'About',
     links: [
       { label: 'About POSI', href: '/about/' },
+      { label: 'Editorial policy', href: '/editorial-policy/' },
+      { label: 'Methodology', href: '/methodology/' },
       { label: 'Documentation', href: '/docs/' },
-      { label: 'Editorial policies', href: '/coverage/policy/' },
-      { label: 'Responsible use', href: '/responsible-use/' },
       { label: 'News', href: '/announcements/' },
       { label: 'Contact', href: '/contact/' },
     ],
@@ -83,8 +81,8 @@ export const FOOTER_NAV: { title: string; links: NavLink[] }[] = [
     links: [
       { label: 'Terms of use', href: '/terms/' },
       { label: 'Privacy policy', href: '/privacy/' },
+      { label: 'Responsible use', href: '/responsible-use/' },
       { label: 'Conflict of interest', href: '/coi/' },
-      { label: 'Operator information', href: '/operator/' },
     ],
   },
 ]

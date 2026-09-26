@@ -86,7 +86,7 @@ export function getDirectory() {
       const k = c ? collectionOf(c) : null
       const href = c
         ? recordHref({ c: c.journal_code, k: k! })
-        : g.openalex_source_id ? `/source/?id=${g.openalex_source_id}` : `/source/?issn=${g.issn_l ?? g.issns[0]}`
+        : `/journal/?issn=${g.issn_l ?? g.issns[0]}`
       return {
         id: g.posi_id,
         t: g.title ?? c?.title ?? g.issns[0],

@@ -39,7 +39,7 @@ export default async function CategoryRankingPage(props: { params: Promise<{ cod
           {all
             ? <>All {fmt(allRows.length)} ranked journals across every category, {year} edition.</>
               : <>{fmt(allRows.length)} journals in <span className="font-mono">{c!.code}</span> {c!.name} ({c!.domainName}), ranked by POSI Citation Score, {year} edition. {c!.core > 0 ? `${c!.core} of them are Core Collection journals.` : 'No Core Collection journal is ranked in this category yet.'}</>}
-          {' '}<Link href="/pcs/" className="link">How PCS is calculated</Link>.
+          {' '}<Link href="/methodology/#pcs" className="link">How PCS is calculated</Link>.
         </p>
       </PageHeader>
       {allRows.length > CAP && (

@@ -9,6 +9,31 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'journal-profiles-and-global-index',
+    title: 'Every indexed journal now has a profile page',
+    date: '2026-09-27',
+    summary:
+      'POSI now indexes 158,242 journals from Crossref and OpenAlex, and each has a profile page with identifiers, output and citations per year, subject, topics and ranking.',
+    body: [
+      'The POSI journal index now covers every scholarly journal with an ISSN that is registered with Crossref or described by OpenAlex: 158,242 journals, merged on ISSN so that each appears once.',
+      'Each journal has a profile page showing its ISSNs, publisher, country, publications and citations per year, h-index, article processing charge, subject category, leading research topics and PCS-Q ranking, with links to its publications and its website.',
+      'Journal search now runs on the POSI index itself, and returns results by title or ISSN immediately.',
+      'The documentation has been consolidated into an editorial policy, a methodology page and a data sources page. Earlier addresses redirect to the new pages.',
+    ],
+  },
+  {
+    slug: 'subject-classification-0-3',
+    title: 'Subject classification update: a stricter confidence rule and a Multidisciplinary group',
+    date: '2026-09-27',
+    summary:
+      'Subject assignments now need a clearer lead before a journal is ranked within a category. General journals such as Science, Nature and The Lancet are listed as Multidisciplinary.',
+    body: [
+      'Subject categories are computed from each journal’s OpenAlex topics. Long-established general journals carry topics from many fields, and under the previous rule some of them were assigned to a single category with high confidence, which placed them in that category’s ranking.',
+      'Under PSC-CROSSWALK-0.3, a high-confidence assignment requires the leading category to hold at least 35% of the journal’s topic mass and at least 1.5 times the next category. Journals where no category or domain dominates are listed as Multidisciplinary. They are ranked across all journals but not within a subject category.',
+      'The 2026 ranking edition has been recalculated under the new rule. Overall ranks are unchanged; 2,963 journals now hold a category rank. The rule is described in the methodology.',
+    ],
+  },
+  {
     slug: 'posi-pre-operational-launch',
     title: 'POSI Begins Pre-Operational Launch on August 12, 2026',
     date: '2026-08-12',

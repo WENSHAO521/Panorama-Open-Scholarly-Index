@@ -5,7 +5,7 @@ import { CertificationApply } from '@/components/CertificationApply'
 
 export const metadata = {
   title: 'Apply for certification',
-  description: 'Every journal with DOIs at Crossref or a record in OpenAlex is indexed by POSI. Journals apply for certification to enter the Core Collection, which is ranked and can display POSI badges.',
+  description: 'Every journal with DOIs at Crossref or a record in OpenAlex is indexed by POSI. Journals apply for certification to enter the Core Collection.',
 }
 
 const PQF = [
@@ -67,9 +67,8 @@ export default function CertificationPage() {
           <ul className="mt-4 space-y-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>
             <li>Everything in Indexed</li>
             <li>Curated POSI record with published evidence and PQF report</li>
-            <li>Lifecycle rating (AJR) within a subject peer cohort</li>
             <li>Marked as Core in rankings, publications and certificates</li>
-            <li>POSI badges and certificate of certification for the journal</li>
+            <li>Certificate of certification for the journal</li>
           </ul>
         </div>
       </section>
@@ -86,7 +85,7 @@ export default function CertificationPage() {
           </ul>
         </section>
         <section aria-labelledby="pqf">
-          <SectionTitle id="pqf" aside={<Link href="/pqf/" className="link">Full method</Link>}>What is evaluated</SectionTitle>
+          <SectionTitle id="pqf" aside={<Link href="/editorial-policy/#certification" className="link">Full method</Link>}>What is evaluated</SectionTitle>
           <div className="panel overflow-hidden">
             <table className="dtable">
               <thead><tr><th>PQF factor</th><th className="text-right">Points</th></tr></thead>

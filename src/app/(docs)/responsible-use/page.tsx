@@ -1,141 +1,65 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
+import { PageHeader } from '@/components/db'
 
-export const metadata: Metadata = {
-  title: 'Responsible Use Notice',
-  description: 'How POSI data, PQF scores, and PCI/PCS citation indicators should and should not be used. POSI is an open indexing and transparency-assessment platform, not a substitute for Web of Science, Scopus, or DOAJ.',
+export const metadata = {
+  title: 'Responsible use',
+  description: 'How POSI journal rankings, certification and data should and should not be used.',
 }
-
-const PERMITTED = [
-  { use: 'Journal metadata lookup and verification', detail: 'Use POSI to look up ISSN, publisher, DOI registration status, and OA license for any listed journal.' },
-  { use: 'Metadata quality benchmarking', detail: 'Use MQS to identify gaps in DOI, ORCID, reference lists, and license metadata for improvement purposes.' },
-  { use: 'Technical discoverability assessment', detail: 'Use IRS to identify OAI-PMH, sitemap, or Schema.org gaps that prevent aggregator indexing.' },
-  { use: 'Policy transparency review', detail: 'Use the Policy Coverage Estimate and Evidence Registry to identify which journals likely have publicly stated policies on peer review, APC, retraction, and ethics - as a starting point for manual verification, not a substitute for it.' },
-  { use: 'Open citation infrastructure check', detail: 'Use CVI to check whether a journal participates in open citation standards (I4OC, Crossref deposit, OpenAlex matching).' },
-  { use: 'Research on journal transparency', detail: 'POSI data may be used under CC BY 4.0 for academic research into journal metadata quality and policy transparency.' },
-]
-
-const PROHIBITED = [
-  { use: 'Researcher evaluation or hiring decisions', detail: 'PQF scores indicate journal metadata infrastructure, not research quality. Never use PQF to evaluate individual researchers, assign publication points, or make hiring decisions.' },
-  { use: 'Promotion or tenure criteria', detail: 'PQF is not an accreditation or prestige metric. It must not be used as a proxy for journal standing in academic evaluation contexts.' },
-  { use: 'Funding allocation', detail: 'PQF scores must not be used as criteria for awarding grants, fellowships, or research funding.' },
-  { use: 'Institutional ranking', detail: 'POSI does not rank institutions. Using POSI journal lists to rank universities, departments, or research groups is not an intended or supported use.' },
-  { use: 'Replacement for DOAJ, Web of Science, or Scopus', detail: 'POSI is not an indexing service. A high PQF score does not mean a journal is indexed by Web of Science, Scopus, or DOAJ. Check those services directly.' },
-  { use: 'Endorsement of scholarly quality', detail: 'PQF assesses transparency and metadata readiness, not peer review rigour, editorial quality, or academic prestige. Do not interpret PQF as an endorsement of article-level quality.' },
-]
 
 export default function ResponsibleUsePage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
-      <nav className="text-xs flex items-center gap-1.5" style={{ color: 'var(--posi-muted)' }}>
-        <Link href="/" className="hover:text-gray-700">Home</Link>
-        <span>/</span>
-        <span style={{ color: 'var(--posi-text)' }}>Responsible Use Notice</span>
-      </nav>
-
-      <div className="border-l-4 pl-5" style={{ borderColor: 'var(--posi-accent)' }}>
-        <h1 className="text-2xl font-bold leading-tight" style={{ color: 'var(--posi-text)' }}>Responsible Use Notice</h1>
-        <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
-          POSI is an open journal indexing and transparency-assessment platform that also publishes
-          open citation indicators (PCI/PCS) - see{' '}
-          <Link href="/what-posi-is" className="underline">What POSI Is →</Link> for the full positioning.
-          Understanding what POSI is - and is not - is essential for responsible use of its data.
+    <div className="pb-12">
+      <PageHeader title="Responsible use" crumbs={[{ label: 'POSI', href: '/' }, { label: 'About', href: '/about/' }, { label: 'Responsible use' }]}>
+        <p className="max-w-[68ch]">
+          POSI follows the principles of the San Francisco Declaration on Research Assessment (DORA) and the Leiden
+          Manifesto: journal-level indicators describe journals, and should not stand in for judgements about
+          individual articles or researchers.
         </p>
+      </PageHeader>
+
+      <div className="doc">
+        <section aria-labelledby="appropriate">
+          <h2 id="appropriate">Appropriate uses</h2>
+          <ul>
+            <li>Finding and identifying journals, and checking their ISSNs, publisher, open access status and registry records.</li>
+            <li>Comparing journals within a subject category by citation performance, using the category rank, percentile and quartile.</li>
+            <li>Confirming that a journal is indexed, or certified for the Core Collection.</li>
+            <li>Documenting that a publication appears in an indexed journal, with a certificate of indexing.</li>
+            <li>Research on scholarly publishing, using the data under CC BY 4.0.</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="inappropriate">
+          <h2 id="inappropriate">Uses to avoid</h2>
+          <ul>
+            <li>Judging an individual article or researcher by the rank of the journal it appeared in.</li>
+            <li>Using POSI rankings as the only basis for hiring, promotion, tenure or funding decisions.</li>
+            <li>Comparing quartiles or scores across subject categories, which differ in citation practice.</li>
+            <li>Treating PCS-Q quartiles as equivalent to quartiles published by other services.</li>
+            <li>Treating indexing as an endorsement of every article a journal publishes.</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="limits">
+          <h2 id="limits">Known limitations</h2>
+          <ul>
+            <li>Citation counts come from Crossref and depend on what publishers deposit, so coverage varies between publishers and fields.</li>
+            <li>Subject classification is computed from OpenAlex topics. Journals without a clear subject are not ranked by category.</li>
+            <li>New journals need four complete years of publications before their citation score is comparable.</li>
+            <li>Panorama Scholarly Group publishes both POSI and some of the journals it covers. See the <Link href="/coi/">conflict of interest disclosure</Link>.</li>
+          </ul>
+          <p>How each figure is produced is set out in the <Link href="/methodology/">methodology</Link>.</p>
+        </section>
+
+        <section aria-labelledby="cite">
+          <h2 id="cite">Citing POSI</h2>
+          <p className="formula">Panorama Open Scholarly Index (POSI). Panorama Scholarly Group Ltd. https://posi.panorama-sg.com. Accessed [date].</p>
+          <p>
+            When reusing data, please also credit the original sources shown on each record, such as Crossref and
+            OpenAlex. Licensing is described under <Link href="/docs/data/#license">data sources and access</Link>.
+          </p>
+        </section>
       </div>
-
-      {/* What POSI is */}
-      <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is</h2>
-        <ul className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-          {[
-            'An open metadata platform aggregating journal records from Crossref, OpenAlex, OpenCitations, and DOAJ sources.',
-            'A transparency assessment tool measuring publicly verifiable journal policies and metadata quality.',
-            'A tool for editors and publishers to identify gaps in metadata completeness and technical discoverability.',
-            'A research resource for studying open access journal infrastructure and policy transparency.',
-            'A publisher of open citation indicators (PCI/PCS), clearly distinguished from Journal Impact Factor or CiteScore.',
-            'A conflict-of-interest-disclosed platform operated by Panorama Scholarly Group.',
-          ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: 'var(--verified)' }}>✓</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* What POSI is not */}
-      <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>What POSI Is Not</h2>
-        <ul className="space-y-2 text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
-          {[
-            'An indexing service. Being listed in POSI does not mean a journal is indexed by Web of Science, Scopus, DOAJ, or any other database.',
-            'A peer review quality evaluator. PQF does not assess the rigour or independence of peer review conducted at a journal.',
-            'A citation impact metric. PQF and CVI do not measure how often a journal is cited.',
-            'An official accreditation body. POSI has no authority over journal recognition, institutional policy, or academic evaluation systems.',
-            'An independent third-party evaluator for PSG journals. POSI is operated by Panorama Scholarly Group, which also publishes journals listed in POSI.',
-            'A replacement for librarian judgment. POSI data should supplement, not replace, professional library and information science evaluation.',
-          ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="shrink-0 font-mono text-[10px] mt-0.5" style={{ color: 'var(--posi-danger)' }}>✗</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Permitted uses */}
-      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--posi-bg)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--posi-muted)' }}>Permitted Uses</h2>
-        </div>
-        <div className="divide-y" style={{ divideColor: 'var(--posi-border-light)' } as React.CSSProperties}>
-          {PERMITTED.map((item, i) => (
-            <div key={i} className="px-5 py-3">
-              <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.use}</p>
-              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Prohibited uses */}
-      <section className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--posi-border-light)', background: 'var(--rejected-soft)' }}>
-          <h2 className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: '#9B1C1C' }}>Prohibited Uses</h2>
-        </div>
-        <div className="divide-y" style={{ divideColor: 'var(--posi-border-light)' } as React.CSSProperties}>
-          {PROHIBITED.map((item, i) => (
-            <div key={i} className="px-5 py-3">
-              <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--posi-text)' }}>{item.use}</p>
-              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Citation */}
-      <section className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
-        <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--posi-text)' }}>Citing POSI Data</h2>
-        <p className="text-xs leading-relaxed mb-3 text-justify" style={{ color: 'var(--posi-muted)' }}>
-          POSI metadata is available under{' '}
-          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--posi-accent)' }}>
-            CC BY 4.0
-          </a>.
-          When citing POSI data, please attribute the original data sources (Crossref, OpenAlex, DOAJ) as shown in each record's provenance fields.
-        </p>
-        <div className="p-3 font-mono text-[11px] leading-relaxed text-justify" style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)' }}>
-          Panorama Open Scholarly Index (POSI). "Journal Record: [Title]." posi.panorama-sg.com.
-          Accessed [Date]. Data sourced from Crossref, OpenAlex, and DOAJ under CC0 1.0.
-        </div>
-      </section>
-
-      <div className="flex flex-wrap gap-5 text-xs">
-        <Link href="/coi" style={{ color: 'var(--posi-accent)' }} className="hover:underline">Conflict of Interest Disclosure →</Link>
-        <Link href="/about" style={{ color: 'var(--posi-accent)' }} className="hover:underline">About POSI →</Link>
-        <Link href="/pqf" style={{ color: 'var(--posi-accent)' }} className="hover:underline">PQF Methodology →</Link>
-      </div>
-
     </div>
   )
 }

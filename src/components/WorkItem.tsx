@@ -47,7 +47,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
 
       <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
         {src ? <>
-          <Link href={posi ? recordHref(posi) : `/source/?id=${src.id.replace('https://openalex.org/', '')}`} className="font-medium hover:underline" style={{ color: 'var(--ink-2)' }}>{src.display_name}</Link>
+          <Link href={posi ? recordHref(posi) : `/journal/?id=${src.id.replace('https://openalex.org/', '')}`} className="font-medium hover:underline" style={{ color: 'var(--ink-2)' }}>{src.display_name}</Link>
           {src.host_organization_name && <>, {src.host_organization_name}</>}
         </> : 'No source recorded'}
         {vol && <>. {vol}</>}
