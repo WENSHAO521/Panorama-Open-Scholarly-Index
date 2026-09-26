@@ -41,7 +41,7 @@ export default async function CategoryRankingPage(props: { params: Promise<{ cod
       </PageHeader>
       <RankingTable rows={rows} overall={all} fileName={`posi-ranking-${code}-${year}.csv`} />
       <p className="mt-6 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-        {RANKING_VERSION}. Item counts in amber are below 20 and should be read as a limited sample.
+        {RANKING_VERSION}. PCS determines the PCS-Q ranking only; it does not determine Citation Rank, Citation Percentile or Citation Quartile. Item counts in amber are below 20 and should be read as a limited sample.
         {!all && getCategoryUnranked(code).length > 0 && ` ${getCategoryUnranked(code).length} further journals are assigned to this category with low subject confidence and are not ranked in it.`}
       </p>
     </div>

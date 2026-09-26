@@ -196,9 +196,10 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 {ranking.rank !== null
                   ? <>Ranked <span className="font-mono">{ranking.rank}/{ranking.n}</span> in{' '}
                       <Link href={`/rankings/${ranking.cat}/`} className="link">{ranking.catName ?? ranking.cat}</Link>
-                      {' '}(<span className="font-semibold">{ranking.q}</span>, percentile {ranking.pct?.toFixed(1)}), and{' '}
+                      {' '}(<span className="font-semibold">PCS-{ranking.q}</span>, percentile {ranking.pct?.toFixed(1)}), and{' '}
                       <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall, by PCS.</>
-                  : <>Ranked <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall by PCS; no subject category assigned.</>}
+                  : <>Ranked <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall by PCS; no category rank.</>}
+                <span className="block mt-1 text-[12px]" style={{ color: 'var(--muted)' }}>PCS determines the PCS-Q ranking only; it does not determine Citation Rank, Citation Percentile or Citation Quartile.</span>
               </p>
             )}
             {oa && (

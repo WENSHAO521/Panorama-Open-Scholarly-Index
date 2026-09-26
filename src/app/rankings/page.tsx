@@ -44,6 +44,8 @@ export default function RankingsPage() {
         ))}
       </dl>
 
+      <p className="-mt-8 mb-12 text-[12.5px]" style={{ color: 'var(--muted)' }}>PCS determines the PCS-Q ranking only; it does not determine Citation Rank, Citation Percentile or Citation Quartile.</p>
+
       <section aria-labelledby="cats" className="mb-14">
         <SectionTitle id="cats" aside={`${RANKING_VERSION}, PSC v1.0`}>Subject categories</SectionTitle>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
