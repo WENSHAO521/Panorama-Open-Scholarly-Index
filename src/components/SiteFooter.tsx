@@ -16,11 +16,6 @@ export function SiteFooter() {
           <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
             POSI is open source. Its data, methods and software are published under open licences.
           </p>
-          <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
-            Panorama Scholarly Group is a{' '}
-            <a href="https://www.crossref.org/" target="_blank" rel="noopener noreferrer" className="underline">Crossref</a>{' '}
-            member (member ID 53186, DOI prefix 10.63802).
-          </p>
         </div>
         {FOOTER_NAV.map(col => (
           <nav key={col.title} aria-label={col.title}>
