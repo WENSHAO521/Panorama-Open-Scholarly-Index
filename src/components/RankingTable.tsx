@@ -17,7 +17,7 @@ export function QuartileBadge({ q }: { q: Quartile | null }) {
     Q3: { background: 'var(--surface-2)', color: 'var(--ink-2)', borderColor: 'var(--line)' },
     Q4: { background: 'transparent', color: 'var(--muted)', borderColor: 'var(--line)' },
   }[q]
-  return <span className="chip font-semibold" style={tone}>{q}</span>
+  return <span className="chip font-semibold" style={tone} title="PCS quartile: RANK-1.0 applied to PCS">PCS-{q}</span>
 }
 
 function journalHref(r: RankedJournal) {
@@ -77,7 +77,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
         <label htmlFor="rq" className="sr-only">Quartile</label>
         <select id="rq" value={quart} onChange={e => setQuart(e.target.value as Quartile | 'all')} className="input h-9 w-auto pr-8 text-[13px]">
           <option value="all">All quartiles</option>
-          {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(x => <option key={x} value={x}>{x}</option>)}
+          {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(x => <option key={x} value={x}>PCS-{x}</option>)}
         </select>
         <div className="relative flex-1 min-w-[200px]">
           <label htmlFor="rsearch" className="sr-only">Find a journal</label>
@@ -121,7 +121,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
                   </td>
                   <td className="text-right font-mono tnum">{r.pcs.toFixed(2)}</td>
                   <td className="text-right font-mono tnum" style={{ color: r.items < 20 ? 'var(--check)' : 'var(--muted)' }} title={r.items < 20 ? 'Limited sample: fewer than 20 eligible items' : undefined}>{fmt(r.items)}</td>
-                  <td className="text-right font-mono tnum">{(overall ? r.oPct : r.pct)?.toFixed(1)}</td>
+                  <td className="text-right font-mono tnum">{(overall ? r.oPct : r.pct)?.toFixed(1) ?? 'n/a'}</td>
                   <td><QuartileBadge q={overall ? r.oQ : r.q} /></td>
                   <td>
                     <span className="chip" style={r.core ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : undefined}>

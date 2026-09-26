@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getCategories, getCategoryRanking, getRankings, RANKING_VERSION } from '@/lib/rankings'
+import { getCategories, getCategoryRanking, getCategoryUnranked, getRankings, RANKING_VERSION } from '@/lib/rankings'
 import { PageHeader, fmt } from '@/components/db'
 import { RankingTable } from '@/components/RankingTable'
 
@@ -41,8 +41,8 @@ export default async function CategoryRankingPage(props: { params: Promise<{ cod
       </PageHeader>
       <RankingTable rows={rows} overall={all} fileName={`posi-ranking-${code}-${year}.csv`} />
       <p className="mt-6 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-        {RANKING_VERSION}. Item counts in amber are below 20 and should be read as a limited sample. Journals with a
-        low-confidence subject assignment are ranked in their best-match category and marked.
+        {RANKING_VERSION}. Item counts in amber are below 20 and should be read as a limited sample.
+        {!all && getCategoryUnranked(code).length > 0 && ` ${getCategoryUnranked(code).length} further journals are assigned to this category with low subject confidence and are not ranked in it.`}
       </p>
     </div>
   )

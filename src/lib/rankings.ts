@@ -1,19 +1,19 @@
 // POSI Open Journal Rankings.
 //
 // One ranking universe for every indexed journal that has a POSI Citation
-// Score (PCS), Core and non-Core alike, ranked within its PSC subject
-// category and overall. Conventions follow the established citation
-// databases so the numbers read the way researchers expect:
+// Score (PCS), Core and non-Core alike. The ranking algorithm is RANK-1.0
+// exactly as specified in posi-data/PJR-SPEC.md section 8 and implemented in
+// posi-engine/src/ranking.mjs, with PCS as the input score:
 //
-//   metric      PCS: citations in the current year to items published in the
-//               previous four years, per eligible item (Crossref). Same
-//               window shape as Scopus CiteScore; see /pcs/ for the spec.
-//   rank        descending by PCS; equal values share a rank (1, 2, 2, 4).
-//   percentile  (N - rank + 0.5) / N * 100, as in the JCR category percentile.
-//   quartile    Q1..Q4 by rank position: Q = ceil(4 * rank / N).
-//   eligibility at least MIN_ITEMS eligible items in the window. Smaller
-//               journals are listed as not ranked rather than given a rank
-//               that a handful of papers would decide.
+//   rank        descending by PCS; competition rank (1, 2, 2, 4)
+//   rank_mid    tied journals share the mid-rank of the positions they occupy
+//   percentile  100 * (N - rank_mid + 0.5) / N
+//   quartile    Q1 >= 75, Q2 >= 50, Q3 >= 25, else Q4, labelled PCS-Q1..4
+//   size        categories with fewer than 20 eligible journals get no
+//               quartile ("unavailable"), never a small-sample Q1
+//   subject     only high/verified PSC confidence enters a category ranking
+//               (posi-engine isRankEligiblePscConfidence)
+//   items       at least MIN_ITEMS eligible items in the PCS window
 //
 // Everything is computed at build time from committed data, so a published
 // rank can be reproduced from the repository at that commit.
@@ -26,7 +26,9 @@ import psc from './psc-v1.0.snapshot.json'
 import titles from './ranking-titles.json'
 
 export const MIN_ITEMS = 5
-export const RANKING_VERSION = 'POSI-OJR-1.0'
+export const MIN_CATEGORY_SIZE = 20
+export const RANKING_VERSION = 'RANK-1.0 on PCS'
+export const RANK_ELIGIBLE_CONFIDENCE = new Set(['high', 'verified'])
 
 export type Quartile = 'Q1' | 'Q2' | 'Q3' | 'Q4'
 
@@ -52,8 +54,8 @@ export interface RankedJournal {
   /** across all categories */
   oRank: number
   oN: number
-  oPct: number
-  oQ: Quartile
+  oPct: number | null
+  oQ: Quartile | null
 }
 
 export interface NotRanked {
@@ -78,6 +80,8 @@ export interface Category {
 
 interface Base { id: string; code: string | null; title: string; publisher: string | null; issn: string[]; cat: string | null; lowConfidence: boolean; core: boolean }
 
+const eligibleConfidence = (c: string | null | undefined) => RANK_ELIGIBLE_CONFIDENCE.has(c ?? '')
+
 const PSC = psc.categories as { code: string; name: string; level: number; parent: string | null }[]
 const PSC_NAME = Object.fromEntries(PSC.map(c => [c.code, c.name]))
 
@@ -89,27 +93,35 @@ function universe(): Base[] {
     out.set(j.posi_id, {
       id: j.posi_id, code: j.journal_code, title: j.title, publisher: j.publisher || null,
       issn: [j.issn_online, j.issn_print].filter((x, n, a): x is string => !!x && a.indexOf(x) === n),
-      cat: j.psc_category ?? null, lowConfidence: j.psc_confidence === 'low', core: coreIds.has(j.posi_id),
+      cat: j.psc_category ?? null, lowConfidence: !eligibleConfidence(j.psc_confidence), core: coreIds.has(j.posi_id),
     })
   }
   for (const t of (titles as { journals: { id: string; t: string; p: string | null; i: string[]; s: string | null; sc: string | null }[] }).journals) {
     if (out.has(t.id)) continue
-    out.set(t.id, { id: t.id, code: null, title: t.t, publisher: t.p, issn: t.i, cat: t.s, lowConfidence: t.sc === 'low', core: false })
+    out.set(t.id, { id: t.id, code: null, title: t.t, publisher: t.p, issn: t.i, cat: t.s, lowConfidence: !eligibleConfidence(t.sc), core: false })
   }
   return [...out.values()]
 }
 
-function rankBlock<T extends { pcs: number }>(rows: T[]): (T & { rank: number; n: number; pct: number; q: Quartile })[] {
+/** RANK-1.0 (PJR-SPEC section 8): mid-rank ties, percentile from mid-rank, quartile from percentile. */
+function rankBlock<T extends { pcs: number }>(rows: T[], minSize = MIN_CATEGORY_SIZE): (T & { rank: number; n: number; pct: number | null; q: Quartile | null })[] {
   const sorted = [...rows].sort((a, b) => b.pcs - a.pcs)
   const n = sorted.length
-  let prev: number | null = null
-  let prevRank = 0
-  return sorted.map((r, i) => {
-    const rank = prev !== null && r.pcs === prev ? prevRank : i + 1
-    prev = r.pcs; prevRank = rank
-    const q = `Q${Math.min(4, Math.max(1, Math.ceil((4 * rank) / n)))}` as Quartile
-    return { ...r, rank, n, pct: Math.round(((n - rank + 0.5) / n) * 1000) / 10, q }
-  })
+  const out: (T & { rank: number; n: number; pct: number | null; q: Quartile | null })[] = []
+  let position = 1
+  for (let i = 0; i < sorted.length;) {
+    let j = i
+    while (j < sorted.length && sorted[j].pcs === sorted[i].pcs) j++
+    const mid = position + (j - i - 1) / 2
+    const pct = 100 * (n - mid + 0.5) / n
+    const q: Quartile = pct >= 75 ? 'Q1' : pct >= 50 ? 'Q2' : pct >= 25 ? 'Q3' : 'Q4'
+    for (const r of sorted.slice(i, j)) {
+      out.push({ ...r, rank: position, n, pct: n >= minSize ? Math.round(pct * 100) / 100 : null, q: n >= minSize ? q : null })
+    }
+    position += j - i
+    i = j
+  }
+  return out
 }
 
 let cache: { ranked: RankedJournal[]; notRanked: NotRanked[]; year: number } | null = null
@@ -138,7 +150,7 @@ export function getRankings() {
 
   const overall = new Map(rankBlock(eligible).map(r => [r.id, r]))
   const byCat = new Map<string, typeof eligible>()
-  for (const r of eligible) if (r.cat) byCat.set(r.cat, [...(byCat.get(r.cat) ?? []), r])
+  for (const r of eligible) if (r.cat && !r.lowConfidence) byCat.set(r.cat, [...(byCat.get(r.cat) ?? []), r])
   const inCat = new Map<string, ReturnType<typeof rankBlock<(typeof eligible)[number]>>[number]>()
   for (const rows of byCat.values()) for (const r of rankBlock(rows)) inCat.set(r.id, r)
 
@@ -160,7 +172,7 @@ export function getRankings() {
 export function getCategories(): Category[] {
   const { ranked } = getRankings()
   return PSC.filter(c => c.level === 2).map(c => {
-    const rows = ranked.filter(r => r.cat === c.code)
+    const rows = ranked.filter(r => r.cat === c.code && r.rank !== null)
     return {
       code: c.code, name: c.name, domain: c.parent!, domainName: PSC_NAME[c.parent!] ?? c.parent!,
       ranked: rows.length, core: rows.filter(r => r.core).length,
@@ -169,7 +181,12 @@ export function getCategories(): Category[] {
 }
 
 export function getCategoryRanking(code: string): RankedJournal[] {
-  return getRankings().ranked.filter(r => r.cat === code).sort((a, b) => a.rank! - b.rank! || a.title.localeCompare(b.title))
+  return getRankings().ranked.filter(r => r.cat === code && r.rank !== null).sort((a, b) => a.rank! - b.rank! || a.title.localeCompare(b.title))
+}
+
+/** Journals in a category that are not ranked in it because their subject assignment is not high-confidence. */
+export function getCategoryUnranked(code: string): RankedJournal[] {
+  return getRankings().ranked.filter(r => r.cat === code && r.rank === null)
 }
 
 export function getJournalRanking(posiId: string | null | undefined): RankedJournal | null {

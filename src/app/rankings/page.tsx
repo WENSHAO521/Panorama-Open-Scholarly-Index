@@ -32,8 +32,8 @@ export default function RankingsPage() {
       <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[6px] overflow-hidden mb-12" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Metric', 'PCS', 'Citations in the year to items from the previous 4 years, per item. Source: Crossref.'],
-          ['Quartile', 'Q1 to Q4', 'By rank position in the category: Q = ceil(4 x rank / N).'],
-          ['Percentile', '(N - rank + 0.5) / N', 'The category percentile convention used by established citation reports.'],
+          ['Quartile', 'PCS-Q1 to Q4', 'From the percentile: Q1 at 75 and above. Categories under 20 journals get none.'],
+          ['Percentile', '100(N - mid + 0.5)/N', 'Tied journals share the mid-rank of their positions (RANK-1.0).'],
           ['Eligibility', `${MIN_ITEMS}+ items`, `Journals with fewer eligible items are listed but not ranked (${fmt(notRanked.length)} this edition).`],
         ].map(([k, v, note]) => (
           <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
