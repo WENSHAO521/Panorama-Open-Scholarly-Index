@@ -80,6 +80,7 @@ function compileDataFiles() {
       '--moduleResolution', 'node',
       '--skipLibCheck',
       '--esModuleInterop',
+      '--resolveJsonModule',
     ],
     { stdio: 'inherit' }
   )

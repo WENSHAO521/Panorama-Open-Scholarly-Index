@@ -14,10 +14,8 @@
  *   node scripts/enrich-missing-fields.mjs --write    # apply changes
  */
 
-import { readFileSync, writeFileSync } from 'fs'
-import { resolve } from 'path'
+import { loadDiscovered, saveDiscovered, DISCOVERED_FILE } from './lib/discovered-store.mjs'
 
-const FILE  = resolve('src/lib/discovered-journals.ts')
 const WRITE = process.argv.includes('--write')
 const OA    = 'https://api.openalex.org'
 const UA    = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
@@ -72,25 +70,18 @@ async function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 
 // ── Parse which ISSNs need enrichment ────────────────────────────────────────
 
-function parseNeedingEnrichment(src) {
+function parseNeedingEnrichment(records) {
   const issnSet = new Set()
   const needFreq = new Set()
   const needCountry = new Set()
-
-  for (const block of src.split(/\n(?=\n  \{)/)) {
-    const eissn = (block.match(/issn_online:\s*["']([^"']+)["']/) ?? [])[1] ?? null
-    const pissn = (block.match(/issn_print:\s*["']([^"']+)["']/) ?? [])[1] ?? null
-    const issn = eissn ?? pissn
+  for (const r of records) {
+    const issn = r.issn_online ?? r.issn_print
     if (!issn) continue
-
-    if (/frequency:\s*""/.test(block))                                   needFreq.add(issn)
-    if (/registration_country:\s*null/.test(block) && /country:\s*""/.test(block)) needCountry.add(issn)
+    if (r.frequency === '') needFreq.add(issn)
+    if (r.registration_country == null && r.country === '') needCountry.add(issn)
   }
-
-  // All ISSNs that need at least one field
   for (const i of needFreq)    issnSet.add(i)
   for (const i of needCountry) issnSet.add(i)
-
   return { allIssns: [...issnSet], needFreq, needCountry }
 }
 
@@ -131,58 +122,46 @@ async function fetchOaMap(issns) {
 
 // ── Apply enrichment ──────────────────────────────────────────────────────────
 
-function applyEnrichment(src, oaMap, needFreq, needCountry) {
+function applyEnrichment(records, oaMap, needFreq, needCountry) {
   let freqPatched = 0, countryPatched = 0
-
-  const newBlocks = src.split(/\n(?=\n  \{)/).map(block => {
-    const eissn = (block.match(/issn_online:\s*["']([^"']+)["']/) ?? [])[1] ?? null
-    const pissn = (block.match(/issn_print:\s*["']([^"']+)["']/) ?? [])[1] ?? null
-    const issn  = eissn ?? pissn
-    if (!issn) return block
-
-    const entry = oaMap.get(eissn) ?? oaMap.get(pissn)
-    if (!entry) return block
-
-    let updated = block
-
-    if (needFreq.has(issn) && entry.frequency) {
-      updated = updated.replace(/frequency:\s*""/, `frequency: "${entry.frequency}"`)
-      if (updated !== block) freqPatched++
+  for (const r of records) {
+    const issn = r.issn_online ?? r.issn_print
+    if (!issn) continue
+    const entry = oaMap.get(r.issn_online) ?? oaMap.get(r.issn_print)
+    if (!entry) continue
+    if (needFreq.has(issn) && entry.frequency && r.frequency === '') {
+      r.frequency = entry.frequency
+      freqPatched++
     }
-
     if (needCountry.has(issn) && entry.country) {
-      const before = updated
-      updated = updated
-        .replace(/country:\s*""/, `country: "${entry.country}"`)
-        .replace(/registration_country:\s*null/, `registration_country: "${entry.country}"`)
-      if (updated !== before) countryPatched++
+      let changed = false
+      if (r.country === '') { r.country = entry.country; changed = true }
+      if (r.registration_country == null) { r.registration_country = entry.country; changed = true }
+      if (changed) countryPatched++
     }
-
-    return updated
-  })
-
-  return { result: newBlocks.join('\n'), freqPatched, countryPatched }
+  }
+  return { freqPatched, countryPatched }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const src = readFileSync(FILE, 'utf-8')
-  const { allIssns, needFreq, needCountry } = parseNeedingEnrichment(src)
+  const records = loadDiscovered()
+  const { allIssns, needFreq, needCountry } = parseNeedingEnrichment(records)
 
   console.log(`Missing frequency:  ${needFreq.size}`)
   console.log(`Missing country:    ${needCountry.size}`)
   console.log(`Unique ISSNs to query: ${allIssns.length}\n`)
 
   const oaMap = await fetchOaMap(allIssns)
-  const { result, freqPatched, countryPatched } = applyEnrichment(src, oaMap, needFreq, needCountry)
+  const { freqPatched, countryPatched } = applyEnrichment(records, oaMap, needFreq, needCountry)
 
   console.log(`\nFrequency patched:  ${freqPatched} / ${needFreq.size} (${Math.round(freqPatched/needFreq.size*100)}%)`)
   console.log(`Country patched:    ${countryPatched} / ${needCountry.size} (${Math.round(countryPatched/needCountry.size*100)}%)`)
 
   if (WRITE) {
-    writeFileSync(FILE, result, 'utf-8')
-    console.log(`\nWritten to ${FILE}`)
+    saveDiscovered(records)
+    console.log(`\nWritten to ${DISCOVERED_FILE}`)
   } else {
     console.log('\nDry run — pass --write to apply.')
   }

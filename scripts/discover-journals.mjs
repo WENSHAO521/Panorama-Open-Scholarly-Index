@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * discover-journals.mjs
  *
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
-const DATA_FILE = join(__dir, '../src/lib/discovered-journals.ts')
+import { loadDiscovered, saveDiscovered, knownIssns as knownIssnsOf, autoPqf, DISCOVERED_FILE } from './lib/discovered-store.mjs'
 
 const UA = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
 
@@ -257,7 +257,7 @@ function buildFromDoaj(bib, item) {
     doaj_status: 'listed',   // DOAJ search only returns listed journals
     subjects: subjects.length ? subjects : null,
     article_count: 0,
-    _scores: scores,         // used by formatEntry; stripped before writing
+    _scores: scores,         // used by buildRecord; not stored as-is
   }
 }
 
@@ -266,53 +266,43 @@ function buildFromDoaj(bib, item) {
 const TODAY = new Date().toISOString().slice(0, 10)
 
 /**
- * Format a journal object into a TypeScript object literal.
- * All required Journal fields get safe non-null defaults.
+ * Build a Discovered journal record (the shape stored in
+ * src/lib/discovered-journals.json). All required Journal fields get safe
+ * non-null defaults.
  */
-function formatEntry(j) {
+function buildRecord(j) {
   const code = j.code ?? slugify(j.title)
-  const id   = `j-disc-${code}`
-  // Required string fields — use safe defaults for unknown values
-  const country       = j.country       ?? ''
-  const language      = j.language      ?? 'English'
-  const frequency     = j.frequency     ?? ''
-  const license       = j.license       ?? 'Open Access'
-  const peerReview    = j.peer_review_type ?? 'Peer review'
-  const websiteUrl    = j.website_url   ?? ''
-  const publisher     = j.publisher     ?? ''
-
-  const regCountry = j.registration_country ?? null
-
-  return `  {
-    id: '${id}',
-    journal_code: '${code}',
-    title: ${JSON.stringify(j.title ?? '')},
-    short_title: ${JSON.stringify(j.short_title ?? j.title?.split(':')[0]?.trim() ?? '')},
-    issn_print: ${j.issn_print ? JSON.stringify(j.issn_print) : 'null'},
-    issn_online: ${j.issn_online ? JSON.stringify(j.issn_online) : 'null'},
-    publisher: ${JSON.stringify(publisher)},
-    country: ${JSON.stringify(country)},
-    language: ${JSON.stringify(language)},
-    frequency: ${JSON.stringify(frequency)},
+  const record = {
+    id: `j-disc-${code}`,
+    journal_code: code,
+    title: j.title ?? '',
+    short_title: j.short_title ?? j.title?.split(':')[0]?.trim() ?? '',
+    issn_print: j.issn_print ?? null,
+    issn_online: j.issn_online ?? null,
+    publisher: j.publisher ?? '',
+    country: j.country ?? '',
+    language: j.language ?? 'English',
+    frequency: j.frequency ?? '',
     open_access: true,
-    license: ${JSON.stringify(license)},
-    peer_review_type: ${JSON.stringify(peerReview)},
-    website_url: ${JSON.stringify(websiteUrl)},
+    license: j.license ?? 'Open Access',
+    peer_review_type: j.peer_review_type ?? 'Peer review',
+    website_url: j.website_url ?? '',
     cover_image_url: null,
-    oai_base_url: ${j.oai_base_url ? JSON.stringify(j.oai_base_url) : 'null'},
-    registration_country: ${regCountry ? JSON.stringify(regCountry) : 'null'},
-    doaj_status: ${j.doaj_status ? JSON.stringify(j.doaj_status) : "'not_listed'"},
+    oai_base_url: j.oai_base_url ?? null,
+    registration_country: j.registration_country ?? null,
+    doaj_status: j.doaj_status ?? 'not_listed',
     openalex_source_id: null,
     metadata_quality_score: 30,
     transparency_score: 30,
     indexing_readiness: 'D',
     pqf: null,
-    ${j._scores ? `auto_pqf: autopqf(${j._scores.jtf}, ${j._scores.mqf}, ${j._scores.egf}, ${j._scores.tdf}, ${j._scores.cvf}, ${j._scores.rif}),` : ''}
-    subjects: ${j.subjects?.length ? JSON.stringify(j.subjects) : 'null'},
-    article_count: ${j.article_count ?? 0},
-    created_at: '${TODAY}T00:00:00Z',
-    updated_at: '${TODAY}T00:00:00Z',
-  },`
+  }
+  if (j._scores) record.auto_pqf = autoPqf(j._scores)
+  record.subjects = j.subjects?.length ? j.subjects : null
+  record.article_count = j.article_count ?? 0
+  record.created_at = `${TODAY}T00:00:00Z`
+  record.updated_at = `${TODAY}T00:00:00Z`
+  return record
 }
 
 // ── MODE 1: OJS sitewide OAI-PMH ───────────────────────────────────────────
@@ -695,15 +685,11 @@ async function discoverOpenAlexDoaj() {
   return journals
 }
 
-// ── Write mode: dedup + patch data.ts ─────────────────────────────────────
+// ── Write mode: dedup + append to discovered-journals.json ────────────────
 
-function writeToDataTs(journals) {
-  const dataSrc = readFileSync(DATA_FILE, 'utf8')
-
-  // Extract all known ISSNs already in data.ts (both single and double quoted)
-  const knownIssns = new Set(
-    [...dataSrc.matchAll(/issn_(?:print|online):\s*["']([^"']+)["']/g)].map(m => m[1])
-  )
+function writeDiscovered(journals) {
+  const records = loadDiscovered()
+  const knownIssns = knownIssnsOf(records)
 
   // Filter out duplicates (match on either ISSN)
   let newJournals = journals.filter(j => {
@@ -713,11 +699,11 @@ function writeToDataTs(journals) {
   })
 
   if (newJournals.length === 0) {
-    console.error('\n✓  No new journals (all already in data.ts by ISSN).')
+    console.error('\n✓  No new journals (all already recorded by ISSN).')
     return
   }
 
-  // Deduplicate within discovered list (same online or print ISSN = same journal)
+  // Deduplicate within the discovered list (same online or print ISSN = same journal)
   const seenIssn = new Set()
   const deduped = newJournals.filter(j => {
     const key = j.issn_online ?? j.issn_print ?? j.code
@@ -728,25 +714,14 @@ function writeToDataTs(journals) {
     return true
   })
   const removed = newJournals.length - deduped.length
-  const newJournalsFinal = deduped
-  newJournals = newJournalsFinal
+  newJournals = deduped
 
   console.error(`\nDeduplication: ${journals.length} discovered → ${newJournals.length} new (${journals.length - newJournals.length + removed} already known or duplicate)\n`)
 
-  const entries = newJournals.map(j => formatEntry(j)).join('\n\n')
-
-  // Insert before the // END:DISCOVERED_JOURNALS marker
-  const MARKER = '// END:DISCOVERED_JOURNALS'
-  if (!dataSrc.includes(MARKER)) {
-    console.error('❌  Could not find // END:DISCOVERED_JOURNALS marker in data.ts')
-    process.exit(1)
-  }
-
-  const updated = dataSrc.replace(MARKER, `${entries}\n${MARKER}`)
-  writeFileSync(DATA_FILE, updated, 'utf8')
-  console.error(`✓  Wrote ${newJournals.length} new journal(s) to DISCOVERED_JOURNALS in data.ts`)
+  saveDiscovered([...records, ...newJournals.map(buildRecord)])
+  console.error(`✓  Appended ${newJournals.length} new journal(s) to ${DISCOVERED_FILE}`)
   for (const j of newJournals) {
-    console.error(`   + ${j.code.padEnd(24)} ${j.issn_online ?? j.issn_print ?? ''}  ${j.title?.slice(0, 44)}`)
+    console.error(`   + ${(j.code ?? '').padEnd(24)} ${j.issn_online ?? j.issn_print ?? ''}  ${j.title?.slice(0, 44)}`)
   }
 }
 
@@ -803,16 +778,10 @@ if (journals.length === 0) {
 console.error(`\n✓  Discovered ${journals.length} journals.`)
 
 if (WRITE_MODE) {
-  writeToDataTs(journals)
+  writeDiscovered(journals)
 } else {
   // Print to stdout for manual review / paste
   console.error('─'.repeat(60))
-  console.log(`// ── Discovered ${journals.length} journals — paste into data.ts ──`)
-  console.log(`// Source: ${args.filter(a => a !== '--write').join(' ')}`)
-  console.log(`// Generated: ${TODAY}`)
-  console.log()
-  for (const j of journals) {
-    console.log(formatEntry(j))
-    console.log()
-  }
+  // One JSON record per line (dry run; pass --write to append them).
+  for (const j of journals) console.log(JSON.stringify(buildRecord(j)))
 }

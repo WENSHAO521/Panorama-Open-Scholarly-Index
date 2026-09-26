@@ -1,18 +1,14 @@
 #!/usr/bin/env node
 /**
  * calc-discovered-mqs.mjs
- * Post-processes discovered-journals.ts to set metadata_quality_score per journal
+ * Post-processes src/lib/discovered-journals.json to set metadata_quality_score per journal
  * based on field completeness rather than the hardcoded 30.
  *
  * Usage: node scripts/calc-discovered-mqs.mjs
  */
 
-import { readFileSync, writeFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { loadDiscovered, saveDiscovered } from './lib/discovered-store.mjs'
 
-const __dir = dirname(fileURLToPath(import.meta.url))
-const FILE = join(__dir, '../src/lib/discovered-journals.ts')
 
 // MQS formula for discovered journals — scores field completeness only.
 // DOAJ listing is not a completeness signal and no longer contributes points
@@ -32,77 +28,34 @@ function calcMqs({ eissn, pissn, pub, country, web, arts, freq, lic }) {
   return Math.min(s, 100)
 }
 
-function extractFields(block) {
-  const str = (re) => { const m = block.match(re); return m ? m[1] : '' }
-  const num = (re) => { const m = block.match(re); return m ? parseInt(m[1], 10) : 0 }
-
-  const eissn   = str(/issn_online:\s*["']([^"']+)["']/)
-  const pissn   = str(/issn_print:\s*["']([^"']+)["']/)
-  const pub     = str(/publisher:\s*["']([^"']*)["']/)
-  // registration_country is more reliable than country for discovered journals
-  const rc      = str(/registration_country:\s*["']([^"']+)["']/)
-  const co      = str(/[^_]country:\s*["']([^"']+)["']/)
-  const web     = str(/website_url:\s*["']([^"']+)["']/)
-  const arts    = num(/article_count:\s*(\d+)/)
-  const freq    = str(/frequency:\s*["']([^"']*)["']/)
-  const lic     = str(/license:\s*["']([^"']+)["']/)
-
+function fieldsOf(r) {
+  const has = v => typeof v === 'string' && v.trim().length > 0
   return {
-    eissn:   eissn.length > 0,
-    pissn:   pissn.length > 0,
-    pub:     pub.length > 0,
-    country: rc.length > 0 || co.length > 0,
-    web:     web.length > 0,
-    arts,
-    freq:    freq.length > 0,
-    lic:     lic.length > 0 && lic !== 'Open Access',
+    eissn:   has(r.issn_online),
+    pissn:   has(r.issn_print),
+    pub:     has(r.publisher),
+    // registration_country is more reliable than country for discovered journals
+    country: has(r.registration_country) || has(r.country),
+    web:     has(r.website_url),
+    arts:    r.article_count ?? 0,
+    freq:    has(r.frequency),
+    lic:     has(r.license) && r.license !== 'Open Access',
   }
 }
 
-console.log('Reading discovered-journals.ts…')
-const src = readFileSync(FILE, 'utf8')
-
-const BEGIN = '// BEGIN:DISCOVERED_JOURNALS'
-const END   = '// END:DISCOVERED_JOURNALS'
-const beginIdx = src.indexOf(BEGIN)
-const endIdx   = src.indexOf(END)
-
-if (beginIdx === -1 || endIdx === -1) {
-  console.error('ERROR: markers not found')
-  process.exit(1)
-}
-
-const header  = src.slice(0, beginIdx + BEGIN.length)
-const section = src.slice(beginIdx + BEGIN.length, endIdx)
-const footer  = src.slice(endIdx)
-
-// Split section into individual journal blocks (each block: "  {\n    ...\n  },")
-// Split on the newline immediately before each `  {` (works with or without blank lines)
-const blocks = section.split(/\n(?=  \{)/)
-
+console.log('Reading discovered-journals.json…')
+const records = loadDiscovered()
 let patched = 0
-const newBlocks = blocks.map(block => {
-  if (!block.includes('metadata_quality_score:')) return block
-  const fields = extractFields(block)
-  const mqs = calcMqs(fields)
-  const updated = block.replace(
-    /(\s+metadata_quality_score:\s*)\d+(,)/,
-    `$1${mqs}$2`
-  )
-  if (updated !== block) patched++
-  return updated
-})
-
-const result = header + newBlocks.join('\n') + footer
-writeFileSync(FILE, result, 'utf8')
+for (const r of records) {
+  const mqs = calcMqs(fieldsOf(r))
+  if (r.metadata_quality_score !== mqs) { r.metadata_quality_score = mqs; patched++ }
+}
+saveDiscovered(records)
 console.log(`Done — patched metadata_quality_score for ${patched.toLocaleString()} journals`)
 
 // Show score distribution
 const dist = {}
-newBlocks.forEach(block => {
-  const m = block.match(/metadata_quality_score:\s*(\d+)/)
-  if (m) { const s = m[1]; dist[s] = (dist[s] ?? 0) + 1 }
-})
+for (const r of records) { const k = String(r.metadata_quality_score); dist[k] = (dist[k] ?? 0) + 1 }
 console.log('Score distribution:')
 Object.entries(dist).sort(([a], [b]) => Number(b) - Number(a)).forEach(([s, c]) =>
   console.log(`  ${s.padStart(3)}: ${c.toLocaleString()} journals`)
