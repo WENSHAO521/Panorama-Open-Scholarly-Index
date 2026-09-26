@@ -28,7 +28,7 @@ export default function ProvenancePage() {
         <p>
           Every record states how much of it has been confirmed and how recently it changed. The rules follow the
           provenance discipline of{' '}
-          <a href="https://github.com/WENSHAO521/scholarly-corpus-builder" target="_blank" rel="noopener noreferrer" className="link">scholarly-corpus-builder</a>:
+          <span>scholarly-corpus-builder</span>:
           identifiers before plausibility, open sources before anything else, and no value upgraded because it merely looks right.
         </p>
       </PageHeader>

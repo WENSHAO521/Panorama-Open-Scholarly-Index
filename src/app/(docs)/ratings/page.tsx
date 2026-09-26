@@ -69,7 +69,7 @@ export default function RatingsPage() {
           AJR-M for mature journals. A journal&apos;s lifecycle stage decides which track evaluates it -
           new journals are ranked against other new journals, established journals against other
           established journals, and citation impact is reported independently of both. See{' '}
-          <a href="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md" target="_blank" rel="noopener noreferrer" className="underline">AJR-SPEC.md →</a>
+          <a href="/ratings/" className="underline">AJR-SPEC.md →</a>
         </p>
       </div>
 

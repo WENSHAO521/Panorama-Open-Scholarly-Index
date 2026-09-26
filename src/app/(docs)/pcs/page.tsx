@@ -64,7 +64,7 @@ export default function PcsPage() {
         <p className="text-sm leading-relaxed mt-2 max-w-2xl text-justify" style={{ color: 'var(--posi-muted)' }}>
           Mean Crossref <code className="font-mono text-xs">is-referenced-by-count</code> across every eligible
           work{windowLabel ? ` published in ${windowLabel}` : ''} - a full cursor-paginated fetch, no article-sample
-          cap (<a href="https://github.com/WENSHAO521/posi-data/blob/master/PCS-1.0-SPEC.md" target="_blank" rel="noopener noreferrer" className="underline">PCS-1.0-SPEC.md</a>).
+          cap (<a href="/pcs/" className="underline">PCS-1.0-SPEC.md</a>).
           The table below is <strong style={{ color: 'var(--posi-text)' }}>sorted by PCS value, not ranked</strong> -
           see the notice below.
         </p>
@@ -88,7 +88,7 @@ export default function PcsPage() {
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[11px]" style={{ color: 'var(--posi-muted)' }}>
           <p><strong style={{ color: 'var(--posi-text)' }}>{computedCount}</strong> of {allEntries.length} journals have a computed PCS value.</p>
           <p><strong style={{ color: 'var(--posi-text)' }}>{allEntries.length - computedCount}</strong> journals show <em>No PCS available</em> - a real, checked outcome (a Crossref-unregistered or stale ISSN, no ISSN on record, or a journal too new for a complete 4-year window), not a zero score. See{' '}
-            <a href="https://github.com/WENSHAO521/posi-data/blob/master/audits/pcs-etl/pcs-etl-v1-global1024-2026/README.md" target="_blank" rel="noopener noreferrer" className="underline">the full audit</a> for every journal's individual cause.
+            <span>the full audit</span> for every journal's individual cause.
           </p>
           <p>Source: Crossref REST API, <code className="font-mono">is-referenced-by-count</code>.</p>
           <p>Window: {windowLabel ?? '-'} (4 complete publication years).</p>

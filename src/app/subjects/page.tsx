@@ -64,11 +64,10 @@ export default async function SubjectsPage() {
       <Callout variant="info">
         {classifiedCount.toLocaleString()} of {allJournals.length.toLocaleString()} journals (Core Collection +
         Global Benchmark) have been classified against this taxonomy via OpenAlex topic data - see{' '}
-        <a href="https://github.com/WENSHAO521/posi-data/blob/master/PSC-CROSSWALK.md" target="_blank" rel="noopener noreferrer" className="underline">PSC-CROSSWALK.md →</a>.
+        the PSC crosswalk.
         PSC is not yet wired into ranking cohorts (E-Q/M-Q/Citation Q peer groups) - the counts below are
-        classification coverage, not ranked cohorts. Taxonomy pinned to{' '}
-        <a href={`https://github.com/WENSHAO521/posi-data/commit/${PSC_PINNED_COMMIT}`} target="_blank" rel="noopener noreferrer" className="underline font-mono">posi-data@{PSC_PINNED_COMMIT.slice(0, 7)}</a>{' '}
-        - the same taxonomy on every rebuild, not whatever happens to be on <span className="font-mono">master</span> that day.
+        classification coverage, not ranked cohorts. Taxonomy version{' '}
+        <span className="font-mono">{PSC_PINNED_COMMIT.slice(0, 7)}</span>, fixed for every edition.
       </Callout>
 
       {usedFallback && (
@@ -118,7 +117,7 @@ export default async function SubjectsPage() {
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--posi-muted)' }}>PSC Governance</h2>
         <p className="text-[11px] leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
           Changes to this taxonomy happen only via pull request against{' '}
-          <a href="https://github.com/WENSHAO521/posi-data/tree/master/taxonomy/psc" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--posi-accent)' }}>posi-data</a>,
+          <span>posi-data</span>,
           reviewed against journal scope statements, article topic distribution, and citation network
           data. Level 3 subcategories are added incrementally as journal coverage in a level-2 category
           grows large enough to warrant splitting it - not designed upfront by guesswork.

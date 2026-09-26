@@ -2,20 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, type FormEvent } from 'react'
-import { MagnifyingGlass, List, X, GithubLogo } from '@phosphor-icons/react/dist/ssr'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
-
-const NAV = [
-  { label: 'Publications', href: '/publications/' },
-  { label: 'Sources', href: '/journals/' },
-  { label: 'Publishers', href: '/publishers/' },
-  { label: 'Subjects', href: '/subjects/' },
-  { label: 'Rankings', href: '/rankings/' },
-  { label: 'Certificates', href: '/certificate/' },
-  { label: 'Datasets', href: '/datasets/' },
-  { label: 'Docs', href: '/docs/' },
-]
+import { PRIMARY_NAV, type NavGroup } from '@/lib/site-nav'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -54,23 +44,78 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
   }
   return (
     <form onSubmit={submit} role="search" className="relative w-full">
-      <label htmlFor="header-search" className="sr-only">Search records</label>
+      <label htmlFor="header-search" className="sr-only">Search publications</label>
       <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
       <input
         id="header-search"
         value={q}
         onChange={e => setQ(e.target.value)}
-        placeholder="Search publications or paste a DOI"
+        placeholder="Search publications or DOI"
         className="input pl-8 h-[34px] text-[13.5px]"
       />
     </form>
   )
 }
 
+function norm(p: string) { return p.split('?')[0].replace(/\/?$/, '/') }
+
+function groupActive(g: NavGroup, pathname: string) {
+  const hrefs = g.href ? [g.href] : (g.links ?? []).map(l => l.href)
+  return hrefs.some(h => { const n = norm(h); return n !== '/' && pathname.startsWith(n) })
+}
+
+/** Desktop dropdown: opens on click or hover, closes on Escape, outside focus or navigation. */
+function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; active: boolean; open: boolean; onOpen: () => void; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const id = `menu-${group.label.toLowerCase()}`
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={onOpen}
+      onMouseLeave={onClose}
+      onBlur={e => { if (!ref.current?.contains(e.relatedTarget as Node)) onClose() }}
+    >
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={onOpen}
+        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[14px] rounded-[6px] transition-colors hover:bg-[var(--hover)]"
+        style={active ? { color: 'var(--teal)', fontWeight: 500 } : { color: 'var(--ink-2)' }}
+      >
+        {group.label}
+        <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
+      </button>
+      {open && (
+        <div id={id} className="absolute left-0 top-full pt-2 z-50">
+          <ul className="panel w-[300px] p-1.5" style={{ boxShadow: '0 8px 28px rgba(20, 40, 44, 0.14)' }}>
+            {group.links!.map(l => (
+              <li key={l.href}>
+                <Link href={l.href} onClick={onClose} className="block rounded-[6px] px-3 py-2 transition-colors hover:bg-[var(--hover)]">
+                  <span className="block text-[14px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
+                  {l.description && <span className="block text-[12.5px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function SiteHeader() {
-  const pathname = usePathname() || '/'
-  const [open, setOpen] = useState(false)
-  const active = (href: string) => pathname.startsWith(href) || pathname + '/' === href
+  const pathname = norm(usePathname() || '/')
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState<string | null>(null)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpenMenu(null); setMobileOpen(false) } }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <header
@@ -79,53 +124,76 @@ export function SiteHeader() {
     >
       <div className="wrap flex items-center gap-6 h-16">
         <Link href="/" aria-label="POSI home" className="shrink-0"><Logo /></Link>
-        <nav aria-label="Primary" className="hidden lg:flex items-center gap-1">
-          {NAV.map(n => (
+        <nav aria-label="Primary" className="hidden lg:flex items-center gap-0.5">
+          {PRIMARY_NAV.map(g => g.links ? (
+            <Dropdown
+              key={g.label}
+              group={g}
+              active={groupActive(g, pathname)}
+              open={openMenu === g.label}
+              onOpen={() => setOpenMenu(g.label)}
+              onClose={() => setOpenMenu(m => (m === g.label ? null : m))}
+            />
+          ) : (
             <Link
-              key={n.href}
-              href={n.href}
-              aria-current={active(n.href) ? 'page' : undefined}
+              key={g.label}
+              href={g.href!}
+              aria-current={groupActive(g, pathname) ? 'page' : undefined}
               className="px-2.5 py-1.5 text-[14px] rounded-[6px] transition-colors hover:bg-[var(--hover)]"
-              style={active(n.href) ? { color: 'var(--teal)', background: 'var(--teal-soft)', fontWeight: 500 } : { color: 'var(--ink-2)' }}
+              style={groupActive(g, pathname) ? { color: 'var(--teal)', fontWeight: 500 } : { color: 'var(--ink-2)' }}
             >
-              {n.label}
+              {g.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden xl:block ml-auto w-[260px]"><HeaderSearch /></div>
-        <Link href="/publications/" aria-label="Search publications" className="hidden md:inline-flex xl:hidden ml-auto btn btn-sm px-2">
-          <MagnifyingGlass className="h-4 w-4" />
-        </Link>
-        <a
-          href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Source on GitHub"
-          className="hidden md:inline-flex btn btn-sm px-2"
-        >
-          <GithubLogo className="h-4 w-4" />
-        </a>
+        <div className="hidden md:block ml-auto w-[240px] xl:w-[280px]"><HeaderSearch /></div>
         <button
           type="button"
           className="lg:hidden ml-auto md:ml-0 btn btn-sm"
-          aria-expanded={open}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          onClick={() => setOpen(o => !o)}
+          aria-expanded={mobileOpen}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMobileOpen(o => !o)}
         >
-          {open ? <X className="h-4 w-4" /> : <List className="h-4 w-4" />}
+          {mobileOpen ? <X className="h-4 w-4" /> : <List className="h-4 w-4" />}
         </button>
       </div>
-      {open && (
-        <div className="lg:hidden" style={{ borderTop: '1px solid var(--line)', background: 'var(--paper)' }}>
+
+      {mobileOpen && (
+        <div className="lg:hidden max-h-[calc(100dvh-64px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--paper)' }}>
           <div className="wrap py-3 space-y-3">
-            <div className="md:hidden"><HeaderSearch onDone={() => setOpen(false)} /></div>
-            <nav aria-label="Mobile" className="grid grid-cols-2 gap-1">
-              {NAV.map(n => (
-                <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="px-3 py-2 rounded-[6px] text-[14px]"
-                  style={active(n.href) ? { background: 'var(--teal-soft)', color: 'var(--teal)' } : { color: 'var(--ink-2)' }}>
-                  {n.label}
-                </Link>
-              ))}
+            <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
+            <nav aria-label="Mobile">
+              <ul>
+                {PRIMARY_NAV.map(g => (
+                  <li key={g.label} style={{ borderBottom: '1px solid var(--line-soft)' }}>
+                    {g.links ? (
+                      <>
+                        <button
+                          type="button"
+                          aria-expanded={expanded === g.label}
+                          onClick={() => setExpanded(x => (x === g.label ? null : g.label))}
+                          className="w-full flex items-center justify-between py-3 text-[15px]"
+                          style={{ color: 'var(--ink)' }}
+                        >
+                          {g.label}
+                          <CaretDown className="h-4 w-4" style={{ transform: expanded === g.label ? 'rotate(180deg)' : undefined }} />
+                        </button>
+                        {expanded === g.label && (
+                          <ul className="pb-2">
+                            {g.links.map(l => (
+                              <li key={l.href}>
+                                <Link href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 pl-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>{l.label}</Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ) : (
+                      <Link href={g.href!} onClick={() => setMobileOpen(false)} className="block py-3 text-[15px]" style={{ color: 'var(--ink)' }}>{g.label}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </nav>
           </div>
         </div>

@@ -1,94 +1,47 @@
 import Link from 'next/link'
 import { Logo } from './SiteHeader'
+import { FOOTER_NAV } from '@/lib/site-nav'
 import { DATA_CUTOFF } from '@/lib/release'
 
-const COLUMNS = [
-  {
-    title: 'Database',
-    links: [
-      { label: 'Publications', href: '/publications/' },
-      { label: 'Sources', href: '/journals/' },
-      { label: 'Publishers', href: '/publishers/' },
-      { label: 'PSC subjects', href: '/subjects/' },
-      { label: 'Rankings', href: '/rankings/' },
-      { label: 'Apply for certification', href: '/certification/' },
-      { label: 'Indexing certificate', href: '/certificate/' },
-      { label: 'Verify a certificate', href: '/certificate/verify/' },
-      { label: 'Verify a record', href: '/verify/' },
-      { label: 'Citation generator', href: '/cite/' },
-    ],
-  },
-  {
-    title: 'Open data',
-    links: [
-      { label: 'Datasets & downloads', href: '/datasets/' },
-      { label: 'Record schema', href: '/docs/schema/' },
-      { label: 'Provenance model', href: '/docs/provenance/' },
-      { label: 'Data sources', href: '/data-sources/' },
-      { label: 'Changelog', href: '/announcements/' },
-    ],
-  },
-  {
-    title: 'Methodology',
-    links: [
-      { label: 'Editorial selection (PQF)', href: '/pqf/' },
-      { label: 'Lifecycle ratings (AJR)', href: '/ratings/' },
-      { label: 'Citation indicators', href: '/pci/' },
-      { label: 'Coverage policy', href: '/coverage/policy/' },
-      { label: 'Responsible use', href: '/responsible-use/' },
-    ],
-  },
-  {
-    title: 'Repositories',
-    links: [
-      { label: 'posi-data', href: 'https://github.com/WENSHAO521/posi-data', external: true },
-      { label: 'posi-engine', href: 'https://github.com/WENSHAO521/posi-engine', external: true },
-      { label: 'posi-data-delivery', href: 'https://github.com/WENSHAO521/posi-data-delivery', external: true },
-      { label: 'This site', href: 'https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index', external: true },
-    ],
-  },
-]
-
 export function SiteFooter() {
+  const year = new Date().getFullYear()
   return (
     <footer className="mt-20" style={{ background: 'var(--band)', color: 'var(--band-ink)' }}>
-      <div className="wrap py-12 grid gap-10 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
-        <div className="space-y-4 max-w-sm">
+      <div className="wrap py-14 grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+        <div className="max-w-sm">
           <Logo inverted />
-          <p className="text-[13px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
-            A scholarly database of publications, journals and journal rankings, published by Panorama
-            Scholarly Group Ltd.
+          <p className="mt-5 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
+            The Panorama Open Scholarly Index is a citation index, journal ranking and open access journal directory,
+            published by Panorama Scholarly Group Ltd.
           </p>
-          <p className="text-[12px] font-mono" style={{ color: 'var(--band-muted)' }}>
-            Data cutoff {DATA_CUTOFF}
+          <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
+            POSI is open source. Its data, methods and software are published under open licences.
+          </p>
+          <p className="mt-5 text-[12px]" style={{ color: 'var(--band-muted)' }}>
+            Current data edition: <span className="font-mono">{DATA_CUTOFF}</span>
           </p>
         </div>
-        {COLUMNS.map(col => (
-          <div key={col.title}>
-            <h2 className="text-[12px] font-mono uppercase tracking-wider mb-3" style={{ color: 'var(--band-muted)' }}>{col.title}</h2>
-            <ul className="space-y-2 text-[13.5px]" style={{ color: 'var(--band-ink)' }}>
+        {FOOTER_NAV.map(col => (
+          <nav key={col.title} aria-label={col.title}>
+            <h2 className="text-[13px] font-semibold mb-3" style={{ color: 'var(--band-ink)' }}>{col.title}</h2>
+            <ul className="space-y-2 text-[13.5px]">
               {col.links.map(l => (
-                <li key={l.label}>
-                  {'external' in l && l.external
-                    ? <a href={l.href} target="_blank" rel="noopener noreferrer" className="hover:underline">{l.label}</a>
-                    : <Link href={l.href} className="hover:underline">{l.label}</Link>}
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:underline" style={{ color: 'var(--band-muted)' }}>{l.label}</Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         ))}
       </div>
       <div style={{ borderTop: '1px solid var(--band-line)' }}>
-        <div className="wrap py-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between text-[12px]" style={{ color: 'var(--band-muted)' }}>
+        <div className="wrap py-5 grid gap-2 md:grid-cols-[1fr_auto] md:items-center text-[12px]" style={{ color: 'var(--band-muted)' }}>
           <p>
-            &copy; {new Date().getFullYear()} Panorama Scholarly Group Ltd. POSI data{' '}
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline hover:underline">CC BY 4.0</a>
-            {', '}source code MIT. Third-party metadata keeps its original license.
+            &copy; {year} Panorama Scholarly Group Ltd. POSI data are licensed under{' '}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">CC BY 4.0</a>.
+            Third-party metadata remain under their original licences.
           </p>
-          <p>
-            Not affiliated with Web of Science, Scopus or DOAJ. POSI indicators are not Journal Impact Factors.{' '}
-            <Link href="/coi/" className="underline hover:underline">Conflict-of-interest disclosure</Link>
-          </p>
+          <p>POSI is independent of Web of Science, Scopus and DOAJ.</p>
         </div>
       </div>
     </footer>

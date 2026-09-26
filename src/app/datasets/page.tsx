@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { getAllRecords } from '@/lib/records-data'
 import { toIndexRecord, type Collection } from '@/lib/records'
 import { DISCOVERED_JOURNALS } from '@/lib/data'
@@ -22,17 +21,14 @@ const AUDITS = [
   {
     name: 'Initial journal migration',
     desc: '23,822 legacy source records audited in two independent dry runs with byte-identical output. 171 possible-duplicate groups resolved by live OpenAlex ISSN-L lookups: 166 merged, 5 kept distinct. 23,331 POSI-J ids minted, 0 collisions.',
-    href: 'https://github.com/WENSHAO521/posi-data/tree/master/audits/migrations/initial-journal-migration',
   },
   {
     name: 'OpenAlex enrichment',
     desc: 'OpenAlex source id and ISSN-L enrichment over all 23,819 candidate entities (23,674 verified). Superseded by the completed migration above.',
-    href: 'https://github.com/WENSHAO521/posi-data/tree/master/audits/migrations/openalex-enrichment',
   },
   {
     name: 'Core and Benchmark identity migration',
     desc: 'Extended permanent ids to the ~1,031 curated Core Collection and Global Benchmark records: 874 newly minted, 157 resolved to existing ids, 0 flagged for manual review.',
-    href: 'https://github.com/WENSHAO521/posi-data/pull/3',
   },
 ]
 
@@ -101,28 +97,9 @@ export default function DatasetsPage() {
           <SnapshotPanel />
         </section>
 
-        <section aria-labelledby="repos" className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <section aria-labelledby="licences" className="max-w-[760px]">
           <div>
-            <SectionTitle id="repos">Where the data is made</SectionTitle>
-            <dl className="space-y-5 text-[14px]">
-              {[
-                ['posi-data', 'https://github.com/WENSHAO521/posi-data', 'Canonical journal records, PSC taxonomy, metric snapshots and audits. Plain text, versioned, reviewed by pull request.'],
-                ['posi-engine', 'https://github.com/WENSHAO521/posi-engine', 'The classifier and calculators. Check out a pinned commit, run it against the pinned data commit, and you should get the published numbers.'],
-                ['posi-data-delivery', 'https://github.com/WENSHAO521/posi-data-delivery', 'The public, immutable snapshot mirror this site reads from.'],
-              ].map(([name, href, body]) => (
-                <div key={name}>
-                  <dt>
-                    <a href={href} target="_blank" rel="noopener noreferrer" className="font-mono font-medium link inline-flex items-center gap-1">
-                      {name} <ArrowSquareOut className="h-3.5 w-3.5" />
-                    </a>
-                  </dt>
-                  <dd className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{body}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <div>
-            <SectionTitle>Licenses</SectionTitle>
+            <SectionTitle id="licences">Licences</SectionTitle>
             <div className="panel overflow-hidden">
               <table className="dtable">
                 <tbody>
@@ -132,7 +109,7 @@ export default function DatasetsPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>POSI does not relabel third-party open data as its own.</p>
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>POSI is open source. Third-party open data are credited and keep their original licences.</p>
           </div>
         </section>
 
@@ -143,9 +120,6 @@ export default function DatasetsPage() {
               <li key={a.name} className="panel p-5 flex flex-col">
                 <p className="font-medium" style={{ color: 'var(--ink)' }}>{a.name}</p>
                 <p className="mt-2 text-[13.5px] leading-relaxed flex-1" style={{ color: 'var(--muted)' }}>{a.desc}</p>
-                <a href={a.href} target="_blank" rel="noopener noreferrer" className="mt-4 link text-[13.5px] inline-flex items-center gap-1">
-                  Audit trail <ArrowSquareOut className="h-3.5 w-3.5" />
-                </a>
               </li>
             ))}
           </ul>

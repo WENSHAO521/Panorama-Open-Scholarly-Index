@@ -13,7 +13,7 @@ export const metadata = {
   description: 'Journals 60+ months after first regular scholarly publication. AJR-M 1.0 methodology is implemented but has not yet been run against real evidence/citation data - no M-Q has been published.',
 }
 
-const AJR_M_SPEC_URL = 'https://github.com/WENSHAO521/posi-data/blob/master/AJR-M-1.0-SPEC.md'
+const AJR_M_SPEC_URL = '/ratings/mature/'
 
 export default function MatureRankingsPage() {
   const core = getCoreCollection()
@@ -101,7 +101,7 @@ export default function MatureRankingsPage() {
               benchmarkMode="mature"
               columns={['collection', 'm-q', 'citation-preview']}
               title="Mature Track"
-              methodologyHref="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
+              methodologyHref="/ratings/"
               methodologyLabel="Methodology (AJR 1.0)"
             />
           </Suspense>

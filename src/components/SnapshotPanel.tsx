@@ -48,8 +48,7 @@ export function SnapshotPanel() {
   if (error) {
     return (
       <div className="panel p-5 text-[14px]" style={{ color: 'var(--muted)' }}>
-        The data layer at <span className="font-mono">{BASE}</span> could not be reached. The files
-        are also mirrored in the <a className="link" href="https://github.com/WENSHAO521/posi-data-delivery" target="_blank" rel="noopener noreferrer">posi-data-delivery</a> repository.
+        The data layer at <span className="font-mono">{BASE}</span> could not be reached. Please try again shortly.
       </div>
     )
   }
@@ -78,14 +77,10 @@ export function SnapshotPanel() {
             Data cutoff <span className="font-mono">{String(manifest.data_cutoff ?? 'n/a')}</span>.
           </p>
           <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[12.5px]">
-            <dt style={{ color: 'var(--muted)' }}>data commit</dt>
-            <dd className="font-mono truncate">
-              <a className="link" href={`https://github.com/WENSHAO521/posi-data/commit/${manifest.data_commit}`} target="_blank" rel="noopener noreferrer">{String(manifest.data_commit).slice(0, 12)}</a>
-            </dd>
-            <dt style={{ color: 'var(--muted)' }}>engine commit</dt>
-            <dd className="font-mono truncate">
-              <a className="link" href={`https://github.com/WENSHAO521/posi-engine/commit/${manifest.engine_commit}`} target="_blank" rel="noopener noreferrer">{String(manifest.engine_commit).slice(0, 12)}</a>
-            </dd>
+            <dt style={{ color: 'var(--muted)' }}>Data version</dt>
+            <dd className="font-mono truncate">{String(manifest.data_commit).slice(0, 12)}</dd>
+            <dt style={{ color: 'var(--muted)' }}>Engine version</dt>
+            <dd className="font-mono truncate">{String(manifest.engine_commit).slice(0, 12)}</dd>
           </dl>
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[13px] content-start">

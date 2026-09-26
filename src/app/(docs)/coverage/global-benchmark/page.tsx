@@ -56,7 +56,7 @@ export default function GlobalBenchmarkPage() {
         not because every title in a publisher&apos;s complete catalog is individually &quot;internationally
         established.&quot; These records are unrated (no AJR score is computed for them) and their presence here
         never makes a journal ranking-eligible on its own - see the identity/registry documentation in{' '}
-        <a href="https://github.com/WENSHAO521/posi-data" target="_blank" rel="noopener noreferrer" className="underline">posi-data</a>.
+        <span>posi-data</span>.
       </Callout>
 
       <div className="coverage-grid grid sm:grid-cols-5 gap-0" style={{ border: '1px solid var(--posi-border)' }}>
@@ -103,7 +103,7 @@ export default function GlobalBenchmarkPage() {
           here. The publisher-catalog expansion's OpenAlex citation figure is a diagnostic preview only, not
           PCI, not ranked (see <Link href="/citation-reports" className="underline">Citation Rankings</Link>).
           Full corpus and per-journal evidence: see{' '}
-          <a href="https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/blob/master/src/lib/benchmark-journals.ts" target="_blank" rel="noopener noreferrer" className="underline">benchmark-journals.ts →</a>
+          <span>benchmark-journals.ts →</span>
         </p>
       </section>
 

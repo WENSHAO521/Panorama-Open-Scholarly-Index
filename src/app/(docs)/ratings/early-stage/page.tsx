@@ -76,7 +76,7 @@ export default function EarlyStageRankingsPage() {
             benchmarkMode="not-yet-mature"
             columns={['collection', 'age-stage', 'e-q', 'evidence']}
             title="Early-Stage Track"
-            methodologyHref="https://github.com/WENSHAO521/posi-data/blob/master/AJR-SPEC.md"
+            methodologyHref="/ratings/"
             methodologyLabel="Methodology (AJR-E)"
             enableFilters
             enableSort

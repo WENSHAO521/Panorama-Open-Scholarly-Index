@@ -123,7 +123,7 @@ export default function PciPage() {
           computed PCI value{windowLabel ? ` (${windowLabel} window)` : ''} - a full, exhaustive OpenAlex fetch, no article-sample cap. POSI's own
           Core Collection isn't covered by this run yet: a same-day spot-check found it's overwhelmingly too young (most journals first published
           2025-2026) to have real 2023-2024 output to measure. See{' '}
-          <a href="https://github.com/WENSHAO521/posi-data/blob/master/audits/pjr-seed-corpus/pjr-seed-corpus-global993-2026/README.md" target="_blank" rel="noopener noreferrer" className="underline">the full audit</a>{' '}
+          <span>the full audit</span>{' '}
           for methodology, scope, and two real bugs found and fixed mid-run.
         </div>
         <Suspense fallback={<div className="px-5 py-8 text-xs text-center" style={{ color: 'var(--posi-muted)' }}>Loading…</div>}>
