@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Logo } from './SiteHeader'
 import { FOOTER_NAV } from '@/lib/site-nav'
-import { DATA_CUTOFF } from '@/lib/release'
 
 export function SiteFooter() {
   const year = new Date().getFullYear()
@@ -17,8 +16,10 @@ export function SiteFooter() {
           <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
             POSI is open source. Its data, methods and software are published under open licences.
           </p>
-          <p className="mt-5 text-[12px]" style={{ color: 'var(--band-muted)' }}>
-            Current data edition: <span className="font-mono">{DATA_CUTOFF}</span>
+          <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
+            Panorama Scholarly Group is a{' '}
+            <a href="https://www.crossref.org/" target="_blank" rel="noopener noreferrer" className="underline">Crossref</a>{' '}
+            member (member ID 53186, DOI prefix 10.63802).
           </p>
         </div>
         {FOOTER_NAV.map(col => (

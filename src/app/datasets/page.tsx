@@ -3,7 +3,6 @@ import { getAllRecords } from '@/lib/records-data'
 import { toIndexRecord, type Collection } from '@/lib/records'
 import { DISCOVERED_JOURNALS } from '@/lib/data'
 import { getStaticRecordJournals } from '@/lib/records-data'
-import { DATA_CUTOFF } from '@/lib/release'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
 import { SnapshotPanel } from '@/components/SnapshotPanel'
@@ -55,7 +54,7 @@ export default function DatasetsPage() {
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
           POSI journal records, rankings and the subject classification are available for download under open
-          licenses. Data cutoff <span className="font-mono">{DATA_CUTOFF}</span>.
+          licences. Files are regenerated whenever the data are updated.
         </p>
       </PageHeader>
 
@@ -127,7 +126,7 @@ export default function DatasetsPage() {
 
         <section aria-labelledby="cite" className="max-w-[820px]">
           <SectionTitle id="cite">Cite the dataset</SectionTitle>
-          <pre className="code whitespace-pre-wrap"><code>{`Panorama Open Scholarly Index (${DATA_CUTOFF.slice(0, 4)}). POSI journal records, data snapshot ${DATA_CUTOFF}. Panorama Scholarly Group. https://posi.panorama-sg.com/datasets/. License: CC BY 4.0.`}</code></pre>
+          <pre className="code whitespace-pre-wrap"><code>{`Panorama Open Scholarly Index (${new Date().getFullYear()}). POSI journal records. Panorama Scholarly Group. https://posi.panorama-sg.com/datasets/. Accessed [date]. Licence: CC BY 4.0.`}</code></pre>
         </section>
       </div>
     </div>

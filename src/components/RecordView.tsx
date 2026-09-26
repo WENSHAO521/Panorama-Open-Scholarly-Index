@@ -15,7 +15,6 @@ import type { CitationStatsEntry } from '@/lib/citation-stats'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, collectionOf, verificationOf, freshnessOf, countryName } from '@/lib/records'
 import { FIELD_BY_KEY, type Basis } from '@/lib/schema'
 import { earlyStageStatus, earlyStageDisplayTotal, earlyStageQuartile, earlyStageLifecycleLabel } from '@/lib/early-stage'
-import { DATA_CUTOFF } from '@/lib/release'
 import { BasisTag, CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
@@ -158,7 +157,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="indicators">
-            <SectionTitle id="indicators" aside={`As of ${DATA_CUTOFF}`}>Indicators</SectionTitle>
+            <SectionTitle id="indicators">Indicators</SectionTitle>
             <div className="panel grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: 'var(--line)' }}>
               <Metric
                 name="Lifecycle rating"
@@ -299,7 +298,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
           <div className="panel p-4 text-[13px]">
             <p className="font-medium mb-2" style={{ color: 'var(--ink)' }}>Cite this record</p>
             <p className="font-mono text-[12px] leading-relaxed break-words" style={{ color: 'var(--ink-2)' }}>
-              Panorama Open Scholarly Index. ({DATA_CUTOFF.slice(0, 4)}). {j.title} [journal record{j.posi_id ? `, ${j.posi_id}` : ''}]. Data snapshot {DATA_CUTOFF}. https://posi.panorama-sg.com/journal/{j.journal_code}/
+              Panorama Open Scholarly Index. ({new Date().getFullYear()}). {j.title} [journal record{j.posi_id ? `, ${j.posi_id}` : ''}]. https://posi.panorama-sg.com/journal/{j.journal_code}/
             </p>
           </div>
         </aside>

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Callout } from '@/components/Callout'
 import { getCoreCollection } from '@/lib/data'
-import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF } from '@/lib/release'
+import { DATA_SNAPSHOT_LABEL, METHODOLOGY_VERSION } from '@/lib/release'
 import { hasRealEarlyStageScore, EARLY_STAGE_WINDOW_LABEL, MATURE_WINDOW_LABEL } from '@/lib/early-stage'
 import { getGlobalBenchmarkTotal } from '@/lib/site-metrics'
 
@@ -117,9 +117,7 @@ export default function RatingsPage() {
 
       <Callout variant="info">
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
-          <p><strong>Data snapshot:</strong> {DATA_CUTOFF} (no POSI-R-* release has been produced yet - see POSI-R-1.0-SPEC.md)</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
-          <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
           <p><strong>Coverage:</strong> {coreCollection.length} Core Collection + {getGlobalBenchmarkTotal()} Global Benchmark journals</p>
           <p><strong>Manual score adjustment:</strong> Not permitted</p>
           <p><strong>External indexing weight:</strong> 0 (DOAJ/Scopus/WoS/PubMed listing has no effect)</p>

@@ -9,7 +9,7 @@ import { fmt, CollectionTag } from '@/components/db'
 import { BENCHMARK_JOURNALS } from '@/lib/benchmark-journals'
 
 export const metadata = {
-  title: { absolute: 'POSI: Open Scholarly Index' },
+  title: { absolute: 'Panorama Open Scholarly Index (POSI)' },
   description:
     'The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.',
 }

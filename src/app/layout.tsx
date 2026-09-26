@@ -32,7 +32,7 @@ const SITE_DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "POSI - Open Scholarly Index",
+    default: "Panorama Open Scholarly Index (POSI)",
     template: "%s · POSI",
   },
   description: SITE_DESCRIPTION,
@@ -46,11 +46,11 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: "POSI - Panorama Open Scholarly Index",
-    title: "POSI - Open Scholarly Index",
+    title: "Panorama Open Scholarly Index (POSI)",
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },
-  twitter: { card: "summary_large_image", title: "POSI - Open Scholarly Index", description: SITE_DESCRIPTION },
+  twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

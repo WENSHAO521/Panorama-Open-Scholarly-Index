@@ -24,7 +24,7 @@ export function Logo({ inverted = false }: { inverted?: boolean }) {
       <span className="leading-none">
         <span className="block text-[15px] font-semibold tracking-tight">POSI</span>
         <span className="block text-[11px] mt-0.5" style={{ color: inverted ? 'var(--band-muted)' : 'var(--muted)' }}>
-          Open Scholarly Index
+          Panorama Open Scholarly Index
         </span>
       </span>
     </span>

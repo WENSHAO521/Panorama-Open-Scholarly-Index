@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { DATA_SNAPSHOT_LABEL, DATA_CUTOFF } from '@/lib/release'
+import { DATA_SNAPSHOT_LABEL } from '@/lib/release'
 import { Callout } from '@/components/Callout'
 
 export const metadata: Metadata = {
@@ -44,7 +44,7 @@ export default function CoverageChangesPage() {
       </div>
 
       <Callout variant="info">
-        <strong>No status changes have been recorded</strong> as of the {DATA_CUTOFF} data cutoff.
+        <strong>No status changes have been recorded</strong> to date.
         Every Core Collection journal is currently in Continuing Review - this log will be updated
         the first time any journal moves to Warning, Suspension, Withdrawal, Ceased, Delisting, or
         Reinstatement. An empty log means exactly that, not that nothing has happened to check.

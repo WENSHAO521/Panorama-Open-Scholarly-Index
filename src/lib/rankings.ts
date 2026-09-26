@@ -1,26 +1,30 @@
 // POSI Open Journal Rankings: the PCS-Q track.
 //
 // This module does not compute ranks. It reads the PCS-Q edition published
-// by posi-engine (scripts/run-pcs-q.mjs, posi-data/PCS-Q-1.0-SPEC.md) and
-// vendored at src/lib/pcs-q.json, and joins it with journal names. The
+// by posi-engine (scripts/run-pcs-q.mjs, posi-data/PCS-Q-1.0-SPEC.md). The
+// edition is downloaded before each build by scripts/sync-rankings.mjs into
+// src/lib/generated/pcs-q.json; src/lib/pcs-q.json is the committed fallback. The
 // algorithm (RANK-1.0: mid-rank ties, percentile from mid-rank, quartile
 // thresholds, MIN_CATEGORY_SIZE, rank-eligible PSC confidence) lives only
 // in the engine, so the site can never drift from the published edition.
-//
-// Refresh: re-run the engine, then copy posi-data/rankings/pcs-q/pcs-q-<Y>.json
-// here (scripts/sync-ranking-titles.mjs refreshes the names).
+
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
 
 import { getCoreCollection, getCandidateJournals } from './data'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 import { getAllPciEntries } from './pci'
 import psc from './psc-v1.0.snapshot.json'
 import titles from './ranking-titles.json'
-import edition from './pcs-q.json'
+import fallbackEdition from './pcs-q.json'
 
 export type Quartile = 'Q1' | 'Q2' | 'Q3' | 'Q4'
 
 interface EditionRecord {
   journal_id: string
+  title?: string | null
+  publisher?: string | null
+  issn?: string[]
   pcs: number | null
   pcs_eligible_items: number | null
   category_code: string | null
@@ -37,7 +41,15 @@ interface EditionRecord {
   exclusion_reason: string | null
 }
 
-const E = edition as unknown as {
+function loadEdition(): unknown {
+  const generated = join(process.cwd(), 'src/lib/generated/pcs-q.json')
+  try {
+    if (existsSync(generated)) return JSON.parse(readFileSync(generated, 'utf-8'))
+  } catch { /* fall through to the committed edition */ }
+  return fallbackEdition
+}
+
+const E = loadEdition() as {
   methodology_version: string
   metric_year: number
   parameters: { min_items: number; min_coverage: number; min_category_size: number }
@@ -132,7 +144,7 @@ export function getRankings() {
   const ranked: RankedJournal[] = []
   const notRanked: NotRanked[] = []
   for (const r of E.records) {
-    const m = meta.get(r.journal_id) ?? { code: null, title: r.journal_id, publisher: null, issn: [] }
+    const m = meta.get(r.journal_id) ?? { code: null, title: r.title ?? r.journal_id, publisher: r.publisher ?? null, issn: r.issn ?? [] }
     const core = coreIds.has(r.journal_id)
     if (r.overall_rank == null) {
       notRanked.push({ id: r.journal_id, code: m.code, title: m.title, cat: r.category_code, core, pcs: r.pcs, items: r.pcs_eligible_items, reason: EXCLUSION_TEXT[r.exclusion_reason ?? ''] ?? 'Not ranked' })

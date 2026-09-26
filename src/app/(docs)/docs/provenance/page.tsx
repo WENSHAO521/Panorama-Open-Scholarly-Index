@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { getAllRecords } from '@/lib/records-data'
 import { toIndexRecord, freshnessOf, VERIFICATION, FRESHNESS, type Verification, type Freshness } from '@/lib/records'
 import { PageHeader, SectionTitle, VerificationPill, FreshnessTag, fmt } from '@/components/db'
-import { DATA_CUTOFF } from '@/lib/release'
 
 export const metadata = {
   title: 'Provenance and verification',
@@ -56,7 +55,7 @@ export default function ProvenancePage() {
       </section>
 
       <section aria-labelledby="freshness">
-        <SectionTitle id="freshness" aside={`Cutoff ${DATA_CUTOFF}`}>Freshness</SectionTitle>
+        <SectionTitle id="freshness">Freshness</SectionTitle>
         <ul className="grid gap-3 sm:grid-cols-2">
           {(Object.keys(FRESHNESS) as Freshness[]).map(f => (
             <li key={f} className="panel p-4 flex items-start justify-between gap-4">

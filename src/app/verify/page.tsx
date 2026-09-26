@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { Callout } from '@/components/Callout'
 import { getCoreCollection, getCandidateJournals } from '@/lib/data'
-import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, DATA_CUTOFF, verificationCode } from '@/lib/release'
+import { RELEASE_ID, RELEASE_LABEL, METHODOLOGY_VERSION, verificationCode } from '@/lib/release'
 import { VerifyLookupForm, type VerifiableJournal } from '@/components/VerifyLookupForm'
 import { isEarlyStageV1_1, earlyStageDisplayTotal } from '@/lib/early-stage'
 import type { Journal } from '@/lib/types'
@@ -77,7 +77,6 @@ export default function VerifyPage() {
         <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
           <p><strong>Release:</strong> {RELEASE_LABEL}</p>
           <p><strong>Methodology:</strong> {METHODOLOGY_VERSION}</p>
-          <p><strong>Data cutoff:</strong> {DATA_CUTOFF}</p>
           <p><strong>Records verifiable:</strong> {journals.length.toLocaleString()}</p>
         </div>
       </Callout>
