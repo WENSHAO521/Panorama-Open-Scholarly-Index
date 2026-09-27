@@ -29,6 +29,7 @@ import { dirname, join } from 'path'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 import { loadDiscovered, saveDiscovered, knownIssns as knownIssnsOf, autoPqf, DISCOVERED_FILE } from './lib/discovered-store.mjs'
+import { isoToCountry } from './lib/country-codes.mjs'
 
 const UA = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
 
@@ -96,40 +97,6 @@ function parseIssns(issnArr) {
   return { issn_print: print, issn_online: online ?? issnArr?.[0]?.value ?? null }
 }
 
-// ── ISO country code → name ─────────────────────────────────────────────────
-
-const ISO_COUNTRY = {
-  AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AD:'Andorra',AO:'Angola',AR:'Argentina',
-  AM:'Armenia',AU:'Australia',AT:'Austria',AZ:'Azerbaijan',BH:'Bahrain',BD:'Bangladesh',
-  BY:'Belarus',BE:'Belgium',BJ:'Benin',BT:'Bhutan',BO:'Bolivia',BA:'Bosnia and Herzegovina',
-  BW:'Botswana',BR:'Brazil',BN:'Brunei',BG:'Bulgaria',BF:'Burkina Faso',BI:'Burundi',
-  KH:'Cambodia',CM:'Cameroon',CA:'Canada',CF:'Central African Republic',TD:'Chad',
-  CL:'Chile',CN:'China',CO:'Colombia',CG:'Congo',HR:'Croatia',CU:'Cuba',CY:'Cyprus',
-  CZ:'Czech Republic',DK:'Denmark',DO:'Dominican Republic',EC:'Ecuador',EG:'Egypt',
-  SV:'El Salvador',EE:'Estonia',ET:'Ethiopia',FI:'Finland',FR:'France',GE:'Georgia',
-  DE:'Germany',GH:'Ghana',GR:'Greece',GT:'Guatemala',GN:'Guinea',HT:'Haiti',
-  HN:'Honduras',HU:'Hungary',IS:'Iceland',IN:'India',ID:'Indonesia',IR:'Iran',
-  IQ:'Iraq',IE:'Ireland',IL:'Israel',IT:'Italy',JM:'Jamaica',JP:'Japan',JO:'Jordan',
-  KZ:'Kazakhstan',KE:'Kenya',KW:'Kuwait',KG:'Kyrgyzstan',LA:'Laos',LV:'Latvia',
-  LB:'Lebanon',LT:'Lithuania',LU:'Luxembourg',MK:'North Macedonia',MG:'Madagascar',
-  MW:'Malawi',MY:'Malaysia',MV:'Maldives',ML:'Mali',MT:'Malta',MR:'Mauritania',
-  MX:'Mexico',MD:'Moldova',MN:'Mongolia',MA:'Morocco',MZ:'Mozambique',MM:'Myanmar',
-  NA:'Namibia',NP:'Nepal',NL:'Netherlands',NZ:'New Zealand',NI:'Nicaragua',
-  NG:'Nigeria',NO:'Norway',OM:'Oman',PK:'Pakistan',PA:'Panama',PY:'Paraguay',
-  PE:'Peru',PH:'Philippines',PL:'Poland',PT:'Portugal',QA:'Qatar',RO:'Romania',
-  RU:'Russia',RW:'Rwanda',SA:'Saudi Arabia',SN:'Senegal',RS:'Serbia',SL:'Sierra Leone',
-  SG:'Singapore',SK:'Slovakia',SI:'Slovenia',SO:'Somalia',ZA:'South Africa',
-  SS:'South Sudan',ES:'Spain',LK:'Sri Lanka',SD:'Sudan',SE:'Sweden',CH:'Switzerland',
-  SY:'Syria',TW:'Taiwan',TJ:'Tajikistan',TZ:'Tanzania',TH:'Thailand',TN:'Tunisia',
-  TR:'Turkey',TM:'Turkmenistan',UG:'Uganda',UA:'Ukraine',AE:'United Arab Emirates',
-  GB:'United Kingdom',US:'United States',UY:'Uruguay',UZ:'Uzbekistan',VE:'Venezuela',
-  VN:'Vietnam',YE:'Yemen',ZM:'Zambia',ZW:'Zimbabwe',
-}
-
-function isoToCountry(code) {
-  if (!code) return ''
-  return ISO_COUNTRY[code.toUpperCase()] ?? code
-}
 
 // ── Frequency from DOAJ publication_time_weeks ───────────────────────────────
 

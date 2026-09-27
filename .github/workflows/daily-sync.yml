@@ -36,6 +36,11 @@ jobs:
         env:
           DOAJ_API_KEY: ${{ secrets.DOAJ_API_KEY }}
 
+      # 步骤 1a：把仍以代码存储的国家（ISO / MARC，如 KR、IO、CAU）改写成国家名
+      # 新期刊在发现时已按 ISO 转换；这一步兜底处理其他来源带进来的代码，判断不了的原样保留。
+      - name: Normalize country codes
+        run: node scripts/normalize-countries.mjs --write
+
       # 步骤 1b：从 Crossref 补缺失的出版商和国家（只填空字段）
       # 约 8,000 本待查，每天限时 12 分钟，按未查过→查得最早的顺序分几天查完；查过的 90 天内不重查。
       # Crossref 不响应时脚本自己停下，不影响后面的步骤。

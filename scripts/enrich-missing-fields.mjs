@@ -15,39 +15,13 @@
  */
 
 import { loadDiscovered, saveDiscovered, DISCOVERED_FILE } from './lib/discovered-store.mjs'
+import { isoToCountry } from './lib/country-codes.mjs'
 
 const WRITE = process.argv.includes('--write')
 const OA    = 'https://api.openalex.org'
 const UA    = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
 const DELAY = 150   // ms between batches (~6 req/s, within OpenAlex polite limit)
 
-const ISO_COUNTRY = {
-  AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AO:'Angola',AR:'Argentina',AM:'Armenia',
-  AU:'Australia',AT:'Austria',AZ:'Azerbaijan',BH:'Bahrain',BD:'Bangladesh',BY:'Belarus',
-  BE:'Belgium',BJ:'Benin',BO:'Bolivia',BA:'Bosnia and Herzegovina',BW:'Botswana',
-  BR:'Brazil',BN:'Brunei',BG:'Bulgaria',KH:'Cambodia',CM:'Cameroon',CA:'Canada',
-  CL:'Chile',CN:'China',CO:'Colombia',HR:'Croatia',CU:'Cuba',CY:'Cyprus',
-  CZ:'Czech Republic',DK:'Denmark',DO:'Dominican Republic',EC:'Ecuador',EG:'Egypt',
-  EE:'Estonia',ET:'Ethiopia',FI:'Finland',FR:'France',GE:'Georgia',DE:'Germany',
-  GH:'Ghana',GR:'Greece',GT:'Guatemala',HU:'Hungary',IN:'India',ID:'Indonesia',
-  IR:'Iran',IQ:'Iraq',IE:'Ireland',IL:'Israel',IT:'Italy',JP:'Japan',JO:'Jordan',
-  KZ:'Kazakhstan',KE:'Kenya',KW:'Kuwait',KG:'Kyrgyzstan',LA:'Laos',LV:'Latvia',
-  LB:'Lebanon',LT:'Lithuania',LU:'Luxembourg',MK:'North Macedonia',MY:'Malaysia',
-  MT:'Malta',MX:'Mexico',MD:'Moldova',MN:'Mongolia',MA:'Morocco',MZ:'Mozambique',
-  MM:'Myanmar',NP:'Nepal',NL:'Netherlands',NZ:'New Zealand',NG:'Nigeria',NO:'Norway',
-  OM:'Oman',PK:'Pakistan',PE:'Peru',PH:'Philippines',PL:'Poland',PT:'Portugal',
-  QA:'Qatar',RO:'Romania',RU:'Russia',RW:'Rwanda',SA:'Saudi Arabia',SN:'Senegal',
-  RS:'Serbia',SG:'Singapore',SK:'Slovakia',SI:'Slovenia',ZA:'South Africa',
-  ES:'Spain',LK:'Sri Lanka',SE:'Sweden',CH:'Switzerland',SY:'Syria',TW:'Taiwan',
-  TJ:'Tajikistan',TZ:'Tanzania',TH:'Thailand',TN:'Tunisia',TR:'Turkey',
-  UA:'Ukraine',AE:'United Arab Emirates',GB:'United Kingdom',US:'United States',
-  UY:'Uruguay',UZ:'Uzbekistan',VE:'Venezuela',VN:'Vietnam',ZM:'Zambia',ZW:'Zimbabwe',
-}
-
-function isoToCountry(code) {
-  if (!code) return ''
-  return ISO_COUNTRY[code.toUpperCase()] ?? code
-}
 
 /** Infer frequency from average annual works count (last 3 years 2020-2024) */
 function inferFrequency(countsByYear) {
