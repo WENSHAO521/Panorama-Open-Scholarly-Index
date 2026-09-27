@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import type { PublisherRow } from '@/lib/records-data'
 import { fmt } from './db'
@@ -20,10 +20,12 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
   useEffect(() => {
     fetch('/data/meta/publishers.json').then(r => r.json()).then((all: PublisherRow[]) => { setRows(all); setFull(true) }).catch(() => {})
   }, [])
-  const filterKey = `${dq}|${sort}`
+  const filterKey = `${q}|${sort}`
   const [pageState, setPageState] = useState({ key: filterKey, n: 1 })
   const page = pageState.key === filterKey ? pageState.n : 1
-  const setPage = (f: (p: number) => number) => setPageState({ key: filterKey, n: f(page) })
+  const tableTop = useRef<HTMLDivElement>(null)
+  // Page changes return to the top of the table so the new rows are in view.
+  const setPage = (f: (p: number) => number) => { setPageState({ key: filterKey, n: f(page) }); tableTop.current?.scrollIntoView({ block: 'start' }) }
 
   const filtered = useMemo(() => {
     const n = dq.trim().toLowerCase()
@@ -60,7 +62,7 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
         {!full && <span style={{ color: 'var(--soft)' }}>, loading the full list</span>}
       </p>
 
-      <div className="panel overflow-x-auto">
+      <div ref={tableTop} className="panel overflow-x-auto" style={{ scrollMarginTop: 72 }}>
         <table className="dtable min-w-[720px]">
           <thead>
             <tr>

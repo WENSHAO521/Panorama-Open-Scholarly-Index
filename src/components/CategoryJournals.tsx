@@ -5,7 +5,7 @@
 // groups). Filter, sort, page and export in the browser.
 
 import Link from 'next/link'
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import type { DirRecord } from '@/lib/global-journals'
@@ -34,9 +34,12 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
   const [doaj, setDoaj] = useState(false)
   const [coreOnly, setCoreOnly] = useState(false)
   const [sort, setSort] = useState<Sort>('works')
-  const key = `${file}|${dq}|${oa}|${doaj}|${coreOnly}|${sort}`
+  const key = `${file}|${q}|${oa}|${doaj}|${coreOnly}|${sort}`
   const [pageState, setPageState] = useState({ key, n: 1 })
   const page = pageState.key === key ? pageState.n : 1
+  const tableTop = useRef<HTMLDivElement>(null)
+  // Page changes return to the top of the table so the new rows are in view.
+  const goTo = (n: number) => { setPageState({ key, n }); tableTop.current?.scrollIntoView({ block: 'start' }) }
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -112,7 +115,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
           : current ? 'The journal list could not be loaded.' : 'Loading journals'}
       </p>
 
-      <div className="panel overflow-x-auto">
+      <div ref={tableTop} className="panel overflow-x-auto" style={{ scrollMarginTop: 72 }}>
         <table className="dtable min-w-[760px]">
           <thead>
             <tr><th>Journal</th><th>ISSN</th><th>Country</th><th className="text-right">Works</th><th>Access</th><th>Status</th></tr>
@@ -147,9 +150,9 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
 
       {pages > 1 && (
         <nav aria-label="Pagination" className="flex items-center justify-between mt-4 text-[13px]">
-          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => setPageState({ key, n: page - 1 })}>Previous</button>
+          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>Previous</button>
           <span className="font-mono" style={{ color: 'var(--muted)' }}>page {page} of {fmt(pages)}</span>
-          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => setPageState({ key, n: page + 1 })}>Next</button>
+          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => goTo(page + 1)}>Next</button>
         </nav>
       )}
     </div>

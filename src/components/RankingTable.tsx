@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import type { RankedJournal, Quartile } from '@/lib/rankings'
 import { fmt } from './db'
@@ -39,9 +39,12 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
   const [quart, setQuart] = useState<Quartile | 'all'>('all')
   const [q, setQ] = useState('')
   const dq = useDeferredValue(q)
-  const filterKey = `${status}|${quart}|${dq}`
+  const filterKey = `${status}|${quart}|${q}`
   const [pageState, setPageState] = useState({ key: filterKey, n: 1 })
   const page = pageState.key === filterKey ? pageState.n : 1
+  const tableTop = useRef<HTMLDivElement>(null)
+  // Page changes return to the top of the table so the new rows are in view.
+  const goTo = (n: number) => { setPageState({ key: filterKey, n }); tableTop.current?.scrollIntoView({ block: 'start' }) }
 
   const filtered = useMemo(() => {
     const needle = dq.trim().toLowerCase()
@@ -87,7 +90,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
         <button type="button" className="btn h-9" onClick={download} disabled={!filtered.length}><DownloadSimple className="h-4 w-4" /> CSV</button>
       </div>
 
-      <div className="panel overflow-x-auto mt-4">
+      <div ref={tableTop} className="panel overflow-x-auto mt-4" style={{ scrollMarginTop: 72 }}>
         <table className="dtable min-w-[860px]">
           <thead>
             <tr>
@@ -141,9 +144,9 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
 
       {pages > 1 && (
         <nav aria-label="Pagination" className="flex items-center justify-between mt-4 text-[13px]">
-          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => setPageState({ key: filterKey, n: page - 1 })}>Previous</button>
+          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => goTo(page - 1)}>Previous</button>
           <span className="font-mono" style={{ color: 'var(--muted)' }}>page {page} of {pages}</span>
-          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => setPageState({ key: filterKey, n: page + 1 })}>Next</button>
+          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => goTo(page + 1)}>Next</button>
         </nav>
       )}
     </div>
