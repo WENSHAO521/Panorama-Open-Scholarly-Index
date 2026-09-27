@@ -7,6 +7,7 @@
  * manual step:
  *
  *   pcs-q.json            the PCS-Q ranking edition, from the data layer
+ *                         (collections/pcs-q.json.gz, or pcs-q.json in older snapshots)
  *                         (data.posi.panorama-sg.com -> current.json ->
  *                         manifest -> collections/pcs-q.json)
  *   journals-global.json  the global journal corpus (every Crossref and
@@ -74,7 +75,15 @@ const clean = t => t?.replace(/[\u0000-\u001f\u007f-\u009f]/g, '').trim() || nul
   try {
     const current = await get(`${DATA}/current.json`)
     const dir = current.manifest.replace(/manifest\.json$/, '')
-    const edition = await get(`${DATA}${dir}collections/pcs-q.json`)
+    // Published gzipped since the global edition (~90 MB as JSON); older
+    // snapshots carry plain pcs-q.json.
+    let edition
+    try {
+      edition = JSON.parse(gunzipSync(await get(`${DATA}${dir}collections/pcs-q.json.gz`, 'buffer')).toString('utf-8'))
+    } catch (e) {
+      if (!/^404 /.test(e.message)) throw e
+      edition = await get(`${DATA}${dir}collections/pcs-q.json`)
+    }
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
     writeFileSync(out, JSON.stringify(edition))
     console.log(`sync-live-data: rankings ${edition.methodology_version} ${edition.metric_year}, ${edition.records.length} journals`)
