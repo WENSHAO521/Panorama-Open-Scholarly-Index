@@ -94,3 +94,55 @@ export function countryFromAddress(address) {
   }
   return null
 }
+
+// ISO 3166 alpha-2 -> the English names already used in the data. OpenAlex
+// (country_code) and DOAJ (publisher.country) give ISO, never MARC, so this
+// table is for them; stored values of unknown origin go through normalizeCountryCode.
+const ISO_NAMES = {
+  AF:'Afghanistan',AL:'Albania',DZ:'Algeria',AD:'Andorra',AO:'Angola',AR:'Argentina',
+  AM:'Armenia',AU:'Australia',AT:'Austria',AZ:'Azerbaijan',BH:'Bahrain',BD:'Bangladesh',
+  BY:'Belarus',BE:'Belgium',BJ:'Benin',BT:'Bhutan',BO:'Bolivia',BA:'Bosnia and Herzegovina',
+  BW:'Botswana',BR:'Brazil',BN:'Brunei',BG:'Bulgaria',BF:'Burkina Faso',BI:'Burundi',
+  KH:'Cambodia',CM:'Cameroon',CA:'Canada',CF:'Central African Republic',TD:'Chad',
+  CL:'Chile',CN:'China',CO:'Colombia',CG:'Congo',HR:'Croatia',CU:'Cuba',CY:'Cyprus',
+  CZ:'Czech Republic',DK:'Denmark',DO:'Dominican Republic',EC:'Ecuador',EG:'Egypt',
+  SV:'El Salvador',EE:'Estonia',ET:'Ethiopia',FI:'Finland',FR:'France',GE:'Georgia',
+  DE:'Germany',GH:'Ghana',GR:'Greece',GT:'Guatemala',GN:'Guinea',HT:'Haiti',
+  HN:'Honduras',HU:'Hungary',IS:'Iceland',IN:'India',ID:'Indonesia',IR:'Iran',
+  IQ:'Iraq',IE:'Ireland',IL:'Israel',IT:'Italy',JM:'Jamaica',JP:'Japan',JO:'Jordan',
+  KZ:'Kazakhstan',KE:'Kenya',KW:'Kuwait',KG:'Kyrgyzstan',LA:'Laos',LV:'Latvia',
+  LB:'Lebanon',LT:'Lithuania',LU:'Luxembourg',MK:'North Macedonia',MG:'Madagascar',
+  MW:'Malawi',MY:'Malaysia',MV:'Maldives',ML:'Mali',MT:'Malta',MR:'Mauritania',
+  MX:'Mexico',MD:'Moldova',MN:'Mongolia',MA:'Morocco',MZ:'Mozambique',MM:'Myanmar',
+  NA:'Namibia',NP:'Nepal',NL:'Netherlands',NZ:'New Zealand',NI:'Nicaragua',
+  NG:'Nigeria',NO:'Norway',OM:'Oman',PK:'Pakistan',PA:'Panama',PY:'Paraguay',
+  PE:'Peru',PH:'Philippines',PL:'Poland',PT:'Portugal',QA:'Qatar',RO:'Romania',
+  RU:'Russia',RW:'Rwanda',SA:'Saudi Arabia',SN:'Senegal',RS:'Serbia',SL:'Sierra Leone',
+  SG:'Singapore',SK:'Slovakia',SI:'Slovenia',SO:'Somalia',ZA:'South Africa',
+  SS:'South Sudan',ES:'Spain',LK:'Sri Lanka',SD:'Sudan',SE:'Sweden',CH:'Switzerland',
+  SY:'Syria',TW:'Taiwan',TJ:'Tajikistan',TZ:'Tanzania',TH:'Thailand',TN:'Tunisia',
+  TR:'Turkey',TM:'Turkmenistan',UG:'Uganda',UA:'Ukraine',AE:'United Arab Emirates',
+  GB:'United Kingdom',US:'United States',UY:'Uruguay',UZ:'Uzbekistan',VE:'Venezuela',
+  VN:'Vietnam',YE:'Yemen',ZM:'Zambia',ZW:'Zimbabwe',
+}
+
+// Intl's wording differs from the stored names for these.
+const INTL_OVERRIDES = {
+  CD: 'Congo - Kinshasa', HK: 'Hong Kong', MO: 'Macao', KR: 'South Korea', KP: 'North Korea',
+  PS: 'Palestine', VA: 'Vatican City',
+}
+
+/** ISO alpha-2 code -> English country name ('' for none). An unrecognised code is returned as is. */
+export function isoToCountry(code) {
+  if (!code) return ''
+  const c = String(code).trim().toUpperCase()
+  if (ISO_NAMES[c]) return ISO_NAMES[c]
+  if (INTL_OVERRIDES[c]) return INTL_OVERRIDES[c]
+  if (/^[A-Z]{2}$/.test(c)) {
+    try {
+      const n = new Intl.DisplayNames(['en'], { type: 'region' }).of(c)
+      if (n && n !== c && !/unknown/i.test(n)) return n
+    } catch { /* not a region */ }
+  }
+  return code
+}
