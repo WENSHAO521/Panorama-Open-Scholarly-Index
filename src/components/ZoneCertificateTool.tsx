@@ -76,7 +76,7 @@ export function ZoneCertificateTool() {
     setPdfState('working')
     try {
       await downloadCertificatePdf(el, {
-        code: cert.code, issued: cert.issued, subject: 'Certificate of journal zone', fileName: `POSI-zone-certificate-${cert.code}.pdf`, singlePage: true,
+        code: cert.code, issued: cert.issued, subject: 'Certificate of journal zone', fileName: `POSI-zone-certificate-${cert.code}.pdf`, singlePage: true, landscape: true,
       })
       setPdfState('idle')
     } catch {

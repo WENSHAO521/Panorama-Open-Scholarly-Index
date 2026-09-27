@@ -1,18 +1,22 @@
-// Certificate of indexing as a downloadable A4 PDF, made in the browser from
+// Certificates as downloadable A4 PDFs (portrait, or landscape for the zone
+// certificate), made in the browser from
 // the rendered certificate so it matches the page exactly (including QR code
 // and non-Latin titles). Long certificates break between table rows; every
 // continuation page repeats the certificate header (and the table's column
 // headings while the table continues), and each page is numbered.
 
-const A4 = { w: 595.28, h: 841.89 } // points
-const SHEET_PX = 794 // CSS width of the certificate sheet
+const A4_PORTRAIT = { w: 595.28, h: 841.89 } // points
+const A4_LANDSCAPE = { w: 841.89, h: 595.28 }
 const SCALE = 2.5 // render resolution
 
 export async function downloadCertificatePdf(
   source: HTMLElement,
-  meta: { code: string; issued: string; subject?: string; fileName?: string; singlePage?: boolean },
+  meta: { code: string; issued: string; subject?: string; fileName?: string; singlePage?: boolean; landscape?: boolean },
 ) {
   const subject = meta.subject ?? 'Certificate of indexing'
+  const A4 = meta.landscape ? A4_LANDSCAPE : A4_PORTRAIT
+  // CSS width of the certificate sheet: A4 at 96 dpi
+  const SHEET_PX = meta.landscape ? 1123 : 794
   const [{ toCanvas }, { PDFDocument, PDFString, StandardFonts, rgb }] = await Promise.all([import('html-to-image'), import('pdf-lib')])
 
   // Lay out a copy at A4 width, off screen, whatever the viewport.
