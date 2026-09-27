@@ -46,25 +46,23 @@ jobs:
       - name: Update auto-PQF scores
         run: node scripts/auto-pqf.mjs --write --budget-minutes 20
 
-      # 步骤 4：为 Core Collection（PSG/INDEXED/SHIHARR/OTHER_INDEXED）中的新刊
-      # 自动生成 Early-Stage Rating —— 任何刚被人工收录进 data.ts 的期刊，会在下一次
-      # 每日运行时自动完成评级，不需要额外手动触发。
-      - name: Update Early-Stage Journal Ratings
-        run: node scripts/rate-early-stage.mjs --write
+      # Early-Stage 评级不在这里计算：核心合集记录（含评级）由 posi-data 按 AJR-E-1.1
+      # 审计生成，经 data-sync 同步过来。原先这里的本地评级步骤会把它们改写成已停用的
+      # AJR-E-1.0 格式（没有总分），所以已删除。
 
       # 有变化才 commit，无变化静默退出（不产生空 commit）
       - name: Commit and push if changed
         run: |
           git config user.name  "posi-sync-bot"
           git config user.email "posi-sync-bot@users.noreply.github.com"
-          git add src/lib/discovered-journals.json src/lib/data.ts
+          git add src/lib/discovered-journals.json
           if git diff --staged --quiet; then
             echo "No changes — skipping commit"
           else
             JOURNAL_COUNT=$(node -e "console.log(require('./src/lib/discovered-journals.json').length)")
             git commit -m "chore(data): daily sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
             # Another data job may have pushed meanwhile; they touch different files.
-            git pull --rebase --quiet origin master
+            git pull --rebase --autostash --quiet origin master
             git push
           fi
 

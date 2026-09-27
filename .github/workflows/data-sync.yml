@@ -66,7 +66,7 @@ jobs:
           else
             git commit -m "chore(data): sync data $(date -u +%Y-%m-%d)"
             # Another data job may have pushed meanwhile; they touch different files.
-            git pull --rebase --quiet origin master
+            git pull --rebase --autostash --quiet origin master
             git push
             echo "Synced and pushed; Cloudflare Pages rebuilds from this push." | tee -a "$GITHUB_STEP_SUMMARY"
           fi
