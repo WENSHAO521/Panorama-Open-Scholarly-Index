@@ -47,6 +47,7 @@
  *
  * Usage:
  *   node scripts/sync-corpus.mjs
+ *   POSI_DATA_BASE=http://localhost:8000 node scripts/sync-corpus.mjs
  */
 
 import { writeFileSync } from 'fs'
@@ -57,7 +58,9 @@ import { resolve } from 'path'
 // standalone Node script, not part of the Next.js app, and importing from
 // src/ here would tie the script's module resolution to the app's
 // bundler config for no real benefit at only two call sites).
-const POSI_DATA_BASE = 'https://data.posi.panorama-sg.com'
+// POSI_DATA_BASE=<url> reads from another copy of the data layer, e.g. a
+// local server over a posi-data-delivery clone.
+const POSI_DATA_BASE = process.env.POSI_DATA_BASE || 'https://data.posi.panorama-sg.com'
 
 const UA = 'POSI-CorpusSync/0.2 (+https://posi.panorama-sg.com; posi@panoramagroup.org)'
 

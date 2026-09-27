@@ -8,11 +8,11 @@ import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 
 const BASE = 'https://data.posi.panorama-sg.com'
 
-interface Current { snapshot: string; manifest: string; is_official_release: boolean; note?: string }
+interface Current { snapshot: string; manifest: string; is_official_release: boolean; release?: string | null; latest_release?: string | null; note?: string }
 type Manifest = Record<string, string | number | boolean | null>
 interface Loaded { current: Current; manifest: Manifest; sums: { hash: string; path: string }[] }
 
-const VERSION_KEYS = ['lifecycle_version', 'psc_crosswalk_version', 'ajr_e_version', 'ajr_m_version', 'rank_version', 'evidence_version', 'pcs_version', 'pci_version']
+const VERSION_KEYS = ['lifecycle_version', 'psc_crosswalk_version', 'ajr_e_version', 'ajr_m_version', 'rank_version', 'evidence_version', 'pcs_version', 'pci_version', 'pcs_q_version']
 const COUNT_KEYS = ['journal_count', 'core_collection_count', 'benchmark_curated_count', 'benchmark_publisher_catalog_count', 'pcs_computed_count', 'pci_computed_count', 'early_stage_rated_count', 'citation_q_ranked_count']
 
 function label(k: string) {
@@ -70,10 +70,14 @@ export function SnapshotPanel() {
     <div className="space-y-4">
       <div className="panel p-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div>
-          <p className="text-[13px]" style={{ color: 'var(--muted)' }}>Current snapshot</p>
-          <p className="font-mono text-[22px] mt-1" style={{ color: 'var(--ink)' }}>{current.snapshot}</p>
+          <p className="text-[13px]" style={{ color: 'var(--muted)' }}>{current.release ? 'Current release' : 'Current snapshot'}</p>
+          <p className="font-mono text-[22px] mt-1" style={{ color: 'var(--ink)' }}>{current.release ?? current.snapshot}</p>
           <p className="mt-2 text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
-            {current.is_official_release ? 'Official release.' : 'Pre-release data snapshot. No POSI-R release has been produced yet.'}{' '}
+            {current.is_official_release
+              ? <>Official release, published as snapshot <span className="font-mono">{current.snapshot}</span>.</>
+              : current.latest_release
+                ? <>Data updated since release <span className="font-mono">{current.latest_release}</span>; this snapshot is not itself a release.</>
+                : 'Pre-release data snapshot. No POSI-R release has been produced yet.'}{' '}
             Data cutoff <span className="font-mono">{String(manifest.data_cutoff ?? 'n/a')}</span>.
           </p>
           <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[12.5px]">

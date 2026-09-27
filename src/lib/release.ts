@@ -14,12 +14,13 @@
 // verificationCode()/certificate-pdf.ts, baked into issued certificate
 // PDFs). POSI-R-2026.1 was announced as the first official data release on
 // 2026-09-27 (see the posi-enters-full-operation announcement), which is
-// when IS_OFFICIAL_RELEASE was set. Its release manifest in the data layer
-// follows posi-data's POSI-R-1.0-SPEC.md.
+// when IS_OFFICIAL_RELEASE was set. Its manifest is posi-data's
+// releases/POSI-R-2026.1/manifest.json (POSI-R-1.0-SPEC.md), with data
+// cutoff 2026-09-27, mirrored by posi-data-delivery.
 export const RELEASE_ID = 'POSI-R-2026.1'
 export const RELEASE_LABEL = '2026.1'
 export const METHODOLOGY_VERSION = 'AJR Lifecycle 1.0'
-export const DATA_CUTOFF = '2026-08-12'
+export const DATA_CUTOFF = '2026-09-27'
 export const IS_OFFICIAL_RELEASE = true
 export const DATA_SNAPSHOT_LABEL = `DATA SNAPSHOT · ${DATA_CUTOFF}`
 
