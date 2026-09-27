@@ -9,7 +9,7 @@ const SHEET_PX = 794 // CSS width of the certificate sheet
 const SCALE = 2.5 // render resolution
 
 export async function downloadCertificatePdf(source: HTMLElement, meta: { code: string; issued: string }) {
-  const [{ toCanvas }, { PDFDocument, StandardFonts, rgb }] = await Promise.all([import('html-to-image'), import('pdf-lib')])
+  const [{ toCanvas }, { PDFDocument, PDFString, StandardFonts, rgb }] = await Promise.all([import('html-to-image'), import('pdf-lib')])
 
   // Lay out a copy at A4 width, off screen, whatever the viewport.
   const host = document.createElement('div')
@@ -42,6 +42,11 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
       return r ? { top: r.top - top, bottom: r.bottom - top } : null
     }
     const header = box('header')
+    // Verification links (QR code and address) stay clickable in the PDF.
+    const links = [...sheet.querySelectorAll<HTMLAnchorElement>('a[data-verify-link]')].map(a => {
+      const r = a.getBoundingClientRect()
+      return { href: a.href, x: r.left - sheet.getBoundingClientRect().left, top: r.top - top, bottom: r.bottom - top, w: r.width }
+    })
     // The heading row's dark rule sits on its lower edge; take it whole.
     const th = box('thead')
     const thead = th ? { top: th.top, bottom: th.bottom + 1.5 } : null
@@ -115,6 +120,21 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
       const k = Math.min(1, pagePx / sliceH)
       const w = A4.w * k
       page.drawImage(jpg, { x: (A4.w - w) / 2, y: 0, width: w, height: A4.h })
+
+      // Page coordinates: 1 sheet px = pt points, drawn from the top of the page.
+      const pt = (A4.w * k) / SHEET_PX
+      const x0 = (A4.w - w) / 2
+      for (const l of links) {
+        if (l.top < p.start || l.bottom > p.end) continue
+        const yTop = A4.h - (p.lead + l.top - p.start) * pt
+        const yBottom = A4.h - (p.lead + l.bottom - p.start) * pt
+        const annot = pdf.context.register(pdf.context.obj({
+          Type: 'Annot', Subtype: 'Link', Border: [0, 0, 0],
+          Rect: [x0 + l.x * pt, yBottom, x0 + (l.x + l.w) * pt, yTop],
+          A: { Type: 'Action', S: 'URI', URI: PDFString.of(l.href) },
+        }))
+        page.node.addAnnot(annot)
+      }
 
       if (plans.length > 1) {
         const size = 7.5

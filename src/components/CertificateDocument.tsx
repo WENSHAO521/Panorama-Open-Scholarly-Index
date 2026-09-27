@@ -30,6 +30,10 @@ const signature = localFont({
 
 const SIGNATORY = 'Chengwen Song'
 
+function verifyHost(url: string): string {
+  try { return new URL(url).host } catch { return 'posi.panorama-sg.com' }
+}
+
 export interface CertificateData {
   code: string
   issued: string
@@ -165,13 +169,19 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
           <footer style={{ marginTop: 'auto', paddingTop: 44, display: 'grid', gridTemplateColumns: '108px 1fr 270px', gap: 20, alignItems: 'end' }}>
             {qr
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={qr} alt="Verification QR code" width={108} height={108} style={{ display: 'block' }} />
+              ? <a href={data.verifyUrl} data-verify-link><img src={qr} alt="Verification QR code" width={108} height={108} style={{ display: 'block' }} /></a>
               : <div style={{ width: 108, height: 108, background: '#eef1f1' }} />}
             <div style={{ fontSize: 10.5, color: MUTED }}>
               <p style={{ margin: 0, color: INK, fontWeight: 600, fontSize: 12.5 }}>Verify this certificate</p>
-              <p style={{ margin: '2px 0 0', fontFamily: MONO, color: TEAL, wordBreak: 'break-all', fontSize: 10 }}>{data.verifyUrl}</p>
+              <p style={{ margin: '2px 0 0' }}>
+                {/* The full address carries the certificate's data and can be very long; the QR code and the link hold it. */}
+                <a href={data.verifyUrl} data-verify-link style={{ fontFamily: MONO, color: TEAL, fontSize: 10.5, textDecoration: 'none' }}>
+                  {verifyHost(data.verifyUrl)}/certificate/verify/
+                </a>
+              </p>
               <p style={{ margin: '4px 0 0' }}>
-                Verification recomputes the certificate number and checks every listed publication again against
+                Scan the QR code or select the link to open the verification record for certificate{' '}
+                <span style={{ fontFamily: MONO, color: INK, whiteSpace: 'nowrap' }}>{data.code}</span>. Verification recomputes the certificate number and checks every listed publication again against
                 Crossref, OpenAlex and the POSI index. This certificate states indexing status only.
               </p>
             </div>
