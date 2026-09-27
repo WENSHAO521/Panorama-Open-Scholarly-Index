@@ -17,6 +17,10 @@ export interface JournalProfile {
   is: string[]
   hp?: string
   apc?: number
+  /** APC as stated on the journal's website, when POSI has verified it (Core Collection), e.g. "USD 450" or "None" */
+  apcx?: string
+  /** page the verified APC is stated on */
+  apcsrc?: string
   oa?: boolean
   dj?: boolean
   /** works, citations, h-index, i10-index */

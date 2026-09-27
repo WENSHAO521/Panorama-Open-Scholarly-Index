@@ -1,3 +1,13 @@
+export interface JournalApc {
+  amount: number
+  currency: string
+  /** conditions as stated: page limits, promotional rates, waivers */
+  note?: string | null
+  source_url: string
+  /** YYYY-MM-DD */
+  checked_at: string
+}
+
 export interface Journal {
   id: string
   journal_code: string
@@ -78,6 +88,10 @@ export interface Journal {
   // a real, evidence-based AJR score and is never populated by this
   // pathway.
   citation_preview?: CitationPreview | null
+  // The APC stated on the journal's own website (Core Collection records,
+  // posi-data's audits/data-quality/apc-2026). amount 0 means the journal
+  // states it charges none; absent when no stated APC was found.
+  apc?: JournalApc | null
 }
 
 export interface CitationPreview {

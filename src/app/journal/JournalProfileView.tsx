@@ -107,7 +107,7 @@ export function JournalProfileView() {
           ['Citations', fmt(j.c)],
           ['h-index', fmt(j.h)],
           ['i10-index', fmt(j.i10)],
-          ['APC (USD)', j.apc != null ? (j.apc === 0 ? 'None' : fmt(j.apc)) : '-'],
+          [j.apcx ? 'APC' : 'APC (USD)', j.apcx ?? (j.apc != null ? (j.apc === 0 ? 'None' : fmt(j.apc)) : '-')],
           ['Years active', years ?? '-'],
         ] as const).map(([label, value]) => (
           <div key={label} className="p-4" style={{ background: 'var(--surface)' }}>

@@ -234,6 +234,15 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
               <FieldRow k="license" value={j.license} />
               <FieldRow k="peer_review_type" value={j.peer_review_type} />
               <FieldRow k="website_url" value={j.website_url ? <a href={j.website_url} className="link break-all" target="_blank" rel="noopener noreferrer">{j.website_url}</a> : null} />
+              <FieldRow k="apc" value={j.apc ? (
+                <span className="block">
+                  <span className="font-medium">{j.apc.amount === 0 ? 'No APC' : `${j.apc.currency} ${j.apc.amount.toLocaleString('en-US')}`}</span>
+                  {j.apc.note && <span className="block text-[13px] mt-0.5" style={{ color: 'var(--ink-2)' }}>{j.apc.note}</span>}
+                  <span className="block text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>
+                    As stated on the <a href={j.apc.source_url} className="link" target="_blank" rel="noopener noreferrer">journal’s website</a>, checked {j.apc.checked_at}
+                  </span>
+                </span>
+              ) : null} />
             </dl>
           </section>
 

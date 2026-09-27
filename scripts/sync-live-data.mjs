@@ -126,6 +126,10 @@ if (!RANKINGS_ONLY) {
     for (const l of lines.split('\n')) { if (l) { const p = JSON.parse(l); oa.set(p.id, p) } }
     lines = null
 
+    // APCs POSI has verified on the journal's own website (Core Collection records).
+    const verifiedApc = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/core-collection.json'), 'utf-8'))
+      .filter(j => j.posi_id && j.apc).map(j => [j.posi_id, j.apc]))
+
     const edition = JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8'))
     const ranks = new Map(edition.records.map(r => [r.journal_id, r]))
 
@@ -137,11 +141,14 @@ if (!RANKINGS_ONLY) {
       if (!key) continue
       const o = r.openalex_source_id ? oa.get(r.openalex_source_id) : null
       const rk = ranks.get(r.posi_id)
+      const va = verifiedApc.get(r.posi_id)
       const prof = {
         k: key, pid: r.posi_id, cur: r.curated ? 1 : undefined,
         t: clean(r.title) ?? clean(o?.t) ?? key, ab: o?.ab, alt: o?.alt,
         pub: r.publisher ?? o?.pub, cc: r.country ?? o?.cc, is: r.issns ?? [key],
-        hp: o?.hp, apc: r.apc_usd ?? o?.apc, oa: r.open_access ?? undefined, dj: r.in_doaj ?? undefined,
+        hp: o?.hp, apc: va ? (va.currency === 'USD' ? va.amount : undefined) : r.apc_usd ?? o?.apc,
+        apcx: va ? (va.amount === 0 ? 'None' : `${va.currency} ${va.amount.toLocaleString('en-US')}`) : undefined,
+        apcsrc: va?.source_url, oa: r.open_access ?? undefined, dj: r.in_doaj ?? undefined,
         w: o?.w ?? r.works_count ?? undefined, c: o?.c, h: o?.h, i10: o?.i10, y0: o?.y0, y1: o?.y1,
         cy: o?.cy, tp: o?.tp, soc: o?.soc,
         s: r.psc_category ?? undefined, sc: r.psc_confidence ?? undefined,
