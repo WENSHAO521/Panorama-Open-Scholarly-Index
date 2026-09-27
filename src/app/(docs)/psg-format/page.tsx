@@ -23,7 +23,7 @@ function Example({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="mt-2 px-4 py-3 text-[12px] leading-relaxed font-mono text-justify"
-      style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', color: 'var(--posi-text)', borderLeft: '3px solid var(--teal)' }}
+      style={{ background: 'var(--surface-2)', border: '1px solid var(--line-soft)', color: 'var(--posi-text)' }}
     >
       {children}
     </div>

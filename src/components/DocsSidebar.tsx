@@ -14,11 +14,11 @@ export function DocsSidebar() {
   const current = DOCS_NAV.flatMap(s => s.links).find(l => norm(l.href) === pathname)
 
   const list = (
-    <nav aria-label="Documentation" className="space-y-6">
+    <nav aria-label="Documentation" className="space-y-5">
       {DOCS_NAV.map(section => (
         <div key={section.title}>
-          <h2 className="eyebrow mb-2 px-2">{section.title}</h2>
-          <ul className="space-y-px">
+          <h2 className="mb-1.5 text-[12.5px] font-semibold" style={{ color: 'var(--muted)' }}>{section.title}</h2>
+          <ul>
             {section.links.map(l => {
               const active = norm(l.href) === pathname
               return (
@@ -27,10 +27,8 @@ export function DocsSidebar() {
                     href={l.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className="block px-2 py-1.5 rounded-[2px] text-[13.5px] leading-snug"
-                    style={active
-                      ? { background: 'var(--teal-soft)', color: 'var(--teal)', fontWeight: 500, boxShadow: 'inset 2px 0 0 var(--teal)' }
-                      : { color: 'var(--ink-2)' }}
+                    className={`block py-[5px] text-[13.5px] leading-snug ${active ? '' : 'hover:underline underline-offset-2'}`}
+                    style={active ? { color: 'var(--ink)', fontWeight: 600 } : { color: 'var(--teal)' }}
                   >
                     {l.label}
                   </Link>

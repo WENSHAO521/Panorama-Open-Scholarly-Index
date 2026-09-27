@@ -107,13 +107,9 @@ export function SectionTitle({ id, children, aside }: { id?: string; children: R
 }
 
 export function Note({ tone = 'info', children }: { tone?: 'info' | 'warn' | 'ok'; children: React.ReactNode }) {
-  const t = tone === 'warn'
-    ? { c: 'var(--check)', bg: 'var(--check-soft)', b: 'var(--line)' }
-    : tone === 'ok'
-      ? { c: 'var(--verified)', bg: 'var(--verified-soft)', b: 'var(--line)' }
-      : { c: 'var(--info)', bg: 'var(--info-soft)', b: 'var(--line)' }
+  const bg = tone === 'warn' ? 'var(--check-soft)' : tone === 'ok' ? 'var(--verified-soft)' : 'var(--surface-2)'
   return (
-    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[2px]" style={{ background: t.bg, border: `1px solid ${t.b}`, color: 'var(--ink-2)', borderLeft: `3px solid ${t.c}` }}>
+    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[2px]" style={{ background: bg, border: '1px solid var(--line-soft)', color: 'var(--ink-2)' }}>
       {children}
     </div>
   )

@@ -1,33 +1,81 @@
 import Link from 'next/link'
-import { getAllRecords } from '@/lib/records-data'
+import { getAllRecords, getStaticRecordJournals } from '@/lib/records-data'
 import { toIndexRecord, type Collection } from '@/lib/records'
 import { DISCOVERED_JOURNALS } from '@/lib/data'
-import { getStaticRecordJournals } from '@/lib/records-data'
+import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
+import { getRankings } from '@/lib/rankings'
+import { PUBLISHER_SHARD_COUNT } from '@/lib/publishers'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
 import { SnapshotPanel } from '@/components/SnapshotPanel'
 
 export const metadata = {
   title: 'Datasets',
-  description: 'Download every POSI file: journal records in JSON and CSV, rankings, the PSC subject classification and the checksummed canonical snapshot.',
+  description: 'Download every POSI file: the global journal directory, publishers, rankings, curated journal records in JSON and CSV, the PSC subject classification and the checksummed canonical snapshot.',
 }
 
 function kb(bytes: number) {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
 }
 
+interface DataFile { path: string; alt?: string; rows: number | null; bytes: number | null; what: string }
+
+function FileTable({ files }: { files: DataFile[] }) {
+  return (
+    <div className="panel overflow-x-auto">
+      <table className="dtable min-w-[720px]">
+        <thead><tr><th>Path</th><th>Contents</th><th className="text-right">Records</th><th className="text-right">Size</th><th>Formats</th></tr></thead>
+        <tbody>
+          {files.map(f => (
+            <tr key={f.path}>
+              <td className="font-mono text-[13px] whitespace-nowrap">
+                {f.path.includes('{') ? f.path : <a className="link" href={f.path}>{f.path}</a>}
+              </td>
+              <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
+              <td className="text-right font-mono tnum text-[13px]">{f.rows === null ? '' : fmt(f.rows)}</td>
+              <td className="text-right font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{f.bytes ? kb(f.bytes) : ''}</td>
+              <td className="text-[13px] whitespace-nowrap">
+                JSON{f.alt && <>, <a className="link" href={f.alt}>CSV</a></>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const AUDIT_BASE = 'https://github.com/WENSHAO521/posi-data/tree/master/audits/'
+
+// Audits published in posi-data, newest first.
 const AUDITS = [
   {
-    name: 'Initial journal migration',
-    desc: '23,822 legacy source records audited in two independent dry runs with byte-identical output. 171 possible-duplicate groups resolved by live OpenAlex ISSN-L lookups: 166 merged, 5 kept distinct. 23,331 POSI-J ids minted, 0 collisions.',
+    name: 'PCS ETL, full scope', date: '2026-08-14', path: 'pcs-etl/pcs-etl-v1-global1024-2026',
+    desc: 'POSI Citation Score from Crossref data for 4,320 journals (the 31 Core Collection journals and the full 4,289-journal Global Benchmark): 6.77 million works fetched, PCS computed for 4,089.',
   },
   {
-    name: 'OpenAlex enrichment',
-    desc: 'OpenAlex source id and ISSN-L enrichment over all 23,819 candidate entities (23,674 verified). Superseded by the completed migration above.',
+    name: 'AJR-E-1.1 rerate, Core Collection', date: '2026-08-14', path: 'ratings/ajr-e-1.1-rerate-core30-2026',
+    desc: 'First run of the Early-Stage rating against all 31 Core Collection journals, combining site-crawl and Crossref article-sample evidence.',
   },
   {
-    name: 'Core and Benchmark identity migration',
-    desc: 'Extended permanent ids to the ~1,031 curated Core Collection and Global Benchmark records: 874 newly minted, 157 resolved to existing ids, 0 flagged for manual review.',
+    name: 'Publisher-expansion canonical records', date: '2026-08-13', path: 'migrations/publisher-expansion-canonical-records-2026',
+    desc: 'Wrote the 2,177 journal records that the Elsevier and Frontiers expansion had minted ids for, so every registry id resolves to a record.',
+  },
+  {
+    name: 'Citation preview correction', date: '2026-08-13', path: 'migrations/citation-preview-correction-2026',
+    desc: 'Withdrew provisional citation quartiles on 3,245 Global Benchmark records and replaced them with a diagnostic-only preview: Benchmark membership alone does not make a journal ranking-eligible.',
+  },
+  {
+    name: 'Elsevier and Frontiers expansion', date: '2026-08-12', path: 'migrations/elsevier-jnlactive-expansion-2026',
+    desc: "Global Benchmark grown from 1,000 to 4,289 records from the publishers' own title lists (3,113 Elsevier, 183 Frontiers), with every identity conflict resolved in a second-round re-run.",
+  },
+  {
+    name: 'Core and Benchmark identity remap', date: '2026-08', path: 'migrations/benchmark-identity-remap-2026',
+    desc: 'All 1,000 Global Benchmark and 31 Core Collection journals resolved against the 24,205-record registry: 0 new ids, 0 conflicts, 0 left for manual review.',
+  },
+  {
+    name: 'Initial journal migration', date: '2026', path: 'migrations/initial-journal-migration',
+    desc: '23,822 legacy source records audited in two independent dry runs with byte-identical output; 171 possible-duplicate groups resolved (166 merged, 5 kept distinct); 23,331 POSI-J ids minted, 0 collisions.',
   },
 ]
 
@@ -38,7 +86,20 @@ export default function DatasetsPage() {
   const bench = group(['benchmark'])
   const disc = group(['discovered'])
 
-  const files = [
+  const { records: directory, source } = getDirectory()
+  const categories = getDirectoryCategories().filter(c => c.count > 0)
+  const publishers = getPublishers()
+  const { ranked, notRanked, year } = getRankings()
+
+  const global: DataFile[] = [
+    { path: '/data/journals/index.json', rows: categories.length, bytes: null, what: 'Global journal directory: totals, and the file list for each subject category' },
+    { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 20,000 journals are split by first letter' },
+    { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
+    { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
+    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: ranked.length + notRanked.length, bytes: null, what: `Journal Rankings ${year}: PCS with category and overall rank, percentile and quartile; unranked journals with the reason` },
+  ]
+
+  const curated: DataFile[] = [
     { path: '/data/index/core.json', alt: '/data/index/core.csv', rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection and Candidate records, compact index' },
     { path: '/data/index/benchmark.json', alt: '/data/index/benchmark.csv', rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
     { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered records, compact index' },
@@ -53,38 +114,29 @@ export default function DatasetsPage() {
     <div className="wrap">
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
-          POSI journal records, rankings and the subject classification are available for download under open
-          licences. Files are regenerated whenever the data are updated.
+          The global journal directory, publishers, rankings, curated journal records and the subject classification,
+          under open licences. Every file is regenerated on each deployment from the current data.
         </p>
       </PageHeader>
 
       <div className="space-y-14">
-        <section aria-labelledby="site-files">
-          <SectionTitle id="site-files">Files on this site</SectionTitle>
+        <section aria-labelledby="global-files">
+          <SectionTitle id="global-files">Global index</SectionTitle>
           <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
-            Index files use short keys, documented in the{' '}
+            {source === 'global'
+              ? <>{fmt(directory.length)} journals registered with Crossref or OpenAlex, the {fmt(publishers.length)} publishers behind them, and the ranking edition.</>
+              : <>The global corpus was not available for this build, so these files hold the curated records only.</>}
+          </p>
+          <FileTable files={global} />
+        </section>
+
+        <section aria-labelledby="site-files">
+          <SectionTitle id="site-files">Curated records</SectionTitle>
+          <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
+            Records POSI holds with a permanent POSI-J id. Index files use short keys, documented in the{' '}
             <Link href="/docs/schema/" className="link">record schema</Link>.
           </p>
-          <div className="panel overflow-x-auto">
-            <table className="dtable min-w-[720px]">
-              <thead><tr><th>Path</th><th>Contents</th><th className="text-right">Records</th><th className="text-right">Size</th><th>Formats</th></tr></thead>
-              <tbody>
-                {files.map(f => (
-                  <tr key={f.path}>
-                    <td className="font-mono text-[13px] whitespace-nowrap">
-                      {f.path.includes('{') ? f.path : <a className="link" href={f.path}>{f.path}</a>}
-                    </td>
-                    <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
-                    <td className="text-right font-mono tnum text-[13px]">{f.rows === null ? '' : fmt(f.rows)}</td>
-                    <td className="text-right font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{f.bytes ? kb(f.bytes) : ''}</td>
-                    <td className="text-[13px] whitespace-nowrap">
-                      JSON{f.alt && <>, <a className="link" href={f.alt}>CSV</a></>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <FileTable files={curated} />
         </section>
 
         <section aria-labelledby="canonical">
@@ -96,35 +148,44 @@ export default function DatasetsPage() {
           <SnapshotPanel />
         </section>
 
-        <section aria-labelledby="licences" className="max-w-[760px]">
-          <div>
-            <SectionTitle id="licences">Licences</SectionTitle>
-            <div className="panel overflow-hidden">
-              <table className="dtable">
-                <tbody>
-                  <tr><td>POSI-produced data (PSC, scores, rankings, curated metadata)</td><td className="font-mono whitespace-nowrap">CC BY 4.0</td></tr>
-                  <tr><td>Source code of this site and posi-engine</td><td className="font-mono whitespace-nowrap">MIT</td></tr>
-                  <tr><td>Upstream metadata (Crossref, OpenAlex, DOAJ, ROR, ORCID)</td><td className="whitespace-nowrap">Source license</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>POSI is open source. Third-party open data are credited and keep their original licences.</p>
+        <section aria-labelledby="audits">
+          <SectionTitle id="audits" aside={<a href={AUDIT_BASE} className="link" target="_blank" rel="noopener">All audits on GitHub</a>}>Published audits</SectionTitle>
+          <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
+            Every change to the curated corpus is published with its method, counts and per-record files in the posi-data repository.
+          </p>
+          <div className="panel overflow-x-auto">
+            <table className="dtable min-w-[720px]">
+              <thead><tr><th>Audit</th><th>Date</th><th>Summary</th></tr></thead>
+              <tbody>
+                {AUDITS.map(a => (
+                  <tr key={a.path}>
+                    <td className="whitespace-nowrap align-top">
+                      <a href={AUDIT_BASE + a.path} className="link font-medium" target="_blank" rel="noopener">{a.name}</a>
+                    </td>
+                    <td className="font-mono text-[12.5px] whitespace-nowrap align-top" style={{ color: 'var(--muted)' }}>{a.date}</td>
+                    <td className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{a.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <section aria-labelledby="audits">
-          <SectionTitle id="audits">Published audits</SectionTitle>
-          <ul className="grid gap-4 md:grid-cols-[1.2fr_1fr_1fr]">
-            {AUDITS.map(a => (
-              <li key={a.name} className="panel p-5 flex flex-col">
-                <p className="font-medium" style={{ color: 'var(--ink)' }}>{a.name}</p>
-                <p className="mt-2 text-[13.5px] leading-relaxed flex-1" style={{ color: 'var(--muted)' }}>{a.desc}</p>
-              </li>
-            ))}
-          </ul>
+        <section aria-labelledby="licences" className="max-w-[760px]">
+          <SectionTitle id="licences">Licences</SectionTitle>
+          <div className="panel overflow-hidden">
+            <table className="dtable">
+              <tbody>
+                <tr><td>POSI-produced data (PSC, scores, rankings, curated metadata)</td><td className="font-mono whitespace-nowrap">CC BY 4.0</td></tr>
+                <tr><td>Source code of this site and posi-engine</td><td className="font-mono whitespace-nowrap">MIT</td></tr>
+                <tr><td>Upstream metadata (Crossref, OpenAlex, DOAJ, ROR, ORCID)</td><td className="whitespace-nowrap">Source license</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>POSI is open source. Third-party open data are credited and keep their original licences.</p>
         </section>
 
-        <section aria-labelledby="cite" className="max-w-[820px]">
+        <section aria-labelledby="cite" className="max-w-[820px] pb-10">
           <SectionTitle id="cite">Cite the dataset</SectionTitle>
           <pre className="code whitespace-pre-wrap"><code>{`Panorama Open Scholarly Index (${new Date().getFullYear()}). POSI journal records. Panorama Scholarly Group. https://posi.panorama-sg.com/datasets/. Accessed [date]. Licence: CC BY 4.0.`}</code></pre>
         </section>
