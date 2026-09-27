@@ -1,22 +1,25 @@
-name: Daily data sync
+name: Data sync
 
-# Keeps the site on the latest published data edition without manual steps:
+# Keeps the site on the latest published data without manual steps:
 #   1. pulls the small collections (Core Collection, curated Global Benchmark,
-#      PCS, PCI, Citation Q) from data.posi.panorama-sg.com and commits them
-#      if they changed;
+#      PCS, PCI, Citation Q) from data.posi.panorama-sg.com;
 #   2. refreshes the committed ranking fallback (src/lib/pcs-q.json) and the
 #      journal-name table;
-#   3. triggers a Cloudflare Pages rebuild, whose prebuild step downloads the
-#      current ranking edition (scripts/sync-live-data.mjs).
+#   3. records the upstream editions in src/lib/data-editions.json (the data
+#      layer's snapshot and release, and posi-engine's newest global index);
+#   4. commits whatever changed. The push is what rebuilds the site: Cloudflare
+#      Pages builds every push, and the build's prebuild step downloads the
+#      global corpus and ranking edition (scripts/sync-live-data.mjs).
 #
-# Upstream, posi-engine's "Global index and rankings" workflow computes new
-# editions and posi-data's "Publish data snapshot" workflow publishes them.
-#
-# Optional secret: CLOUDFLARE_DEPLOY_HOOK_URL (a Cloudflare Pages deploy hook).
+# Upstream: posi-engine publishes global-index releases, posi-data imports the
+# ranking edition, and posi-data-delivery publishes snapshots. Each step checks
+# every three hours instead of relying on a fixed daily slot, because GitHub
+# delays scheduled runs by hours and sometimes drops them; a check that finds
+# nothing new changes nothing and costs about a minute.
 
 on:
   schedule:
-    - cron: '30 4 * * *'   # daily, 04:30 UTC, after the upstream jobs
+    - cron: '41 */3 * * *'   # every three hours
   workflow_dispatch:
 
 concurrency:
@@ -42,25 +45,26 @@ jobs:
 
       - name: Sync ranking edition and journal names
         run: |
-          node scripts/sync-live-data.mjs
+          node scripts/sync-live-data.mjs --rankings-only
           cp src/lib/generated/pcs-q.json src/lib/pcs-q.json
           node scripts/sync-ranking-titles.mjs || echo "Journal names unchanged (data layer unreachable)"
+
+      - name: Record upstream editions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/record-data-editions.mjs
 
       - name: Commit if changed
         run: |
           git config user.name  "posi-sync-bot"
           git config user.email "posi-sync-bot@users.noreply.github.com"
           git add src/lib/core-collection.json src/lib/global-benchmark.json src/lib/pcs.json src/lib/pci.json \
-                  src/lib/citation-rankings.json src/lib/pcs-q.json src/lib/ranking-titles.json
+                  src/lib/citation-rankings.json src/lib/pcs-q.json src/lib/ranking-titles.json \
+                  src/lib/data-editions.json
           if git diff --staged --quiet; then
-            echo "No data changes"
+            echo "No data changes; the site is on $(cat src/lib/data-editions.json | tr -d '\n ')" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            git commit -m "chore(data): sync data edition $(date -u +%Y-%m-%d)"
+            git commit -m "chore(data): sync data $(date -u +%Y-%m-%d)"
             git push
+            echo "Synced and pushed; Cloudflare Pages rebuilds from this push." | tee -a "$GITHUB_STEP_SUMMARY"
           fi
-
-      - name: Trigger Cloudflare Pages rebuild
-        env:
-          HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
-        run: |
-          if [ -n "$HOOK" ]; then curl -sf -X POST "$HOOK"; else echo "No deploy hook configured"; fi

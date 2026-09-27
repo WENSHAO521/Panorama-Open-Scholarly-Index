@@ -19,7 +19,8 @@
  * Never fails the build. Rankings fall back to the committed
  * src/lib/pcs-q.json; the journal directory falls back to the curated records.
  * POSI_GLOBAL_CORPUS=<path> and POSI_OPENALEX_PROFILES=<path> use local files
- * instead (development).
+ * instead (development). --rankings-only syncs the ranking edition alone (the
+ * scheduled data sync, which only needs that and runs every few hours).
  */
 import { mkdirSync, writeFileSync, existsSync, readFileSync, copyFileSync, rmSync } from 'fs'
 import { dirname, join } from 'path'
@@ -83,10 +84,12 @@ const clean = t => t?.replace(/[\u0000-\u001f\u007f-\u009f]/g, '').trim() || nul
   }
 }
 
+const RANKINGS_ONLY = process.argv.includes('--rankings-only')
+
 // 2. Global journal directory
 let corpus = null
 let release = null
-{
+if (!RANKINGS_ONLY) {
   const out = join(GEN, 'journals-global.json')
   try {
     if (process.env.POSI_GLOBAL_CORPUS) {
@@ -107,7 +110,7 @@ let release = null
 }
 
 // 3. Journal profiles
-{
+if (!RANKINGS_ONLY) {
   const dir = join(ROOT, 'public/data/j')
   try {
     if (!corpus) throw new Error('no corpus')
@@ -169,7 +172,7 @@ let release = null
 // 4. Journal title index for /journals/ search: every title word (minus
 // generic words) -> its first two letters -> one file. Entries are
 // [key, title, publisher, works, open access], most works first.
-{
+if (!RANKINGS_ONLY) {
   const dir = join(ROOT, 'public/data/jt')
   try {
     if (!corpus) throw new Error('no corpus')
