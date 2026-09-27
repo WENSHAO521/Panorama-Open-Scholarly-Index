@@ -19,14 +19,20 @@ function scopeText(p: ZonePlacement) {
   return p.scope === 'category' ? `in the subject category ${p.label}` : 'across all ranked journals'
 }
 
-/** The four zones side by side, the journal's own filled. */
+/**
+ * One ranking: a caption line (scope left, rank right) over the four zones,
+ * the journal's own filled. Stacked rather than side by side, so a long
+ * category name (which wraps) or a six-figure rank never runs into the zone boxes.
+ */
 function ZoneScale({ p, title }: { p: ZonePlacement; title: string }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'center' }}>
-      <div>
-        <div style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: SOFT }}>{title}</div>
-        <div style={{ fontSize: 12, marginTop: 2, lineHeight: 1.3 }}>{p.scope === 'category' ? p.label : 'All ranked journals'}</div>
-        <div style={{ fontFamily: MONO, fontSize: 10.5, color: MUTED, marginTop: 2, whiteSpace: 'nowrap' }}>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 5 }}>
+        <div style={{ minWidth: 0, lineHeight: 1.35 }}>
+          <span style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: SOFT, whiteSpace: 'nowrap' }}>{title}</span>
+          <span style={{ fontSize: 12, marginLeft: 8 }}>{p.scope === 'category' ? p.label : 'All ranked journals'}</span>
+        </div>
+        <div style={{ flexShrink: 0, fontFamily: MONO, fontSize: 10.5, color: MUTED, whiteSpace: 'nowrap' }}>
           Rank {n(p.rank)} / {n(p.size)}{p.quartile ? ` · ${p.quartile}` : ''}
         </div>
       </div>
@@ -36,7 +42,7 @@ function ZoneScale({ p, title }: { p: ZonePlacement; title: string }) {
           return (
             <div key={z} style={{
               border: `1px solid ${on ? TEAL : RULE}`, background: on ? TEAL : '#ffffff', color: on ? '#ffffff' : SOFT,
-              padding: '7px 8px 6px', textAlign: 'center', lineHeight: 1.25,
+              padding: '5px 8px 4px', textAlign: 'center', lineHeight: 1.25,
             }}>
               <div style={{ fontWeight: 600, fontSize: 12.5, letterSpacing: '0.04em' }}>Zone {z}</div>
               <div style={{ fontSize: 9.5, opacity: on ? 0.9 : 1 }}>{ZONE_SHARE[z as Zone]}</div>
@@ -98,7 +104,7 @@ export function ZoneCertificateDocument({ data }: { data: ZoneCertificateData })
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginTop: 16, paddingTop: 16, borderTop: `1px solid ${RULE}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 40, alignItems: 'center', marginTop: 16, paddingTop: 16, borderTop: `1px solid ${RULE}` }}>
           <div style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
             <div aria-label={`Zone ${p.zone}`} style={{ flexShrink: 0, width: 96, height: 96, border: `2px solid ${TEAL}`, color: TEAL, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.3em', marginLeft: '0.3em' }}>ZONE</div>
@@ -110,7 +116,7 @@ export function ZoneCertificateDocument({ data }: { data: ZoneCertificateData })
               {s && <> Across all ranked journals it is in <strong style={{ fontWeight: 600 }}>Zone {s.zone}</strong>, ranked {n(s.rank)} of {n(s.size)}.</>}
             </p>
           </div>
-          <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'grid', gap: 12, minWidth: 0 }}>
             <ZoneScale p={p} title={p.scope === 'category' ? 'Subject category' : 'Overall'} />
             {s && <ZoneScale p={s} title="Overall" />}
           </div>
