@@ -21,6 +21,15 @@ const garamond = localFont({
   display: 'swap',
 })
 
+// Script face for the signatory's signature (SIL OFL).
+const signature = localFont({
+  src: '../assets/fonts/Allura-Regular.ttf',
+  variable: '--font-cert-signature',
+  display: 'swap',
+})
+
+const SIGNATORY = 'Chengwen Song'
+
 export interface CertificateData {
   code: string
   issued: string
@@ -71,7 +80,7 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
 
   return (
     <article
-      className={`cert ${garamond.variable}`}
+      className={`cert ${garamond.variable} ${signature.variable}`}
       aria-label="Certificate of indexing"
       style={{
         background: '#ffffff', color: INK, width: '100%', maxWidth: 794, margin: '0 auto', position: 'relative',
@@ -82,8 +91,8 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
         fontFamily: SANS, fontSize: 12.5, lineHeight: 1.55,
       }}
     >
-      <div style={{ border: `1px solid ${INK}`, padding: 4, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ border: `0.6px solid ${TEAL}`, borderTop: `5px solid ${TEAL}`, padding: '34px 44px 38px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '34px 44px 38px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, borderBottom: `1px solid ${RULE}`, paddingBottom: 20 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <Mark />
@@ -153,7 +162,7 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
             {data.excluded > 0 && ` ${data.excluded} submitted DOI${data.excluded === 1 ? ' was' : 's were'} not indexed and ${data.excluded === 1 ? 'is' : 'are'} not listed.`}
           </p>
 
-          <footer style={{ marginTop: 'auto', paddingTop: 44, display: 'grid', gridTemplateColumns: '108px 1fr 250px', gap: 20, alignItems: 'end' }}>
+          <footer style={{ marginTop: 'auto', paddingTop: 44, display: 'grid', gridTemplateColumns: '108px 1fr 270px', gap: 20, alignItems: 'end' }}>
             {qr
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={qr} alt="Verification QR code" width={108} height={108} style={{ display: 'block' }} />
@@ -166,14 +175,20 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
                 Crossref, OpenAlex and the POSI index. This certificate states indexing status only.
               </p>
             </div>
-            <div style={{ position: 'relative', height: 146 }}>
-              <div style={{ position: 'absolute', left: 0, right: 64, bottom: 38, borderTop: `1px solid ${INK}` }} />
-              <div style={{ position: 'absolute', left: 0, bottom: 0 }}>
-                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 18, lineHeight: 1.2 }}>Editorial Office</div>
-                <div style={{ fontSize: 11, color: MUTED }}>Panorama Open Scholarly Index</div>
+            <div style={{ position: 'relative', height: 150 }}>
+              <div style={{ position: 'absolute', right: -30, bottom: 14 }}>
+                <Seal size={116} sub="VERIFIED" />
               </div>
-              <div style={{ position: 'absolute', right: 0, bottom: 0 }}>
-                <Seal size={146} sub="VERIFIED" />
+              <div
+                aria-label={`Signed: ${SIGNATORY}`}
+                style={{ position: 'absolute', left: 2, bottom: 44, fontFamily: 'var(--font-cert-signature), "Allura", cursive', fontSize: 40, lineHeight: 1, color: '#1b2a4e', whiteSpace: 'nowrap' }}
+              >
+                {SIGNATORY}
+              </div>
+              <div style={{ position: 'absolute', left: 0, right: 40, bottom: 40, borderTop: `1px solid ${INK}` }} />
+              <div style={{ position: 'absolute', left: 0, bottom: 0 }}>
+                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15, lineHeight: 1.2 }}>{SIGNATORY}</div>
+                <div style={{ fontSize: 10.5, color: MUTED }}>Editorial Office, Panorama Open Scholarly Index</div>
               </div>
             </div>
           </footer>

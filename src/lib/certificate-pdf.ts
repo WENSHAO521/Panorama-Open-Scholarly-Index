@@ -201,11 +201,6 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   const L = 66
   const R = W - 66
 
-  // Frame: accent band, ink outer rule, accent hairline.
-  page.drawRectangle({ x: 22, y: 22, width: W - 44, height: H - 44, borderColor: INK, borderWidth: 1 })
-  page.drawRectangle({ x: 28, y: 28, width: W - 56, height: H - 56, borderColor: accent, borderWidth: 0.6 })
-  page.drawRectangle({ x: 28, y: H - 34, width: W - 56, height: 6, color: accent })
-
   // Header
   mark(page, L, H - 90, 27)
   page.drawText('Panorama Open Scholarly Index', { x: L + 38, y: H - 73, size: 13.5, font: serifBold, color: INK })
