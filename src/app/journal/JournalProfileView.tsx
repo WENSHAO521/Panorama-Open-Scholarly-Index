@@ -10,7 +10,8 @@ import { ArrowSquareOut, Books, Certificate, SealCheck } from '@phosphor-icons/r
 import { getJournalProfile, PSC_CONFIDENCE_TEXT, type JournalProfile } from '@/lib/journal-profile'
 import { countryName, recordHref } from '@/lib/records'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
-import { QuartileBadge } from '@/components/RankingTable'
+import { QuartileBadge, ZoneBadge } from '@/components/RankingTable'
+import { zoneOf } from '@/lib/zones'
 import type { Quartile } from '@/lib/rankings'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
@@ -228,13 +229,14 @@ function RankingCard({ j }: { j: JournalProfile }) {
             <dd className="flex items-center gap-2">
               {r.or != null && <span className="font-mono tnum text-[12.5px]">{fmt(r.or)} / {fmt(r.os)}</span>}
               <QuartileBadge q={r.oq as Quartile | null} />
+              <ZoneBadge z={zoneOf(r.or, r.os)} />
             </dd>
           </div>
           <div className="flex items-center justify-between gap-3">
             <dt style={{ color: 'var(--muted)' }}>{r.cat && r.cq ? <Link href={`/rankings/${r.cat}/`} className="link">In {r.cat}</Link> : 'In category'}</dt>
             <dd className="flex items-center gap-2">
               {r.cq
-                ? <><span className="font-mono tnum text-[12.5px]">{fmt(r.cr)} / {fmt(r.cs)}</span><QuartileBadge q={r.cq as Quartile} /></>
+                ? <><span className="font-mono tnum text-[12.5px]">{fmt(r.cr)} / {fmt(r.cs)}</span><QuartileBadge q={r.cq as Quartile} /><ZoneBadge z={zoneOf(r.cr, r.cs)} /></>
                 : <span className="text-[12.5px] text-right" style={{ color: 'var(--muted)' }}>{r.ex ? NOT_RANKED[r.ex] ?? 'Not ranked' : 'Not ranked'}</span>}
             </dd>
           </div>

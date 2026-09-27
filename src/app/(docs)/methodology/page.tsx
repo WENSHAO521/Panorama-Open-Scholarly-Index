@@ -112,6 +112,23 @@ export default function MethodologyPage() {
             Quartiles are always labelled PCS-Q1 to PCS-Q4, so they cannot be confused with quartiles published by
             other services.
           </p>
+          <h3 id="zones">POSI Zones (trial)</h3>
+          <p>
+            POSI Zones (POSI 分区) divide the same rankings into four tiers of unequal size, so that the top tier is
+            selective. They use the same rank and the same eligibility as the quartiles; only the cut points differ.
+            A journal at rank <em>r</em> of <em>N</em> is in:
+          </p>
+          <ul>
+            <li>Zone 1 if <code>r ÷ N</code> is at most 5% (the top 5%);</li>
+            <li>Zone 2 if it is at most 20% (the next 15%);</li>
+            <li>Zone 3 if it is at most 50% (the next 30%);</li>
+            <li>Zone 4 otherwise (the remaining 50%).</li>
+          </ul>
+          <p>
+            Zones are given within each subject category and across all journals. They are published as a trial
+            (<code>POSI-ZONES-1.0</code>) from 27 September 2026; the first release of record will accompany the
+            annual data release in December, and the method may change before then.
+          </p>
         </section>
 
         <section aria-labelledby="eligibility">

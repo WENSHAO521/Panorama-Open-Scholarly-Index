@@ -14,6 +14,7 @@ import { join } from 'path'
 import { getCoreCollection, getCandidateJournals } from './data'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 import { getAllPciEntries } from './pci'
+import { zoneOf, type Zone } from './zones'
 import psc from './psc-v1.0.snapshot.json'
 import titles from './ranking-titles.json'
 import fallbackEdition from './pcs-q.json'
@@ -89,10 +90,14 @@ export interface RankedJournal {
   n: number | null
   pct: number | null
   q: Quartile | null
+  /** POSI Zone within the category (lib/zones.ts) */
+  zone: Zone | null
   oRank: number
   oN: number
   oPct: number | null
   oQ: Quartile | null
+  /** POSI Zone in the overall ranking */
+  oZone: Zone | null
 }
 
 export interface NotRanked {
@@ -156,7 +161,9 @@ export function getRankings() {
       cat: r.category_code, lowConfidence: r.rank == null, exclusion: r.exclusion_reason ? EXCLUSION_TEXT[r.exclusion_reason] ?? r.exclusion_reason : null,
       core, pcs: r.pcs!, items: r.pcs_eligible_items ?? 0, pci: pci.get(r.journal_id) ?? null,
       rank: r.rank, n: r.category_size != null && r.rank != null ? r.category_size : null, pct: r.percentile, q: r.quartile,
+      zone: zoneOf(r.rank, r.category_size),
       oRank: r.overall_rank, oN: r.overall_size!, oPct: r.overall_percentile, oQ: r.overall_quartile,
+      oZone: zoneOf(r.overall_rank, r.overall_size),
     })
   }
   ranked.sort((a, b) => a.oRank - b.oRank || a.title.localeCompare(b.title))

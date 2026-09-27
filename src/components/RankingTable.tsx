@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import type { RankedJournal, Quartile } from '@/lib/rankings'
+import { ZONE_BOUNDS, type Zone } from '@/lib/zones'
 import { fmt } from './db'
 
 const PAGE = 100
@@ -20,6 +21,25 @@ export function QuartileBadge({ q }: { q: Quartile | null }) {
   return <span className="chip font-semibold" style={tone} title="PCS quartile: RANK-1.0 applied to PCS">PCS-{q}</span>
 }
 
+const ZONE_TITLE: Record<Zone, string> = {
+  1: 'POSI Zone 1: top 5% of the ranking',
+  2: 'POSI Zone 2: next 15% (top 6–20%)',
+  3: 'POSI Zone 3: next 30% (top 21–50%)',
+  4: 'POSI Zone 4: remaining 50%',
+}
+
+/** POSI Zone chip: numbered and outlined, distinct from the filled quartile chips. */
+export function ZoneBadge({ z }: { z: Zone | null }) {
+  if (!z) return <span style={{ color: 'var(--soft)' }}>n/a</span>
+  const strong = z === 1
+  return (
+    <span className="chip font-semibold whitespace-nowrap" title={ZONE_TITLE[z]}
+      style={{ color: z <= 2 ? 'var(--teal)' : z === 3 ? 'var(--ink-2)' : 'var(--muted)', borderColor: z <= 2 ? 'var(--teal)' : 'var(--line)', borderWidth: strong ? 2 : 1, background: 'transparent' }}>
+      Zone {z}
+    </span>
+  )
+}
+
 function journalHref(r: RankedJournal) {
   if (r.code) return `/journal/${r.code}/`
   return r.issn[0] ? `/journal/?issn=${r.issn[0]}` : null
@@ -27,9 +47,9 @@ function journalHref(r: RankedJournal) {
 
 function csv(rows: RankedJournal[], overall: boolean) {
   const cell = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
-  const head = 'rank,n,percentile,quartile,posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci'
+  const head = 'rank,n,percentile,quartile,zone,posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci'
   return [head, ...rows.map(r => [
-    overall ? r.oRank : r.rank, overall ? r.oN : r.n, overall ? r.oPct : r.pct, overall ? r.oQ : r.q,
+    overall ? r.oRank : r.rank, overall ? r.oN : r.n, overall ? r.oPct : r.pct, overall ? r.oQ : r.q, overall ? r.oZone : r.zone,
     r.id, r.title, r.publisher, r.issn.join(' '), r.cat, r.core ? 'core' : 'indexed', r.pcs, r.items, r.pci,
   ].map(cell).join(','))].join('\n')
 }
@@ -37,9 +57,10 @@ function csv(rows: RankedJournal[], overall: boolean) {
 export function RankingTable({ rows, overall = false, fileName }: { rows: RankedJournal[]; overall?: boolean; fileName: string }) {
   const [status, setStatus] = useState<'all' | 'core' | 'indexed'>('all')
   const [quart, setQuart] = useState<Quartile | 'all'>('all')
+  const [zone, setZone] = useState<Zone | 0>(0)
   const [q, setQ] = useState('')
   const dq = useDeferredValue(q)
-  const filterKey = `${status}|${quart}|${q}`
+  const filterKey = `${status}|${quart}|${zone}|${q}`
   const [pageState, setPageState] = useState({ key: filterKey, n: 1 })
   const page = pageState.key === filterKey ? pageState.n : 1
   const tableTop = useRef<HTMLDivElement>(null)
@@ -51,9 +72,10 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
     return rows.filter(r =>
       (status === 'all' || (status === 'core') === r.core) &&
       (quart === 'all' || (overall ? r.oQ : r.q) === quart) &&
+      (!zone || (overall ? r.oZone : r.zone) === zone) &&
       (!needle || r.title.toLowerCase().includes(needle) || (r.publisher ?? '').toLowerCase().includes(needle) || r.issn.some(i => i.includes(needle.toUpperCase()))),
     )
-  }, [rows, status, quart, dq, overall])
+  }, [rows, status, quart, zone, dq, overall])
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
   const shown = filtered.slice((page - 1) * PAGE, page * PAGE)
@@ -82,6 +104,11 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
           <option value="all">All quartiles</option>
           {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(x => <option key={x} value={x}>PCS-{x}</option>)}
         </select>
+        <label htmlFor="rz" className="sr-only">POSI Zone</label>
+        <select id="rz" value={zone} onChange={e => setZone(Number(e.target.value) as Zone | 0)} className="input h-9 w-auto pr-8 text-[13px]">
+          <option value={0}>All zones</option>
+          {ZONE_BOUNDS.map(([z]) => <option key={z} value={z}>Zone {z}</option>)}
+        </select>
         <div className="relative flex-1 min-w-[200px]">
           <label htmlFor="rsearch" className="sr-only">Find a journal</label>
           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
@@ -91,7 +118,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
       </div>
 
       <div ref={tableTop} className="panel overflow-x-auto mt-4" style={{ scrollMarginTop: 72 }}>
-        <table className="dtable min-w-[860px]">
+        <table className="dtable min-w-[940px]">
           <thead>
             <tr>
               <th className="text-right w-[70px]">Rank</th>
@@ -100,6 +127,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
               <th className="text-right">Items</th>
               <th className="text-right">Percentile</th>
               <th>Quartile</th>
+              <th>Zone</th>
               <th>Status</th>
               <th className="text-right">PCI</th>
             </tr>
@@ -126,6 +154,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
                   <td className="text-right font-mono tnum" style={{ color: r.items < 20 ? 'var(--check)' : 'var(--muted)' }} title={r.items < 20 ? 'Limited sample: fewer than 20 eligible items' : undefined}>{fmt(r.items)}</td>
                   <td className="text-right font-mono tnum">{(overall ? r.oPct : r.pct)?.toFixed(1) ?? 'n/a'}</td>
                   <td><QuartileBadge q={overall ? r.oQ : r.q} /></td>
+                  <td><ZoneBadge z={overall ? r.oZone : r.zone} /></td>
                   <td>
                     <span className="chip" style={r.core ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : undefined}>
                       {r.core ? 'Core' : 'Indexed'}
@@ -136,7 +165,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
               )
             })}
             {!shown.length && (
-              <tr><td colSpan={8} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No ranked journal matches these filters.</td></tr>
+              <tr><td colSpan={9} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No ranked journal matches these filters.</td></tr>
             )}
           </tbody>
         </table>

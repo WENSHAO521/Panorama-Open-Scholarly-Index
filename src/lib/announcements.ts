@@ -9,6 +9,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'posi-zones-trial',
+    title: 'POSI Zones: a tiered reading of the Journal Rankings, published as a trial',
+    date: '2026-09-27',
+    summary:
+      'Every ranked journal now also carries a POSI Zone (POSI 分区): Zone 1 for the top 5% of its ranking, Zone 2 for the next 15%, Zone 3 for the next 30% and Zone 4 for the rest. Zones are published as a trial ahead of the December release of record.',
+    body: [
+      'PCS quartiles divide each ranking into four equal parts. POSI Zones divide the same ranking into four tiers of unequal size, so that the top tier is selective: Zone 1 holds the top 5% of journals, Zone 2 the next 15%, Zone 3 the next 30% and Zone 4 the remaining half.',
+      'Zones use exactly the rank and eligibility of the quartiles; only the cut points differ. They are given within each subject category and across all ranked journals, shown beside the quartile on the ranking tables, journal profiles and record pages, and included in the ranking downloads. No journal is placed in a zone by hand, and Core Collection journals follow the same rule as every other journal.',
+      'Zones apply to whichever ranking edition is current, including the global edition covering every indexed journal as it is published.',
+      'This is a trial. The first release of record will accompany the annual data release in December, and the method may be refined before then, for example with a three-year citation average, a cap on self-citation and separate handling of review journals. Each change will be versioned and announced here. The rule is set out in the methodology.',
+    ],
+  },
+  {
     slug: 'posi-enters-full-operation',
     title: 'POSI is now in full operation, with its first official data release',
     date: '2026-09-27',

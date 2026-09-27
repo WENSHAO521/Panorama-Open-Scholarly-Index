@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getCoreCollection } from '@/lib/data'
 import { getJournalRanking, categoryName } from '@/lib/rankings'
 import { countryName } from '@/lib/records'
-import { QuartileBadge } from '@/components/RankingTable'
+import { QuartileBadge, ZoneBadge } from '@/components/RankingTable'
 import { PageHeader, fmt } from '@/components/db'
 
 export const metadata = {
@@ -53,6 +53,7 @@ export default function CoreCollectionPage() {
               <th>Subject</th>
               <th className="text-right">PCS</th>
               <th>Quartile</th>
+              <th>Zone</th>
             </tr>
           </thead>
           <tbody>
@@ -69,6 +70,7 @@ export default function CoreCollectionPage() {
                 <td className="text-[13px]">{j.psc_category ? categoryName(j.psc_category) ?? j.psc_category : <span style={{ color: 'var(--muted)' }}>Not yet classified</span>}</td>
                 <td className="text-right font-mono tnum text-[13px]">{r ? r.pcs.toFixed(2) : '-'}</td>
                 <td><QuartileBadge q={r?.q ?? r?.oQ ?? null} /></td>
+                <td><ZoneBadge z={r ? (r.q ? r.zone : r.oZone) : null} /></td>
               </tr>
             ))}
           </tbody>

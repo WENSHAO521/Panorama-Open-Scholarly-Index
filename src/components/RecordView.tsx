@@ -18,7 +18,7 @@ import { earlyStageStatus, earlyStageDisplayTotal, earlyStageQuartile, earlyStag
 import { BasisTag, CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
-  ranking?: { rank: number | null; n: number | null; pct: number | null; q: string | null; cat: string | null; catName: string | null; oRank: number; oN: number } | null
+  ranking?: { rank: number | null; n: number | null; pct: number | null; q: string | null; cat: string | null; catName: string | null; oRank: number; oN: number; zone?: number | null } | null
   pcs?: PcsEntry | null
   pci?: PciEntry | null
   citationStats?: CitationStatsEntry | null
@@ -195,7 +195,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
                 {ranking.rank !== null
                   ? <>Ranked <span className="font-mono">{ranking.rank}/{ranking.n}</span> in{' '}
                       <Link href={`/rankings/${ranking.cat}/`} className="link">{ranking.catName ?? ranking.cat}</Link>
-                      {' '}(<span className="font-semibold">PCS-{ranking.q}</span>, percentile {ranking.pct?.toFixed(1)}), and{' '}
+                      {' '}(<span className="font-semibold">PCS-{ranking.q}</span>{ranking.zone && <>, <span className="font-semibold">Zone {ranking.zone}</span></>}, percentile {ranking.pct?.toFixed(1)}), and{' '}
                       <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall, by PCS.</>
                   : <>Ranked <span className="font-mono">{ranking.oRank}/{ranking.oN}</span> overall by PCS; no category rank.</>}
               </p>

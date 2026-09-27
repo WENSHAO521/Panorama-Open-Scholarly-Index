@@ -26,6 +26,8 @@ export default function RankingsPage() {
         <p className="max-w-[68ch]">
           {fmt(ranked.length)} journals ranked within {cats.length} subject categories by POSI Citation Score, {year} edition.
           Core and indexed journals are ranked together; the Core filter shows certified journals within the same ranking.
+          Each ranking is shown in PCS quartiles and in <Link href="/methodology/#zones" className="link">POSI Zones</Link> (trial):
+          Zone 1 is the top 5%, Zone 2 the next 15%, Zone 3 the next 30%, Zone 4 the rest.
         </p>
       </PageHeader>
 
