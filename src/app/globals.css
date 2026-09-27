@@ -307,3 +307,19 @@ pre.code {
 }
 /* Unlayered: the global a {} reset is unlayered too. */
 .doc a:not(.btn) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+
+/* Home page subject treemap: tinted fill, a solid domain strip on top, and a
+   2px surface gap between cells. */
+.glance-cell {
+  border: 1px solid var(--surface);
+  background: color-mix(in srgb, var(--c) 16%, var(--surface));
+  box-shadow: inset 0 3px 0 var(--c);
+  transition: background-color 120ms;
+}
+.glance-cell:hover,
+.glance-cell:focus-visible {
+  background: color-mix(in srgb, var(--c) 34%, var(--surface));
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  z-index: 1;
+}

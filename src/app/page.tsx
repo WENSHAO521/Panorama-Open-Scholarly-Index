@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
-import { getDirectory, getDirectoryCategories } from '@/lib/global-journals'
+import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
+import { IndexGlance } from '@/components/IndexGlance'
 import { getCoreCollection } from '@/lib/data'
 import { getRankings, getCategories, getCategoryRanking } from '@/lib/rankings'
 import { getSortedAnnouncements } from '@/lib/announcements'
@@ -54,7 +55,6 @@ export default function HomePage() {
   const cats = getCategories().filter(c => c.ranked > 0)
   const top = [...cats].sort((a, b) => b.ranked - a.ranked).slice(0, 12).map(c => ({ ...c, lead: getCategoryRanking(c.code)[0] }))
   const dirCats = getDirectoryCategories()
-  const domains = [...new Map(dirCats.filter(c => /^P\d$/.test(c.domain)).map(c => [c.domain, c.domainName])).entries()]
 
   const coverage: [string, React.ReactNode, string][] = [
     ['Publications', <LiveWorksCount key="w" />, '/publications/'],
@@ -139,27 +139,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section aria-labelledby="subjects">
-            <div className="flex items-end justify-between gap-4 pb-2 mb-4" style={{ borderBottom: '2px solid var(--ink)' }}>
-              <h2 id="subjects" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>Journals by subject</h2>
-              <Link href="/subjects/" className="link text-[13px]">Subject classification</Link>
-            </div>
-            <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
-              {domains.map(([d, name]) => (
-                <div key={d}>
-                  <h3 className="text-[13px] font-semibold mb-1.5" style={{ color: 'var(--ink)' }}>{name}</h3>
-                  <ul className="text-[13px]">
-                    {dirCats.filter(c => c.domain === d && c.count > 0).map(c => (
-                      <li key={c.code} className="flex items-baseline justify-between gap-3 py-[3px]">
-                        <Link href={`/journals/subject/${c.code}/`} className="link truncate">{c.name}</Link>
-                        <span className="font-mono text-[12px] tnum shrink-0" style={{ color: 'var(--muted)' }}>{fmt(c.count)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
+          <IndexGlance records={getDirectory().records} cats={dirCats} publishers={getPublishers().slice(0, 8)} />
         </div>
 
         <aside className="space-y-5">
