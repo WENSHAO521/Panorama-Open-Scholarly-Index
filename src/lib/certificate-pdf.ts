@@ -27,6 +27,8 @@ const GOLD = rgb(0.62, 0.45, 0.05)
 const SEAL_INK = hex(SEAL.ink)
 
 const SITE_ORIGIN = 'https://posi.panorama-sg.com'
+const SIGNATORY = 'Chengwen Song'
+const SIGNATURE_INK = rgb(0.106, 0.165, 0.306) // #1b2a4e, as on the certificate of indexing
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
 const FONT_DIR = join(process.cwd(), 'src/assets/fonts')
 
@@ -181,9 +183,10 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   // pdf-lib's subsetter drops glyphs from EB Garamond, so the serif is embedded whole.
   // Ligatures are off: pdf-lib measures ligature glyphs incorrectly (the "ffi" in "Office").
   const font = (f: string, subset = true) => doc.embedFont(readFileSync(join(FONT_DIR, f)), { subset, features: { liga: false, clig: false } })
-  const [serif, serifBold, serifItalic, sans, sansBold, mono] = await Promise.all([
+  const [serif, serifBold, serifItalic, sans, sansBold, mono, script] = await Promise.all([
     font('EBGaramond-Medium.ttf', false), font('EBGaramond-SemiBold.ttf', false), font('EBGaramond-MediumItalic.ttf', false),
     font('IBMPlexSans-Regular.ttf'), font('IBMPlexSans-SemiBold.ttf'), font('IBMPlexMono-Medium.ttf'),
+    font('Allura-Regular.ttf', false),
   ])
 
   let titleFont: PDFFont = serifBold
@@ -277,14 +280,16 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   page.drawText('The journal record online shows its current certification status.', { x: L + 74, y: 70, size: 7.5, font: sans, color: MUTED })
   page.drawText('Certification is reviewed at least once a year under the POSI editorial policy.', { x: L + 74, y: 59, size: 7.5, font: sans, color: MUTED })
 
-  // Issuing office with the seal over the signature line, bottom right
-  const lineL = R - 250
-  const lineR = R - 60
-  page.drawLine({ start: { x: lineL, y: 74 }, end: { x: lineR, y: 74 }, thickness: 0.6, color: INK })
-  page.drawText('Editorial Office', { x: lineL, y: 60, size: 11, font: serifBold, color: INK })
-  page.drawText('Panorama Open Scholarly Index', { x: lineL, y: 48, size: 8, font: sans, color: MUTED })
-  // The seal is set over the right end of the signature line, as a stamp would be.
-  seal(page, R - 62, 80, 42, sansBold, candidate ? 'CANDIDATE' : 'CERTIFIED')
+  // Signature block, bottom right: signed for the Editorial Office, with the seal beside it.
+  const lineL = R - 232
+  const lineR = R - 58
+  page.drawText('For and on behalf of', { x: lineL, y: 110, size: 9.5, font: serifItalic, color: MUTED })
+  page.drawText(SIGNATORY, { x: lineL + 2, y: 80, size: 26, font: script, color: SIGNATURE_INK })
+  page.drawLine({ start: { x: lineL, y: 75 }, end: { x: lineR, y: 75 }, thickness: 0.6, color: INK })
+  page.drawText(SIGNATORY, { x: lineL, y: 62, size: 10.5, font: serifBold, color: INK })
+  page.drawText('Authorized Signatory', { x: lineL, y: 52, size: 7.5, font: sans, color: INK })
+  page.drawText('Editorial Office, Panorama Open Scholarly Index', { x: lineL, y: 43, size: 7.5, font: sans, color: MUTED })
+  seal(page, R - 34, 82, 40, sansBold, candidate ? 'CANDIDATE' : 'CERTIFIED')
 
   return doc.save()
 }
