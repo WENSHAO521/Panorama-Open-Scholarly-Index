@@ -10,22 +10,17 @@
 // released version file in place" rule posi-data's own taxonomy already
 // follows.
 
-// RELEASE_ID/RELEASE_LABEL are a stable internal identifier (used by
-// verificationCode()/certificate-pdf.ts, already baked into issued
-// certificate PDFs) - NOT a claim that a real POSI-R release has been cut.
-// posi-data's POSI-R-1.0-SPEC.md is explicit: "Not yet generated. No
-// POSI-R-* release has been produced" - a real one needs a full manifest
-// (release, published, data_cutoff, per-component methodology versions,
-// pinned data/engine commit SHAs, journal counts, SHA256SUMS) that doesn't
-// exist yet. Public-facing badges must say so - see DATA_SNAPSHOT_LABEL -
-// rather than display RELEASE_LABEL as if 2026.1 were an official cut.
-// Restore the "RELEASE 2026.1" badge wording once IS_OFFICIAL_RELEASE
-// actually flips true.
+// RELEASE_ID/RELEASE_LABEL identify the release (used by
+// verificationCode()/certificate-pdf.ts, baked into issued certificate
+// PDFs). POSI-R-2026.1 was announced as the first official data release on
+// 2026-09-27 (see the posi-enters-full-operation announcement), which is
+// when IS_OFFICIAL_RELEASE was set. Its release manifest in the data layer
+// follows posi-data's POSI-R-1.0-SPEC.md.
 export const RELEASE_ID = 'POSI-R-2026.1'
 export const RELEASE_LABEL = '2026.1'
 export const METHODOLOGY_VERSION = 'AJR Lifecycle 1.0'
 export const DATA_CUTOFF = '2026-08-12'
-export const IS_OFFICIAL_RELEASE = false
+export const IS_OFFICIAL_RELEASE = true
 export const DATA_SNAPSHOT_LABEL = `DATA SNAPSHOT · ${DATA_CUTOFF}`
 
 /**

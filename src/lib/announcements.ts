@@ -10,13 +10,14 @@ export interface Announcement {
 export const ANNOUNCEMENTS: Announcement[] = [
   {
     slug: 'posi-enters-full-operation',
-    title: 'The Panorama Open Scholarly Index is now in full operation',
+    title: 'POSI is now in full operation, with its first official data release',
     date: '2026-09-27',
     pinned: true,
     summary:
-      'Six weeks after its pre-operational launch, POSI moves into full operation: 158,242 journals indexed, the 2026 ranking edition published, and every certificate, record and dataset open to public verification.',
+      'Six weeks after its pre-operational launch, POSI moves into full operation and publishes its first official data release, POSI-R-2026.1: 158,242 journals indexed, the 2026 ranking edition, and every certificate, record and dataset open to public verification.',
     body: [
       'On 12 August 2026, POSI opened to the public as a pre-operational service. From today, 27 September 2026, the Panorama Open Scholarly Index is in full operation. Its index, rankings, certification and certificates are maintained as a standing service of Panorama Scholarly Group Ltd., under the published editorial policy and methodology.',
+      'Today POSI also publishes its first official data release, POSI-R-2026.1. It is the edition of record for this year: the journal index, the 2026 ranking edition, subject classification and Core Collection records it contains are fixed, citable, and versioned against the methodology they were computed with. Figures cited from POSI should name the release. Later corrections will be issued as numbered revisions, never as silent edits.',
       'POSI now indexes every scholarly journal with an ISSN that is registered with Crossref or described by OpenAlex: 158,242 journals, merged on ISSN so that each appears once, and more than 300 million publications. Every journal has a profile page, every publisher has its own page, and the whole directory can be searched by title, ISSN or publisher.',
       'The 2026 Journal Rankings rank 4,067 journals by the POSI Citation Score, and 2,963 of them within their subject category. Each rank can be traced to the Crossref records it was computed from. The Core Collection is the certified tier: journals enter it only by applying and passing the POSI Quality Framework evaluation, and certification is reviewed at least once a year.',
       'Certificates of indexing are issued to authors on request and can be checked by anyone: the certificate number is recomputed from the publications listed, and each publication is checked again against Crossref, OpenAlex and the POSI index. Core Collection journals receive a certificate of certification linked to their live record.',
