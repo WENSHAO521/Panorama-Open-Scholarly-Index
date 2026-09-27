@@ -20,6 +20,7 @@ const SERVICES = [
   { label: 'Journal certification', href: '/certification/', note: 'Apply for the Core Collection' },
   { label: 'Citation generator', href: '/cite/', note: 'PSG, APA, MLA and Chicago from a DOI or ISBN' },
   { label: 'PSG citation format', href: '/psg-format/', note: 'The PSG author-date standard' },
+  { label: 'Logos and journal marks', href: '/logos/', note: 'POSI marks for journal websites' },
   { label: 'Data downloads', href: '/datasets/', note: 'Directory, rankings and records' },
 ]
 

@@ -1,8 +1,8 @@
 import { getJournalByCode, getCoreCollection, getCandidateJournals } from '@/lib/data'
 import { generateCertificatePdf } from '@/lib/certificate-pdf'
 
-// Core Collection + candidates — badges (src/app/api/badge/[code]/*/route.ts)
-// stay Core-Collection-only (a badge asserts current, full membership), but
+// Core Collection + candidates — the Core Collection mark (/logos/) stays
+// Core-Collection-only (it asserts current, full membership), but
 // a certificate documenting a journal's *current* POSI record is useful for
 // candidates too, as long as it's visually and textually distinct from a
 // full Core Collection certificate (generateCertificatePdf branches on

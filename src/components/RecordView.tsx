@@ -149,7 +149,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
         <div className="mb-6">
           <Note tone="warn">
             This journal was certified, but a PQF re-review found it below the bar. It remains indexed and is
-            excluded from the Core Collection and its badges until re-review.
+            excluded from the Core Collection and its mark until re-review.
           </Note>
         </div>
       )}
