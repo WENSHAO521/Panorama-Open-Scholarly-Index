@@ -323,3 +323,7 @@ pre.code {
   outline-offset: -2px;
   z-index: 1;
 }
+
+/* Home page world map */
+.map-country { stroke: var(--surface); stroke-width: 0.5; transition: fill 120ms; }
+.map-country:hover { stroke: var(--ink); stroke-width: 1.2; }

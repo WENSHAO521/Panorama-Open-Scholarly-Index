@@ -1,6 +1,7 @@
 // "The index at a glance": the home page's visual summary of the global
-// journal directory. A subject treemap (area = indexed journals), the
-// largest publishers, the leading countries and the open-access share.
+// journal directory. A subject treemap (area = indexed journals), a world
+// map of where journals are published, the largest publishers and the
+// open-access share.
 // Server component; every figure is computed at build time.
 
 import Link from 'next/link'
@@ -9,12 +10,46 @@ import type { PublisherRow } from '@/lib/publishers'
 import { publisherHref } from '@/lib/publishers'
 import { countryName } from '@/lib/records'
 import { squarify, type Rect } from '@/lib/treemap'
+import { MAP_H, MAP_W, countryCode, getWorldShapes } from '@/lib/world-map'
+import { MapHover } from './MapHover'
 import { fmt } from './db'
 
 // One fixed hue per domain (validated categorical order; identity is also
 // carried by the legend and direct labels). Multidisciplinary is neutral.
 const DOMAIN_COLOR: Record<string, string> = {
   P1: '#2a78d6', P2: '#eb6834', P3: '#1baf7a', P4: '#eda100', P5: '#e87ba4', P6: '#008300', P0: '#8a939d',
+}
+
+// World map: one hue, darker = more journals, on a log scale.
+const MAP_BINS = [
+  { min: 1, label: '1-9', mix: 24 },
+  { min: 10, label: '10-99', mix: 42 },
+  { min: 100, label: '100-999', mix: 60 },
+  { min: 1000, label: '1,000-9,999', mix: 80 },
+  { min: 10000, label: '10,000+', mix: 100 },
+]
+const binFill = (n: number) => {
+  const b = [...MAP_BINS].reverse().find(x => n >= x.min)
+  return b ? `color-mix(in srgb, var(--teal) ${b.mix}%, var(--surface))` : 'var(--hover)'
+}
+
+function WorldMap({ counts }: { counts: Map<string, number> }) {
+  const dn = new Intl.DisplayNames(['en'], { type: 'region' })
+  return (
+    <MapHover>
+      <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="block w-full h-auto" role="img" aria-label="World map of indexed journals by country">
+        {getWorldShapes().map((s, i) => {
+          const n = counts.get(s.code) ?? 0
+          let name = s.name
+          try { if (s.code) name = dn.of(s.code) ?? s.name } catch { /* keep the atlas name */ }
+          return (
+            <path key={`${s.code}-${i}`} d={s.d} data-name={name} data-n={n} className="map-country"
+              style={{ fill: binFill(n) }} />
+          )
+        })}
+      </svg>
+    </MapHover>
+  )
 }
 
 interface Cell { code: string; name: string; domain: string; domainName: string; count: number; r: Rect }
@@ -97,14 +132,17 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
   const tall = layout(shown, 360, 540)
 
   const countries = new Map<string, number>()
+  const byCode = new Map<string, number>()
   let oa = 0, doaj = 0
   for (const r of records) {
     const c = countryName(r.co)
     if (c) countries.set(c, (countries.get(c) ?? 0) + 1)
+    const code = countryCode(r.co)
+    if (code) byCode.set(code, (byCode.get(code) ?? 0) + 1)
     if (r.oa) oa++
     if (r.dj) doaj++
   }
-  const topCountries = [...countries].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, value]) => ({ label, value }))
+  const topCountries = [...countries].sort((a, b) => b[1] - a[1]).slice(0, 10)
   const topPublishers = publishers.slice(0, 8).map(p => ({ label: p.name, value: p.n, href: publisherHref(p) }))
   const total = records.length
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0)
@@ -134,24 +172,29 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
       </div>
 
       <div className="mt-6 p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
-        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Open access</h3>
-          <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>
-            <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{pct(oa)}%</span> of indexed journals are open access;{' '}
-            <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{pct(doaj)}%</span> are in DOAJ.
-          </p>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 mb-2">
+          <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Where journals are published</h3>
+          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{fmt(countries.size)} countries and territories</span>
         </div>
-        <div className="mt-3 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pct(doaj)}% in DOAJ, ${pct(oa - doaj)}% other open access, ${100 - pct(oa)}% not open access`}>
-          <span style={{ width: `${pct(doaj)}%`, background: 'var(--teal)' }} />
-          <span style={{ width: `${Math.max(0, pct(oa) - pct(doaj))}%`, background: 'var(--teal-line)' }} />
-          <span className="flex-1" style={{ background: 'var(--surface-3)' }} />
-        </div>
-        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>
-          <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ</li>
-          <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ</li>
-          <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access</li>
-          <li><Link href="/journals/open-access/" className="link">Browse open access journals</Link></li>
+        <WorldMap counts={byCode} />
+        <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]" style={{ color: 'var(--muted)' }} aria-label="Journals per country">
+          {MAP_BINS.map(b => (
+            <li key={b.min} className="flex items-center gap-1.5">
+              <span aria-hidden className="h-2.5 w-4 rounded-[1px]" style={{ background: `color-mix(in srgb, var(--teal) ${b.mix}%, var(--surface))` }} />{b.label}
+            </li>
+          ))}
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="h-2.5 w-4 rounded-[1px]" style={{ background: 'var(--hover)', border: '1px solid var(--line)' }} />none
+          </li>
         </ul>
+        <ol className="mt-4 pt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-1.5 text-[12.5px]" style={{ borderTop: '1px solid var(--line-soft)' }}>
+          {topCountries.map(([c, n], i) => (
+            <li key={c} className="flex items-baseline justify-between gap-2 min-w-0">
+              <span className="truncate" style={{ color: 'var(--ink-2)' }}><span className="font-mono mr-1.5" style={{ color: 'var(--soft)' }}>{i + 1}</span>{c}</span>
+              <span className="font-mono tnum shrink-0" style={{ color: 'var(--ink)' }}>{fmt(n)}</span>
+            </li>
+          ))}
+        </ol>
       </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -162,12 +205,23 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
           </div>
           <Bars rows={topPublishers} />
         </div>
-        <div className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+        <div className="p-4 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
           <div className="flex items-baseline justify-between gap-3 mb-3">
-            <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Where journals are published</h3>
-            <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{fmt(countries.size)} countries</span>
+            <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Open access</h3>
+            <Link href="/journals/open-access/" className="link text-[12.5px]">Browse</Link>
           </div>
-          <Bars rows={topCountries} />
+          <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pct(oa)}%</p>
+          <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>of indexed journals are open access; {pct(doaj)}% are listed in DOAJ.</p>
+          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pct(doaj)}% in DOAJ, ${Math.max(0, pct(oa) - pct(doaj))}% other open access, ${100 - pct(oa)}% not open access`}>
+            <span style={{ width: `${pct(doaj)}%`, background: 'var(--teal)' }} />
+            <span style={{ width: `${Math.max(0, pct(oa) - pct(doaj))}%`, background: 'var(--teal-line)' }} />
+            <span className="flex-1" style={{ background: 'var(--surface-3)' }} />
+          </div>
+          <ul className="mt-2.5 space-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(doaj)}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(Math.max(0, oa - doaj))}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(total - oa)}</span></li>
+          </ul>
         </div>
       </div>
     </section>
