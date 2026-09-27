@@ -17,6 +17,8 @@ const SERVICES = [
   { label: 'Certificate of indexing', href: '/certificate/', note: 'For authors of indexed publications' },
   { label: 'Verify a certificate', href: '/certificate/verify/', note: 'Check a certificate number' },
   { label: 'Journal certification', href: '/certification/', note: 'Apply for the Core Collection' },
+  { label: 'Citation generator', href: '/cite/', note: 'PSG, APA, MLA and Chicago from a DOI or ISBN' },
+  { label: 'PSG citation format', href: '/psg-format/', note: 'The PSG author-date standard' },
   { label: 'Data downloads', href: '/datasets/', note: 'Directory, rankings and records' },
 ]
 
