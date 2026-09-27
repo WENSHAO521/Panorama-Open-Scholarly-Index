@@ -6,7 +6,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
-import { ThemeToggle } from './ThemeToggle'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -127,8 +126,6 @@ export function SiteHeader() {
           {UTILITY_NAV.map(l => (
             <Link key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</Link>
           ))}
-          <span aria-hidden="true" className="h-3" style={{ borderLeft: '1px solid var(--band-line)' }} />
-          <ThemeToggle band />
         </nav>
       </div>
     </div>
@@ -161,10 +158,9 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden md:block ml-auto w-[240px] xl:w-[300px]"><HeaderSearch /></div>
-        <ThemeToggle className="ml-auto md:hidden shrink-0" />
         <button
           type="button"
-          className="lg:hidden ml-2 btn btn-sm"
+          className="lg:hidden ml-auto md:ml-2 btn btn-sm"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           onClick={() => setMobileOpen(o => !o)}

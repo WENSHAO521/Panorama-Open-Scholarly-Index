@@ -11,12 +11,11 @@
  * Shape rule: every surface, control, chip and table uses --radius (2px).
  * The accent tokens keep their historical --teal-* names.
  *
- * Theme: follows prefers-color-scheme, overridable with the header toggle.
- * Tokens are redefined for dark below; components read tokens, never raw hex.
+ * Theme: light only, on a white page. Components read tokens, never raw hex.
  */
 :root {
   color-scheme: light;
-  --paper: #f2f3f5;
+  --paper: #ffffff;
   --surface: #ffffff;
   --surface-2: #f0f2f4;
   --surface-3: #e3e7eb;
@@ -63,89 +62,6 @@
   --font-display: var(--font-body);
 }
 
-/* Dark tokens: the system setting, unless the visitor chose light with the
-   header toggle (data-theme on <html>, set before first paint). */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --paper: #0e1217;
-    --surface: #141920;
-    --surface-2: #1a2028;
-    --surface-3: #222932;
-    --hover: #191f27;
-    --line: #2b333d;
-    --line-soft: #212830;
-
-    --ink: #e3e8ee;
-    --ink-2: #bec7d1;
-    --muted: #939eaa;
-    --soft: #6e7985;
-
-    --teal: #7ea8de;
-    --teal-hover: #a0c0ea;
-    --teal-soft: #182739;
-    --teal-line: #2d4665;
-    --on-teal: #0b1422;
-
-    --verified: #6cc59a;
-    --verified-soft: #16291f;
-    --partial: #d4bb5c;
-    --partial-soft: #2a2614;
-    --check: #e4955f;
-    --check-soft: #2f2016;
-    --rejected: #ec8a98;
-    --rejected-soft: #331a1f;
-    --info: #7ea8de;
-    --info-soft: #182739;
-
-    --band: #090c10;
-    --band-ink: #dde3ea;
-    --band-muted: #8793a0;
-    --code-bg: #090d12;
-    --code-ink: #cbd7e3;
-    --shadow-1: none;
-  }
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --paper: #0e1217;
-  --surface: #141920;
-  --surface-2: #1a2028;
-  --surface-3: #222932;
-  --hover: #191f27;
-  --line: #2b333d;
-  --line-soft: #212830;
-
-  --ink: #e3e8ee;
-  --ink-2: #bec7d1;
-  --muted: #939eaa;
-  --soft: #6e7985;
-
-  --teal: #7ea8de;
-  --teal-hover: #a0c0ea;
-  --teal-soft: #182739;
-  --teal-line: #2d4665;
-  --on-teal: #0b1422;
-
-  --verified: #6cc59a;
-  --verified-soft: #16291f;
-  --partial: #d4bb5c;
-  --partial-soft: #2a2614;
-  --check: #e4955f;
-  --check-soft: #2f2016;
-  --rejected: #ec8a98;
-  --rejected-soft: #331a1f;
-  --info: #7ea8de;
-  --info-soft: #182739;
-
-  --band: #090c10;
-  --band-ink: #dde3ea;
-  --band-muted: #8793a0;
-  --code-bg: #090d12;
-  --code-ink: #cbd7e3;
-  --shadow-1: none;
-}
 
 :root {
   /*

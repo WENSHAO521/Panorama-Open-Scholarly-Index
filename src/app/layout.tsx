@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
-import { THEME_SCRIPT } from '@/lib/theme'
 import { SiteFooter } from "@/components/SiteFooter";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
@@ -54,12 +53,12 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION },
 };
 
+// Light only: keeps browser controls and scrollbars light on dark systems too.
+export const viewport = { colorScheme: 'light', themeColor: '#ffffff' }
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
+    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
