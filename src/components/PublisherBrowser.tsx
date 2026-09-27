@@ -7,7 +7,7 @@ import { publisherHref, type PublisherRow } from '@/lib/publishers'
 import { fmt } from './db'
 
 const PAGE = 50
-type Sort = 'journals' | 'name' | 'articles' | 'oa'
+type Sort = 'journals' | 'name' | 'works' | 'oa'
 
 export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
   const [rows, setRows] = useState<PublisherRow[]>(top)
@@ -31,7 +31,7 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
     const n = dq.trim().toLowerCase()
     const out = n ? rows.filter(r => r.name.toLowerCase().includes(n)) : [...rows]
     if (sort === 'name') out.sort((a, b) => a.name.localeCompare(b.name))
-    else if (sort === 'articles') out.sort((a, b) => b.articles - a.articles)
+    else if (sort === 'works') out.sort((a, b) => b.works - a.works)
     else if (sort === 'oa') out.sort((a, b) => b.oa / b.n - a.oa / a.n || b.n - a.n)
     else out.sort((a, b) => b.n - a.n)
     return out
@@ -51,7 +51,7 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
         <label htmlFor="pub-sort" className="sr-only">Sort</label>
         <select id="pub-sort" value={sort} onChange={e => setSort(e.target.value as Sort)} className="input h-10 w-auto pr-8">
           <option value="journals">Most journals</option>
-          <option value="articles">Most articles</option>
+          <option value="works">Most works</option>
           <option value="oa">Highest open-access share</option>
           <option value="name">Name A to Z</option>
         </select>
@@ -69,10 +69,9 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
               <th>Publisher</th>
               <th className="text-right">Journals</th>
               <th className="text-right">Core</th>
-              <th className="text-right">Benchmark</th>
-              <th className="text-right">Discovered</th>
               <th className="text-right">Open access</th>
-              <th className="text-right">Articles</th>
+              <th className="text-right">In DOAJ</th>
+              <th className="text-right">Works</th>
             </tr>
           </thead>
           <tbody>
@@ -83,14 +82,13 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
                 </td>
                 <td className="text-right font-mono tnum">{fmt(r.n)}</td>
                 <td className="text-right font-mono tnum" style={{ color: r.core ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.core)}</td>
-                <td className="text-right font-mono tnum" style={{ color: r.benchmark ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.benchmark)}</td>
-                <td className="text-right font-mono tnum" style={{ color: r.discovered ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.discovered)}</td>
                 <td className="text-right font-mono tnum">{Math.round((r.oa / r.n) * 100)}%</td>
-                <td className="text-right font-mono tnum" style={{ color: 'var(--muted)' }}>{fmt(r.articles)}</td>
+                <td className="text-right font-mono tnum" style={{ color: r.doaj ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.doaj)}</td>
+                <td className="text-right font-mono tnum" style={{ color: 'var(--muted)' }}>{fmt(r.works)}</td>
               </tr>
             ))}
             {!shown.length && (
-              <tr><td colSpan={7} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No publisher matches that name.</td></tr>
+              <tr><td colSpan={6} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No publisher matches that name.</td></tr>
             )}
           </tbody>
         </table>

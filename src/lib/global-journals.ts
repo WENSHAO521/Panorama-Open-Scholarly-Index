@@ -11,7 +11,8 @@ import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import psc from './psc-v1.0.snapshot.json'
 import { getAllRecords } from './records-data'
-import { collectionOf, recordHref } from './records'
+import { collectionOf, countryName, recordHref } from './records'
+import { STATIC_PUBLISHER_PAGES, publisherKey, slugify, type PublisherDetail, type PublisherRow } from './publishers'
 
 /** Compact directory record. Short keys keep the per-category files small. */
 export interface DirRecord {
@@ -169,4 +170,81 @@ export const SPLIT_THRESHOLD = 20000
 export function categoryFiles(code: string): string[] {
   const n = getCategoryJournals(code).length
   return n > SPLIT_THRESHOLD ? LETTERS.map(l => `${code}--${l}.json`) : [`${code}.json`]
+}
+
+/** Publishers aggregated from the directory, largest first. Journals without a publisher are left out. */
+function buildPublishers(): PublisherDetail[] {
+  const groups = new Map<string, DirRecord[]>()
+  for (const r of getDirectory().records) {
+    const name = r.p?.replace(/\s+/g, ' ').trim()
+    if (!name) continue
+    const g = groups.get(name)
+    if (g) g.push(r)
+    else groups.set(name, [r])
+  }
+
+  const byCount = (a: [string, number], b: [string, number]) => b[1] - a[1] || a[0].localeCompare(b[0])
+  const out: PublisherDetail[] = [...groups].map(([name, rs]) => {
+    const countries = new Map<string, number>()
+    const subjects = new Map<string, number>()
+    let core = 0, oa = 0, doaj = 0, works = 0
+    for (const r of rs) {
+      if (r.core) core++
+      if (r.oa) oa++
+      if (r.dj) doaj++
+      works += r.w ?? 0
+      const co = countryName(r.co)
+      if (co) countries.set(co, (countries.get(co) ?? 0) + 1)
+      if (r.s && (PSC_NAME[r.s] || r.s === MULTIDISCIPLINARY)) subjects.set(r.s, (subjects.get(r.s) ?? 0) + 1)
+    }
+    return {
+      name, slug: '', n: rs.length, core, oa, doaj, works, page: false,
+      countries: [...countries].sort(byCount),
+      subjects: [...subjects].sort(byCount),
+      variants: [],
+      journals: rs
+        .map(r => ({ t: r.t, i: r.i[0] ?? null, co: countryName(r.co), oa: r.oa, dj: r.dj, w: r.w, s: r.s, core: r.core, h: r.h }))
+        .sort((a, b) => (b.w ?? 0) - (a.w ?? 0) || a.t.localeCompare(b.t)),
+    }
+  })
+  out.sort((a, b) => b.n - a.n || b.works - a.works || a.name.localeCompare(b.name))
+
+  // Slugs are assigned in that order, so the larger publisher keeps the plain slug on a collision.
+  const taken = new Set<string>()
+  out.forEach((p, idx) => {
+    const base = slugify(p.name)
+    let slug = base
+    for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`
+    taken.add(slug)
+    p.slug = slug
+    p.page = idx < STATIC_PUBLISHER_PAGES
+  })
+
+  const byKey = new Map<string, PublisherDetail[]>()
+  for (const p of out) {
+    const k = publisherKey(p.name)
+    const g = byKey.get(k)
+    if (g) g.push(p)
+    else byKey.set(k, [p])
+  }
+  for (const p of out) {
+    const g = byKey.get(publisherKey(p.name))!
+    if (g.length > 1) p.variants = g.filter(v => v !== p).slice(0, 20).map(v => ({ name: v.name, slug: v.slug, n: v.n, page: v.page }))
+  }
+  return out
+}
+
+let publishers: PublisherDetail[] | null = null
+
+export function getPublisherDetails(): PublisherDetail[] {
+  return publishers ??= buildPublishers()
+}
+
+/** Summary rows, largest first (the /data/meta/publishers.json file). */
+export function getPublishers(): PublisherRow[] {
+  return getPublisherDetails().map(({ name, slug, n, core, oa, doaj, works, page }) => ({ name, slug, n, core, oa, doaj, works, page }))
+}
+
+export function findPublisher(slug: string): PublisherDetail | undefined {
+  return getPublisherDetails().find(p => p.slug === slug)
 }

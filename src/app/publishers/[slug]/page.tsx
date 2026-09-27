@@ -1,15 +1,16 @@
 import { notFound } from 'next/navigation'
-import { findPublisher, getPublisherDetails } from '@/lib/records-data'
-import { STATIC_PUBLISHER_MIN } from '@/lib/publishers'
+import { findPublisher, getPublishers } from '@/lib/global-journals'
 import { PublisherView } from '@/components/PublisherView'
 
-// Publishers with STATIC_PUBLISHER_MIN or more journals get a static page.
-// The long tail is served by the in-browser viewer at /publisher/ to stay
+// The largest publishers (STATIC_PUBLISHER_PAGES) get a static page. The
+// long tail is served by the in-browser viewer at /publisher/ to stay
 // inside Cloudflare Pages' 20,000-file limit.
 export const dynamicParams = false
 
+const EMBEDDED_JOURNALS = 100
+
 export function generateStaticParams() {
-  return getPublisherDetails().filter(p => p.n >= STATIC_PUBLISHER_MIN).map(p => ({ slug: p.slug }))
+  return getPublishers().filter(p => p.page).map(p => ({ slug: p.slug }))
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
@@ -18,17 +19,18 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   if (!p) return { title: 'Publisher not found' }
   return {
     title: p.name,
-    description: `${p.name} in POSI: ${p.n} journals, ${p.core} in the Core Collection, ${Math.round((p.oa / p.n) * 100)}% open access, with subjects, countries and every journal record.`,
+    description: `${p.name} in POSI: ${p.n} indexed journals, ${Math.round((p.oa / p.n) * 100)}% open access, with subjects, countries and every journal.`,
   }
 }
 
 export default async function PublisherPage(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params
   const p = findPublisher(slug)
-  if (!p || p.n < STATIC_PUBLISHER_MIN) notFound()
+  if (!p || !p.page) notFound()
   return (
     <div className="wrap">
-      <PublisherView p={p} />
+      {/* The first journals are rendered at build time; PublisherView loads the rest from the shard. */}
+      <PublisherView p={{ ...p, journals: p.journals.slice(0, EMBEDDED_JOURNALS) }} />
     </div>
   )
 }

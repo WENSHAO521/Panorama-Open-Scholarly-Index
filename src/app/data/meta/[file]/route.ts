@@ -1,6 +1,7 @@
 // Small metadata files: /data/meta/{stats,psc,schema}.json
 import { toIndexRecord } from '@/lib/records'
-import { getAllRecords, getPublishers } from '@/lib/records-data'
+import { getAllRecords } from '@/lib/records-data'
+import { getPublishers } from '@/lib/global-journals'
 import { JOURNAL_FIELDS, INDEX_KEYS } from '@/lib/schema'
 import { DATA_CUTOFF, IS_OFFICIAL_RELEASE } from '@/lib/release'
 import psc from '@/lib/psc-v1.0.snapshot.json'

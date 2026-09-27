@@ -1,57 +1,71 @@
 // The publisher model: pure code, safe to import from client components.
-// Aggregation over the vendored datasets lives in records-data.ts.
+// Aggregation lives in global-journals.ts (server only).
 //
-// Publishers are keyed by the name as registered on each record; names are
-// not merged across spellings. Every publisher gets a stable URL slug. The
-// larger publishers get a statically generated page at /publishers/<slug>/;
-// the long tail (thousands of single-journal publishers) is served by the
-// in-browser viewer at /publisher/?id=<slug>, reading a shard under
-// /data/publishers/, to stay inside Cloudflare Pages' 20,000-file limit.
-
-import type { IndexRecord } from './records'
+// Publishers are aggregated from the global journal directory (every
+// Crossref and OpenAlex journal, GLOBAL-INDEX-1.0), keyed by the publisher
+// name as registered on each journal; names are not merged across
+// spellings. Every publisher gets a stable URL slug. The largest publishers
+// get a statically generated page at /publishers/<slug>/; the long tail
+// (tens of thousands of publishers) is served by the in-browser viewer at
+// /publisher/?id=<slug>, reading a hashed shard under /data/publishers/, to
+// stay inside Cloudflare Pages' 20,000-file limit.
 
 export interface PublisherRow {
   /** publisher name as registered */
   name: string
   /** URL key, unique across publishers */
   slug: string
-  /** journals in POSI */
+  /** journals indexed */
   n: number
+  /** journals in the Core Collection */
   core: number
-  benchmark: number
-  discovered: number
   /** open-access journals */
   oa: number
-  /** DOAJ-listed journals */
+  /** journals in DOAJ */
   doaj: number
-  /** registered articles across its journals */
-  articles: number
+  /** works across its journals (OpenAlex works, or Crossref DOIs) */
+  works: number
+  /** has a static page at /publishers/<slug>/ */
+  page: boolean
+}
+
+/** A journal on a publisher page. Short keys keep the shard files small. */
+export interface PublisherJournal {
+  /** title */
+  t: string
+  /** ISSN-L or first ISSN */
+  i: string | null
+  /** country (display name) */
+  co: string | null
+  oa: boolean | null
+  dj: boolean | null
+  /** works */
+  w: number | null
+  /** PSC category */
+  s: string | null
+  core: boolean
+  /** link to the journal page */
+  h: string
 }
 
 export interface PublisherDetail extends PublisherRow {
-  /** countries of registration, most journals first: [display name, journals] */
+  /** countries, most journals first: [display name, journals] */
   countries: [string, number][]
   /** PSC subject categories, most journals first: [code, journals]; unclassified journals are left out */
   subjects: [string, number][]
-  /** earliest record creation and latest record update across its journals (YYYY-MM-DD) */
-  first_seen: string | null
-  last_updated: string | null
   /** other registered names that normalise to the same publisher */
-  variants: { name: string; slug: string; n: number }[]
-  /** its journals, title order */
+  variants: { name: string; slug: string; n: number; page: boolean }[]
+  /** its journals, most works first */
   journals: PublisherJournal[]
 }
 
-/** A journal row on a publisher page: the index record without the fields the page already knows. */
-export type PublisherJournal = Pick<IndexRecord, 'c' | 't' | 'i' | 'co' | 'k' | 'oa' | 'd' | 'n' | 'u'>
-
-/** Publishers with at least this many journals get a static page. */
-export const STATIC_PUBLISHER_MIN = 5
+/** How many publishers (largest first) get a static page. */
+export const STATIC_PUBLISHER_PAGES = 500
 
 export function slugify(name: string): string {
   const s = name
     .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/&/g, ' and ')
     .replace(/[^a-z0-9]+/g, '-')
@@ -70,16 +84,20 @@ export function publisherKey(name: string): string {
 }
 const LEGAL_FORMS = new Set(['the', 'bv', 'b-v', 'sa', 's-a', 'ltd', 'limited', 'inc', 'llc', 'gmbh', 'ag', 'co', 'kg', 'plc', 'srl', 'spa', 'pvt', 'private', 'corp', 'corporation', 'company'])
 
-export function publisherHref(p: { slug: string; n: number }): string {
-  return p.n >= STATIC_PUBLISHER_MIN ? `/publishers/${p.slug}/` : `/publisher/?id=${encodeURIComponent(p.slug)}`
+export function publisherHref(p: { slug: string; page: boolean }): string {
+  return p.page ? `/publishers/${p.slug}/` : `/publisher/?id=${encodeURIComponent(p.slug)}`
 }
 
-/** Publisher details are sharded by the first character of the slug. */
+/** Publisher details are served in hashed shards so no one file gets large. */
+export const PUBLISHER_SHARD_COUNT = 256
+
 export function publisherShardOf(slug: string): string {
-  const ch = slug.charAt(0)
-  return /[a-z]/.test(ch) ? ch : '0'
+  let h = 0x811c9dc5
+  for (const ch of slug) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0 }
+  return (h % PUBLISHER_SHARD_COUNT).toString(16).padStart(2, '0')
 }
-export const PUBLISHER_SHARDS = [...'0abcdefghijklmnopqrstuvwxyz']
+
+export const PUBLISHER_SHARDS = Array.from({ length: PUBLISHER_SHARD_COUNT }, (_, i) => i.toString(16).padStart(2, '0'))
 
 export function publisherJsonHref(slug: string): string {
   return `/data/publishers/${publisherShardOf(slug)}.json`
