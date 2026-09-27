@@ -9,6 +9,22 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'posi-enters-full-operation',
+    title: 'The Panorama Open Scholarly Index is now in full operation',
+    date: '2026-09-27',
+    pinned: true,
+    summary:
+      'Six weeks after its pre-operational launch, POSI moves into full operation: 158,242 journals indexed, the 2026 ranking edition published, and every certificate, record and dataset open to public verification.',
+    body: [
+      'On 12 August 2026, POSI opened to the public as a pre-operational service. From today, 27 September 2026, the Panorama Open Scholarly Index is in full operation. Its index, rankings, certification and certificates are maintained as a standing service of Panorama Scholarly Group Ltd., under the published editorial policy and methodology.',
+      'POSI now indexes every scholarly journal with an ISSN that is registered with Crossref or described by OpenAlex: 158,242 journals, merged on ISSN so that each appears once, and more than 300 million publications. Every journal has a profile page, every publisher has its own page, and the whole directory can be searched by title, ISSN or publisher.',
+      'The 2026 Journal Rankings rank 4,067 journals by the POSI Citation Score, and 2,963 of them within their subject category. Each rank can be traced to the Crossref records it was computed from. The Core Collection is the certified tier: journals enter it only by applying and passing the POSI Quality Framework evaluation, and certification is reviewed at least once a year.',
+      'Certificates of indexing are issued to authors on request and can be checked by anyone: the certificate number is recomputed from the publications listed, and each publication is checked again against Crossref, OpenAlex and the POSI index. Core Collection journals receive a certificate of certification linked to their live record.',
+      'POSI is built to be checked rather than trusted. Its data are published under CC BY 4.0, its software under the MIT licence, and every change to the curated corpus is released with an audit. The journal directory, publisher data, ranking edition and record files can be downloaded from the Datasets page.',
+      'Full operation is a commitment, not an end point. Coverage is refreshed from Crossref and OpenAlex, methodology changes are versioned and announced here before they take effect, and corrections can be requested through the Contact page. We thank the editors, publishers and researchers who used POSI during the pre-operational period and helped shape it.',
+    ],
+  },
+  {
     slug: 'journal-profiles-and-global-index',
     title: 'Every indexed journal now has a profile page',
     date: '2026-09-27',
@@ -37,7 +53,6 @@ export const ANNOUNCEMENTS: Announcement[] = [
     slug: 'posi-pre-operational-launch',
     title: 'POSI Begins Pre-Operational Launch on August 12, 2026',
     date: '2026-08-12',
-    pinned: true,
     summary:
       'POSI - Panorama Open Scholarly Index - moves into pre-operational launch on August 12, 2026. Journal indexing, lifecycle ratings, subject rankings, and citation analytics are now live for public use.',
     body: [
