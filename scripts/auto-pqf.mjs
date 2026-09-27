@@ -26,12 +26,19 @@
  * left unscored rather than guessed) and is used only when direct verification
  * isn't possible, never as the primary source.
  * This is slower per journal than a DOAJ-only version (more live fetches per
- * journal) — budget accordingly for CI run time.
+ * journal), so scoring is incremental: each run takes the journals with no
+ * automated score first, then those whose score is oldest (auto_pqf.evaluated_at),
+ * and stops starting new ones when its time budget runs out. Everything
+ * scored so far is written. Run daily, this refreshes every score in a rolling
+ * cycle and scores new discoveries the day they arrive, instead of trying to
+ * re-crawl all ~24,000 sites in one run (which never finished within the CI
+ * time limit, so nothing was saved).
  *
  * Usage:
- *   node scripts/auto-pqf.mjs                 # dry run — print scores
- *   node scripts/auto-pqf.mjs --write         # inject auto_pqf into data.ts
- *   node scripts/auto-pqf.mjs --limit 50      # only process the first N eligible journals (testing/CI budget)
+ *   node scripts/auto-pqf.mjs                          # dry run — print scores
+ *   node scripts/auto-pqf.mjs --write                  # write auto_pqf to discovered-journals.json
+ *   node scripts/auto-pqf.mjs --limit 50               # at most N journals
+ *   node scripts/auto-pqf.mjs --write --budget-minutes 20   # stop starting new journals after 20 minutes
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -44,6 +51,9 @@ const CONCURRENCY = 5
 const DELAY_MS = 300
 const limitIdx = process.argv.indexOf('--limit')
 const LIMIT = limitIdx !== -1 ? parseInt(process.argv[limitIdx + 1], 10) : null
+const budgetIdx = process.argv.indexOf('--budget-minutes')
+const DEADLINE = budgetIdx !== -1 ? Date.now() + parseFloat(process.argv[budgetIdx + 1]) * 60_000 : Infinity
+const TODAY = new Date().toISOString().slice(0, 10)
 
 // ─── Website crawl — POSI's own direct verification, replacing DOAJ bibjson ──
 
@@ -341,8 +351,10 @@ function computeAutoPqf({ site, journal, crSample, sitemapOk, robotsOk, doiResol
 // No DOAJ-based eligibility filter — every discovered journal is scored, and
 // no DOAJ field is read into the scoring functions above.
 
+// Unscored journals first, then the oldest scores; the file's order breaks ties.
 function parseDiscoveredListed(records) {
-  return records.map(r => ({
+  const age = r => r.auto_pqf?.evaluated_at ?? ''
+  return records.map((r, i) => ({ r, i })).sort((a, b) => age(a.r).localeCompare(age(b.r)) || a.i - b.i).map(({ r }) => ({
     id: r.id,
     code: r.journal_code,
     issnOnline: r.issn_online ?? null,
@@ -360,6 +372,10 @@ async function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 async function runBatch(items, fn, concurrency) {
   const results = []
   for (let i = 0; i < items.length; i += concurrency) {
+    if (Date.now() >= DEADLINE) {
+      console.log(`\nTime budget reached after ${i} of ${items.length} journals; the rest follow in later runs.`)
+      break
+    }
     const batch = items.slice(i, i + concurrency)
     const br = await Promise.all(batch.map(fn))
     results.push(...br)
@@ -375,7 +391,8 @@ async function main() {
   const byId = new Map(records.map(r => [r.id, r]))
   const allListed = parseDiscoveredListed(records)
   const listed = LIMIT ? allListed.slice(0, LIMIT) : allListed
-  console.log(`Found ${allListed.length} DISCOVERED_JOURNALS (scoring prioritizes direct verification; DOAJ used only as a disclosed fallback when a site can't be crawled, never as an eligibility filter)${LIMIT ? ` — processing first ${listed.length}` : ''}\n`)
+  const unscored = records.filter(r => !r.auto_pqf).length
+  console.log(`Found ${allListed.length} DISCOVERED_JOURNALS, ${unscored} not yet scored (scoring prioritizes direct verification; DOAJ used only as a disclosed fallback when a site can't be crawled, never as an eligibility filter)${LIMIT ? ` — processing at most ${listed.length}` : ''}${DEADLINE < Infinity ? `, within a ${process.argv[budgetIdx + 1]}-minute budget` : ''}. Unscored first, then oldest scores.\n`)
 
   const results = await runBatch(listed, async (j) => {
     const issn = j.issnOnline ?? j.issnPrint
@@ -419,7 +436,7 @@ async function main() {
       console.log(`[${code}] JTF:${scores.jtf} MQF:${scores.mqf} EGF:${scores.egf} TDF:${scores.tdf} CVF:${scores.cvf} RIF:${scores.rif} → ${scores.total} ${scores.grade}${usedDoajFallback ? ' (DOAJ fallback)' : ''}`)
     } else {
       const rec = byId.get(id)
-      if (rec) rec.auto_pqf = autoPqf(scores)
+      if (rec) rec.auto_pqf = autoPqf(scores, TODAY)
     }
   }
 

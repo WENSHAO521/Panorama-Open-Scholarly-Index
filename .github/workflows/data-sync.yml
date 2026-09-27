@@ -65,6 +65,8 @@ jobs:
             echo "No data changes; the site is on $(cat src/lib/data-editions.json | tr -d '\n ')" | tee -a "$GITHUB_STEP_SUMMARY"
           else
             git commit -m "chore(data): sync data $(date -u +%Y-%m-%d)"
+            # Another data job may have pushed meanwhile; they touch different files.
+            git pull --rebase --quiet origin master
             git push
             echo "Synced and pushed; Cloudflare Pages rebuilds from this push." | tee -a "$GITHUB_STEP_SUMMARY"
           fi

@@ -11,7 +11,8 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # auto-PQF is capped at 20 minutes below; the rest of the job takes a few.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -40,8 +41,10 @@ jobs:
         run: node scripts/calc-discovered-mqs.mjs
 
       # 步骤 3：为发现的期刊更新 auto-PQF 评分（直接站点验证优先，DOAJ 仅作为披露的后备信号）
+      # 增量评分：先评从未评过的期刊，再按评分日期从旧到新刷新，20 分钟到点即停并保存。
+      # 以前每天重爬全部约 24,000 个期刊网站，永远跑不完 30 分钟，整步被取消，什么都没保存。
       - name: Update auto-PQF scores
-        run: node scripts/auto-pqf.mjs --write
+        run: node scripts/auto-pqf.mjs --write --budget-minutes 20
 
       # 步骤 4：为 Core Collection（PSG/INDEXED/SHIHARR/OTHER_INDEXED）中的新刊
       # 自动生成 Early-Stage Rating —— 任何刚被人工收录进 data.ts 的期刊，会在下一次
@@ -60,6 +63,8 @@ jobs:
           else
             JOURNAL_COUNT=$(node -e "console.log(require('./src/lib/discovered-journals.json').length)")
             git commit -m "chore(data): daily sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
+            # Another data job may have pushed meanwhile; they touch different files.
+            git pull --rebase --quiet origin master
             git push
           fi
 

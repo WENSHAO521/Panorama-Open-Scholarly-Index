@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url'
 
 export const DISCOVERED_FILE = join(dirname(fileURLToPath(import.meta.url)), '../../src/lib/discovered-journals.json')
 
-/** Date stamped on automated PQF pre-screens, unchanged from the original TypeScript helper. */
+/** Date on the automated PQF pre-screens made before evaluations were dated individually. */
 export const AUTO_PQF_EVALUATED_AT = '2026-06-22'
 export const AUTO_PQF_VERSION = 'PQF v1.0-auto'
 
@@ -20,9 +20,10 @@ export function gradeFor(total) {
 }
 
 /** Same result as the former autopqf(jtf, mqf, egf, tdf, cvf, rif) helper in discovered-journals.ts. */
-export function autoPqf({ jtf, mqf, egf, tdf, cvf, rif }) {
+/** evaluatedAt is the date the evidence was collected (YYYY-MM-DD); it decides which scores are refreshed first. */
+export function autoPqf({ jtf, mqf, egf, tdf, cvf, rif }, evaluatedAt = new Date().toISOString().slice(0, 10)) {
   const total = jtf + mqf + egf + tdf + cvf + rif
-  return { total, grade: gradeFor(total), subfactors: { jtf, mqf, egf, tdf, cvf, rif }, evaluated_at: AUTO_PQF_EVALUATED_AT, version: AUTO_PQF_VERSION }
+  return { total, grade: gradeFor(total), subfactors: { jtf, mqf, egf, tdf, cvf, rif }, evaluated_at: evaluatedAt, version: AUTO_PQF_VERSION }
 }
 
 export function loadDiscovered(file = DISCOVERED_FILE) {
