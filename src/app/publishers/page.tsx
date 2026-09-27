@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getPublishers } from '@/lib/records-data'
 import { PublisherBrowser } from '@/components/PublisherBrowser'
 import { PageHeader, fmt } from '@/components/db'
@@ -17,8 +16,8 @@ export default function PublishersPage() {
         <p className="max-w-[65ch]">
           {fmt(all.length)} publishers across {fmt(journals)} journal records, aggregated from the registered publisher
           name on each record. Names are shown as registered and are not merged across spellings. Download as{' '}
-          <a href="/data/meta/publishers.json" className="link">JSON</a>, or open a publisher to see its journals in{' '}
-          <Link href="/journals/" className="link">Sources</Link>.
+          <a href="/data/meta/publishers.json" className="link">JSON</a>, or open a publisher for its own page: subjects,
+          countries, collection breakdown and every journal it has in POSI.
         </p>
       </PageHeader>
       <PublisherBrowser top={all.slice(0, 50)} />

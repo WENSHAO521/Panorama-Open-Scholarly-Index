@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
-import type { PublisherRow } from '@/lib/records-data'
+import { publisherHref, type PublisherRow } from '@/lib/publishers'
 import { fmt } from './db'
 
 const PAGE = 50
@@ -77,9 +77,9 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
           </thead>
           <tbody>
             {shown.map(r => (
-              <tr key={r.name}>
+              <tr key={r.slug}>
                 <td className="max-w-[360px]">
-                  <Link href={`/journals/?pub=${encodeURIComponent(r.name)}`} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.name}</Link>
+                  <Link href={publisherHref(r)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.name}</Link>
                 </td>
                 <td className="text-right font-mono tnum">{fmt(r.n)}</td>
                 <td className="text-right font-mono tnum" style={{ color: r.core ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.core)}</td>
