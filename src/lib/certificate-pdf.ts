@@ -4,7 +4,7 @@ import { PDFDocument, rgb, degrees, type PDFFont, type PDFPage, type RGB } from 
 import fontkit from '@pdf-lib/fontkit'
 import QRCode from 'qrcode'
 import psc from './psc-v1.0.snapshot.json'
-import { SEAL, starPath } from './seal'
+import { SEAL, serratedPath } from './seal'
 import type { Journal } from './types'
 
 // Core Collection certificate: one A4 landscape PDF per Core Collection (and
@@ -133,27 +133,31 @@ function arcText(page: PDFPage, text: string, cx: number, cy: number, r: number,
 
 function seal(page: PDFPage, cx: number, cy: number, R: number, sans: PDFFont, sub: string) {
   const o = SEAL.opacity
-  page.drawCircle({ x: cx, y: cy, size: R, borderColor: SEAL_INK, borderWidth: R * 0.04, borderOpacity: o })
-  page.drawCircle({ x: cx, y: cy, size: R * SEAL.outerInner, borderColor: SEAL_INK, borderWidth: R * 0.013, borderOpacity: o })
-  page.drawCircle({ x: cx, y: cy, size: R * SEAL.band, borderColor: SEAL_INK, borderWidth: R * 0.013, borderOpacity: o })
-  const size = R * SEAL.textSize
-  arcText(page, SEAL.top, cx, cy, R * SEAL.topBaseline, size, R * SEAL.tracking, sans, SEAL_INK, true, o)
-  arcText(page, SEAL.bottom, cx, cy, R * SEAL.bottomBaseline, size, R * SEAL.tracking, sans, SEAL_INK, false, o)
-
+  const ink = SEAL_INK
   // drawSvgPath draws SVG coordinates (y down) from the given origin
-  const starR = R * ((SEAL.band + SEAL.outerInner) / 2)
-  for (const deg of [180 - SEAL.starAngle, SEAL.starAngle]) {
-    const t = (deg * Math.PI) / 180
-    page.drawSvgPath(starPath(starR * Math.cos(t), starR * Math.sin(t), R * 0.055), { x: cx, y: cy, color: SEAL_INK, opacity: o })
+  page.drawSvgPath(serratedPath(0, 0, R), { x: cx, y: cy, borderColor: ink, borderWidth: R * 0.014, borderOpacity: o })
+  for (const [r, w] of [[SEAL.outerRing, 0.022], [SEAL.outerRing2, 0.008], [SEAL.innerRing, 0.014], [SEAL.innerRing2, 0.006]] as const) {
+    page.drawCircle({ x: cx, y: cy, size: R * r, borderColor: ink, borderWidth: R * w, borderOpacity: o })
   }
-  page.drawSvgPath(starPath(0, -R * 0.3, R * 0.11), { x: cx, y: cy, color: SEAL_INK, opacity: o })
+  const size = R * SEAL.textSize
+  arcText(page, SEAL.top, cx, cy, R * SEAL.topBaseline, size, R * SEAL.tracking, sans, ink, true, o)
+  arcText(page, SEAL.bottom, cx, cy, R * SEAL.bottomBaseline, size, R * SEAL.tracking, sans, ink, false, o)
 
-  const cs = R * 0.3
-  const cw = trackedWidth('POSI', sans, cs, R * 0.01)
-  drawTrackedOpacity(page, 'POSI', cx - cw / 2, cy - R * 0.13, cs, sans, SEAL_INK, R * 0.01, o)
-  const ss = R * 0.11
-  const sw = trackedWidth(sub, sans, ss, R * 0.022)
-  drawTrackedOpacity(page, sub, cx - sw / 2, cy - R * 0.32, ss, sans, SEAL_INK, R * 0.022, o)
+  const dotR = R * ((SEAL.innerRing + SEAL.outerRing2) / 2)
+  for (const deg of [180 + SEAL.dotAngle, 360 - SEAL.dotAngle]) {
+    const t = (deg * Math.PI) / 180
+    page.drawCircle({ x: cx + dotR * Math.cos(t), y: cy + dotR * Math.sin(t), size: R * 0.026, color: ink, opacity: o })
+  }
+
+  const rule = (dy: number) => page.drawLine({ start: { x: cx - R * 0.3, y: cy + dy }, end: { x: cx + R * 0.3, y: cy + dy }, thickness: R * 0.009, color: ink, opacity: o })
+  rule(R * 0.24)
+  const cs = R * 0.29
+  const cw = trackedWidth('POSI', sans, cs, R * 0.015)
+  drawTrackedOpacity(page, 'POSI', cx - cw / 2, cy - R * 0.1, cs, sans, ink, R * 0.015, o)
+  rule(-R * 0.19)
+  const ss = R * 0.095
+  const sw = trackedWidth(sub, sans, ss, R * 0.024)
+  drawTrackedOpacity(page, sub, cx - sw / 2, cy - R * 0.33, ss, sans, ink, R * 0.024, o)
 }
 
 function drawTrackedOpacity(page: PDFPage, text: string, x: number, y: number, size: number, font: PDFFont, color: RGB, tracking: number, opacity: number) {

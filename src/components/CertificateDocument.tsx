@@ -175,19 +175,23 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
                 Crossref, OpenAlex and the POSI index. This certificate states indexing status only.
               </p>
             </div>
-            <div style={{ position: 'relative', height: 150 }}>
-              <div style={{ position: 'absolute', right: -30, bottom: 14 }}>
+            <div style={{ position: 'relative', height: 176 }}>
+              <div style={{ position: 'absolute', right: -30, bottom: 30 }}>
                 <Seal size={116} sub="VERIFIED" />
+              </div>
+              <div style={{ position: 'absolute', left: 0, bottom: 112, fontFamily: SERIF, fontStyle: 'italic', fontSize: 12.5, color: MUTED }}>
+                For and on behalf of
               </div>
               <div
                 aria-label={`Signed: ${SIGNATORY}`}
-                style={{ position: 'absolute', left: 2, bottom: 44, fontFamily: 'var(--font-cert-signature), "Allura", cursive', fontSize: 40, lineHeight: 1, color: '#1b2a4e', whiteSpace: 'nowrap' }}
+                style={{ position: 'absolute', left: 2, bottom: 64, fontFamily: 'var(--font-cert-signature), "Allura", cursive', fontSize: 40, lineHeight: 1, color: '#1b2a4e', whiteSpace: 'nowrap' }}
               >
                 {SIGNATORY}
               </div>
-              <div style={{ position: 'absolute', left: 0, right: 40, bottom: 40, borderTop: `1px solid ${INK}` }} />
-              <div style={{ position: 'absolute', left: 0, bottom: 0 }}>
-                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15, lineHeight: 1.2 }}>{SIGNATORY}</div>
+              <div style={{ position: 'absolute', left: 0, right: 40, bottom: 60, borderTop: `1px solid ${INK}` }} />
+              <div style={{ position: 'absolute', left: 0, bottom: 0, lineHeight: 1.35 }}>
+                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15 }}>{SIGNATORY}</div>
+                <div style={{ fontSize: 10.5, color: INK }}>Authorized Signatory</div>
                 <div style={{ fontSize: 10.5, color: MUTED }}>Editorial Office, Panorama Open Scholarly Index</div>
               </div>
             </div>
