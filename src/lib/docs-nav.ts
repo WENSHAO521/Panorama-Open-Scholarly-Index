@@ -28,6 +28,7 @@ export const DOCS_NAV: DocsSection[] = [
     links: [
       { label: 'Methodology', href: '/methodology/' },
       { label: 'Indexing certificates', href: '/docs/certificates/' },
+      { label: 'PSG citation format', href: '/psg-format/' },
     ],
   },
   {
