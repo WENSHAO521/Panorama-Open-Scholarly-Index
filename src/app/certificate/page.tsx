@@ -17,6 +17,10 @@ export default function CertificatePage() {
             certificate is issued for every indexed journal publication, stating whether its journal is in the Core
             Collection. Anyone can verify the certificate by scanning its code. See <Link href="/docs/certificates/" className="link">how certificates work</Link>.
           </p>
+          <p className="max-w-[68ch] mt-2">
+            Journals: a <Link href="/certificate/zone/" className="link">zone certificate</Link> states a journal&apos;s POSI
+            Zone (POSI 分区) in the current Journal Rankings.
+          </p>
         </PageHeader>
       </div>
       <CertificateTool />

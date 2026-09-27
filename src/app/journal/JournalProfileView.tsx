@@ -12,6 +12,7 @@ import { countryName, recordHref } from '@/lib/records'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { QuartileBadge, ZoneBadge } from '@/components/RankingTable'
 import { zoneOf } from '@/lib/zones'
+import { hasZone } from '@/lib/zone-certificate'
 import type { Quartile } from '@/lib/rankings'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
@@ -241,6 +242,11 @@ function RankingCard({ j }: { j: JournalProfile }) {
             </dd>
           </div>
         </dl>
+      )}
+      {hasZone(j) && (
+        <Link href={`/certificate/zone/?issn=${encodeURIComponent(j.k)}`} className="btn mt-4 w-full justify-center" prefetch={false}>
+          <Certificate className="h-4 w-4" /> Zone certificate
+        </Link>
       )}
       <Link href="/rankings/" className="link mt-3 inline-block text-[12.5px]">How rankings work</Link>
     </section>

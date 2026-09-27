@@ -8,7 +8,11 @@ const A4 = { w: 595.28, h: 841.89 } // points
 const SHEET_PX = 794 // CSS width of the certificate sheet
 const SCALE = 2.5 // render resolution
 
-export async function downloadCertificatePdf(source: HTMLElement, meta: { code: string; issued: string }) {
+export async function downloadCertificatePdf(
+  source: HTMLElement,
+  meta: { code: string; issued: string; subject?: string; fileName?: string; singlePage?: boolean },
+) {
+  const subject = meta.subject ?? 'Certificate of indexing'
   const [{ toCanvas }, { PDFDocument, PDFString, StandardFonts, rgb }] = await Promise.all([import('html-to-image'), import('pdf-lib')])
 
   // Lay out a copy at A4 width, off screen, whatever the viewport.
@@ -57,9 +61,9 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
     })
 
     const pdf = await PDFDocument.create()
-    pdf.setTitle(`Certificate of indexing ${meta.code}`)
+    pdf.setTitle(`${subject} ${meta.code}`)
     pdf.setAuthor('Panorama Open Scholarly Index, Panorama Scholarly Group Ltd.')
-    pdf.setSubject('Certificate of indexing')
+    pdf.setSubject(subject)
     pdf.setCreationDate(new Date(`${meta.issued}T00:00:00Z`))
 
     const pagePx = SHEET_PX * (A4.h / A4.w)
@@ -73,7 +77,8 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
     // Plan the pages: where each one's content starts and ends, and what it repeats above it.
     type Plan = { start: number; end: number; lead: number; withHead: boolean }
     const plans: Plan[] = []
-    if (heightPx <= pagePx + SLACK) {
+    // A one-page certificate that runs slightly long is scaled down onto its page rather than split.
+    if (meta.singlePage || heightPx <= pagePx + SLACK) {
       plans.push({ start: 0, end: heightPx, lead: 0, withHead: false })
     } else {
       let start = 0
@@ -150,7 +155,7 @@ export async function downloadCertificatePdf(source: HTMLElement, meta: { code: 
     const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }))
     const a = document.createElement('a')
     a.href = url
-    a.download = `POSI-certificate-${meta.code}.pdf`
+    a.download = meta.fileName ?? `POSI-certificate-${meta.code}.pdf`
     document.body.appendChild(a)
     a.click()
     a.remove()

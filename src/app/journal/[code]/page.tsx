@@ -38,6 +38,7 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
   const { code } = await props.params
   const j = find(code)
   if (!j) notFound()
+  const ranking = getJournalRanking(j.posi_id)
 
   return (
     <div className="wrap">
@@ -49,13 +50,16 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
           pci: getPciEntry(j.posi_id),
           citationStats: getCitationStats(j.journal_code),
           pscName: j.psc_category ? PSC_NAME[j.psc_category] ?? null : null,
-          ranking: (() => { const r = getJournalRanking(j.posi_id); return r ? { ...r, catName: categoryName(r.cat) } : null })(),
+          ranking: ranking ? { ...ranking, catName: categoryName(ranking.cat) } : null,
         }}
       />
       {(j.issn_online || j.issn_print) && (
         <div className="mt-8 flex flex-wrap gap-2 pb-10">
           <Link href={`/publications/?issn=${j.issn_online ?? j.issn_print}&sort=newest`} className="btn btn-primary">Browse publications</Link>
           <Link href={`/journal/?issn=${j.issn_online ?? j.issn_print}`} className="btn">Journal profile</Link>
+          {(ranking?.zone || ranking?.oZone) && (
+            <Link href={`/certificate/zone/?issn=${j.issn_online ?? j.issn_print}`} className="btn" prefetch={false}>Zone certificate</Link>
+          )}
           {collectionOf(j) === 'core' && (
             <a href={`/api/certificate/${j.journal_code}/pdf`} className="btn" target="_blank" rel="noopener">Certification certificate (PDF)</a>
           )}

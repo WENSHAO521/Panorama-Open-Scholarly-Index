@@ -27,7 +27,7 @@ export const DOCS_NAV: DocsSection[] = [
     blurb: 'Subject classification, the POSI Citation Score and the rankings.',
     links: [
       { label: 'Methodology', href: '/methodology/' },
-      { label: 'Indexing certificates', href: '/docs/certificates/' },
+      { label: 'Certificates', href: '/docs/certificates/' },
       { label: 'PSG citation format', href: '/psg-format/' },
     ],
   },

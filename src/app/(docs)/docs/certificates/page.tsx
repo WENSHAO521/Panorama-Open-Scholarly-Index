@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/db'
 import { MAX_DOIS } from '@/lib/certificate'
+import { ZONES_VERSION } from '@/lib/zones'
 
 export const metadata = {
   title: 'How certificates work',
@@ -62,9 +63,29 @@ export default function CertificatesDoc() {
           verified; relying parties should confirm identity separately.
         </p>
 
+        <h2 id="zone-certificates">Zone certificates</h2>
+        <p>
+          A <Link href="/certificate/zone/">zone certificate</Link> (POSI 分区证书) states a journal&apos;s{' '}
+          <Link href="/methodology/#zones">POSI Zone</Link> in the current Journal Rankings: Zone 1 for the top 5% of a
+          ranking, Zone 2 for the next 15%, Zone 3 for the next 30% and Zone 4 for the rest. It is available for every
+          journal that has a zone, from the journal&apos;s profile page, and needs no application.
+        </p>
+        <ul>
+          <li>The zone within the journal&apos;s subject category when it is ranked there, and the zone across all ranked journals, each with its rank, ranking size and quartile.</li>
+          <li>The journal&apos;s title, publisher, ISSNs and POSI ID, its POSI Citation Score and the ranking edition, data snapshot and zone rule (<code>{ZONES_VERSION}</code>) it was read from.</li>
+          <li>While zones are published as a trial, the certificate says so.</li>
+        </ul>
+        <p>
+          The <strong>certificate number</strong> (<code>PZ-XXXX-XXXX-XXXX</code>) is the first 12 hexadecimal digits
+          of SHA-256 over <code>POSI-ZONE-CERT-1|zone rule|date of issue|POSI ID|edition year|category|category zone|overall zone</code>.
+          Verification recomputes it from the journal&apos;s current ranking record. Ranks are deliberately left out:
+          they move slightly with every monthly refresh, so a certificate stays valid while its zones hold and stops
+          verifying when a zone changes or the edition year moves on. The code is in <code>src/lib/zone-certificate.ts</code>.
+        </p>
+
         <h2>Appropriate use</h2>
         <p>
-          A certificate records indexing status. It is not an assessment of the quality of a publication or journal. See{' '}
+          A certificate records indexing status or ranking position. It is not an assessment of the quality of a publication or journal. See{' '}
           <Link href="/responsible-use/">responsible use</Link>.
         </p>
       </div>

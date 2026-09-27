@@ -11,7 +11,7 @@ import QRCode from 'qrcode'
 import type { CertItem } from '@/lib/certificate'
 import { Seal } from './Seal'
 
-const garamond = localFont({
+export const garamond = localFont({
   src: [
     { path: '../assets/fonts/EBGaramond-Medium.ttf', weight: '500', style: 'normal' },
     { path: '../assets/fonts/EBGaramond-SemiBold.ttf', weight: '600', style: 'normal' },
@@ -22,7 +22,7 @@ const garamond = localFont({
 })
 
 // Script face for the signatory's signature (SIL OFL).
-const signature = localFont({
+export const signature = localFont({
   src: '../assets/fonts/Allura-Regular.ttf',
   variable: '--font-cert-signature',
   display: 'swap',
@@ -30,7 +30,7 @@ const signature = localFont({
 
 const SIGNATORY = 'Chengwen Song'
 
-function verifyHost(url: string): string {
+export function verifyHost(url: string): string {
   try { return new URL(url).host } catch { return 'posi.panorama-sg.com' }
 }
 
@@ -46,16 +46,16 @@ export interface CertificateData {
   verifyUrl: string
 }
 
-const INK = '#15191c'
-const MUTED = '#565f63'
-const SOFT = '#8c979b'
-const RULE = '#cfd5d6'
-const TEAL = '#1c4f8f'
-const SERIF = 'var(--font-cert-serif), "EB Garamond", Garamond, Georgia, serif'
-const SANS = 'var(--font-ibm), "IBM Plex Sans", Arial, sans-serif'
-const MONO = 'var(--font-mono), ui-monospace, monospace'
+export const INK = '#15191c'
+export const MUTED = '#565f63'
+export const SOFT = '#8c979b'
+export const RULE = '#cfd5d6'
+export const TEAL = '#1c4f8f'
+export const SERIF = 'var(--font-cert-serif), "EB Garamond", Garamond, Georgia, serif'
+export const SANS = 'var(--font-ibm), "IBM Plex Sans", Arial, sans-serif'
+export const MONO = 'var(--font-mono), ui-monospace, monospace'
 
-function Mark() {
+export function Mark() {
   return (
     <svg width="30" height="30" viewBox="20 20 54 54" aria-hidden="true">
       <rect x="20" y="20" width="24" height="24" fill={INK} />
@@ -66,7 +66,7 @@ function Mark() {
   )
 }
 
-function longDate(iso: string) {
+export function longDate(iso: string) {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 }
 
@@ -185,29 +185,36 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
                 Crossref, OpenAlex and the POSI index. This certificate states indexing status only.
               </p>
             </div>
-            <div style={{ position: 'relative', height: 176 }}>
-              <div style={{ position: 'absolute', right: -30, bottom: 30 }}>
-                <Seal size={116} sub="VERIFIED" />
-              </div>
-              <div style={{ position: 'absolute', left: 0, bottom: 112, fontFamily: SERIF, fontStyle: 'italic', fontSize: 12.5, color: MUTED }}>
-                For and on behalf of
-              </div>
-              <div
-                aria-label={`Signed: ${SIGNATORY}`}
-                style={{ position: 'absolute', left: 2, bottom: 64, fontFamily: 'var(--font-cert-signature), "Allura", cursive', fontSize: 40, lineHeight: 1, color: '#1b2a4e', whiteSpace: 'nowrap' }}
-              >
-                {SIGNATORY}
-              </div>
-              <div style={{ position: 'absolute', left: 0, right: 40, bottom: 60, borderTop: `1px solid ${INK}` }} />
-              <div style={{ position: 'absolute', left: 0, bottom: 0, lineHeight: 1.35 }}>
-                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15 }}>{SIGNATORY}</div>
-                <div style={{ fontSize: 10.5, color: INK }}>Authorized Signatory</div>
-                <div style={{ fontSize: 10.5, color: MUTED }}>Editorial Office, Panorama Open Scholarly Index</div>
-              </div>
-            </div>
+            <Signature sub="VERIFIED" />
           </footer>
         </div>
       </div>
     </article>
+  )
+}
+
+/** Signatory block with the seal, bottom right of a certificate. */
+export function Signature({ sub }: { sub: string }) {
+  return (
+    <div style={{ position: 'relative', height: 176 }}>
+      <div style={{ position: 'absolute', right: -30, bottom: 30 }}>
+        <Seal size={116} sub={sub} />
+      </div>
+      <div style={{ position: 'absolute', left: 0, bottom: 112, fontFamily: SERIF, fontStyle: 'italic', fontSize: 12.5, color: MUTED }}>
+        For and on behalf of
+      </div>
+      <div
+        aria-label={`Signed: ${SIGNATORY}`}
+        style={{ position: 'absolute', left: 2, bottom: 64, fontFamily: 'var(--font-cert-signature), "Allura", cursive', fontSize: 40, lineHeight: 1, color: '#1b2a4e', whiteSpace: 'nowrap' }}
+      >
+        {SIGNATORY}
+      </div>
+      <div style={{ position: 'absolute', left: 0, right: 40, bottom: 60, borderTop: `1px solid ${INK}` }} />
+      <div style={{ position: 'absolute', left: 0, bottom: 0, lineHeight: 1.35 }}>
+        <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15 }}>{SIGNATORY}</div>
+        <div style={{ fontSize: 10.5, color: INK }}>Authorized Signatory</div>
+        <div style={{ fontSize: 10.5, color: MUTED }}>Editorial Office, Panorama Open Scholarly Index</div>
+      </div>
+    </div>
   )
 }
