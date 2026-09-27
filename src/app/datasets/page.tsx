@@ -96,7 +96,8 @@ export default function DatasetsPage() {
     { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 20,000 journals are split by first letter' },
     { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
     { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
-    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: ranked.length + notRanked.length, bytes: null, what: `Journal Rankings ${year}: PCS with category and overall rank, percentile and quartile; unranked journals with the reason` },
+    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: ranked.length + notRanked.length, bytes: null, what: `Journal Rankings ${year}: the edition's parameters and the file list for each subject category; the CSV has every ranked journal` },
+    { path: `/data/rankings/pcs-${year}-{category}.json`, rows: ranked.length + notRanked.length, bytes: null, what: 'PCS with category and overall rank, percentile, quartile and POSI Zone, one file per PSC category; unranked journals with the reason' },
   ]
 
   const curated: DataFile[] = [
