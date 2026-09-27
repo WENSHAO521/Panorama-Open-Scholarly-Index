@@ -2,8 +2,7 @@
 /**
  * enrich-publishers.mjs
  *
- * Fills missing `publisher` and `country` / `registration_country` on Discovered
- * journals from Crossref, which knows the DOI-registering member of every
+ * Fills missing `publisher` and `country` on Discovered journals from Crossref, which knows the DOI-registering member of every
  * journal it holds.
  *
  * Per ISSN (online first, then print):
@@ -17,6 +16,8 @@
  *     than the imprint on the journal.
  *   - The member address is where the member is registered, not necessarily the
  *     journal's place of publication, so it ranks below the ISSN Portal and DOAJ.
+ *     It fills only `country` (declared country) and never `registration_country`,
+ *     which is the ISSN Portal's registration country (see src/lib/schema.ts).
  *     The country is taken only when the address ends in a recognised country name.
  *   - Journals whose DOIs are registered elsewhere (DataCite, JaLC, mEDRA, CNKI)
  *     or that have no DOIs are not found.
@@ -107,10 +108,7 @@ export async function lookup(issns, { fetchFn = fetch, memberCache = new Map(), 
 export function applyResult(r, { publisher, country }) {
   const set = []
   if (blank(r.publisher) && publisher) { r.publisher = publisher; set.push('publisher') }
-  if (country) {
-    if (blank(r.country)) { r.country = country; set.push('country') }
-    if (blank(r.registration_country)) { r.registration_country = country; set.push('registration_country') }
-  }
+  if (country && blank(r.country)) { r.country = country; set.push('country') }
   return set
 }
 
@@ -126,21 +124,19 @@ async function main() {
   const today = new Date().toISOString().slice(0, 10)
   const recheckBefore = new Date(Date.now() - RECHECK_DAYS * 86_400_000).toISOString().slice(0, 10)
   const records = loadDiscovered()
-  const needs = records.filter(r =>
-    (r.issn_online || r.issn_print) &&
-    (blank(r.publisher) || (wantCountry && (blank(r.country) || blank(r.registration_country))))
-  )
-  const candidates = needs
+  const needsCountry = r => wantCountry && blank(r.country)
+  const needs = records.filter(r => (r.issn_online || r.issn_print) && (blank(r.publisher) || needsCountry(r)))
+  const due = needs
     .filter(r => !r.crossref_checked_at || r.crossref_checked_at < recheckBefore)
     .sort((a, b) => (a.crossref_checked_at ?? '').localeCompare(b.crossref_checked_at ?? ''))
-    .slice(0, LIMIT)
+  const candidates = due.slice(0, LIMIT)
 
   console.log(`Missing publisher: ${records.filter(r => blank(r.publisher)).length}`)
   console.log(`Missing country:   ${records.filter(r => blank(r.country)).length}`)
-  console.log(`Due for a Crossref check: ${candidates.length} (${needs.length - candidates.length} checked in the last ${RECHECK_DAYS} days)`)
+  console.log(`Due for a Crossref check: ${due.length} (${needs.length - due.length} checked in the last ${RECHECK_DAYS} days)${candidates.length < due.length ? `, taking ${candidates.length}` : ''}`)
 
   const memberCache = new Map()
-  const tally = { publisher: 0, country: 0, registration_country: 0, notFound: 0 }
+  const tally = { publisher: 0, country: 0, notFound: 0 }
   let next = 0, done = 0, answered = 0, stop = ''
 
   async function worker() {
@@ -148,7 +144,8 @@ async function main() {
       if (Date.now() > DEADLINE) { stop = 'time budget reached'; break }
       const r = candidates[next++]
       const issns = [r.issn_online, r.issn_print].filter(Boolean)
-      const res = await lookup(issns, { memberCache, wantCountry })
+      // Only ask for the member address when this record lacks a country; publisher-only lookups stop after /journals.
+      const res = await lookup(issns, { memberCache, wantCountry: needsCountry(r) })
       if (res.failed) {
         // Nothing answering at all (blocked network, outage): stop rather than burn the budget.
         if (answered === 0 && done >= 20) stop = 'Crossref is not answering'
@@ -169,7 +166,6 @@ async function main() {
 
   console.log(`\nPublisher filled:            ${tally.publisher}`)
   console.log(`Country filled:              ${tally.country}`)
-  console.log(`Registration country filled: ${tally.registration_country}`)
   console.log(`Not found in Crossref:       ${tally.notFound} / ${candidates.length}`)
   if (stats.failed) console.log(`Failed requests:             ${stats.failed} (blocked, network or rate limit; those journals were not really checked)`)
 
