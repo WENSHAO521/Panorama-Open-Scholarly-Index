@@ -31,17 +31,17 @@ export default function RankingsPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden mb-12" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="stat-strip grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-12">
         {[
           ['Metric', 'PCS', 'Citations in the year to items from the previous 4 years, per item. Source: Crossref.'],
           ['Quartile', 'PCS-Q1 to Q4', 'From the percentile: Q1 at 75 and above. Categories under 20 journals get none.'],
-          ['Percentile', '100(N - mid + 0.5)/N', 'Tied journals share the mid-rank of their positions (RANK-1.0).'],
+          ['Percentile', '100 (N − mid + ½) / N', 'Tied journals share the mid-rank of their positions (RANK-1.0).'],
           ['Eligibility', `${MIN_ITEMS}+ items`, `Journals with fewer eligible items are listed but not ranked (${fmt(notRanked.length)} this edition).`],
         ].map(([k, v, note]) => (
-          <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
-            <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{k}</dt>
-            <dd className="mt-1 font-mono text-[17px]" style={{ color: 'var(--ink)' }}>{v}</dd>
-            <dd className="mt-1 text-[12.5px] leading-snug" style={{ color: 'var(--muted)' }}>{note}</dd>
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd className="mt-1 figure text-[17px]">{v}</dd>
+            <dd className="note">{note}</dd>
           </div>
         ))}
       </dl>

@@ -76,8 +76,10 @@ export function WorkViewer() {
   return (
     <article className="pt-8 md:pt-10">
       <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <Link href="/" className="hover:underline">POSI</Link>
+        <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
         <Link href="/publications/" className="hover:underline">Publications</Link>
-        <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>
+        <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
         <span>{shortId(w)}</span>
       </nav>
 

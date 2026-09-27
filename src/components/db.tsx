@@ -84,19 +84,6 @@ export function PageHeader({
   )
 }
 
-export function Stat({ label, value, note, href }: { label: string; value: React.ReactNode; note?: React.ReactNode; href?: string }) {
-  const body = (
-    <>
-      <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{label}</p>
-      <p className="mt-1 text-[22px] font-mono tnum tracking-tight" style={{ color: 'var(--ink)' }}>{value}</p>
-      {note && <p className="mt-1 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>{note}</p>}
-    </>
-  )
-  return href
-    ? <Link href={href} className="block p-4 hover:bg-[var(--hover)] transition-colors">{body}</Link>
-    : <div className="p-4">{body}</div>
-}
-
 export function SectionTitle({ id, children, aside }: { id?: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 mb-3">

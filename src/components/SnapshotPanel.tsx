@@ -97,11 +97,11 @@ export function SnapshotPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <div className="stat-strip grid-cols-2 md:grid-cols-4">
         {COUNT_KEYS.filter(k => typeof manifest[k] === 'number').map(k => (
-          <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
-            <p className="font-mono text-[20px] tnum" style={{ color: 'var(--ink)' }}>{Number(manifest[k]).toLocaleString('en-US')}</p>
-            <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{label(k)}</p>
+          <div key={k}>
+            <p className="label">{label(k)}</p>
+            <p className="mt-1 figure text-[20px]">{Number(manifest[k]).toLocaleString('en-US')}</p>
           </div>
         ))}
       </div>

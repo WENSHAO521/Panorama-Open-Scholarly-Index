@@ -88,21 +88,21 @@ export function JournalProfileView() {
             Also known as {[j.ab, ...(j.alt ?? [])].filter((x, i, a) => x && a.indexOf(x) === i).join('; ')}
           </p>
         )}
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px]">
           <Link href={`/publications/?issn=${encodeURIComponent(j.k)}&sort=newest`} className="btn btn-primary" prefetch={false}>
             <Books className="h-4 w-4" /> Browse publications
           </Link>
           {j.hp && (
-            <a href={j.hp} className="btn" target="_blank" rel="noopener noreferrer">
-              Journal website <ArrowSquareOut className="h-4 w-4" />
+            <a href={j.hp} className="link inline-flex items-center gap-1" target="_blank" rel="noopener noreferrer">
+              Journal website <ArrowSquareOut className="h-3.5 w-3.5" />
             </a>
           )}
-          {curated && <Link href={recordHref(curated)} className="btn" prefetch={false}>POSI record</Link>}
-          <Link href="/certificate/" className="btn"><Certificate className="h-4 w-4" /> Indexing certificate</Link>
+          {curated && <Link href={recordHref(curated)} className="link" prefetch={false}>POSI record</Link>}
+          <Link href="/certificate/" className="link inline-flex items-center gap-1"><Certificate className="h-4 w-4" /> Indexing certificate</Link>
         </div>
       </header>
 
-      <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="stat-strip grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         {([
           ['Publications', fmt(j.w ?? j.cr)],
           ['Citations', fmt(j.c)],
@@ -111,9 +111,9 @@ export function JournalProfileView() {
           [j.apcx ? 'APC' : 'APC (USD)', j.apcx ?? (j.apc != null ? (j.apc === 0 ? 'None' : fmt(j.apc)) : '-')],
           ['Years active', years ?? '-'],
         ] as const).map(([label, value]) => (
-          <div key={label} className="p-4" style={{ background: 'var(--surface)' }}>
-            <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{label}</dt>
-            <dd className="mt-1 font-mono text-[20px] tnum" style={{ color: 'var(--ink)' }}>{value}</dd>
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd className="mt-1 figure text-[22px]">{value}</dd>
           </div>
         ))}
       </dl>

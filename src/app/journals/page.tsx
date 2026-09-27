@@ -31,17 +31,17 @@ export default function JournalsPage() {
         <JournalSearch />
       </Suspense>
 
-      <dl className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="mt-10 stat-strip grid-cols-2 lg:grid-cols-4">
         {[
           ['Indexed journals', fmt(records.length), null],
           ['Core Collection', fmt(core), '/core-collection/'],
           ['Open access', fmt(oa), '/journals/open-access/'],
           ['Subject categories', fmt(classified.length), '/subjects/'],
         ].map(([label, value, href]) => {
-          const body = <><dt className="text-[13px]" style={{ color: 'var(--muted)' }}>{label}</dt><dd className="mt-1 font-mono text-[22px] tnum">{value}</dd></>
+          const body = <><dt>{label}</dt><dd className="mt-1 figure text-[24px]">{value}</dd></>
           return href
-            ? <Link key={label} href={href} className="block p-4 hover:bg-[var(--hover)]" style={{ background: 'var(--surface)' }}>{body}</Link>
-            : <div key={label} className="p-4" style={{ background: 'var(--surface)' }}>{body}</div>
+            ? <Link key={label} href={href} className="block">{body}</Link>
+            : <div key={label}>{body}</div>
         })}
       </dl>
 

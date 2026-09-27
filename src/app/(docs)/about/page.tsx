@@ -26,16 +26,16 @@ export default function AboutPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden max-w-[900px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="stat-strip grid-cols-2 lg:grid-cols-4 max-w-[900px]">
         {[
           ['Indexed journals', fmt(indexed)],
           ['Core Collection', fmt(core)],
           ['Ranked journals', fmt(ranked.length)],
           ['Publications', 'Over 300 million'],
         ].map(([k, v]) => (
-          <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
-            <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{k}</dt>
-            <dd className="mt-1 font-mono text-[20px] tnum" style={{ color: 'var(--ink)' }}>{v}</dd>
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd className="mt-1 figure text-[22px]">{v}</dd>
           </div>
         ))}
       </dl>

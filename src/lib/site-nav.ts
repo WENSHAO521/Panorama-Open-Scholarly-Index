@@ -4,7 +4,6 @@ export interface NavLink { label: string; href: string; description?: string }
 export interface NavGroup { label: string; href?: string; links?: NavLink[] }
 
 export const PRIMARY_NAV: NavGroup[] = [
-  { label: 'Publications', href: '/publications/' },
   {
     label: 'Journals',
     links: [
@@ -18,11 +17,12 @@ export const PRIMARY_NAV: NavGroup[] = [
   {
     label: 'Rankings',
     links: [
-      { label: 'Journal Rankings', href: '/rankings/', description: 'Ranks, percentiles and quartiles by subject category' },
+      { label: 'Journal Rankings', href: '/rankings/', description: 'Ranks, quartiles and POSI Zones by subject category' },
       { label: 'Overall ranking', href: '/rankings/all/', description: 'All ranked journals in one list' },
       { label: 'Methodology', href: '/methodology/', description: 'How the POSI Citation Score and quartiles are calculated' },
     ],
   },
+  { label: 'Publications', href: '/publications/' },
   {
     label: 'Services',
     links: [

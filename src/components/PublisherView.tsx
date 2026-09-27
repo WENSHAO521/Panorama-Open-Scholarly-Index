@@ -9,7 +9,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { publisherHref, publisherJsonHref, type PublisherDetail, type PublisherJournal } from '@/lib/publishers'
-import { Note, PageHeader, SectionTitle, Stat, fmt } from './db'
+import { Note, PageHeader, SectionTitle, fmt } from './db'
 
 const PAGE = 50
 type Sort = 'works' | 'title'
@@ -75,7 +75,7 @@ export function PublisherView({ p }: { p: PublisherDetail }) {
         </p>
       </PageHeader>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <div className="stat-strip grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {([
           ['Indexed journals', fmt(p.n), null],
           ['Core Collection', fmt(p.core), p.core ? 'certified by POSI' : 'none certified'],
@@ -84,7 +84,11 @@ export function PublisherView({ p }: { p: PublisherDetail }) {
           ['Works', fmt(p.works), 'OpenAlex works or Crossref DOIs'],
           ['Countries', fmt(p.countries.length), null],
         ] as const).map(([label, value, note]) => (
-          <div key={label} style={{ background: 'var(--surface)' }}><Stat label={label} value={value} note={note ?? undefined} /></div>
+          <div key={label}>
+            <p className="label">{label}</p>
+            <p className="mt-1 figure text-[22px]">{value}</p>
+            {note && <p className="note">{note}</p>}
+          </div>
         ))}
       </div>
 

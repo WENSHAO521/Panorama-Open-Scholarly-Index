@@ -6,7 +6,6 @@ import { getCoreCollection } from '@/lib/data'
 import { getRankings, getCategories, getCategoryRanking } from '@/lib/rankings'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
-import { QuartileBadge } from '@/components/RankingTable'
 
 export const metadata = {
   title: { absolute: 'Panorama Open Scholarly Index (POSI)' },
@@ -119,7 +118,6 @@ export default function HomePage() {
                     <th className="text-right">Ranked</th>
                     <th>Rank 1</th>
                     <th className="text-right">PCS</th>
-                    <th>Quartile</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -132,7 +130,6 @@ export default function HomePage() {
                       <td className="text-right font-mono tnum">{fmt(c.ranked)}</td>
                       <td className="max-w-[220px] xl:max-w-[340px] truncate" title={c.lead?.title}>{c.lead?.title ?? '-'}</td>
                       <td className="text-right font-mono tnum">{c.lead ? c.lead.pcs.toFixed(2) : '-'}</td>
-                      <td><QuartileBadge q={c.lead?.q ?? null} /></td>
                     </tr>
                   ))}
                 </tbody>

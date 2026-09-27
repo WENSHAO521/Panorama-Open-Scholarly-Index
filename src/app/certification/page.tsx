@@ -103,9 +103,9 @@ export default function CertificationPage() {
 
       <section aria-labelledby="process" className="mb-14">
         <SectionTitle id="process">Process</SectionTitle>
-        <ol className="grid gap-px rounded-[2px] overflow-hidden md:grid-cols-4" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+        <ol className="stat-strip md:grid-cols-4">
           {STEPS.map(s => (
-            <li key={s.verb} className="p-5" style={{ background: 'var(--surface)' }}>
+            <li key={s.verb}>
               <p className="text-[16px] font-semibold" style={{ color: 'var(--teal)' }}>{s.verb}</p>
               <p className="mt-0.5 font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{s.time}</p>
               <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{s.body}</p>

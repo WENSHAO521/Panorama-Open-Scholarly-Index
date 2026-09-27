@@ -7,8 +7,8 @@ import { extractDoi } from '@/lib/utils'
 import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
 
 const SCOPES = [
-  { key: 'publications', label: 'Publications', placeholder: 'Title, author, keyword or DOI' },
   { key: 'sources', label: 'Journals', placeholder: 'Journal title or ISSN' },
+  { key: 'publications', label: 'Publications', placeholder: 'Title, author, keyword or DOI' },
   { key: 'publishers', label: 'Publishers', placeholder: 'Publisher name' },
 ] as const
 type Scope = typeof SCOPES[number]['key']
@@ -16,7 +16,7 @@ type Scope = typeof SCOPES[number]['key']
 export function HomeSearch() {
   const router = useRouter()
   const [q, setQ] = useState('')
-  const [scope, setScope] = useState<Scope>('publications')
+  const [scope, setScope] = useState<Scope>('sources')
   const active = SCOPES.find(s => s.key === scope)!
 
   function submit(e: FormEvent) {
@@ -71,7 +71,7 @@ export function HomeSearch() {
   )
 }
 
-/** Live total of works in OpenAlex; renders nothing until it arrives. */
+/** Live total of works in OpenAlex; shows the round figure until it arrives, or if it never does. */
 export function LiveWorksCount() {
   const [n, setN] = useState<number | null>(null)
   useEffect(() => {
@@ -79,10 +79,7 @@ export function LiveWorksCount() {
     getTotalWorks(c.signal).then(setN).catch(() => { if (!c.signal.aborted) setN(-1) })
     return () => c.abort()
   }, [])
-  if (n === -1) return <span>Over 300 million</span>
-  return n === null
-    ? <span className="inline-block h-6 w-28 align-middle rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
-    : <>{n.toLocaleString('en-US')}</>
+  return n === null || n === -1 ? <>Over 300 million</> : <>{n.toLocaleString('en-US')}</>
 }
 
 /** Live total of journals in OpenAlex (every one is indexed by POSI). */
