@@ -25,10 +25,10 @@ function apaOf(w: Work): string {
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4 max-w-[900px]" aria-busy="true" aria-label="Loading publication">
-      <div className="h-4 w-48 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-8 w-5/6 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-4 w-2/3 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-40 rounded-[6px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-4 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-8 w-5/6 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-4 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-40 rounded-[2px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
     </div>
   )
 }
@@ -75,7 +75,7 @@ export function WorkViewer() {
 
   return (
     <article className="pt-8 md:pt-10">
-      <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] font-mono" style={{ color: 'var(--muted)' }}>
+      <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         <Link href="/publications/" className="hover:underline">Publications</Link>
         <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>
         <span>{shortId(w)}</span>
@@ -97,7 +97,7 @@ export function WorkViewer() {
               </span>
             )}
           </div>
-          <h1 className="mt-2 text-[26px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
+          <h1 className="mt-2 text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
             {w.title || 'Untitled'}
           </h1>
 

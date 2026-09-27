@@ -65,10 +65,10 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
   return (
     <div>
       <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-        <div role="tablist" aria-label="Journal status" className="inline-flex rounded-[6px] p-0.5" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
+        <div role="tablist" aria-label="Journal status" className="inline-flex rounded-[2px] p-0.5" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
           {([['all', `All (${fmt(rows.length)})`], ['core', `Core (${fmt(coreCount)})`], ['indexed', `Indexed (${fmt(rows.length - coreCount)})`]] as const).map(([k, label]) => (
             <button key={k} type="button" role="tab" aria-selected={status === k} onClick={() => setStatus(k)}
-              className="px-3 h-8 text-[13px] rounded-[6px]"
+              className="px-3 h-8 text-[13px] rounded-[2px]"
               style={status === k ? { background: 'var(--surface)', color: 'var(--ink)', fontWeight: 500, boxShadow: 'var(--shadow-1)' } : { color: 'var(--muted)' }}>
               {label}
             </button>

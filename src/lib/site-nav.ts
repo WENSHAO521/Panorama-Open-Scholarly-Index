@@ -45,6 +45,14 @@ export const PRIMARY_NAV: NavGroup[] = [
   },
 ]
 
+/** Utility strip above the main header. */
+export const UTILITY_NAV: NavLink[] = [
+  { label: 'Editorial policy', href: '/editorial-policy/' },
+  { label: 'Methodology', href: '/methodology/' },
+  { label: 'Documentation', href: '/docs/' },
+  { label: 'Contact', href: '/contact/' },
+]
+
 export const FOOTER_NAV: { title: string; links: NavLink[] }[] = [
   {
     title: 'Search',

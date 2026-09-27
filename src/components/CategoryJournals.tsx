@@ -75,7 +75,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
         <nav aria-label="By first letter" className="flex flex-wrap gap-1 mb-4">
           {letters.map(l => (
             <button key={l} type="button" onClick={() => setLetter(l)} aria-pressed={letter === l}
-              className="h-8 min-w-8 px-2 rounded-[6px] text-[13px] font-mono uppercase"
+              className="h-8 min-w-8 px-2 rounded-[2px] text-[13px] font-mono uppercase"
               style={letter === l ? { background: 'var(--teal)', color: 'var(--on-teal)' } : { background: 'var(--surface-2)', color: 'var(--ink-2)' }}>
               {l === '0' ? '#' : l}
             </button>
@@ -119,7 +119,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
           </thead>
           <tbody>
             {!rows && Array.from({ length: 10 }).map((_, i) => (
-              <tr key={i} aria-hidden="true">{Array.from({ length: 6 }).map((__, j) => <td key={j}><div className="h-3.5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} /></td>)}</tr>
+              <tr key={i} aria-hidden="true">{Array.from({ length: 6 }).map((__, j) => <td key={j}><div className="h-3.5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} /></td>)}</tr>
             ))}
             {shown.map(r => (
               <tr key={r.id}>

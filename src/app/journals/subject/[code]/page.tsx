@@ -47,8 +47,8 @@ export default async function SubjectJournalsPage(props: { params: Promise<{ cod
 function TableSkeleton() {
   return (
     <div className="space-y-3" aria-hidden="true">
-      <div className="h-16 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      {Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-11 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />)}
+      <div className="h-16 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      {Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-11 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />)}
     </div>
   )
 }

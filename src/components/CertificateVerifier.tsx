@@ -17,7 +17,7 @@ function Banner({ verdict }: { verdict: Verdict }) {
     tampered: { Icon: XCircle, color: 'var(--rejected)', bg: 'var(--rejected-soft)', title: 'Not valid', body: 'The certificate number does not match its date, snapshot and publication list. The certificate has been altered or the link is incomplete.' },
   }[verdict]
   return (
-    <div className="rounded-[6px] p-5 flex gap-4 items-start" style={{ background: m.bg, border: '1px solid var(--line)' }} role="status">
+    <div className="rounded-[2px] p-5 flex gap-4 items-start" style={{ background: m.bg, border: '1px solid var(--line)' }} role="status">
       <m.Icon className="h-7 w-7 shrink-0" style={{ color: m.color }} />
       <div>
         <p className="text-[18px] font-semibold" style={{ color: m.color }}>{m.title}</p>
@@ -91,9 +91,9 @@ export function CertificateVerifier() {
   return (
     <div className="space-y-6 max-w-[960px]">
       {verdict ? <Banner verdict={verdict} /> : (
-        <div className="rounded-[6px] p-5 animate-pulse" style={{ background: 'var(--surface-2)' }} aria-busy="true">
-          <div className="h-5 w-56 rounded-[6px]" style={{ background: 'var(--surface-3)' }} />
-          <div className="h-4 w-80 rounded-[6px] mt-2" style={{ background: 'var(--surface-3)' }} />
+        <div className="rounded-[2px] p-5 animate-pulse" style={{ background: 'var(--surface-2)' }} aria-busy="true">
+          <div className="h-5 w-56 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />
+          <div className="h-4 w-80 rounded-[2px] mt-2" style={{ background: 'var(--surface-3)' }} />
         </div>
       )}
 
@@ -131,7 +131,7 @@ export function CertificateVerifier() {
                         {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
                         <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'}</span></>}</span>
                       </span>
-                    ) : <span className="inline-block h-3.5 w-40 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
+                    ) : <span className="inline-block h-3.5 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
                   </td>
                 </tr>
               )

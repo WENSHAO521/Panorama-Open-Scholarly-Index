@@ -42,7 +42,7 @@ export function FreshnessTag({ f }: { f: Freshness }) {
 export function BasisTag({ b }: { b: Basis }) {
   return (
     <span
-      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded"
+      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[2px]"
       title={BASIS[b].description}
       style={{ color: 'var(--muted)', border: '1px solid var(--line)' }}
     >
@@ -61,12 +61,12 @@ export function PageHeader({
   actions?: React.ReactNode
 }) {
   return (
-    <header className="pt-8 pb-6 md:pt-10">
+    <header className="pt-6 pb-6 md:pt-7">
       {crumbs && (
-        <nav aria-label="Breadcrumb" className="mb-3 text-[12.5px] font-mono" style={{ color: 'var(--muted)' }}>
+        <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           {crumbs.map((c, i) => (
             <span key={i}>
-              {i > 0 && <span className="mx-1.5" style={{ color: 'var(--soft)' }}>/</span>}
+              {i > 0 && <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>}
               {c.href ? <Link href={c.href} className="hover:underline">{c.label}</Link> : <span style={{ color: 'var(--ink-2)' }}>{c.label}</span>}
             </span>
           ))}
@@ -75,8 +75,8 @@ export function PageHeader({
       <div className="flex flex-col md:flex-row md:items-end gap-4 md:justify-between">
         <div className="min-w-0 max-w-3xl">
           {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-          <h1 className="text-[28px] md:text-[34px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
-          {children && <div className="mt-3 text-[15.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
+          <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
+          {children && <div className="mt-2 text-[14.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
         </div>
         {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
       </div>
@@ -88,7 +88,7 @@ export function Stat({ label, value, note, href }: { label: string; value: React
   const body = (
     <>
       <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{label}</p>
-      <p className="mt-1 text-[26px] font-semibold tnum tracking-tight" style={{ color: 'var(--ink)' }}>{value}</p>
+      <p className="mt-1 text-[22px] font-mono tnum tracking-tight" style={{ color: 'var(--ink)' }}>{value}</p>
       {note && <p className="mt-1 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>{note}</p>}
     </>
   )
@@ -113,7 +113,7 @@ export function Note({ tone = 'info', children }: { tone?: 'info' | 'warn' | 'ok
       ? { c: 'var(--verified)', bg: 'var(--verified-soft)', b: 'var(--line)' }
       : { c: 'var(--info)', bg: 'var(--info-soft)', b: 'var(--line)' }
   return (
-    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded" style={{ background: t.bg, border: `1px solid ${t.b}`, color: 'var(--ink-2)', borderLeft: `3px solid ${t.c}` }}>
+    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[2px]" style={{ background: t.bg, border: `1px solid ${t.b}`, color: 'var(--ink-2)', borderLeft: `3px solid ${t.c}` }}>
       {children}
     </div>
   )

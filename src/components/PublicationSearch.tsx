@@ -154,7 +154,7 @@ export function PublicationSearch() {
         <legend className="font-medium mb-2" style={{ color: 'var(--ink-2)' }}>Publication type</legend>
         {facets === null ? (
           <div className="space-y-2" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-3.5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)', width: `${80 - i * 10}%` }} />)}
+            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-3.5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)', width: `${80 - i * 10}%` }} />)}
           </div>
         ) : (
           <ul className="space-y-1.5">
@@ -172,7 +172,7 @@ export function PublicationSearch() {
       </fieldset>
 
       {issn && (
-        <div className="rounded-[6px] p-3 text-[12.5px]" style={{ background: 'var(--teal-soft)' }}>
+        <div className="rounded-[2px] p-3 text-[12.5px]" style={{ background: 'var(--teal-soft)' }}>
           Limited to source ISSN <span className="font-mono">{issn}</span>.{' '}
           <button type="button" className="link" onClick={() => update({ issn: null })}>Remove</button>
         </div>
@@ -227,7 +227,7 @@ export function PublicationSearch() {
                     ['BibTeX', () => download('posi-publications.bib', results.map(toBibtex).join('\n\n'), 'application/x-bibtex')],
                     ['RIS', () => download('posi-publications.ris', results.map(toRis).join('\n'), 'application/x-research-info-systems')],
                   ].map(([label, fn]) => (
-                    <button key={label as string} type="button" disabled={!results.length} onClick={fn as () => void} className="block w-full text-left px-3 py-1.5 rounded-[6px] hover:bg-[var(--hover)]">
+                    <button key={label as string} type="button" disabled={!results.length} onClick={fn as () => void} className="block w-full text-left px-3 py-1.5 rounded-[2px] hover:bg-[var(--hover)]">
                       {label as string} (this page)
                     </button>
                   ))}
@@ -242,10 +242,10 @@ export function PublicationSearch() {
             <div aria-hidden="true">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="py-5 space-y-2" style={{ borderTop: '1px solid var(--line-soft)' }}>
-                  <div className="h-3 w-40 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-4 w-4/5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-3 w-3/5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-                  <div className="h-3 w-2/5 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                  <div className="h-3 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-4 w-4/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-3 w-3/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                  <div className="h-3 w-2/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
                 </div>
               ))}
             </div>

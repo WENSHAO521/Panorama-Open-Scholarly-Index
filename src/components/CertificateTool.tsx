@@ -137,7 +137,7 @@ export function CertificateTool() {
                         {it?.work
                           ? <><span className="font-medium">{it.work.title}</span><br /><span style={{ color: 'var(--muted)' }}>{it.work.container}{it.work.year ? `, ${it.work.year}` : ''}</span></>
                           : it ? <span style={{ color: 'var(--soft)' }}>No metadata</span>
-                          : <span className="inline-block h-3.5 w-48 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
+                          : <span className="inline-block h-3.5 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
                       </td>
                       <td className="text-[13px]">
                         {st && (

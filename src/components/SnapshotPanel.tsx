@@ -57,7 +57,7 @@ export function SnapshotPanel() {
     return (
       <div className="panel p-5 space-y-3" aria-busy="true" aria-label="Loading snapshot manifest">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-4 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)', width: `${90 - i * 9}%` }} />
+          <div key={i} className="h-4 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)', width: `${90 - i * 9}%` }} />
         ))}
       </div>
     )
@@ -93,7 +93,7 @@ export function SnapshotPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-[6px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {COUNT_KEYS.filter(k => typeof manifest[k] === 'number').map(k => (
           <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
             <p className="font-mono text-[20px] tnum" style={{ color: 'var(--ink)' }}>{Number(manifest[k]).toLocaleString('en-US')}</p>

@@ -8,7 +8,7 @@ import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
 
 const SCOPES = [
   { key: 'publications', label: 'Publications', placeholder: 'Title, author, keyword or DOI' },
-  { key: 'sources', label: 'Sources', placeholder: 'Journal title, ISSN or POSI-J id' },
+  { key: 'sources', label: 'Journals', placeholder: 'Journal title or ISSN' },
   { key: 'publishers', label: 'Publishers', placeholder: 'Publisher name' },
 ] as const
 type Scope = typeof SCOPES[number]['key']
@@ -34,8 +34,8 @@ export function HomeSearch() {
   }
 
   return (
-    <div className="w-full max-w-[600px]">
-      <div role="tablist" aria-label="Search scope" className="flex gap-1 mb-2">
+    <div className="w-full">
+      <div role="tablist" aria-label="Search scope" className="flex">
         {SCOPES.map(s => (
           <button
             key={s.key}
@@ -43,27 +43,29 @@ export function HomeSearch() {
             role="tab"
             aria-selected={scope === s.key}
             onClick={() => setScope(s.key)}
-            className="px-3 py-1.5 text-[13.5px] rounded-[6px] transition-colors"
-            style={scope === s.key ? { background: 'var(--teal-soft)', color: 'var(--teal)', fontWeight: 500 } : { color: 'var(--muted)' }}
+            className="h-9 px-4 text-[13.5px] font-medium transition-colors"
+            style={scope === s.key
+              ? { background: 'var(--surface)', color: 'var(--ink)', border: '1px solid var(--line)', borderBottomColor: 'var(--surface)', borderTop: '2px solid var(--teal)', marginBottom: -1, position: 'relative' }
+              : { color: 'var(--muted)', border: '1px solid transparent' }}
           >
             {s.label}
           </button>
         ))}
       </div>
-      <form onSubmit={submit} role="search" className="flex flex-col sm:flex-row gap-2">
+      <form onSubmit={submit} role="search" className="flex flex-col sm:flex-row gap-2 p-3" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
         <div className="relative flex-1">
           <label htmlFor="home-search" className="sr-only">Search {active.label.toLowerCase()}</label>
-          <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none" style={{ color: 'var(--soft)' }} />
+          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] pointer-events-none" style={{ color: 'var(--soft)' }} />
           <input
             id="home-search"
             type="search"
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder={active.placeholder}
-            className="input h-12 pl-11 text-[16px]"
+            className="input h-11 pl-10 text-[15px]"
           />
         </div>
-        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px]">Search</button>
+        <button type="submit" className="btn btn-primary h-11 px-7 text-[14px]">Search</button>
       </form>
     </div>
   )
@@ -77,9 +79,9 @@ export function LiveWorksCount() {
     getTotalWorks(c.signal).then(setN).catch(() => { if (!c.signal.aborted) setN(-1) })
     return () => c.abort()
   }, [])
-  if (n === -1) return <span className="text-[15px]">Over 300 million</span>
+  if (n === -1) return <span>Over 300 million</span>
   return n === null
-    ? <span className="inline-block h-6 w-28 align-middle rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
+    ? <span className="inline-block h-6 w-28 align-middle rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
     : <>{n.toLocaleString('en-US')}</>
 }
 
@@ -92,6 +94,6 @@ export function LiveJournalsCount() {
     return () => c.abort()
   }, [])
   return n === null
-    ? <span className="inline-block h-6 w-24 align-middle rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
+    ? <span className="inline-block h-6 w-24 align-middle rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
     : <>{n.toLocaleString('en-US')}</>
 }

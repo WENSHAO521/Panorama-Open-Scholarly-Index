@@ -26,7 +26,7 @@ export default function AboutPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[6px] overflow-hidden max-w-[900px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden max-w-[900px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Indexed journals', fmt(indexed)],
           ['Core Collection', fmt(core)],

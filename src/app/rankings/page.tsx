@@ -29,7 +29,7 @@ export default function RankingsPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[6px] overflow-hidden mb-12" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-[2px] overflow-hidden mb-12" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Metric', 'PCS', 'Citations in the year to items from the previous 4 years, per item. Source: Crossref.'],
           ['Quartile', 'PCS-Q1 to Q4', 'From the percentile: Q1 at 75 and above. Categories under 20 journals get none.'],
@@ -43,8 +43,6 @@ export default function RankingsPage() {
           </div>
         ))}
       </dl>
-
-      <p className="-mt-8 mb-12 text-[12.5px]" style={{ color: 'var(--muted)' }}>PCS determines the PCS-Q ranking only; it does not determine Citation Rank, Citation Percentile or Citation Quartile.</p>
 
       <section aria-labelledby="cats" className="mb-14">
         <SectionTitle id="cats" aside={`${RANKING_VERSION}, PSC v1.0`}>Subject categories</SectionTitle>

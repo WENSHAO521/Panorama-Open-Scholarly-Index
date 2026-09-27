@@ -74,11 +74,13 @@ export function normalizeKey(raw: string): string {
   return raw.trim()
 }
 
+// Shards are shared between callers, so a request is never tied to one
+// caller's AbortSignal: aborting one caller must not cancel the others.
 const cache = new Map<string, Promise<Shard | null>>()
-function loadShard(name: string, signal?: AbortSignal): Promise<Shard | null> {
+function loadShard(name: string): Promise<Shard | null> {
   let p = cache.get(name)
   if (!p) {
-    p = fetch(`/data/j/${name}.json`, { signal })
+    p = fetch(`/data/j/${name}.json`)
       .then(r => (r.ok ? r.json() : null))
       .catch(e => { cache.delete(name); throw e })
     cache.set(name, p)
@@ -89,12 +91,14 @@ function loadShard(name: string, signal?: AbortSignal): Promise<Shard | null> {
 /** Resolves an ISSN (any of the journal's) or an OpenAlex source id to its profile. */
 export async function getJournalProfile(raw: string, signal?: AbortSignal): Promise<JournalProfile | null> {
   const key = normalizeKey(raw)
-  const shard = await loadShard(profileShard(key), signal)
+  const shard = await loadShard(profileShard(key))
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   if (!shard) return null
   if (shard.p[key]) return shard.p[key]
   const target = shard.a[key]
   if (!target) return null
-  const home = await loadShard(profileShard(target), signal)
+  const home = await loadShard(profileShard(target))
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   return home?.p[target] ?? null
 }
 

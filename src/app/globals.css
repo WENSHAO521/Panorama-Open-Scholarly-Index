@@ -1,38 +1,37 @@
 @import "tailwindcss";
 
 /*
- * POSI "Open Catalog" design system.
+ * POSI design system: a research database interface.
  *
- * Direction: an open, static, file-backed scholarly database. Trust-first
- * and data-heavy, so the palette is a cool neutral scale with exactly one
- * accent (teal) for links and primary actions. Verification colours are
- * semantic only (see src/lib/records.ts) and never used for decoration.
+ * Direction: cold, exact and dense, in the family of Web of Science, Scopus,
+ * Dimensions and PubMed. Cool neutral greys, one institutional blue accent for
+ * links and primary actions, hairline rules instead of cards and shadows.
+ * Verification colours are semantic only (see src/lib/records.ts).
  *
- * Shape rule: every surface, control and table uses --radius (6px); status
- * chips are the only pill shape.
+ * Shape rule: every surface, control, chip and table uses --radius (2px).
+ * The accent tokens keep their historical --teal-* names.
  *
- * Theme: follows prefers-color-scheme, overridable with the header toggle. Tokens are redefined for dark below;
- * components read tokens, never raw hex.
+ * Theme: light only, on a white page. Components read tokens, never raw hex.
  */
 :root {
   color-scheme: light;
-  --paper: #f6f7f7;
+  --paper: #ffffff;
   --surface: #ffffff;
-  --surface-2: #eff1f1;
-  --surface-3: #e5e8e8;
-  --hover: #f3f5f5;
-  --line: #d9dddd;
-  --line-soft: #e8ebeb;
+  --surface-2: #f0f2f4;
+  --surface-3: #e3e7eb;
+  --hover: #f4f6f8;
+  --line: #d3d8de;
+  --line-soft: #e4e8ec;
 
-  --ink: #141a1c;
-  --ink-2: #384246;
-  --muted: #56626a;
-  --soft: #7d888e;
+  --ink: #13171c;
+  --ink-2: #343c45;
+  --muted: #59636e;
+  --soft: #838d98;
 
-  --teal: #0b5e66;
-  --teal-hover: #084a51;
-  --teal-soft: #e0eeee;
-  --teal-line: #b5d4d4;
+  --teal: #1c4f8f;
+  --teal-hover: #153e72;
+  --teal-soft: #e7eef7;
+  --teal-line: #b7c8de;
   --on-teal: #ffffff;
 
   --verified: #1d6b47;
@@ -43,109 +42,26 @@
   --check-soft: #f6e6db;
   --rejected: #9a2335;
   --rejected-soft: #f6e1e5;
-  --info: #2b547d;
-  --info-soft: #e4ecf4;
+  --info: #1c4f8f;
+  --info-soft: #e7eef7;
 
-  --band: #13272b;
-  --band-ink: #e8eeee;
-  --band-muted: #9fb2b4;
+  --band: #141a21;
+  --band-ink: #e6eaef;
+  --band-muted: #9ba6b2;
   --band-line: rgba(255, 255, 255, 0.1);
-  --code-bg: #10201f;
-  --code-ink: #d6e5e2;
+  --code-bg: #10161d;
+  --code-ink: #d3dde7;
   --brand-red: #e30613;
 
-  --radius: 6px;
-  --radius-sm: 6px;
-  --shadow-1: 0 1px 2px rgba(20, 40, 44, 0.06);
+  --radius: 2px;
+  --radius-sm: 2px;
+  --shadow-1: none;
 
   --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-body: var(--font-ibm), 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-body);
 }
 
-/* Dark tokens: the system setting, unless the visitor chose light with the
-   header toggle (data-theme on <html>, set before first paint). */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --paper: #0e1415;
-    --surface: #141c1e;
-    --surface-2: #1a2427;
-    --surface-3: #222e31;
-    --hover: #182225;
-    --line: #2a373a;
-    --line-soft: #212c2f;
-
-    --ink: #e6ecec;
-    --ink-2: #c3cdcf;
-    --muted: #97a4a8;
-    --soft: #72818a;
-
-    --teal: #5cb8b4;
-    --teal-hover: #7dcac6;
-    --teal-soft: #173033;
-    --teal-line: #2b5256;
-    --on-teal: #0b1a1b;
-
-    --verified: #6cc59a;
-    --verified-soft: #16291f;
-    --partial: #d4bb5c;
-    --partial-soft: #2a2614;
-    --check: #e4955f;
-    --check-soft: #2f2016;
-    --rejected: #ec8a98;
-    --rejected-soft: #331a1f;
-    --info: #86b1dd;
-    --info-soft: #18242f;
-
-    --band: #0a1011;
-    --band-ink: #dfe7e7;
-    --band-muted: #8a9a9d;
-    --code-bg: #0a1213;
-    --code-ink: #cfe0dc;
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --paper: #0e1415;
-  --surface: #141c1e;
-  --surface-2: #1a2427;
-  --surface-3: #222e31;
-  --hover: #182225;
-  --line: #2a373a;
-  --line-soft: #212c2f;
-
-  --ink: #e6ecec;
-  --ink-2: #c3cdcf;
-  --muted: #97a4a8;
-  --soft: #72818a;
-
-  --teal: #5cb8b4;
-  --teal-hover: #7dcac6;
-  --teal-soft: #173033;
-  --teal-line: #2b5256;
-  --on-teal: #0b1a1b;
-
-  --verified: #6cc59a;
-  --verified-soft: #16291f;
-  --partial: #d4bb5c;
-  --partial-soft: #2a2614;
-  --check: #e4955f;
-  --check-soft: #2f2016;
-  --rejected: #ec8a98;
-  --rejected-soft: #331a1f;
-  --info: #86b1dd;
-  --info-soft: #18242f;
-
-  --band: #0a1011;
-  --band-ink: #dfe7e7;
-  --band-muted: #8a9a9d;
-  --code-bg: #0a1213;
-  --code-ink: #cfe0dc;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
 
 :root {
   /*
@@ -186,8 +102,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "ss01", "tnum" 0;
@@ -206,7 +122,7 @@ a { text-decoration: none; color: inherit; }
 @layer components {
 /* ── Primitives ─────────────────────────────────────────────── */
 
-.wrap { max-width: 1280px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
 @media (min-width: 768px) { .wrap { padding-left: 32px; padding-right: 32px; } }
 
 .panel {
@@ -217,9 +133,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -229,8 +145,8 @@ a { text-decoration: none; color: inherit; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  height: 36px; padding: 0 14px;
-  font-size: 14px; font-weight: 500;
+  height: 32px; padding: 0 12px;
+  font-size: 13.5px; font-weight: 500;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: var(--surface); color: var(--ink);
@@ -242,21 +158,21 @@ a { text-decoration: none; color: inherit; }
 .btn:disabled { opacity: .5; pointer-events: none; }
 .btn-primary { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
 .btn-primary:hover { background: var(--teal-hover); border-color: var(--teal-hover); color: var(--on-teal); }
-.btn-sm { height: 30px; padding: 0 10px; font-size: 13px; }
+.btn-sm { height: 28px; padding: 0 9px; font-size: 12.5px; }
 
 .input {
-  height: 36px; padding: 0 12px; width: 100%;
+  height: 34px; padding: 0 10px; width: 100%;
   background: var(--surface); color: var(--ink);
   border: 1px solid var(--line); border-radius: var(--radius-sm);
   font-size: 14px;
 }
-.input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.input:focus { outline: none; border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
 
 .chip {
   display: inline-flex; align-items: center; gap: 5px;
-  height: 22px; padding: 0 8px;
-  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
-  border-radius: 999px; border: 1px solid var(--line);
+  height: 20px; padding: 0 6px;
+  font-size: 11.5px; font-weight: 500;
+  border-radius: var(--radius); border: 1px solid var(--line);
   background: var(--surface-2); color: var(--ink-2);
   white-space: nowrap;
 }
@@ -269,14 +185,14 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* Data tables */
-.dtable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dtable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .dtable th {
-  text-align: left; font-weight: 500; font-size: 12px;
-  color: var(--muted); background: var(--surface-2);
-  padding: 8px 12px; border-bottom: 1px solid var(--line);
+  text-align: left; font-weight: 600; font-size: 12px;
+  color: var(--ink-2); background: var(--surface-2);
+  padding: 7px 10px; border-bottom: 1px solid var(--line);
   white-space: nowrap; position: sticky; top: 0;
 }
-.dtable td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.dtable td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
 .dtable tbody tr:hover td { background: var(--hover); }
 .dtable tbody tr:last-child td { border-bottom: none; }
 

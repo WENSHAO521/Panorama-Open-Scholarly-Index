@@ -34,10 +34,10 @@ export function RecordViewer() {
   if (state.kind === 'loading') {
     return (
       <div className="pt-10 space-y-4" aria-busy="true" aria-label="Loading record">
-        <div className="h-4 w-40 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-        <div className="h-9 w-2/3 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-        <div className="h-5 w-1/3 rounded-[6px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-        <div className="h-48 rounded-[6px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-4 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+        <div className="h-9 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+        <div className="h-5 w-1/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-48 rounded-[2px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
       </div>
     )
   }

@@ -15,12 +15,12 @@ export default function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#13272b',
+          background: '#141a21',
           padding: '72px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 10, height: 56, background: '#5cb8b4' }} />
+          <div style={{ width: 10, height: 56, background: '#7ea8de' }} />
           <div
             style={{
               fontSize: 40,
