@@ -50,6 +50,10 @@ const AUDIT_BASE = 'https://github.com/WENSHAO521/posi-data/tree/master/audits/'
 // Audits published in posi-data, newest first.
 const AUDITS = [
   {
+    name: 'Global index and PCS-Q edition', date: '2026-09-27', path: 'global-index/global-index-2026-09-26',
+    desc: 'Every journal registered with Crossref or described by OpenAlex, 158,242 after merging on ISSN; PCS computed from Crossref for each (journals looked up under each of their ISSNs), 103,021 ranked, 51,029 within their subject category.',
+  },
+  {
     name: 'PCS ETL, full scope', date: '2026-08-14', path: 'pcs-etl/pcs-etl-v1-global1024-2026',
     desc: 'POSI Citation Score from Crossref data for 4,320 journals (the 31 Core Collection journals and the full 4,289-journal Global Benchmark): 6.77 million works fetched, PCS computed for 4,089.',
   },
