@@ -21,11 +21,19 @@
  *   - Journals whose DOIs are registered elsewhere (DataCite, JaLC, mEDRA, CNKI)
  *     or that have no DOIs are not found.
  *
+ * Each journal looked up gets `crossref_checked_at` (YYYY-MM-DD), whether or not
+ * Crossref had it. Journals never checked go first, then the oldest checks;
+ * a journal checked within RECHECK_DAYS is skipped. With --budget-minutes the
+ * run stops starting new lookups when time is up, so a daily job works
+ * through the backlog over several runs. Lookups with a failed request are
+ * not stamped, so they are retried next time.
+ *
  * Usage:
- *   node scripts/enrich-publishers.mjs                 # dry run over every candidate
- *   node scripts/enrich-publishers.mjs --limit 200     # dry run over a sample
- *   node scripts/enrich-publishers.mjs --write         # apply
- *   node scripts/enrich-publishers.mjs --no-country    # publisher only
+ *   node scripts/enrich-publishers.mjs                          # dry run over every candidate
+ *   node scripts/enrich-publishers.mjs --limit 200              # dry run over a sample
+ *   node scripts/enrich-publishers.mjs --write                  # apply
+ *   node scripts/enrich-publishers.mjs --write --budget-minutes 15
+ *   node scripts/enrich-publishers.mjs --no-country             # publisher only
  */
 
 import { fileURLToPath } from 'url'
@@ -35,14 +43,15 @@ import { countryFromAddress } from './lib/country-codes.mjs'
 const CR = 'https://api.crossref.org'
 const MAILTO = 'posi@panorama-sg.com'
 const UA = `POSI/0.1 (https://posi.panorama-sg.com; mailto:${MAILTO})`
-const CONCURRENCY = 4
+const CONCURRENCY = 3        // Crossref's polite pool allows 3 concurrent requests
+const RECHECK_DAYS = 90
 
 /** Requests that failed outright (network, timeouts, 429/5xx after retries), so a blocked run is not read as "not in Crossref". */
 export const stats = { failed: 0 }
 
 const blank = v => v == null || (typeof v === 'string' && !v.trim())
 
-async function getJson(fetchFn, path) {
+async function getJson(fetchFn, path, ctx) {
   const sep = path.includes('?') ? '&' : '?'
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -59,17 +68,19 @@ async function getJson(fetchFn, path) {
     }
   }
   stats.failed++
+  if (ctx) ctx.failed++
   return null
 }
 
-/** Crossref lookup for one journal. Returns { publisher, country, member } with nulls for what was not found. */
+/** Crossref lookup for one journal. Returns { publisher, country, member, failed } with nulls for what was not found; failed counts requests that got no answer. */
 export async function lookup(issns, { fetchFn = fetch, memberCache = new Map(), wantCountry = true } = {}) {
+  const ctx = { failed: 0 }
   let publisher = null, member = null
   for (const issn of issns) {
-    const j = await getJson(fetchFn, `/journals/${encodeURIComponent(issn)}`)
+    const j = await getJson(fetchFn, `/journals/${encodeURIComponent(issn)}`, ctx)
     if (j?.publisher?.trim()) publisher = j.publisher.trim()
     if (publisher && !wantCountry) break
-    const w = await getJson(fetchFn, `/works?filter=issn:${encodeURIComponent(issn)}&rows=1&select=member,publisher`)
+    const w = await getJson(fetchFn, `/works?filter=issn:${encodeURIComponent(issn)}&rows=1&select=member,publisher`, ctx)
     const item = w?.items?.[0]
     if (item) {
       if (!publisher && item.publisher?.trim()) publisher = item.publisher.trim()
@@ -80,12 +91,16 @@ export async function lookup(issns, { fetchFn = fetch, memberCache = new Map(), 
 
   let country = null
   if (wantCountry && member) {
-    if (!memberCache.has(member)) memberCache.set(member, getJson(fetchFn, `/members/${member}`))
-    const m = await memberCache.get(member)
+    // Cache only answered member records; a failed fetch is retried by the next journal of that member.
+    let m = memberCache.get(member)
+    if (m === undefined) {
+      m = await getJson(fetchFn, `/members/${member}`, ctx)
+      if (m) memberCache.set(member, m)
+    }
     country = countryFromAddress(m?.location)
     if (!publisher && m?.['primary-name']?.trim()) publisher = m['primary-name'].trim()
   }
-  return { publisher, country, member }
+  return { publisher, country, member, failed: ctx.failed }
 }
 
 /** Fill blanks on a record from a lookup result. Returns the list of fields set. */
@@ -105,27 +120,43 @@ async function main() {
   const wantCountry = !argv.includes('--no-country')
   const li = argv.indexOf('--limit')
   const LIMIT = li >= 0 ? Number(argv[li + 1]) : Infinity
+  const bi = argv.indexOf('--budget-minutes')
+  const DEADLINE = bi >= 0 ? Date.now() + Number(argv[bi + 1]) * 60_000 : Infinity
 
+  const today = new Date().toISOString().slice(0, 10)
+  const recheckBefore = new Date(Date.now() - RECHECK_DAYS * 86_400_000).toISOString().slice(0, 10)
   const records = loadDiscovered()
-  const candidates = records.filter(r =>
+  const needs = records.filter(r =>
     (r.issn_online || r.issn_print) &&
     (blank(r.publisher) || (wantCountry && (blank(r.country) || blank(r.registration_country))))
-  ).slice(0, LIMIT)
+  )
+  const candidates = needs
+    .filter(r => !r.crossref_checked_at || r.crossref_checked_at < recheckBefore)
+    .sort((a, b) => (a.crossref_checked_at ?? '').localeCompare(b.crossref_checked_at ?? ''))
+    .slice(0, LIMIT)
 
   console.log(`Missing publisher: ${records.filter(r => blank(r.publisher)).length}`)
   console.log(`Missing country:   ${records.filter(r => blank(r.country)).length}`)
-  console.log(`Querying Crossref for ${candidates.length} journals…`)
+  console.log(`Due for a Crossref check: ${candidates.length} (${needs.length - candidates.length} checked in the last ${RECHECK_DAYS} days)`)
 
   const memberCache = new Map()
   const tally = { publisher: 0, country: 0, registration_country: 0, notFound: 0 }
-  let next = 0, done = 0
+  let next = 0, done = 0, answered = 0, stop = ''
 
   async function worker() {
-    while (next < candidates.length) {
+    while (next < candidates.length && !stop) {
+      if (Date.now() > DEADLINE) { stop = 'time budget reached'; break }
       const r = candidates[next++]
       const issns = [r.issn_online, r.issn_print].filter(Boolean)
       const res = await lookup(issns, { memberCache, wantCountry })
-      if (!res.publisher && !res.country) tally.notFound++
+      if (res.failed) {
+        // Nothing answering at all (blocked network, outage): stop rather than burn the budget.
+        if (answered === 0 && done >= 20) stop = 'Crossref is not answering'
+      } else {
+        answered++
+        r.crossref_checked_at = today
+      }
+      if (!res.publisher && !res.country && !res.failed) tally.notFound++
       const set = applyResult(r, res)
       for (const f of set) tally[f]++
       if (set.length && !WRITE) console.log(`  ${issns[0]}  ${set.map(f => `${f}=${r[f]}`).join('  ')}`)
@@ -134,6 +165,7 @@ async function main() {
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, worker))
+  if (stop) console.log(`\nStopped after ${done} of ${candidates.length} journals: ${stop}. The rest follow in later runs.`)
 
   console.log(`\nPublisher filled:            ${tally.publisher}`)
   console.log(`Country filled:              ${tally.country}`)
