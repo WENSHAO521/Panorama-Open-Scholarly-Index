@@ -45,8 +45,12 @@ jobs:
 
       - name: Sync ranking edition and journal names
         run: |
+          # Checks that the edition can be read. It is not copied into the repo:
+          # the global edition is ~90 MB, and every build downloads it itself
+          # (prebuild: sync-live-data.mjs). src/lib/pcs-q.json stays a small
+          # fallback; data-editions.json below records the snapshot, and its
+          # change is what triggers the Cloudflare rebuild.
           node scripts/sync-live-data.mjs --rankings-only
-          cp src/lib/generated/pcs-q.json src/lib/pcs-q.json
           node scripts/sync-ranking-titles.mjs || echo "Journal names unchanged (data layer unreachable)"
 
       - name: Record upstream editions
@@ -59,7 +63,7 @@ jobs:
           git config user.name  "posi-sync-bot"
           git config user.email "posi-sync-bot@users.noreply.github.com"
           git add src/lib/core-collection.json src/lib/global-benchmark.json src/lib/pcs.json src/lib/pci.json \
-                  src/lib/citation-rankings.json src/lib/pcs-q.json src/lib/ranking-titles.json \
+                  src/lib/citation-rankings.json src/lib/ranking-titles.json \
                   src/lib/data-editions.json
           if git diff --staged --quiet; then
             echo "No data changes; the site is on $(cat src/lib/data-editions.json | tr -d '\n ')" | tee -a "$GITHUB_STEP_SUMMARY"
