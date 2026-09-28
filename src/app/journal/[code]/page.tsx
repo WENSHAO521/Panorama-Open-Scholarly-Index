@@ -9,6 +9,7 @@ import { RecordView } from '@/components/RecordView'
 import { getCitationRecord, getPcsValue, categoryName } from '@/lib/rankings'
 import { buildJournalEvaluation } from '@/lib/evaluation/journal'
 import Link from 'next/link'
+import { Certificate, ChartLine, FilePdf } from '@phosphor-icons/react/dist/ssr'
 
 // Core, Candidate and Global Benchmark records get a static page. Discovered
 // records (~24k) are served by the in-browser viewer at /record/ to stay
@@ -64,12 +65,12 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
         }}
         links={issn && (
           <>
-            <Link href={`/journal/?issn=${issn}`} className="link block">Publications and citations by year</Link>
+            <Link href={`/journal/?issn=${issn}`} className="btn btn-primary w-full justify-start"><ChartLine className="h-4 w-4" /> Publications and citations by year</Link>
             {evaluation.ranking.zone != null && (
-              <Link href={`/certificate/zone/?issn=${issn}`} className="link block" prefetch={false}>Zone certificate</Link>
+              <Link href={`/certificate/zone/?issn=${issn}`} className="btn w-full justify-start" prefetch={false}><Certificate className="h-4 w-4" /> Zone certificate</Link>
             )}
             {collectionOf(j) === 'core' && (
-              <a href={`/api/certificate/${j.journal_code}/pdf`} className="link block" target="_blank" rel="noopener">Certification certificate (PDF)</a>
+              <a href={`/api/certificate/${j.journal_code}/pdf`} className="btn w-full justify-start" target="_blank" rel="noopener"><FilePdf className="h-4 w-4" /> Certification certificate (PDF)</a>
             )}
           </>
         )}

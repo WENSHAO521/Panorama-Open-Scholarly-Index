@@ -31,6 +31,9 @@
   --teal: #1c4f8f;
   --teal-hover: #153e72;
   --teal-soft: #e7eef7;
+  /* Chart series (categorical slots 1-2, validated as a pair on --surface). */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
   --teal-line: #b7c8de;
   --on-teal: #ffffff;
 
