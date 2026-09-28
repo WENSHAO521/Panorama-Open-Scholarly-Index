@@ -46,7 +46,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          published=$(gh release download "$TAG" -p "site-data-$FORMAT.json" -O - 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).commit)}catch{console.log('')}})")
+          # No release yet (first run) reads as nothing published.
+          published=$( (gh release download "$TAG" -p "site-data-$FORMAT.json" -O - 2>/dev/null || true) | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).commit)}catch{console.log('')}})")
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$published" = "$GITHUB_SHA" ]; then
             echo "Site data for $GITHUB_SHA already published" | tee -a "$GITHUB_STEP_SUMMARY"
             echo "publish=false" >> "$GITHUB_OUTPUT"
