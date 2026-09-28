@@ -11,13 +11,23 @@ export interface JournalHit {
   oa: boolean
 }
 
-type Entry = [string, string, string | null, number, 0 | 1]
+/** [key, title, publisher, works, open access, alternate titles joined by ' | '] */
+type Entry = [string, string, string | null, number, 0 | 1, string?]
 
 /** Keep in step with scripts/sync-live-data.mjs. */
 const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
 
+const HAN = /\p{Script=Han}/u
+
+/** Latin words of 2+ letters, and each Chinese character on its own. Keep in step with scripts/sync-live-data.mjs. */
 export function titleWords(t: string): string[] {
-  return t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !STOP_WORDS.has(w))
+  return (t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+|\p{Script=Han}/gu) ?? [])
+    .filter(w => (w.length >= 2 || HAN.test(w)) && !STOP_WORDS.has(w))
+}
+
+/** Index file a word lives in. Keep in step with scripts/sync-live-data.mjs. */
+function prefixOf(w: string): string {
+  return HAN.test(w) ? `zh${w.codePointAt(0)! % 64}` : w.slice(0, 2)
 }
 
 const ISSN_RE = /^\d{4}-?\d{3}[\dXx]$/
@@ -50,18 +60,21 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   if (!words.length) return { hits: [], total: 0 }
   // The longest word narrows the candidate file the most.
   const anchor = [...words].sort((a, b) => b.length - a.length)[0]
-  const entries = await loadPrefix(anchor.slice(0, 2))
+  const entries = await loadPrefix(prefixOf(anchor))
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
   const full = words.join(' ')
   const scored: { e: Entry; score: number }[] = []
   for (const e of entries) {
-    const tw = titleWords(e[1])
-    // every query word must prefix-match some title word
-    if (!words.every(w => tw.some(t => t.startsWith(w)))) continue
-    const joined = tw.join(' ')
-    const score = joined === full ? 3 : joined.startsWith(full) ? 2 : words.every(w => tw.includes(w)) ? 1 : 0
-    scored.push({ e, score })
+    let best = -1
+    for (const title of [e[1], ...(e[5]?.split(' | ') ?? [])]) {
+      const tw = titleWords(title)
+      // every query word must prefix-match some title word
+      if (!words.every(w => tw.some(t => t.startsWith(w)))) continue
+      const joined = tw.join(' ')
+      best = Math.max(best, joined === full ? 3 : joined.startsWith(full) ? 2 : words.every(w => tw.includes(w)) ? 1 : 0)
+    }
+    if (best >= 0) scored.push({ e, score: best })
   }
   // entries arrive sorted by works, so a stable sort keeps that as the tiebreak
   scored.sort((a, b) => b.score - a.score)

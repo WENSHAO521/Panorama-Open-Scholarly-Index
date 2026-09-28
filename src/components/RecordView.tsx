@@ -243,6 +243,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
               <FieldRow k="issn_print" value={j.issn_print} mono />
               <FieldRow k="openalex_source_id" value={j.openalex_source_id} mono />
               <FieldRow k="title" value={j.title} />
+              {j.alternate_titles?.length ? <FieldRow k="alternate_titles" value={j.alternate_titles.join('; ')} /> : null}
               <FieldRow k="publisher" value={j.publisher} />
               <FieldRow k="registration_country" value={countryName(j.registration_country)} />
             </dl>

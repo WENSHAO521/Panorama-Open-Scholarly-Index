@@ -30,7 +30,8 @@ export interface FieldDef {
 export const JOURNAL_FIELDS: FieldDef[] = [
   { key: 'posi_id', label: 'POSI ID', type: 'string · POSI-J-######', basis: 'identifier', source: 'posi-data registry/', description: 'Permanent POSI identifier. Never reused, never reassigned.' },
   { key: 'journal_code', label: 'Record key', type: 'string', basis: 'curated', source: 'posi-data corpus/', description: 'URL-safe key used in record paths (/journal/<code>/).' },
-  { key: 'title', label: 'Title', type: 'string', basis: 'registry', source: 'Crossref / OpenAlex', description: 'Journal title as registered.' },
+  { key: 'title', label: 'Title', type: 'string', basis: 'registry', source: 'ISSN Portal / Crossref', description: 'Journal title as registered with the ISSN Portal.' },
+  { key: 'alternate_titles', label: 'Also known as', type: 'string[]', basis: 'registry', source: 'Crossref / OpenAlex', description: 'Other titles the journal is registered under, e.g. a registry title that lags a rename. Searchable.' },
   { key: 'issn_online', label: 'eISSN', type: 'string · ####-####', basis: 'identifier', source: 'ISSN Portal / Crossref', description: 'Electronic ISSN. Null when none is registered - never guessed.' },
   { key: 'issn_print', label: 'pISSN', type: 'string · ####-####', basis: 'identifier', source: 'ISSN Portal / Crossref', description: 'Print ISSN. Null when none is registered.' },
   { key: 'openalex_source_id', label: 'OpenAlex source', type: 'string · S#########', basis: 'identifier', source: 'OpenAlex', description: 'OpenAlex source record the ISSN resolves to.' },
