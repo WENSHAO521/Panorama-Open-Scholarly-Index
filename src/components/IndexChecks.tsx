@@ -1,6 +1,6 @@
 'use client'
 
-// Links out to Web of Science and Scopus for this journal. POSI is
+// Links out to Web of Science, Scopus and PubMed/MEDLINE for this journal. POSI is
 // independent of both. Web of Science: Clarivate's Master Journal List takes
 // the ISSN in the URL. Scopus: the journal's own Scopus page when Elsevier's
 // Scopus source title list (reduced to src/lib/scopus-sources.json, served
@@ -10,11 +10,13 @@
 // never described as not in Scopus.
 
 import { useEffect, useState } from 'react'
-import { ArrowSquareOut, Check, Copy } from '@phosphor-icons/react/dist/ssr'
+import { BookOpenText, Check, Copy } from '@phosphor-icons/react/dist/ssr'
 import { SCOPUS_RANK, scopusKey, scopusShard, scopusSourceHref, type ScopusEntry } from '@/lib/scopus'
 
 export const mjlHref = (issn: string) => `https://mjl.clarivate.com/search-results?issn=${encodeURIComponent(issn)}`
 export const SCOPUS_SOURCES = 'https://www.scopus.com/sources'
+/** NLM Catalog search by ISSN (covers MEDLINE and every other NLM-held journal). */
+export const nlmCatalogHref = (issn: string) => `https://www.ncbi.nlm.nih.gov/nlmcatalog/?term=${encodeURIComponent(`${issn}[issn]`)}`
 
 type Shard = { as_of: string; list: string; d: Record<string, ScopusEntry> }
 const shards = new Map<string, Promise<Shard | null>>()
@@ -70,14 +72,15 @@ export function IndexChecks({ issns }: { issns: string[] }) {
   }
   const st = scopus ? status(scopus.entry) : null
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 pt-3 mt-1" style={{ borderTop: '1px solid var(--line-soft)' }}>
+      <p className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Check other indexes</p>
       <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
         style={{ background: 'var(--wos-brand)', borderColor: 'var(--wos-brand)', color: 'var(--on-wos-brand)' }}>
-        <ArrowSquareOut className="h-4 w-4" /> Check Web of Science listing
+        <BookOpenText className="h-4 w-4" /> Web of Science
       </a>
       <a href={id ? scopusSourceHref(id) : SCOPUS_SOURCES} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
         style={{ background: 'var(--scopus-brand)', borderColor: 'var(--scopus-brand)', color: 'var(--on-scopus-brand)' }}>
-        <ArrowSquareOut className="h-4 w-4" /> {id ? 'View in Scopus' : 'Check Scopus listing'}
+        <BookOpenText className="h-4 w-4" /> Scopus
       </a>
       {st && (
         <p className="flex items-start gap-1.5 text-[12px] leading-snug" style={{ color: 'var(--ink-2)' }}>
@@ -98,8 +101,12 @@ export function IndexChecks({ issns }: { issns: string[] }) {
           </button>
         </p>
       )}
+      <a href={nlmCatalogHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
+        style={{ background: 'var(--pubmed-brand)', borderColor: 'var(--pubmed-brand)', color: 'var(--on-pubmed-brand)' }}>
+        <BookOpenText className="h-4 w-4" /> PubMed / MEDLINE
+      </a>
       <p className="text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>
-        Opens Clarivate’s Master Journal List and Scopus. POSI is independent of both; the Scopus status is as stated in Elsevier’s published source list.
+        Opens Clarivate’s Master Journal List, Scopus and the NLM Catalog (PubMed, MEDLINE). POSI is independent of all three; the Scopus status is as stated in Elsevier’s published source list.
       </p>
     </div>
   )
