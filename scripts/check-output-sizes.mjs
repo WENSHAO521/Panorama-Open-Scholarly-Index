@@ -2,13 +2,15 @@
 /**
  * check-output-sizes.mjs — runs after every build (npm "postbuild").
  *
- * Fails the build, naming each file, when the static export breaks a size
- * budget, so an oversized file is caught in the build (and in pull request
- * previews) instead of Cloudflare Pages refusing the production deploy:
+ * Checks the static export against size budgets, naming each file. Hard
+ * limits fail the build, so Cloudflare Pages never refuses the production
+ * deploy halfway; the browser budget only warns, so a file that grows a little
+ * with new data never blocks a deploy (split it instead, e.g. as the title
+ * index does: a {"parts": [...]} stub linking to smaller files):
  *
  *   - any file:                     20 MiB (Pages refuses files over 25 MiB)
  *   - data the pages load in the
- *     browser (BROWSER_DIRS below): 1.5 MiB, so a page never waits on a
+ *     browser (BROWSER_DIRS below): 1.5 MiB, warning only, so a page never waits on a
  *                                   large download (JSON compresses ~5-8x
  *                                   in transit)
  *   - file count:                   18,000 (Pages allows 20,000)
@@ -35,15 +37,17 @@ walk(OUT)
 
 const fmt = b => `${(b / MiB).toFixed(1)} MiB`
 const problems = []
+const warnings = []
 for (const [path, size] of files) {
   const browser = BROWSER_DIRS.some(d => path.startsWith(d + '/'))
   if (size > MAX_FILE) problems.push(`${path} is ${fmt(size)} (limit ${fmt(MAX_FILE)} for any file)`)
-  else if (browser && size > MAX_BROWSER_FILE) problems.push(`${path} is ${fmt(size)} (limit ${fmt(MAX_BROWSER_FILE)} for data loaded by pages)`)
+  else if (browser && size > MAX_BROWSER_FILE) warnings.push(`${path} is ${fmt(size)} (budget ${fmt(MAX_BROWSER_FILE)} for data loaded by pages)`)
 }
 if (files.length > MAX_FILES) problems.push(`${files.length} files (limit ${MAX_FILES}; Cloudflare Pages allows 20,000)`)
 
 const largest = [...files].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([p, s]) => `${p} ${fmt(s)}`).join(', ')
 console.log(`check-output-sizes: ${files.length} files; largest: ${largest}`)
+for (const w of warnings) console.warn(`check-output-sizes: warning: ${w}`)
 if (problems.length) {
   for (const p of problems) console.error(`check-output-sizes: ${p}`)
   if (process.env.SIZE_CHECK_WARN_ONLY !== '1') {
