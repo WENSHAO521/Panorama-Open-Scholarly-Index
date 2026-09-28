@@ -26,6 +26,7 @@ export const DOCS_NAV: DocsSection[] = [
     blurb: 'The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.',
     links: [
       { label: 'Methodology', href: '/methodology/' },
+      { label: 'How to read POSI grades', href: '/grades/' },
       { label: 'PQF: Core Collection eligibility', href: '/pqf/' },
       { label: 'AJR ratings', href: '/ratings/' },
       { label: 'AJR-E', href: '/ratings/early-stage/' },

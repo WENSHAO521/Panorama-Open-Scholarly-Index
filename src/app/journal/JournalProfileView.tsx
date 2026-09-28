@@ -16,6 +16,8 @@ import { hasZone } from '@/lib/zone-certificate'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
 import { YearTrend } from '@/components/YearTrend'
+import { PosiGrades } from '@/components/PosiGrades'
+import { WosCheck } from '@/components/WosCheck'
 
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
 
@@ -45,6 +47,7 @@ export function JournalProfileView() {
   const j = current.profile
   const curated = matchIssn(issnMap, j.is)
   const core = curated?.k === 'core'
+  const ev = evaluationFromProfile(j.ev, j.ev?.cat ? PSC_NAME[j.ev.cat] ?? null : null)
   const catName = j.sc === 'multidisciplinary' ? 'Multidisciplinary' : j.s ? PSC_NAME[j.s] ?? j.s : null
   const catHref = j.sc === 'multidisciplinary' ? '/journals/subject/multidisciplinary/' : j.s ? `/journals/subject/${j.s}/` : null
   const country = countryName(j.cc)
@@ -63,9 +66,9 @@ export function JournalProfileView() {
           </>}
         </nav>
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="chip" style={core ? { color: 'var(--on-teal)', background: 'var(--teal)', borderColor: 'var(--teal)' } : undefined}>
-            {core ? 'Core Collection' : 'Indexed'}
-          </span>
+          <PosiGrades size="md" showEmpty tier={core ? 'core' : curated?.k === 'candidate' ? 'candidate' : 'indexed'}
+            ajr={ev.ajr.rating} quartile={ev.ranking.quartile} quartileProvisional={ev.ranking.status === 'provisional'}
+            zone={ev.ranking.zone} zoneStatus={ev.ranking.zoneStatus} />
           {j.oa && <span className="chip">Open access</span>}
           {j.dj && <span className="chip">DOAJ</span>}
           {j.sc === 'multidisciplinary' && <span className="chip">Multidisciplinary</span>}
@@ -181,6 +184,7 @@ export function JournalProfileView() {
                 <SealCheck className="h-4 w-4" /> Apply for certification
               </Link>
             )}
+            <div className="mt-3"><WosCheck issn={j.k} /></div>
           </section>
         </aside>
       </div>

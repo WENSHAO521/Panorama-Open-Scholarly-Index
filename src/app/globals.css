@@ -336,7 +336,7 @@ pre.code {
   .doc .formula { font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem 1rem; overflow-x: auto; }
 }
 /* Unlayered: the global a {} reset is unlayered too. */
-.doc a:not(.btn) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.doc a:not(.btn):not(.posi-grades) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 
 /* Home page subject treemap: tinted fill, a solid domain strip on top, and a
    2px surface gap between cells. */
