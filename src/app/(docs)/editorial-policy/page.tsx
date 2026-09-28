@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PQF_STATUS_BANDS, PQF_STATUS_LABEL, PQF_DISCLAIMER, type PqfStatus } from '@/lib/evaluation/rules'
-import { PageHeader } from '@/components/db'
+import { PageHeader, OnThisPage } from '@/components/db'
 
 export const metadata = {
   title: 'Editorial policy',
@@ -40,6 +40,15 @@ const STATES = [
   ['Reinstatement', 'A suspended or delisted journal that resolves the issue may return through the same evaluation as a new application.'],
 ]
 
+const CONTENTS: [string, string][] = [
+  ['tiers', 'Two tiers of coverage'],
+  ['certification', 'Certification for the Core Collection'],
+  ['evidence', 'Evidence standards'],
+  ['review', 'Continuing review and coverage changes'],
+  ['principles', 'Principles'],
+  ['appeals', 'Corrections and appeals'],
+]
+
 export default function EditorialPolicyPage() {
   return (
     <div className="pb-12">
@@ -48,6 +57,8 @@ export default function EditorialPolicyPage() {
           How journals enter POSI, how the Core Collection is certified, and how coverage is reviewed and changed.
         </p>
       </PageHeader>
+
+      <OnThisPage items={CONTENTS} />
 
       <div className="doc">
         <section aria-labelledby="tiers">
