@@ -207,16 +207,15 @@ export function recordHref(r: { c: string; k: Collection }): string {
 }
 
 /** Discovered records are sharded by the first character of journal_code for the static record viewer. */
-/** Shards of the Discovered records: first character of the record key, each
- *  split in 4 by a hash of the key, so no file nears Cloudflare Pages' 25 MiB
- *  limit (the "i" group alone, largely "International ...", passed 20 MiB). */
-export const RECORD_SHARD_SPLIT = 4
+/** Shards of the Discovered records, by a hash of the record key: 64 files of
+ *  a few hundred KB, so the /record/ viewer loads little to show one record
+ *  (by first letter, the "i" group alone passed 20 MiB). */
+export const RECORD_SHARDS = 64
 
 export function shardOf(code: string): string {
-  const ch = code.charAt(0).toLowerCase()
   let h = 0x811c9dc5
   for (const c of code.toLowerCase()) { h ^= c.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0 }
-  return `${/[a-z]/.test(ch) ? ch : '0'}${h % RECORD_SHARD_SPLIT}`
+  return String(h % RECORD_SHARDS).padStart(2, '0')
 }
 
 export function countBy<T extends string>(rows: { [k: string]: unknown }[], key: string): Record<T, number> {

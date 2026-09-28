@@ -60,7 +60,7 @@ posi-engine ──release──▶ posi-data ──snapshot──▶ posi-data-d
 | `src/lib/rankings.ts` | Loads and validates the Citation Ranking edition; an inconsistent edition fails the build |
 | `src/components/Evaluation.tsx` | Evaluation panel (Core Collection → PQF → AJR → Citation Performance) and C-Q / Zone badges |
 | `src/components/RankingTable.tsx` | Ranking table with PSC, quartile, zone, AJR, lifecycle and status filters |
-| `src/app/` | Pages and static data routes (`/data/journal/`, `/data/rankings/`, …) |
+| `src/app/` | Pages and static data routes (`/data/journal/`, `/data/journals/`, …) |
 
 Pages display results; they never hard-code a threshold or recompute a rank.
 
@@ -86,9 +86,11 @@ This project uses a recent Next.js release; read the guides in
 | Path | Contents |
 |---|---|
 | `/data/journal/<code>.json` | Full record, status and `evaluation` (pqf, ajr, citations, ranking) |
-| `/data/rankings/citation-<year>.json` / `.csv` | Citation Ranking edition: versions, snapshot date, thresholds, all journals |
-| `/data/rankings/citation-<year>-<category>.json` | One PSC category |
-| `/data/rankings/pcs-<year>.*` | Deprecated, kept for existing links: PCS values only |
+| `https://data.posi.panorama-sg.com/downloads/rankings/citation-<year>.json` / `.csv` | Citation Ranking edition: versions, snapshot date, thresholds, file list; the CSV has the ranked journals |
+| `…/downloads/rankings/citation-<year>-all.csv` | Every journal of the edition, all statuses |
+| `…/downloads/rankings/citation-<year>-<category>.json` | One PSC category |
+
+Ranking downloads are published by posi-data-delivery (`scripts/build-downloads.mjs`), not built into this site; the old `/data/rankings/` paths redirect there.
 
 ## Related repositories
 

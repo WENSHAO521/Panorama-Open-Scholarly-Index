@@ -244,6 +244,9 @@ if (!RANKINGS_ONLY) {
     const citation = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
     const ranks = new Map(citation.records.map(r => [r.journal_id, r]))
     const pcsValues = new Map(JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8')).records.map(r => [r.journal_id, r]))
+    // PCI for the curated journals (src/lib/pci.json, from posi-data): the
+    // Citation Ranking edition carries PCI only when its run was given it.
+    const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
     const ajr = ajrRatings()
 
     const shards = new Map()
@@ -277,7 +280,7 @@ if (!RANKINGS_ONLY) {
           cat: rk?.ranking_category_id ?? undefined, r: rk?.citation_rank ?? undefined, rt: rk?.citation_rank_total ?? undefined,
           p: rk?.citation_percentile ?? undefined, q: rk?.citation_quartile ?? undefined, z: rk?.posi_zone ?? undefined,
           zs: rk?.zone_status ?? undefined, st: rk?.citation_ranking_status ?? undefined, why: rk?.ranking_status_reason ?? undefined,
-          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? undefined, ajr: ajr.get(r.posi_id),
+          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? pciValues.get(r.posi_id) ?? undefined, ajr: ajr.get(r.posi_id),
           pqf: CURATED.get(r.posi_id)?.pqf?.total ?? undefined,
         } : undefined,
       }
@@ -322,15 +325,46 @@ if (!RANKINGS_ONLY) {
         : null
       if (alt.length || ev) entry.push(alt.join(' | '))
       if (ev) entry.push(ev)
-      for (const p of new Set([title, ...alt].flatMap(titleWords).map(prefixOf))) {
+      const words = [...new Set([title, ...alt].flatMap(titleWords))]
+      for (const p of new Set(words.map(prefixOf))) {
         if (!byPrefix.has(p)) byPrefix.set(p, [])
-        byPrefix.get(p).push(entry)
+        byPrefix.get(p).push({ entry, words: words.filter(w => prefixOf(w) === p) })
       }
     }
     rmSync(dir, { recursive: true, force: true })
     mkdirSync(dir, { recursive: true })
-    for (const [p, list] of byPrefix) writeFileSync(join(dir, `${p}.json`), JSON.stringify(list.sort((a, b) => b[3] - a[3])))
-    console.log(`sync-live-data: journal title index, ${byPrefix.size} files`)
+    // A file over TITLE_PART_BYTES is split by the next letter of its words
+    // (recursively; "_" holds words that end there), and replaced by a stub
+    // {"parts": [...]} that src/lib/journal-search.ts follows.
+    const TITLE_PART_BYTES = 1024 * 1024
+    let files = 0
+    const write = (name, items) => {
+      const list = items.map(i => i.entry).sort((a, b) => b[3] - a[3])
+      const json = JSON.stringify(list)
+      const at = name.length
+      if (json.length > TITLE_PART_BYTES && !name.startsWith('zh')) {
+        const groups = new Map()
+        for (const it of items) {
+          for (const c of new Set(it.words.map(w => w[at] ?? '_'))) {
+            if (!groups.has(c)) groups.set(c, [])
+            groups.get(c).push({ entry: it.entry, words: it.words.filter(w => (w[at] ?? '_') === c) })
+          }
+        }
+        if (groups.size > 1) {
+          writeFileSync(join(dir, `${name}.json`), JSON.stringify({ parts: [...groups.keys()].sort() }))
+          files++
+          for (const [c, g] of groups) {
+            if (c === '_') { writeFileSync(join(dir, `${name}_.json`), JSON.stringify(g.map(i => i.entry).sort((a, b) => b[3] - a[3]))); files++ }
+            else write(name + c, g)
+          }
+          return
+        }
+      }
+      writeFileSync(join(dir, `${name}.json`), json)
+      files++
+    }
+    for (const [p, items] of byPrefix) write(p, items)
+    console.log(`sync-live-data: journal title index, ${files} files`)
   } catch (e) {
     console.warn(`sync-live-data: journal title index not built (${e.message})`)
     missing.push('journal title index')

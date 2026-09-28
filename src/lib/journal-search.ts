@@ -41,16 +41,32 @@ function prefixOf(w: string): string {
 const ISSN_RE = /^\d{4}-?\d{3}[\dXx]$/
 
 // Shared between callers: never tied to one caller's AbortSignal.
-const cache = new Map<string, Promise<Entry[]>>()
-function loadPrefix(p: string): Promise<Entry[]> {
-  let hit = cache.get(p)
+type IndexFile = Entry[] | { parts: string[] }
+const cache = new Map<string, Promise<IndexFile>>()
+function loadFile(name: string): Promise<IndexFile> {
+  let hit = cache.get(name)
   if (!hit) {
-    hit = fetch(`/data/jt/${p}.json`)
+    hit = fetch(`/data/jt/${name}.json`)
       .then(r => (r.ok ? r.json() : []))
-      .catch(e => { cache.delete(p); throw e })
-    cache.set(p, hit)
+      .catch(e => { cache.delete(name); throw e })
+    cache.set(name, hit)
   }
   return hit
+}
+
+/** Entries for words starting with `word`, from file `name`. A large file is
+ *  split by the next letter (see scripts/sync-live-data.mjs): follow the word's
+ *  letters to the smallest file, or merge all parts when the word runs out. */
+async function loadPrefix(name: string, word: string): Promise<Entry[]> {
+  const f = await loadFile(name)
+  if (Array.isArray(f)) return f
+  const c = word[name.length]
+  if (c !== undefined) return f.parts.includes(c) ? loadPrefix(name + c, word) : []
+  const seen = new Set<string>()
+  return (await Promise.all(f.parts.map(p => (p === '_' ? loadFile(name + '_') as Promise<Entry[]> : loadPrefix(name + p, word)))))
+    .flat()
+    .filter(e => !seen.has(e[0]) && !!seen.add(e[0]))
+    .sort((a, b) => b[3] - a[3])
 }
 
 export async function searchJournals(q: string, limit = 50, signal?: AbortSignal): Promise<{ hits: JournalHit[]; total: number }> {
@@ -68,7 +84,7 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   if (!words.length) return { hits: [], total: 0 }
   // The longest word narrows the candidate file the most.
   const anchor = [...words].sort((a, b) => b.length - a.length)[0]
-  const entries = await loadPrefix(prefixOf(anchor))
+  const entries = await loadPrefix(prefixOf(anchor), anchor)
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
 
   const full = words.join(' ')
