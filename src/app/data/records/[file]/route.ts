@@ -1,11 +1,11 @@
 // Full records for Discovered journals, sharded by first character of the
-// record key: /data/records/discovered-<a-z|0>.json. Discovered records have
+// record key and a hash of it: /data/records/discovered-<a-z|0><0-3>.json. Discovered records have
 // no statically generated page (Cloudflare Pages' 20,000-file limit); the
 // /record/ viewer reads these shards in the browser instead.
 import { DISCOVERED_JOURNALS } from '@/lib/data'
-import { shardOf } from '@/lib/records'
+import { shardOf, RECORD_SHARD_SPLIT } from '@/lib/records'
 
-const SHARDS = [...'0abcdefghijklmnopqrstuvwxyz']
+const SHARDS = [...'0abcdefghijklmnopqrstuvwxyz'].flatMap(c => Array.from({ length: RECORD_SHARD_SPLIT }, (_, i) => `${c}${i}`))
 
 export const dynamic = 'force-static'
 export const dynamicParams = false
