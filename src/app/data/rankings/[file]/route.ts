@@ -1,6 +1,9 @@
 // POSI Citation Ranking downloads (POSI-EVAL-1.0):
 //   /data/rankings/citation-<year>.json             the edition's parameters and the per-category files
-//   /data/rankings/citation-<year>.csv              every journal of the edition, all statuses
+//   /data/rankings/citation-<year>.csv              the ranked journals (official and provisional)
+//   /data/rankings/citation-<year>-all-<n>.csv      every journal of the edition, all statuses, in parts
+//     (Cloudflare Pages serves files of at most 25 MiB; the whole edition,
+//     ~158,000 journals, is larger than that as one CSV)
 //   /data/rankings/citation-<year>-<category>.json  the journals of one PSC category ("unclassified": none)
 //
 // Deprecated, kept so existing links and scripts keep working:
@@ -13,6 +16,10 @@ export const dynamic = 'force-static'
 export const dynamicParams = false
 
 const UNCLASSIFIED = 'unclassified'
+/** Rows per part of the complete CSV: ~9 MiB, well under Pages' 25 MiB file limit. */
+const PART_ROWS = 60_000
+const partCount = (n: number) => Math.max(1, Math.ceil(n / PART_ROWS))
+const partFiles = (year: number, n: number) => Array.from({ length: partCount(n) }, (_, i) => `citation-${year}-all-${i + 1}.csv`)
 const catKey = (c: string | null) => c ?? UNCLASSIFIED
 
 function categories(prefix: string) {
@@ -29,12 +36,12 @@ function categories(prefix: string) {
 }
 
 export function generateStaticParams() {
-  const { year } = getRankings()
-  return ['citation', 'pcs'].flatMap(prefix => [
+  const { all, year } = getRankings()
+  return [...partFiles(year, all.length).map(file => ({ file })), ...['citation', 'pcs'].flatMap(prefix => [
     { file: `${prefix}-${year}.json` },
     { file: `${prefix}-${year}.csv` },
     ...categories(prefix).map(c => ({ file: `${prefix}-${year}-${c.category}.json` })),
-  ])
+  ])]
 }
 
 const cell = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
@@ -68,7 +75,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   if (file === `${prefix}-${year}.json`) {
     return Response.json(legacy
       ? { ...deprecated, metric: 'PCS', year, journals: all.length, csv: `/data/rankings/pcs-${year}.csv`, categories: categories('pcs') }
-      : { ...meta, journals: all.length, ranked: all.filter(r => r.rank != null).length, csv: `/data/rankings/citation-${year}.csv`, categories: categories('citation') })
+      : {
+          ...meta, journals: all.length, ranked: all.filter(r => r.rank != null).length,
+          csv: `/data/rankings/citation-${year}.csv`, csv_contents: 'ranked journals (official and provisional)',
+          csv_all_parts: partFiles(year, all.length).map(f => `/data/rankings/${f}`), csv_all_contents: `every journal, all statuses, in parts of up to ${PART_ROWS.toLocaleString('en-US')} rows`,
+          categories: categories('citation'),
+        })
   }
   if (file.endsWith('.json')) {
     const cat = file.slice(`${prefix}-${year}-`.length, -'.json'.length)
@@ -84,6 +96,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
     return new Response([head, ...body].join('\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8' } })
   }
   const cols = Object.keys(row(all[0] ?? ({ issn: [] } as unknown as RankedJournal)))
-  const body = all.map(r => { const o = row(r) as Record<string, unknown>; return cols.map(c => cell(Array.isArray(o[c]) ? (o[c] as string[]).join(' ') : o[c])).join(',') })
+  const part = file.match(/-all-(\d+)\.csv$/)
+  const rows = part
+    ? all.slice((Number(part[1]) - 1) * PART_ROWS, Number(part[1]) * PART_ROWS)
+    : all.filter(r => r.rank != null).sort((a, b) => (a.cat ?? '').localeCompare(b.cat ?? '') || (a.rank ?? 0) - (b.rank ?? 0))
+  const body = rows.map(r => { const o = row(r) as Record<string, unknown>; return cols.map(c => cell(Array.isArray(o[c]) ? (o[c] as string[]).join(' ') : o[c])).join(',') })
   return new Response([cols.join(','), ...body].join('\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8' } })
 }

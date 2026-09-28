@@ -105,17 +105,17 @@ export default function DatasetsPage() {
     { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 20,000 journals are split by first letter' },
     { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
     { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
-    { path: `/data/rankings/citation-${year}.json`, alt: `/data/rankings/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has every journal (${ranked.length.toLocaleString('en-US')} ranked)` },
+    { path: `/data/rankings/citation-${year}.json`, alt: `/data/rankings/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals, and the edition's JSON lists the complete CSV of every journal, in parts` },
     { path: `/data/rankings/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
     { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: null, bytes: null, what: 'Deprecated: PCS values only, kept for existing links; its rank, quartile and zone columns are empty since PCS-Q was retired' },
   ]
 
   const curated: DataFile[] = [
-    { path: '/data/index/core.json', alt: '/data/index/core.csv', rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection and Candidate records, compact index' },
+    { path: '/data/index/core.json', alt: '/data/index/core.csv', rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection records, compact index' },
     { path: '/data/index/benchmark.json', alt: '/data/index/benchmark.csv', rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
-    { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered records, compact index' },
+    { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
     { path: '/data/journal/{code}.json', rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
-    { path: '/data/records/discovered-{a-z,0}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 27 shards by first character of the record key' },
+    { path: '/data/records/discovered-{a-z,0}{0-3}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 108 shards by first character of the record key and a hash of it' },
     { path: '/data/meta/psc.json', rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
     { path: '/data/meta/schema.json', rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },
     { path: '/data/meta/stats.json', rows: null, bytes: null, what: 'Record counts by collection and verification state' },
