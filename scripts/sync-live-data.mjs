@@ -52,7 +52,7 @@ async function get(url, as = 'json') {
 // Only the fields the site uses, to keep build memory and page data small.
 function slim(corpus) {
   return corpus.map(r => ({
-    posi_id: r.posi_id, curated: !!r.curated, title: titlesOf(r.posi_id, r.title).title, publisher: r.publisher,
+    posi_id: r.posi_id, curated: !!r.curated, title: titlesOf(r.posi_id, r.title, r.alternate_titles).title, publisher: r.publisher,
     issns: r.issns ?? [], issn_l: r.issn_l ?? null, openalex_source_id: r.openalex_source_id ?? null,
     country: r.country ?? null, open_access: r.open_access ?? null, in_doaj: r.in_doaj ?? null,
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
@@ -169,7 +169,7 @@ if (!RANKINGS_ONLY) {
       const o = r.openalex_source_id ? oa.get(r.openalex_source_id) : null
       const rk = ranks.get(r.posi_id)
       const va = verifiedApc.get(r.posi_id)
-      const tt = titlesOf(r.posi_id, r.title ?? o?.t, o?.alt)
+      const tt = titlesOf(r.posi_id, r.title ?? o?.t, [...(r.alternate_titles ?? []), ...(o?.alt ?? [])])
       const prof = {
         k: key, pid: r.posi_id, cur: r.curated ? 1 : undefined,
         t: tt.title ?? key, ab: o?.ab, alt: tt.alt.length ? tt.alt : undefined,
@@ -216,7 +216,7 @@ if (!RANKINGS_ONLY) {
     for (const r of corpus) {
       const key = r.issn_l ?? r.issns?.[0]
       if (!key || !r.title) continue
-      const { title, alt } = titlesOf(r.posi_id, r.title)
+      const { title, alt } = titlesOf(r.posi_id, r.title, r.alternate_titles)
       const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
       if (alt.length) entry.push(alt.join(' | '))
       for (const p of new Set([title, ...alt].flatMap(titleWords).map(w => w.slice(0, 2)))) {
