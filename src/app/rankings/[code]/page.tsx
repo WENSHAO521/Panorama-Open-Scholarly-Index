@@ -39,7 +39,7 @@ export default async function CategoryRankingPage(props: { params: Promise<{ cod
       <PageHeader
         title={all ? 'Citation Rankings, all categories' : c!.name}
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Rankings', href: '/rankings/' }, { label: all ? 'All categories' : c!.code }]}
-        actions={RANKING_AVAILABLE ? <a href={`/data/rankings/citation-${year}.csv`} className="btn">Full dataset CSV</a> : undefined}
+        actions={RANKING_AVAILABLE ? <a href={`/data/rankings/citation-${year}.csv`} className="btn">Ranked journals CSV</a> : undefined}
       >
         <p className="max-w-[70ch]">
           {all
@@ -55,7 +55,8 @@ export default async function CategoryRankingPage(props: { params: Promise<{ cod
       {allRows.length > CAP && (
         <p className="mb-4 text-[13.5px]" style={{ color: 'var(--muted)' }}>
           Showing the top {fmt(CAP)} of {fmt(allRows.length)} journals. The{' '}
-          <a href={`/data/rankings/citation-${year}.csv`} className="link">full dataset</a> lists every journal.
+          <a href={`/data/rankings/citation-${year}.csv`} className="link">ranked journals CSV</a> lists every ranked journal;
+          the <a href={`/data/rankings/citation-${year}.json`} className="link">edition index</a> links the complete files.
         </p>
       )}
       {!all && n > 0 && n < RANKING_THRESHOLDS.categoryOfficialZone && (

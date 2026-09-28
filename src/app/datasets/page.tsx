@@ -115,7 +115,7 @@ export default function DatasetsPage() {
     { path: '/data/index/benchmark.json', alt: '/data/index/benchmark.csv', rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
     { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
     { path: '/data/journal/{code}.json', rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
-    { path: '/data/records/discovered-{a-z,0}{0-3}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 108 shards by first character of the record key and a hash of it' },
+    { path: '/data/records/discovered-{00-63}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 64 shards by a hash of the record key' },
     { path: '/data/meta/psc.json', rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
     { path: '/data/meta/schema.json', rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },
     { path: '/data/meta/stats.json', rows: null, bytes: null, what: 'Record counts by collection and verification state' },

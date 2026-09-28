@@ -164,7 +164,9 @@ export function letterOf(title: string): string {
 export const LETTERS = [...'abcdefghijklmnopqrstuvwxyz', '0']
 
 /** Groups above this size are served as per-letter files. */
-export const SPLIT_THRESHOLD = 20000
+/** A category larger than this is served as per-letter parts, keeping each
+ *  file the subject pages load under about 1 MiB. */
+export const SPLIT_THRESHOLD = 4000
 
 /** File names a category is served as: one file, or one per letter when large. */
 export function categoryFiles(code: string): string[] {

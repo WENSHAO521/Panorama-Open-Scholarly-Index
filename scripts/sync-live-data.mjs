@@ -244,6 +244,9 @@ if (!RANKINGS_ONLY) {
     const citation = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
     const ranks = new Map(citation.records.map(r => [r.journal_id, r]))
     const pcsValues = new Map(JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8')).records.map(r => [r.journal_id, r]))
+    // PCI for the curated journals (src/lib/pci.json, from posi-data): the
+    // Citation Ranking edition carries PCI only when its run was given it.
+    const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
     const ajr = ajrRatings()
 
     const shards = new Map()
@@ -277,7 +280,7 @@ if (!RANKINGS_ONLY) {
           cat: rk?.ranking_category_id ?? undefined, r: rk?.citation_rank ?? undefined, rt: rk?.citation_rank_total ?? undefined,
           p: rk?.citation_percentile ?? undefined, q: rk?.citation_quartile ?? undefined, z: rk?.posi_zone ?? undefined,
           zs: rk?.zone_status ?? undefined, st: rk?.citation_ranking_status ?? undefined, why: rk?.ranking_status_reason ?? undefined,
-          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? undefined, ajr: ajr.get(r.posi_id),
+          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? pciValues.get(r.posi_id) ?? undefined, ajr: ajr.get(r.posi_id),
           pqf: CURATED.get(r.posi_id)?.pqf?.total ?? undefined,
         } : undefined,
       }

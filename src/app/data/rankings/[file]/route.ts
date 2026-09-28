@@ -4,7 +4,9 @@
 //   /data/rankings/citation-<year>-all-<n>.csv      every journal of the edition, all statuses, in parts
 //     (Cloudflare Pages serves files of at most 25 MiB; the whole edition,
 //     ~158,000 journals, is larger than that as one CSV)
-//   /data/rankings/citation-<year>-<category>.json  the journals of one PSC category ("unclassified": none)
+//   /data/rankings/citation-<year>-<category>.json  the journals of one PSC category ("unclassified": none);
+//     a category of more than 15,000 journals continues in <category>-2.json,
+//     -3.json ... (each file lists all its parts), keeping files under ~10 MiB
 //
 // Deprecated, kept so existing links and scripts keep working:
 //   /data/rankings/pcs-<year>.json, .csv, -<category>.json  PCS values only. The
@@ -19,6 +21,10 @@ const UNCLASSIFIED = 'unclassified'
 /** Rows per part of the complete CSV: ~9 MiB, well under Pages' 25 MiB file limit. */
 const PART_ROWS = 60_000
 const partCount = (n: number) => Math.max(1, Math.ceil(n / PART_ROWS))
+/** Journals per part of a category file (~8 MiB). */
+const CAT_PART_JOURNALS = 15_000
+const catPartCount = (n: number) => Math.max(1, Math.ceil(n / CAT_PART_JOURNALS))
+const catPartFile = (prefix: string, year: number, cat: string, i: number) => `${prefix}-${year}-${cat}${i > 1 ? `-${i}` : ''}.json`
 const partFiles = (year: number, n: number) => Array.from({ length: partCount(n) }, (_, i) => `citation-${year}-all-${i + 1}.csv`)
 const catKey = (c: string | null) => c ?? UNCLASSIFIED
 
@@ -32,7 +38,12 @@ function categories(prefix: string) {
     if (r.status === 'official') e.official++
     byCat.set(catKey(r.cat), e)
   }
-  return [...byCat].sort(([a], [b]) => a.localeCompare(b)).map(([category, n]) => ({ category, file: `/data/rankings/${prefix}-${year}-${category}.json`, ...n }))
+  return [...byCat].sort(([a], [b]) => a.localeCompare(b)).map(([category, n]) => {
+    // Only the Citation Ranking files are split: the retired PCS files hold a few fields per journal.
+    const parts = prefix === 'citation' ? catPartCount(n.journals) : 1
+    const files = Array.from({ length: parts }, (_, i) => `/data/rankings/${catPartFile(prefix, year, category, i + 1)}`)
+    return { category, file: files[0], ...(parts > 1 ? { parts: files } : {}), ...n }
+  })
 }
 
 export function generateStaticParams() {
@@ -40,7 +51,7 @@ export function generateStaticParams() {
   return [...partFiles(year, all.length).map(file => ({ file })), ...['citation', 'pcs'].flatMap(prefix => [
     { file: `${prefix}-${year}.json` },
     { file: `${prefix}-${year}.csv` },
-    ...categories(prefix).map(c => ({ file: `${prefix}-${year}-${c.category}.json` })),
+    ...categories(prefix).flatMap(c => (c.parts ?? [c.file]).map(f => ({ file: f.replace('/data/rankings/', '') }))),
   ])]
 }
 
@@ -83,12 +94,20 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
         })
   }
   if (file.endsWith('.json')) {
-    const cat = file.slice(`${prefix}-${year}-`.length, -'.json'.length)
+    const m = file.slice(`${prefix}-${year}-`.length, -'.json'.length).match(/^(.+?)(?:-(\d+))?$/)!
+    const cat = m[1]
+    const part = m[2] ? Number(m[2]) : 1
     const rows = all.filter(r => catKey(r.cat) === cat)
     if (legacy) {
       return Response.json({ ...deprecated, metric: 'PCS', year, category: cat, journals: rows.map(r => ({ id: r.id, title: r.title, publisher: r.publisher, issn: r.issn, cat: r.cat, core: r.core, pcs: r.pcs, pci: r.pci, rank: null, n: null, pct: null, q: null, zone: null })) })
     }
-    return Response.json({ ...meta, category: cat, journals: rows.sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity) || (b.pnci ?? -1) - (a.pnci ?? -1)).map(row) })
+    const sorted = rows.sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity) || (b.pnci ?? -1) - (a.pnci ?? -1))
+    const parts = catPartCount(sorted.length)
+    return Response.json({
+      ...meta, category: cat, journals_in_category: sorted.length,
+      ...(parts > 1 ? { part, parts: Array.from({ length: parts }, (_, i) => `/data/rankings/${catPartFile('citation', year, cat, i + 1)}`) } : {}),
+      journals: sorted.slice((part - 1) * CAT_PART_JOURNALS, part * CAT_PART_JOURNALS).map(row),
+    })
   }
   if (legacy) {
     const head = 'posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci,category_rank,category_n,category_percentile,category_quartile,category_zone,overall_rank,overall_n,overall_percentile,overall_quartile,overall_zone'
