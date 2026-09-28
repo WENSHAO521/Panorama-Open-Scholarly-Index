@@ -15,6 +15,7 @@ import { evaluationFromProfile } from '@/lib/evaluation/journal'
 import { hasZone } from '@/lib/zone-certificate'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
+import { YearTrend } from '@/components/YearTrend'
 
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
 
@@ -110,7 +111,7 @@ export function JournalProfileView() {
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-10">
-          {!!j.cy?.length && <YearChart rows={j.cy} />}
+          {!!j.cy?.length && <YearTrend rows={j.cy} />}
 
           <section aria-labelledby="subject">
             <h2 id="subject" className="text-[17px] font-semibold tracking-tight mb-3">Subject</h2>
@@ -208,42 +209,6 @@ function EvaluationCard({ j, core }: { j: JournalProfile; core: boolean }) {
         </Link>
       )}
       <Link href="/methodology/" className="link mt-3 inline-block text-[12.5px]">How journals are evaluated</Link>
-    </section>
-  )
-}
-
-function YearChart({ rows }: { rows: [number, number, number][] }) {
-  const recent = rows.slice(-10)
-  const maxW = Math.max(1, ...recent.map(r => r[1]))
-  const maxC = Math.max(1, ...recent.map(r => r[2]))
-  return (
-    <section aria-labelledby="per-year">
-      <div className="flex items-baseline justify-between gap-4 mb-3">
-        <h2 id="per-year" className="text-[17px] font-semibold tracking-tight">Publications and citations per year</h2>
-        <div className="flex gap-4 text-[12px]" style={{ color: 'var(--muted)' }}>
-          <span className="flex items-center gap-1.5"><i className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: 'var(--teal)' }} />Publications</span>
-          <span className="flex items-center gap-1.5"><i className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: 'var(--line)' }} />Citations</span>
-        </div>
-      </div>
-      <div className="panel p-4">
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${recent.length}, minmax(0, 1fr))` }}>
-          {recent.map(([y, w, c]) => (
-            <div key={y} className="flex flex-col items-center gap-1.5 min-w-0" title={`${y}: ${fmt(w)} publications, ${fmt(c)} citations`}>
-              <div className="flex items-end gap-0.5 h-36 w-full justify-center">
-                <div className="w-1/3 max-w-4 rounded-t-sm" style={{ height: `${(w / maxW) * 100}%`, minHeight: w ? 2 : 0, background: 'var(--teal)' }} />
-                <div className="w-1/3 max-w-4 rounded-t-sm" style={{ height: `${(c / maxC) * 100}%`, minHeight: c ? 2 : 0, background: 'var(--line)' }} />
-              </div>
-              <span className="font-mono text-[11px] tnum" style={{ color: 'var(--muted)' }}>{String(y).slice(2)}</span>
-            </div>
-          ))}
-        </div>
-        <table className="sr-only">
-          <caption>Publications and citations per year</caption>
-          <thead><tr><th>Year</th><th>Publications</th><th>Citations</th></tr></thead>
-          <tbody>{recent.map(([y, w, c]) => <tr key={y}><td>{y}</td><td>{w}</td><td>{c}</td></tr>)}</tbody>
-        </table>
-        <p className="mt-3 text-[12px]" style={{ color: 'var(--soft)' }}>Bars are scaled separately. Citations are counted in the year they were received.</p>
-      </div>
     </section>
   )
 }
