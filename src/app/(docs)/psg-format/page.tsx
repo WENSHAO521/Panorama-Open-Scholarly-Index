@@ -219,7 +219,7 @@ export default function PsgFormatPage() {
               <th className="text-left px-3 py-2 font-semibold uppercase tracking-[0.07em]" style={{ color: 'var(--posi-muted)' }}>PSG Rule</th>
             </tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: 'var(--posi-border-light)' }}>
+          <tbody className="divide-y divide-[var(--line-soft)]">
             {[
               ['In-text style',          'Author-year parenthetical; no comma between author and year'],
               ['Year position',          'After author in reference list; no brackets'],

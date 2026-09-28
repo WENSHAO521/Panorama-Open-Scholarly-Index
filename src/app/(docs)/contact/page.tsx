@@ -26,7 +26,7 @@ export default function ContactPage() {
       </PageHeader>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] max-w-[1000px]">
-        <ul className="panel divide-y" style={{ borderColor: 'var(--line-soft)' }}>
+        <ul className="panel divide-y divide-[var(--line-soft)]">
           {TOPICS.map(t => (
             <li key={t.topic} className="p-5" style={{ borderColor: 'var(--line-soft)' }}>
               <h2 className="text-[15.5px] font-semibold">{t.topic}</h2>

@@ -77,7 +77,7 @@ function Block({ title, id, children, aside }: { title: string; id: string; chil
         <h3 id={id} className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{title}</h3>
         {aside}
       </div>
-      <dl className="mt-1 text-[13.5px] divide-y" style={{ borderColor: 'var(--line-soft)' }}>{children}</dl>
+      <dl className="mt-1 text-[13.5px] divide-y divide-[var(--line-soft)]">{children}</dl>
     </section>
   )
 }

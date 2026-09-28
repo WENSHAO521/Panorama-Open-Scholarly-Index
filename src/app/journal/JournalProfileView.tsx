@@ -154,7 +154,7 @@ export function JournalProfileView() {
 
           <section aria-labelledby="ids" className="panel">
             <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
-            <dl className="px-4 pb-4 pt-2 text-[13.5px] divide-y" style={{ borderColor: 'var(--line-soft)' }}>
+            <dl className="px-4 pb-4 pt-2 text-[13.5px] divide-y divide-[var(--line-soft)]">
               <Row k="ISSN-L" v={j.k} mono />
               <Row k="ISSN" v={j.is.join(', ')} mono />
               <Row k="POSI ID" v={j.pid} mono />
