@@ -184,7 +184,7 @@ export function JournalProfileView() {
                 <SealCheck className="h-4 w-4" /> Apply for certification
               </Link>
             )}
-            <div className="mt-3"><IndexChecks issn={j.k} /></div>
+            <div className="mt-3"><IndexChecks issns={[j.k, ...j.is.filter(i => i !== j.k)]} /></div>
           </section>
         </aside>
       </div>

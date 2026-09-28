@@ -297,7 +297,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
             <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
             {links}
             <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
-            {issn && <IndexChecks issn={issn} />}
+            {issn && <IndexChecks issns={[j.issn_online, j.issn_print].filter((x): x is string => !!x)} />}
           </div>
           <div className="panel p-4 space-y-4 text-[13.5px]">
             <div>
