@@ -19,6 +19,8 @@
  *     It fills only `country` (declared country) and never `registration_country`,
  *     which is the ISSN Portal's registration country (see src/lib/schema.ts).
  *     The country is taken only when the address ends in a recognised country name.
+ *     Hosting platforms and deposit agents seen doing this are listed in
+ *     NOT_PUBLISHERS; a lookup that ends at one of them fills nothing.
  *   - Journals whose DOIs are registered elsewhere (DataCite, JaLC, mEDRA, CNKI)
  *     or that have no DOIs are not found.
  *
@@ -49,6 +51,20 @@ const RECHECK_DAYS = 90
 
 /** Requests that failed outright (network, timeouts, 429/5xx after retries), so a blocked run is not read as "not in Crossref". */
 export const stats = { failed: 0 }
+
+// Crossref members that register DOIs for other publishers' journals: national
+// hosting platforms, "Journals Online" sites and deposit agents. Found on the
+// first real run (e.g. CMV Verlag, a German agent, for Iranian university
+// journals; Egyptian Knowledge Bank for Egyptian faculties). Their name is not
+// the journal's publisher and their address is not its country.
+export const NOT_PUBLISHERS = [
+  /^egyptian knowledge bank$/i, /^kezana\b/i, /^egypts? presidential specialized council/i,
+  /^cmv verlag$/i, /^openedition$/i, /^persee\b/i, /^consortium [ée]rudit$/i,
+  /journals online$/i, /^centre for evaluation in education and science$/i,
+  /^gn1 sistemas/i, /^central library of the slovak academy of sciences$/i,
+  /^det kgl\. bibliotek/i, /^relawan jurnal indonesia$/i,
+]
+export const isPlatform = name => typeof name === 'string' && NOT_PUBLISHERS.some(re => re.test(name.trim()))
 
 const blank = v => v == null || (typeof v === 'string' && !v.trim())
 
@@ -100,7 +116,9 @@ export async function lookup(issns, { fetchFn = fetch, memberCache = new Map(), 
     }
     country = countryFromAddress(m?.location)
     if (!publisher && m?.['primary-name']?.trim()) publisher = m['primary-name'].trim()
+    if (isPlatform(m?.['primary-name'])) country = null
   }
+  if (isPlatform(publisher)) { publisher = null; country = null }
   return { publisher, country, member, failed: ctx.failed }
 }
 
