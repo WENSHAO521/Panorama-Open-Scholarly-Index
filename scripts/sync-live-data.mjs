@@ -28,7 +28,7 @@
  * if the API refuses (its unauthenticated limit is 60 requests an hour per
  * IP, shared on build machines), through the releases/latest/download link.
  * Locally they fall back to the curated records. On Cloudflare Pages
- * (CF_PAGES=1) a build without them fails instead, so the last good
+ * (CF_PAGES=1), and in the site-data publish (POSI_REQUIRE_FULL_DATA=1), a build without them fails instead, so the last good
  * deployment stays live rather than one with ~25k of ~158k journals and no
  * search; POSI_ALLOW_PARTIAL_DATA=1 overrides that.
  * POSI_GLOBAL_CORPUS=<path> and POSI_OPENALEX_PROFILES=<path> use local files
@@ -375,7 +375,7 @@ if (!RANKINGS_ONLY) {
 // fraction of the journals and no search. Fail it so the last good
 // deployment stays live.
 if (missing.length) {
-  const production = process.env.CF_PAGES === '1' && process.env.POSI_ALLOW_PARTIAL_DATA !== '1'
+  const production = (process.env.CF_PAGES === '1' || process.env.POSI_REQUIRE_FULL_DATA === '1') && process.env.POSI_ALLOW_PARTIAL_DATA !== '1'
   console.warn(`sync-live-data: missing ${missing.join(', ')}`)
   if (production) {
     console.error('sync-live-data: failing the Cloudflare Pages build so the last good deployment stays live (set POSI_ALLOW_PARTIAL_DATA=1 to deploy anyway)')

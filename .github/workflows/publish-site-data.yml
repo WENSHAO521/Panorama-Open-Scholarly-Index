@@ -1,0 +1,88 @@
+name: Publish site data
+
+# Builds the site and publishes its data files (everything under out/data/:
+# journal profiles, title index, directory, publishers, records, Scopus and
+# PubMed lists) as a release asset, site-data-v1.tar.gz on the `site-data`
+# release, with a stamp site-data-v1.json naming the commit it was built from.
+#
+# posi-data-delivery's Pages deploy downloads the asset and serves it at
+# https://data.posi.panorama-sg.com/site/v1/, so the website is a front end
+# and the data lives on the data layer. "v1" is the data format: a change
+# the deployed front end cannot read goes to v2, published alongside v1.
+#
+# Data changes reach master through bot pushes (Data sync), which do not
+# trigger push workflows, so a check every 30 minutes publishes whenever
+# master has moved past the published stamp. A check with nothing new exits
+# in seconds.
+
+on:
+  push:
+    branches: [master]
+  schedule:
+    - cron: '24,54 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-site-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORMAT: v1
+  TAG: site-data
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decide whether to publish
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          published=$(gh release download "$TAG" -p "site-data-$FORMAT.json" -O - 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).commit)}catch{console.log('')}})")
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$published" = "$GITHUB_SHA" ]; then
+            echo "Site data for $GITHUB_SHA already published" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.decide.outputs.publish == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build
+        if: steps.decide.outputs.publish == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          POSI_REQUIRE_FULL_DATA: '1'
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Pack and upload
+        if: steps.decide.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf out/data/rankings   # ranking downloads are published by posi-data-delivery
+          files=$(find out/data -type f | wc -l)
+          bytes=$(du -sb out/data | cut -f1)
+          tar -czf "site-data-$FORMAT.tar.gz" -C out/data .
+          node -e "console.log(JSON.stringify({format:process.env.FORMAT,commit:process.env.GITHUB_SHA,built_at:new Date().toISOString(),files:+process.argv[1],bytes:+process.argv[2]},null,1))" "$files" "$bytes" > "site-data-$FORMAT.json"
+          cat "site-data-$FORMAT.json"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Site data (latest)" --notes "The website's data files, rebuilt from master. Served at https://data.posi.panorama-sg.com/site/ by posi-data-delivery; not a versioned release." --latest=false
+          # The stamp goes last: a reader that sees the new stamp finds the new archive.
+          gh release upload "$TAG" "site-data-$FORMAT.tar.gz" --clobber
+          gh release upload "$TAG" "site-data-$FORMAT.json" --clobber
+          echo "Published $files files ($((bytes / 1048576)) MiB) for $GITHUB_SHA" | tee -a "$GITHUB_STEP_SUMMARY"
