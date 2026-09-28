@@ -14,15 +14,23 @@
  *                         or pcs-q.json in older snapshots); its PCS-Q quartiles are retired
  *   journals-global.json  the global journal corpus (every Crossref and
  *                         OpenAlex journal), from the newest posi-engine release
- *                         tagged global-index-* (asset global-corpus.json.gz)
+ *                         tagged journals-* (monthly directory refresh) or
+ *                         global-index-* (yearly ranking), asset global-corpus.json.gz
  *   public/data/j/*.json  journal profiles for /journal/, in 1024 hashed shards,
  *                         built from the corpus, the OpenAlex profiles asset
  *                         (openalex-profiles.jsonl.gz), the Citation Ranking edition
  *                         and PCS
  *
- * Never fails the build. The ranking falls back to the committed
- * src/lib/citation-ranking.json, PCS to src/lib/pcs-q.json; the journal
- * directory falls back to the curated records.
+ * The ranking falls back to the committed src/lib/citation-ranking.json and
+ * PCS to src/lib/pcs-q.json. The journal directory, profiles and title index
+ * need the global corpus: every download is retried, and the release is
+ * found through the GitHub API (authenticated with GITHUB_TOKEN when set) or,
+ * if the API refuses (its unauthenticated limit is 60 requests an hour per
+ * IP, shared on build machines), through the releases/latest/download link.
+ * Locally they fall back to the curated records. On Cloudflare Pages
+ * (CF_PAGES=1) a build without them fails instead, so the last good
+ * deployment stays live rather than one with ~25k of ~158k journals and no
+ * search; POSI_ALLOW_PARTIAL_DATA=1 overrides that.
  * POSI_GLOBAL_CORPUS=<path> and POSI_OPENALEX_PROFILES=<path> use local files
  * instead (development). --rankings-only syncs the ranking edition alone (the
  * scheduled data sync, which only needs that and runs every few hours).
@@ -36,6 +44,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
 const DATA = 'https://data.posi.panorama-sg.com'
 const RELEASES = 'https://api.github.com/repos/WENSHAO521/posi-engine/releases?per_page=30'
+const RELEASE_DOWNLOADS = 'https://github.com/WENSHAO521/posi-engine/releases'
 
 mkdirSync(GEN, { recursive: true })
 
@@ -47,10 +56,23 @@ function shardOf(key) {
   return String(h % SHARDS).padStart(4, '0')
 }
 
-async function get(url, as = 'json') {
-  const res = await fetch(url, { signal: AbortSignal.timeout(120_000), headers: { 'User-Agent': 'posi-site-build' } })
+async function getOnce(url, as) {
+  const headers = { 'User-Agent': 'posi-site-build' }
+  if (url.startsWith('https://api.github.com/') && process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+  const res = await fetch(url, { signal: AbortSignal.timeout(180_000), headers })
   if (!res.ok) throw new Error(`${res.status} ${url}`)
   return as === 'json' ? res.json() : Buffer.from(await res.arrayBuffer())
+}
+
+/** Fetch with up to three attempts; a 404 is final, not retried. */
+async function get(url, as = 'json', tries = 3) {
+  for (let i = 1; ; i++) {
+    try { return await getOnce(url, as) } catch (e) {
+      if (i >= tries || /^404 /.test(e.message)) throw e
+      console.warn(`sync-live-data: ${e.message}; retry ${i} of ${tries - 1}`)
+      await new Promise(r => setTimeout(r, 3000 * i))
+    }
+  }
 }
 
 // Only the fields the site uses, to keep build memory and page data small.
@@ -169,24 +191,34 @@ const RANKINGS_ONLY = process.argv.includes('--rankings-only')
 
 // 2. Global journal directory
 let corpus = null
-let release = null
+// Where the release assets are downloaded from: the newest global-index-*
+// release by tag, or the latest release when the API cannot be reached.
+let assetBase = null
+const missing = []
 if (!RANKINGS_ONLY) {
   const out = join(GEN, 'journals-global.json')
   try {
     if (process.env.POSI_GLOBAL_CORPUS) {
       corpus = JSON.parse(readFileSync(process.env.POSI_GLOBAL_CORPUS, 'utf-8'))
     } else {
-      const releases = await get(RELEASES)
-      const rel = releases.find(r => r.tag_name?.startsWith('global-index-') && !r.draft)
-      release = rel ?? null
-      const asset = rel?.assets?.find(a => a.name === 'global-corpus.json.gz')
-      if (!asset) throw new Error('no global-index release yet')
-      corpus = JSON.parse(gunzipSync(await get(asset.browser_download_url, 'buffer')).toString('utf-8'))
+      try {
+        const releases = await get(RELEASES)
+        // Newest first: the monthly journals-<YYYY-MM> directory refresh or
+        // the yearly global-index-<cycle> ranking release, whichever is newer.
+        const rel = releases.find(r => /^(journals|global-index)-/.test(r.tag_name ?? '') && !r.draft)
+        if (!rel) throw new Error('no journals-* or global-index-* release yet')
+        assetBase = `${RELEASE_DOWNLOADS}/download/${rel.tag_name}`
+      } catch (e) {
+        assetBase = `${RELEASE_DOWNLOADS}/latest/download`
+        console.warn(`sync-live-data: release lookup failed (${e.message}); using the latest release`)
+      }
+      corpus = JSON.parse(gunzipSync(await get(`${assetBase}/global-corpus.json.gz`, 'buffer')).toString('utf-8'))
     }
     writeFileSync(out, JSON.stringify(slim(corpus)))
     console.log(`sync-live-data: journal directory, ${corpus.length} journals`)
   } catch (e) {
     console.warn(`sync-live-data: journal directory uses curated records only (${e.message})`)
+    missing.push('journal directory')
   }
 }
 
@@ -199,9 +231,8 @@ if (!RANKINGS_ONLY) {
     if (process.env.POSI_OPENALEX_PROFILES) {
       lines = readFileSync(process.env.POSI_OPENALEX_PROFILES, 'utf-8')
     } else {
-      const asset = release?.assets?.find(a => a.name === 'openalex-profiles.jsonl.gz')
-      if (!asset) throw new Error('no profiles asset in the release')
-      lines = gunzipSync(await get(asset.browser_download_url, 'buffer')).toString('utf-8')
+      if (!assetBase) throw new Error('no release to download profiles from')
+      lines = gunzipSync(await get(`${assetBase}/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
     }
     const oa = new Map()
     for (const l of lines.split('\n')) { if (l) { const p = JSON.parse(l); oa.set(p.id, p) } }
@@ -263,6 +294,7 @@ if (!RANKINGS_ONLY) {
     console.log(`sync-live-data: journal profiles, ${n} journals in ${shards.size} shards (${(bytes / 1e6).toFixed(0)} MB)`)
   } catch (e) {
     console.warn(`sync-live-data: journal profiles not built (${e.message})`)
+    missing.push('journal profiles')
   }
 }
 
@@ -301,5 +333,18 @@ if (!RANKINGS_ONLY) {
     console.log(`sync-live-data: journal title index, ${byPrefix.size} files`)
   } catch (e) {
     console.warn(`sync-live-data: journal title index not built (${e.message})`)
+    missing.push('journal title index')
+  }
+}
+
+// A production build without the global corpus would publish a site with a
+// fraction of the journals and no search. Fail it so the last good
+// deployment stays live.
+if (missing.length) {
+  const production = process.env.CF_PAGES === '1' && process.env.POSI_ALLOW_PARTIAL_DATA !== '1'
+  console.warn(`sync-live-data: missing ${missing.join(', ')}`)
+  if (production) {
+    console.error('sync-live-data: failing the Cloudflare Pages build so the last good deployment stays live (set POSI_ALLOW_PARTIAL_DATA=1 to deploy anyway)')
+    process.exit(1)
   }
 }
