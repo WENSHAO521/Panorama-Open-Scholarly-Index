@@ -252,7 +252,10 @@
     "title": "Health Nexus",
     "short_title": "Health Nexus",
     "alternate_titles": [
-      "Health Nexus: Interdisciplinary Medical Research Journal"
+      {
+        "title": "Health Nexus: Interdisciplinary Medical Research Journal",
+        "type": "variant"
+      }
     ],
     "issn_print": null,
     "issn_online": "3053-7037",
@@ -2017,7 +2020,11 @@
     "title": "Research on Architecture and Environment",
     "short_title": "RAE",
     "alternate_titles": [
-      "建筑与环境研究"
+      {
+        "title": "建筑与环境研究",
+        "type": "translation",
+        "lang": "zh"
+      }
     ],
     "issn_print": "3105-319X",
     "issn_online": "3105-5842",

@@ -8,14 +8,19 @@ export interface JournalApc {
   checked_at: string
 }
 
+/** A plain title, or one saying what kind of title it is. */
+export type AlternateTitle =
+  | string
+  | { title: string; type: 'former' | 'translation' | 'abbreviation' | 'variant'; lang?: string; until?: number }
+
 export interface Journal {
   id: string
   journal_code: string
   /** Title as registered with the ISSN Portal. */
   title: string
   short_title: string
-  /** Other titles the journal is registered under elsewhere (Crossref, OpenAlex), kept searchable. */
-  alternate_titles?: string[] | null
+  /** Other titles the journal is known by, kept searchable. See posi-data schema/journal.schema.json. */
+  alternate_titles?: AlternateTitle[] | null
   issn_print: string | null
   issn_online: string | null
   publisher: string

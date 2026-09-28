@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 
 import { getCoreCollection, getCandidateJournals } from './data'
+import { alternateTitleText } from './titles'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 import { getAllPciEntries } from './pci'
 import { zoneOf, type Zone } from './zones'
@@ -76,6 +77,8 @@ export interface RankedJournal {
   /** journal_code when POSI publishes a record page for it */
   code: string | null
   title: string
+  /** alternate titles, matched by the table's search */
+  alt?: string[]
   publisher: string | null
   issn: string[]
   cat: string | null
@@ -120,7 +123,7 @@ export interface Category {
   core: number
 }
 
-interface Meta { code: string | null; title: string; publisher: string | null; issn: string[] }
+interface Meta { code: string | null; title: string; publisher: string | null; issn: string[]; alt?: string[] }
 
 const PSC = psc.categories as { code: string; name: string; level: number; parent: string | null }[]
 const PSC_NAME = Object.fromEntries(PSC.map(c => [c.code, c.name]))
@@ -133,6 +136,7 @@ function metaIndex(): { meta: Map<string, Meta>; coreIds: Set<string> } {
     meta.set(j.posi_id, {
       code: j.journal_code, title: j.title, publisher: j.publisher || null,
       issn: [j.issn_online, j.issn_print].filter((x, n, a): x is string => !!x && a.indexOf(x) === n),
+      ...(j.alternate_titles?.length ? { alt: j.alternate_titles.map(alternateTitleText) } : {}),
     })
   }
   for (const t of (titles as { journals: { id: string; t: string; p: string | null; i: string[] }[] }).journals) {
@@ -157,7 +161,7 @@ export function getRankings() {
       continue
     }
     ranked.push({
-      id: r.journal_id, code: m.code, title: m.title, publisher: m.publisher, issn: m.issn,
+      id: r.journal_id, code: m.code, title: m.title, ...(m.alt ? { alt: m.alt } : {}), publisher: m.publisher, issn: m.issn,
       cat: r.category_code, lowConfidence: r.rank == null, exclusion: r.exclusion_reason ? EXCLUSION_TEXT[r.exclusion_reason] ?? r.exclusion_reason : null,
       core, pcs: r.pcs!, items: r.pcs_eligible_items ?? 0, pci: pci.get(r.journal_id) ?? null,
       rank: r.rank, n: r.category_size != null && r.rank != null ? r.category_size : null, pct: r.percentile, q: r.quartile,

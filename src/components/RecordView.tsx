@@ -15,6 +15,7 @@ import type { CitationStatsEntry } from '@/lib/citation-stats'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, collectionOf, verificationOf, freshnessOf, countryName } from '@/lib/records'
 import { BASIS, FIELD_BY_KEY, type Basis } from '@/lib/schema'
 import { earlyStageStatus, earlyStageDisplayTotal, earlyStageQuartile, earlyStageLifecycleLabel } from '@/lib/early-stage'
+import { alternateTitleLabel } from '@/lib/titles'
 import { CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
@@ -243,7 +244,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
               <FieldRow k="issn_print" value={j.issn_print} mono />
               <FieldRow k="openalex_source_id" value={j.openalex_source_id} mono />
               <FieldRow k="title" value={j.title} />
-              {j.alternate_titles?.length ? <FieldRow k="alternate_titles" value={j.alternate_titles.join('; ')} /> : null}
+              {j.alternate_titles?.length ? <FieldRow k="alternate_titles" value={j.alternate_titles.map(alternateTitleLabel).join('; ')} /> : null}
               <FieldRow k="publisher" value={j.publisher} />
               <FieldRow k="registration_country" value={countryName(j.registration_country)} />
             </dl>
