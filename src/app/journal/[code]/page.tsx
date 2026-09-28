@@ -48,8 +48,10 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
     categoryName: categoryName(record?.ranking_category_id ?? null),
   })
 
+  const issn = j.issn_online ?? j.issn_print
+
   return (
-    <div className="wrap">
+    <div className="wrap pb-12">
       <RecordView
         journal={j}
         jsonHref={`/data/journal/${j.journal_code}.json`}
@@ -60,19 +62,18 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
           pscName: j.psc_category ? PSC_NAME[j.psc_category] ?? null : null,
           evaluation,
         }}
+        links={issn && (
+          <>
+            <Link href={`/journal/?issn=${issn}`} className="link block">Publications and citations by year</Link>
+            {evaluation.ranking.zone != null && (
+              <Link href={`/certificate/zone/?issn=${issn}`} className="link block" prefetch={false}>Zone certificate</Link>
+            )}
+            {collectionOf(j) === 'core' && (
+              <a href={`/api/certificate/${j.journal_code}/pdf`} className="link block" target="_blank" rel="noopener">Certification certificate (PDF)</a>
+            )}
+          </>
+        )}
       />
-      {(j.issn_online || j.issn_print) && (
-        <div className="mt-8 flex flex-wrap gap-2 pb-10">
-          <Link href={`/publications/?issn=${j.issn_online ?? j.issn_print}&sort=newest`} className="btn btn-primary">Browse publications</Link>
-          <Link href={`/journal/?issn=${j.issn_online ?? j.issn_print}`} className="btn">Journal profile</Link>
-          {evaluation.ranking.zone != null && (
-            <Link href={`/certificate/zone/?issn=${j.issn_online ?? j.issn_print}`} className="btn" prefetch={false}>Zone certificate</Link>
-          )}
-          {collectionOf(j) === 'core' && (
-            <a href={`/api/certificate/${j.journal_code}/pdf`} className="btn" target="_blank" rel="noopener">Certification certificate (PDF)</a>
-          )}
-        </div>
-      )}
     </div>
   )
 }
