@@ -53,7 +53,7 @@ export function ZoneCertificateVerifier() {
   const m = valid
     ? { Icon: CheckCircle, color: 'var(--verified)', bg: 'var(--verified-soft)', title: 'Valid certificate', body: 'The certificate number matches its date of issue and the journal’s zones in the current ranking edition.' }
     : { Icon: WarningCircle, color: 'var(--check)', bg: 'var(--check-soft)', title: 'Does not match the current ranking', body: j
-        ? 'The certificate number does not match the journal’s current zones. Either the zones have changed since the date of issue (rankings are refreshed monthly), or the certificate has been altered. The current zones are shown below; a new certificate can be issued from the journal’s profile.'
+        ? 'The certificate number does not match the journal’s current zone. Either the zone has changed since the date of issue (rankings are refreshed monthly), the certificate was issued under the retired PCS-based zone trial (before 28 September 2026), or the certificate has been altered. The current zone is shown below; a new certificate can be issued from the journal’s profile.'
         : 'No indexed journal matches the ISSN in this address.' }
 
   return (
@@ -76,18 +76,18 @@ export function ZoneCertificateVerifier() {
           <dd><Link href={journalHref(j.k)} className="link">{j.t}</Link> <span className="font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>{j.pid}</span></dd>
           <dt style={{ color: 'var(--muted)' }}>ISSN</dt>
           <dd className="font-mono">{j.is.join(', ')}</dd>
-          <dt style={{ color: 'var(--muted)' }}>Zones today</dt>
+          <dt style={{ color: 'var(--muted)' }}>Zone today</dt>
           <dd>
             {zones.length ? (
               <ul className="space-y-0.5">
                 {zones.map(p => (
                   <li key={p.scope}>
-                    <strong>Zone {p.zone}</strong> ({ZONE_SHARE[p.zone]}) {p.scope === 'category' ? `in ${p.label}` : 'across all ranked journals'}
-                    <span className="font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}> · rank {fmt(p.rank)} / {fmt(p.size)}{j.rk ? ` · ${j.rk.y}` : ''}</span>
+                    <strong>Zone {p.zone}</strong> ({ZONE_SHARE[p.zone]}) in {p.label}
+                    <span className="font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}> · rank {fmt(p.rank)} / {fmt(p.size)}{j.ev?.y ? ` · ${j.ev.y}` : ''}</span>
                   </li>
                 ))}
               </ul>
-            ) : <span style={{ color: 'var(--muted)' }}>No zone in the current ranking edition</span>}
+            ) : <span style={{ color: 'var(--muted)' }}>No official zone in the current Citation Ranking edition</span>}
           </dd>
         </>}
       </dl>

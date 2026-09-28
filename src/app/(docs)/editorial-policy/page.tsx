@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PQF_STATUS_BANDS, PQF_STATUS_LABEL, PQF_DISCLAIMER, type PqfStatus } from '@/lib/evaluation/rules'
 import { PageHeader } from '@/components/db'
 
 export const metadata = {
@@ -15,12 +16,18 @@ const PQF = [
   { code: 'RIF', name: 'Research integrity', pts: 5, body: 'Policies on retractions, similarity checking, data availability, ethics and authorship.' },
 ]
 
-const OUTCOMES = [
-  ['Eligible', '70 or more', 'Admitted to the Core Collection.'],
-  ['Review required', '50 to 69', 'Reviewed by the editorial team before a decision.'],
-  ['Insufficient evidence', '40 to 49', 'Not admitted. The journal may reapply once the missing evidence is published.'],
-  ['Not eligible', 'Below 40', 'Not admitted.'],
-]
+// Status bands from the central evaluation module (POSI-EVAL-1.0 § 2).
+const OUTCOME_RESULT: Record<PqfStatus, string> = {
+  eligible: 'Admitted to the Core Collection.',
+  review_required: 'Reviewed by the editorial team before a decision.',
+  insufficient_evidence: 'Not admitted. The journal may reapply once the missing evidence is published.',
+  not_eligible: 'Not admitted.',
+}
+const OUTCOMES = PQF_STATUS_BANDS.map(([status, min], i) => [
+  PQF_STATUS_LABEL[status],
+  i === 0 ? `${min.toFixed(2)} or more` : min === 0 ? `Below ${PQF_STATUS_BANDS[i - 1][1]}` : `${min.toFixed(2)}–${(PQF_STATUS_BANDS[i - 1][1] - 0.01).toFixed(2)}`,
+  OUTCOME_RESULT[status],
+])
 
 const STATES = [
   ['Continuing review', 'Every Core Collection journal is re-checked against the same criteria at least once a year, or sooner if a concern is raised.'],
@@ -99,8 +106,9 @@ export default function EditorialPolicyPage() {
             </table>
           </div>
           <p>
-            PQF decides admission only. It is not a quality ranking and does not feed the rankings, which are
-            computed from citations as described in <Link href="/methodology/">methodology</Link>.
+            {PQF_DISCLAIMER} PQF decides admission only: it never ranks journals, and the letter grade kept in older PQF
+            records is not published. The Citation Rankings are computed from PNCI as described in{' '}
+            <Link href="/methodology/#ranking">methodology</Link>.
           </p>
         </section>
 

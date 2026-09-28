@@ -3,8 +3,8 @@
 # Evidence/Not Eligible status (see /pqf) — a ranked leaderboard conflicts
 # with AJR (Ratings & Rankings), which is now the comparative-evaluation
 # track. See posi-data/AJR-SPEC.md.
-/pqf-scores /editorial-policy/ 301
-/pqf-scores/ /editorial-policy/ 301
+/pqf-scores /pqf/ 301
+/pqf-scores/ /pqf/ 301
 
 # 2026-09 open-database redesign: retired routes and their replacements.
 # Publication search, DOI lookup and article pages now run client-side
@@ -34,6 +34,10 @@
 /source /journal/ 301
 /source/ /journal/ 301
 
+# 2026-09-28 POSI-EVAL-1.0: /pqf/, /pci/, /ratings/, /ratings/early-stage/ and
+# /ratings/mature/ are pages again (PQF, citation indicators, AJR), so their
+# consolidation redirects are removed; /pcs now leads to /pci/.
+
 # 2026-09 documentation consolidation: legacy pages and their replacements.
 /what-posi-is /about/ 301
 /what-posi-is/ /about/ 301
@@ -41,8 +45,6 @@
 /what-posi-is-not/ /about/ 301
 /operator /about/ 301
 /operator/ /about/ 301
-/pqf /editorial-policy/ 301
-/pqf/ /editorial-policy/ 301
 /policy /editorial-policy/ 301
 /policy/ /editorial-policy/ 301
 /policies /editorial-policy/ 301
@@ -59,18 +61,10 @@
 /coverage/global-benchmark/ /journals/ 301
 /coverage /editorial-policy/ 301
 /coverage/ /editorial-policy/ 301
-/ratings /rankings/ 301
-/ratings/ /rankings/ 301
-/ratings/early-stage /rankings/ 301
-/ratings/early-stage/ /rankings/ 301
-/ratings/mature /rankings/ 301
-/ratings/mature/ /rankings/ 301
 /citation-reports /rankings/ 301
 /citation-reports/ /rankings/ 301
-/pcs /methodology/ 301
-/pcs/ /methodology/ 301
-/pci /methodology/ 301
-/pci/ /methodology/ 301
+/pcs /pci/ 301
+/pcs/ /pci/ 301
 /mqs /editorial-policy/ 301
 /mqs/ /editorial-policy/ 301
 /irs /editorial-policy/ 301

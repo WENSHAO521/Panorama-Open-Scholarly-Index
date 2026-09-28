@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test 'src/**/*.test.ts'",
     "sync": "node scripts/discover-journals.mjs --openalex-doaj --write --limit 100 && node scripts/calc-discovered-mqs.mjs && node scripts/auto-pqf.mjs --write",
     "citation-stats": "node scripts/fetch-citation-stats.mjs",
     "prebuild": "node --max-old-space-size=6144 scripts/sync-live-data.mjs",

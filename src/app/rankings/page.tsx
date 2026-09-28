@@ -1,42 +1,49 @@
 import Link from 'next/link'
-import { getCategories, getRankings, MIN_ITEMS, RANKING_VERSION } from '@/lib/rankings'
+import { getCategories, getRankings, RANKING_AVAILABLE, RANKING_SNAPSHOT, RANKING_VERSION, PNCI_VERSION, RANKING_THRESHOLDS } from '@/lib/rankings'
+import { RANKING_BASIS } from '@/lib/evaluation/rules'
+import { fmtSnapshot } from '@/lib/evaluation/display'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
+import { RankingsPending } from '@/components/Evaluation'
 import { RankingTable } from '@/components/RankingTable'
 
 export const metadata = {
-  title: 'Journal Rankings',
-  description: 'Journal rankings by subject category: POSI Citation Score, category rank, percentile and PCS quartile for every ranked journal.',
+  title: 'Journal Citation Rankings',
+  description: 'POSI Citation Rankings: journals ranked by PNCI within their PSC subject category, with citation percentile, Citation Quartile (C-Q1 to C-Q4) and POSI Zone.',
 }
 
 export default function RankingsPage() {
-  const { ranked, notRanked, year } = getRankings()
-  const cats = getCategories().filter(c => c.ranked > 0)
+  const { ranked, year } = getRankings()
+  const cats = getCategories()
+  const rankedCats = cats.filter(c => c.ranked > 0)
   const domains = [...new Map(cats.map(c => [c.domain, c.domainName])).entries()]
   const top = ranked.slice(0, 300)
+  const t = RANKING_THRESHOLDS
 
   return (
     <div className="wrap pb-10">
       <PageHeader
-        title="Journal Rankings"
+        title="Journal Citation Rankings"
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Rankings' }]}
-        actions={<>
-          <a href={`/data/rankings/pcs-${year}.csv`} className="btn btn-primary">Download {year}</a>
-        </>}
+        actions={RANKING_AVAILABLE ? <a href={`/data/rankings/citation-${year}.csv`} className="btn btn-primary">Download {year}</a> : undefined}
       >
-        <p className="max-w-[68ch]">
-          {fmt(ranked.length)} journals ranked within {cats.length} subject categories by POSI Citation Score, {year} edition.
-          Core and indexed journals are ranked together; the Core filter shows certified journals within the same ranking.
-          Each ranking is shown in PCS quartiles and in <Link href="/methodology/#zones" className="link">POSI Zones</Link> (trial):
-          Zone 1 is the top 5%, Zone 2 the next 15%, Zone 3 the next 30%, Zone 4 the rest.
+        <p className="max-w-[70ch]">
+          Journals are ranked by <strong>PNCI</strong>, the POSI Normalized Citation Indicator, within their PSC subject
+          category. {RANKING_BASIS} Categories are never pooled.{' '}
+          {RANKING_AVAILABLE
+            ? <>{fmt(ranked.length)} journals ranked in {rankedCats.length} categories; snapshot {fmtSnapshot(RANKING_SNAPSHOT)}.</>
+            : null}{' '}
+          <Link href="/methodology/#ranking" className="link">Methodology</Link>.
         </p>
       </PageHeader>
 
+      {!RANKING_AVAILABLE && <div className="mb-8"><RankingsPending /></div>}
+
       <dl className="stat-strip grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-12">
         {[
-          ['Metric', 'PCS', 'Citations in the year to items from the previous 4 years, per item. Source: Crossref.'],
-          ['Quartile', 'PCS-Q1 to Q4', 'From the percentile: Q1 at 75 and above. Categories under 20 journals get none.'],
-          ['Percentile', '100 (N − mid + ½) / N', 'Tied journals share the mid-rank of their positions (RANK-1.0).'],
-          ['Eligibility', `${MIN_ITEMS}+ items`, `Journals with fewer eligible items are listed but not ranked (${fmt(notRanked.length)} this edition).`],
+          ['Ranking metric', 'PNCI', `Citations per item relative to items of the same PSC field, publication year and document type (${PNCI_VERSION}). 1.00 is the field average.`],
+          ['Citation Quartile', 'C-Q1 to C-Q4', 'From the mid-rank percentile: C-Q1 at 75 and above. Ties share rank and percentile.'],
+          ['POSI Zone', 'Zone 1 to 4', 'Top 5%, top 5–20%, top 20–50%, lower 50%, from the same percentile. Official zones need 50+ journals in the category.'],
+          ['Minimum data', `${t.officialItems}+ items`, `Official: ${t.officialItems}+ eligible items over ${t.officialPublicationYears}+ publication years and ${t.minCoverage * 100}% citation coverage; ${t.provisionalItems}–${t.officialItems - 1} items are provisional. Categories under ${t.categoryQuartile} journals are not ranked.`],
         ].map(([k, v, note]) => (
           <div key={k}>
             <dt>{k}</dt>
@@ -59,7 +66,7 @@ export default function RankingsPage() {
                       <span className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{c.code}</span>
                       <span className="text-[14px] truncate" style={{ color: 'var(--ink)' }}>{c.name}</span>
                       <span className="font-mono text-[12px] tnum" style={{ color: 'var(--muted)' }}>
-                        {fmt(c.ranked)}{c.core > 0 && <span style={{ color: 'var(--teal)' }}>, {c.core} Core</span>}
+                        {c.ranked ? fmt(c.ranked) : 'Not yet ranked'}{c.core > 0 && <span style={{ color: 'var(--teal)' }}>, {c.core} Core</span>}
                       </span>
                     </Link>
                   </li>
@@ -70,10 +77,16 @@ export default function RankingsPage() {
         </div>
       </section>
 
-      <section aria-labelledby="overall">
-        <SectionTitle id="overall" aside={<Link href="/rankings/all/" className="link">Full overall ranking</Link>}>Overall ranking, top {top.length}</SectionTitle>
-        <RankingTable rows={top} overall fileName={`posi-ranking-overall-top${top.length}-${year}.csv`} />
-      </section>
+      {RANKING_AVAILABLE && (
+        <section aria-labelledby="highest">
+          <SectionTitle id="highest" aside={<Link href="/rankings/all/" className="link">All categories</Link>}>Highest PNCI journals, top {top.length}</SectionTitle>
+          <p className="mb-4 text-[13.5px] max-w-[70ch]" style={{ color: 'var(--muted)' }}>
+            Listed by PNCI across categories for browsing. Every rank, percentile, quartile and zone shown is the
+            journal&rsquo;s place within its own PSC category.
+          </p>
+          <RankingTable rows={top} categories={rankedCats.map(c => ({ code: c.code, name: c.name }))} fileName={`posi-citation-ranking-highest-pnci-top${top.length}-${year}.csv`} />
+        </section>
+      )}
     </div>
   )
 }

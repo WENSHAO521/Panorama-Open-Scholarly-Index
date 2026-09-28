@@ -3,169 +3,189 @@
 import Link from 'next/link'
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
-import type { RankedJournal, Quartile } from '@/lib/rankings'
-import { ZONE_BOUNDS, type Zone } from '@/lib/zones'
+import type { RankedJournal } from '@/lib/rankings'
+import { AJR_RATING_SCALE, type CitationQuartile, type CitationRankingStatus, type LifecycleStage, type PosiZone } from '@/lib/evaluation/rules'
+import { fmtPercentile, fmtScore, quartileLabel, RANKING_STATUS_LABEL } from '@/lib/evaluation/display'
+import { QuartileBadge, ZoneBadge, RankingStatusBadge } from './Evaluation'
 import { fmt } from './db'
 
+export { QuartileBadge, ZoneBadge }
+
 const PAGE = 100
-
-export function QuartileBadge({ q }: { q: Quartile | null }) {
-  if (!q) return <span style={{ color: 'var(--soft)' }}>n/a</span>
-  // One accent, stepped in strength: Q1 is the solid teal chip.
-  const tone = {
-    Q1: { background: 'var(--teal)', color: 'var(--on-teal)', borderColor: 'var(--teal)' },
-    Q2: { background: 'var(--teal-soft)', color: 'var(--teal)', borderColor: 'var(--teal-line)' },
-    Q3: { background: 'var(--surface-2)', color: 'var(--ink-2)', borderColor: 'var(--line)' },
-    Q4: { background: 'transparent', color: 'var(--muted)', borderColor: 'var(--line)' },
-  }[q]
-  return <span className="chip font-semibold" style={tone} title="PCS quartile: RANK-1.0 applied to PCS">PCS-{q}</span>
-}
-
-const ZONE_TITLE: Record<Zone, string> = {
-  1: 'POSI Zone 1: top 5% of the ranking',
-  2: 'POSI Zone 2: next 15% (top 6–20%)',
-  3: 'POSI Zone 3: next 30% (top 21–50%)',
-  4: 'POSI Zone 4: remaining 50%',
-}
-
-/** POSI Zone chip: numbered and outlined, distinct from the filled quartile chips. */
-export function ZoneBadge({ z }: { z: Zone | null }) {
-  if (!z) return <span style={{ color: 'var(--soft)' }}>n/a</span>
-  const strong = z === 1
-  return (
-    <span className="chip font-semibold whitespace-nowrap" title={ZONE_TITLE[z]}
-      style={{ color: z <= 2 ? 'var(--teal)' : z === 3 ? 'var(--ink-2)' : 'var(--muted)', borderColor: z <= 2 ? 'var(--teal)' : 'var(--line)', borderWidth: strong ? 2 : 1, background: 'transparent' }}>
-      Zone {z}
-    </span>
-  )
-}
 
 function journalHref(r: RankedJournal) {
   if (r.code) return `/journal/${r.code}/`
   return r.issn[0] ? `/journal/?issn=${r.issn[0]}` : null
 }
 
-function csv(rows: RankedJournal[], overall: boolean) {
+function csv(rows: RankedJournal[]) {
   const cell = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
-  const head = 'rank,n,percentile,quartile,zone,posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci'
+  const head = 'citation_rank,citation_rank_total,psc_category,pnci,citation_percentile,citation_quartile,posi_zone,zone_status,ajr_rating,citation_ranking_status,posi_id,title,publisher,issn,collection,eligible_items,citation_coverage,pci,pcs'
   return [head, ...rows.map(r => [
-    overall ? r.oRank : r.rank, overall ? r.oN : r.n, overall ? r.oPct : r.pct, overall ? r.oQ : r.q, overall ? r.oZone : r.zone,
-    r.id, r.title, r.publisher, r.issn.join(' '), r.cat, r.core ? 'core' : 'indexed', r.pcs, r.items, r.pci,
+    r.rank, r.n, r.cat, r.pnci, r.pct, r.q, r.zone, r.zoneStatus, r.ajr, r.status,
+    r.id, r.title, r.publisher, r.issn.join(' '), r.core ? 'core' : 'indexed', r.items, r.coverage, r.pci, r.pcs,
   ].map(cell).join(','))].join('\n')
 }
 
-export function RankingTable({ rows, overall = false, fileName }: { rows: RankedJournal[]; overall?: boolean; fileName: string }) {
-  const [status, setStatus] = useState<'all' | 'core' | 'indexed'>('all')
-  const [quart, setQuart] = useState<Quartile | 'all'>('all')
-  const [zone, setZone] = useState<Zone | 0>(0)
+const LIFECYCLE_LABEL: Record<Exclude<LifecycleStage, 'unknown'>, string> = { observation: 'Observation', early_stage: 'AJR-E (12–59 months)', mature: 'AJR-M (60+ months)' }
+
+/**
+ * Citation Ranking table. Rows are ordered by PNCI, highest first; ranks are
+ * always category ranks. `categories` (for the all-categories list) adds a
+ * PSC category filter and column.
+ */
+export function RankingTable({ rows, fileName, categories }: { rows: RankedJournal[]; fileName: string; categories?: { code: string; name: string }[] }) {
+  const [collection, setCollection] = useState<'all' | 'core' | 'indexed'>('all')
+  const [cat, setCat] = useState('all')
+  const [quart, setQuart] = useState<CitationQuartile | 'all'>('all')
+  const [zone, setZone] = useState<PosiZone | 0>(0)
+  const [ajr, setAjr] = useState('all')
+  const [life, setLife] = useState<LifecycleStage | 'all'>('all')
+  const [status, setStatus] = useState<CitationRankingStatus | 'all'>('all')
   const [q, setQ] = useState('')
   const dq = useDeferredValue(q)
-  const filterKey = `${status}|${quart}|${zone}|${q}`
+  const filterKey = [collection, cat, quart, zone, ajr, life, status, q].join('|')
   const [pageState, setPageState] = useState({ key: filterKey, n: 1 })
   const page = pageState.key === filterKey ? pageState.n : 1
   const tableTop = useRef<HTMLDivElement>(null)
-  // Page changes return to the top of the table so the new rows are in view.
   const goTo = (n: number) => { setPageState({ key: filterKey, n }); tableTop.current?.scrollIntoView({ block: 'start' }) }
 
   const filtered = useMemo(() => {
     const needle = dq.trim().toLowerCase()
     return rows.filter(r =>
-      (status === 'all' || (status === 'core') === r.core) &&
-      (quart === 'all' || (overall ? r.oQ : r.q) === quart) &&
-      (!zone || (overall ? r.oZone : r.zone) === zone) &&
+      (collection === 'all' || (collection === 'core') === r.core) &&
+      (cat === 'all' || r.cat === cat) &&
+      (quart === 'all' || r.q === quart) &&
+      (!zone || r.zone === zone) &&
+      (ajr === 'all' || r.ajr === ajr) &&
+      (life === 'all' || r.lifecycle === life) &&
+      (status === 'all' || r.status === status) &&
       (!needle || r.title.toLowerCase().includes(needle) || !!r.alt?.some(t => t.toLowerCase().includes(needle)) || (r.publisher ?? '').toLowerCase().includes(needle) || r.issn.some(i => i.includes(needle.toUpperCase()))),
     )
-  }, [rows, status, quart, zone, dq, overall])
+  }, [rows, collection, cat, quart, zone, ajr, life, status, dq])
 
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE))
   const shown = filtered.slice((page - 1) * PAGE, page * PAGE)
   const coreCount = rows.filter(r => r.core).length
+  const hasAjr = rows.some(r => r.ajr)
+  const hasLife = rows.some(r => r.lifecycle)
 
   function download() {
-    const u = URL.createObjectURL(new Blob([csv(filtered, overall)], { type: 'text/csv' }))
+    const u = URL.createObjectURL(new Blob([csv(filtered)], { type: 'text/csv' }))
     const a = document.createElement('a'); a.href = u; a.download = fileName; a.click()
     setTimeout(() => URL.revokeObjectURL(u), 1000)
   }
 
+  const select = 'input h-9 w-auto pr-8 text-[13px]'
   return (
     <div>
-      <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-        <div role="tablist" aria-label="Journal status" className="inline-flex rounded-[2px] p-0.5" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
-          {([['all', `All (${fmt(rows.length)})`], ['core', `Core (${fmt(coreCount)})`], ['indexed', `Indexed (${fmt(rows.length - coreCount)})`]] as const).map(([k, label]) => (
-            <button key={k} type="button" role="tab" aria-selected={status === k} onClick={() => setStatus(k)}
-              className="px-3 h-8 text-[13px] rounded-[2px]"
-              style={status === k ? { background: 'var(--surface)', color: 'var(--ink)', fontWeight: 500, boxShadow: 'var(--shadow-1)' } : { color: 'var(--muted)' }}>
-              {label}
-            </button>
-          ))}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+          <div role="tablist" aria-label="Collection" className="inline-flex rounded-[2px] p-0.5 self-start" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
+            {([['all', `All (${fmt(rows.length)})`], ['core', `Core (${fmt(coreCount)})`], ['indexed', `Indexed (${fmt(rows.length - coreCount)})`]] as const).map(([k, label]) => (
+              <button key={k} type="button" role="tab" aria-selected={collection === k} onClick={() => setCollection(k)}
+                className="px-3 h-8 text-[13px] rounded-[2px]"
+                style={collection === k ? { background: 'var(--surface)', color: 'var(--ink)', fontWeight: 500, boxShadow: 'var(--shadow-1)' } : { color: 'var(--muted)' }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="relative flex-1 min-w-[200px]">
+            <label htmlFor="rsearch" className="sr-only">Find a journal</label>
+            <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
+            <input id="rsearch" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Find a journal, publisher or ISSN" className="input h-9 pl-9 text-[13.5px]" />
+          </div>
+          <button type="button" className="btn h-9 self-start" onClick={download} disabled={!filtered.length}><DownloadSimple className="h-4 w-4" /> CSV</button>
         </div>
-        <label htmlFor="rq" className="sr-only">Quartile</label>
-        <select id="rq" value={quart} onChange={e => setQuart(e.target.value as Quartile | 'all')} className="input h-9 w-auto pr-8 text-[13px]">
-          <option value="all">All quartiles</option>
-          {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(x => <option key={x} value={x}>PCS-{x}</option>)}
-        </select>
-        <label htmlFor="rz" className="sr-only">POSI Zone</label>
-        <select id="rz" value={zone} onChange={e => setZone(Number(e.target.value) as Zone | 0)} className="input h-9 w-auto pr-8 text-[13px]">
-          <option value={0}>All zones</option>
-          {ZONE_BOUNDS.map(([z]) => <option key={z} value={z}>Zone {z}</option>)}
-        </select>
-        <div className="relative flex-1 min-w-[200px]">
-          <label htmlFor="rsearch" className="sr-only">Find a journal</label>
-          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
-          <input id="rsearch" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Find a journal, publisher or ISSN" className="input h-9 pl-9 text-[13.5px]" />
+        <div className="flex flex-wrap gap-2">
+          {categories && (
+            <>
+              <label htmlFor="rcat" className="sr-only">PSC category</label>
+              <select id="rcat" value={cat} onChange={e => setCat(e.target.value)} className={select}>
+                <option value="all">All PSC categories</option>
+                {categories.map(c => <option key={c.code} value={c.code}>{c.code} {c.name}</option>)}
+              </select>
+            </>
+          )}
+          <label htmlFor="rq" className="sr-only">Citation Quartile</label>
+          <select id="rq" value={quart} onChange={e => setQuart(e.target.value as CitationQuartile | 'all')} className={select}>
+            <option value="all">All Citation Quartiles</option>
+            {(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(x => <option key={x} value={x}>{quartileLabel(x)}</option>)}
+          </select>
+          <label htmlFor="rz" className="sr-only">POSI Zone</label>
+          <select id="rz" value={zone} onChange={e => setZone(Number(e.target.value) as PosiZone | 0)} className={select}>
+            <option value={0}>All POSI Zones</option>
+            {([1, 2, 3, 4] as const).map(z => <option key={z} value={z}>Zone {z}</option>)}
+          </select>
+          {hasAjr && (
+            <>
+              <label htmlFor="rajr" className="sr-only">AJR Rating</label>
+              <select id="rajr" value={ajr} onChange={e => setAjr(e.target.value)} className={select}>
+                <option value="all">All AJR Ratings</option>
+                {AJR_RATING_SCALE.map(([r]) => <option key={r} value={r}>Rating {r}</option>)}
+              </select>
+            </>
+          )}
+          {hasLife && (
+            <>
+              <label htmlFor="rlife" className="sr-only">Lifecycle</label>
+              <select id="rlife" value={life} onChange={e => setLife(e.target.value as LifecycleStage | 'all')} className={select}>
+                <option value="all">All lifecycle stages</option>
+                {(Object.keys(LIFECYCLE_LABEL) as (keyof typeof LIFECYCLE_LABEL)[]).map(k => <option key={k} value={k}>{LIFECYCLE_LABEL[k]}</option>)}
+              </select>
+            </>
+          )}
+          <label htmlFor="rst" className="sr-only">Ranking status</label>
+          <select id="rst" value={status} onChange={e => setStatus(e.target.value as CitationRankingStatus | 'all')} className={select}>
+            <option value="all">Official and provisional</option>
+            <option value="official">{RANKING_STATUS_LABEL.official}</option>
+            <option value="provisional">{RANKING_STATUS_LABEL.provisional}</option>
+          </select>
         </div>
-        <button type="button" className="btn h-9" onClick={download} disabled={!filtered.length}><DownloadSimple className="h-4 w-4" /> CSV</button>
       </div>
 
       <div ref={tableTop} className="panel overflow-x-auto mt-4" style={{ scrollMarginTop: 72 }}>
-        <table className="dtable min-w-[940px]">
+        <table className="dtable min-w-[1000px]">
           <thead>
             <tr>
-              <th className="text-right w-[70px]">Rank</th>
+              <th className="text-right w-[80px]" title="Rank within the PSC category">Rank</th>
               <th>Journal</th>
-              <th className="text-right">PCS</th>
-              <th className="text-right">Items</th>
+              {categories && <th>PSC</th>}
+              <th className="text-right" title="POSI Normalized Citation Indicator (PNCI-1.0), the ranking metric">PNCI</th>
               <th className="text-right">Percentile</th>
-              <th>Quartile</th>
-              <th>Zone</th>
+              <th>Citation Quartile</th>
+              <th>POSI Zone</th>
+              <th>AJR</th>
               <th>Status</th>
-              <th className="text-right">PCI</th>
             </tr>
           </thead>
           <tbody>
             {shown.map(r => {
               const href = journalHref(r)
-              const rank = overall ? r.oRank : r.rank
-              const n = overall ? r.oN : r.n
               return (
                 <tr key={r.id}>
                   <td className="text-right font-mono tnum">
-                    <span style={{ color: 'var(--ink)' }}>{rank}</span>
-                    <span className="text-[11px]" style={{ color: 'var(--soft)' }}>/{n}</span>
+                    <span style={{ color: 'var(--ink)' }}>{r.rank}</span>
+                    <span className="text-[11px]" style={{ color: 'var(--soft)' }}>/{r.n}</span>
                   </td>
-                  <td className="max-w-[380px]">
+                  <td className="max-w-[360px]">
                     {href ? <Link href={href} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.title}</Link> : <span className="font-medium">{r.title}</span>}
                     <div className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>
-                      {[r.publisher, r.issn[0] && `ISSN ${r.issn[0]}`].filter(Boolean).join(', ')}
-                      {r.lowConfidence && <span title="Subject assignment has low confidence: no single topic dominates this journal"> (low-confidence subject)</span>}
+                      {[r.core ? 'Core Collection' : null, r.publisher, r.issn[0] && `ISSN ${r.issn[0]}`].filter(Boolean).join(', ')}
                     </div>
                   </td>
-                  <td className="text-right font-mono tnum">{r.pcs.toFixed(2)}</td>
-                  <td className="text-right font-mono tnum" style={{ color: r.items < 20 ? 'var(--check)' : 'var(--muted)' }} title={r.items < 20 ? 'Limited sample: fewer than 20 eligible items' : undefined}>{fmt(r.items)}</td>
-                  <td className="text-right font-mono tnum">{(overall ? r.oPct : r.pct)?.toFixed(1) ?? 'n/a'}</td>
-                  <td><QuartileBadge q={overall ? r.oQ : r.q} /></td>
-                  <td><ZoneBadge z={overall ? r.oZone : r.zone} /></td>
-                  <td>
-                    <span className="chip" style={r.core ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : undefined}>
-                      {r.core ? 'Core' : 'Indexed'}
-                    </span>
-                  </td>
-                  <td className="text-right font-mono tnum" style={{ color: r.pci == null ? 'var(--soft)' : undefined }}>{r.pci == null ? 'n/a' : r.pci.toFixed(2)}</td>
+                  {categories && <td className="font-mono text-[12.5px]"><Link href={`/rankings/${r.cat}/`} className="hover:underline">{r.cat}</Link></td>}
+                  <td className="text-right font-mono tnum">{fmtScore(r.pnci, '–')}</td>
+                  <td className="text-right font-mono tnum">{fmtPercentile(r.pct, '–')}</td>
+                  <td><QuartileBadge q={r.q} provisional={r.status === 'provisional'} /></td>
+                  <td><ZoneBadge z={r.zone} status={r.zoneStatus} /></td>
+                  <td className="text-[13px] whitespace-nowrap">{r.ajr ? `Rating ${r.ajr}` : <span style={{ color: 'var(--soft)' }}>–</span>}</td>
+                  <td><RankingStatusBadge status={r.status} /></td>
                 </tr>
               )
             })}
             {!shown.length && (
-              <tr><td colSpan={9} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No ranked journal matches these filters.</td></tr>
+              <tr><td colSpan={categories ? 9 : 8} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No ranked journal matches these filters.</td></tr>
             )}
           </tbody>
         </table>

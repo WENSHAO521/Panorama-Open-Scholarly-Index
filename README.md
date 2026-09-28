@@ -10,7 +10,8 @@ public website, <https://posi.panorama-sg.com>.
 |---|---|
 | Journals | Scholarly journals registered with Crossref or described by OpenAlex, organised by subject category, with a profile page for each journal |
 | Core Collection | Journals certified after editorial evaluation |
-| Rankings | Ranks, percentiles and quartiles by POSI Citation Score, within subject categories and overall |
+| Evaluation | POSI Journal Evaluation Architecture 1.0: PQF (Core Collection eligibility), AJR (lifecycle rating, A+ to D), PCI / PNCI / PCS (citation indicators) |
+| Rankings | Citation Rankings by PNCI within PSC subject categories: rank, percentile, Citation Quartile (C-Q1 to C-Q4) and POSI Zone |
 | Publications | Publication search with citation export |
 | Certificates | Verifiable certificates of indexing and Core Collection certificates |
 
@@ -25,8 +26,16 @@ Requirements: Node.js 22 and npm.
 ```bash
 npm ci
 npm run dev
+npm run lint
+npm run typecheck
+npm test
 npm run build
 ```
+
+Evaluation rules (AJR Rating, PQF status, quartile and zone thresholds, ranking
+status) live in one module, `src/lib/evaluation/`; pages only display its
+results. Rankings are computed by posi-engine and read from the published
+Citation Ranking edition, which is validated when the site builds.
 
 The build produces a static export in `out/`.
 

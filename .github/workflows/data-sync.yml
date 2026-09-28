@@ -2,8 +2,8 @@ name: Data sync
 
 # Keeps the site on the latest published data without manual steps:
 #   1. pulls the small collections (Core Collection, curated Global Benchmark,
-#      PCS, PCI, Citation Q) from data.posi.panorama-sg.com;
-#   2. refreshes the committed ranking fallback (src/lib/pcs-q.json) and the
+#      PCS, PCI, and the retired Citation Q archive) from data.posi.panorama-sg.com;
+#   2. checks the Citation Ranking and PCS editions can be read and refreshes the
 #      journal-name table;
 #   3. records the upstream editions in src/lib/data-editions.json (the data
 #      layer's snapshot and release, and posi-engine's newest global index);
@@ -46,9 +46,9 @@ jobs:
       - name: Sync ranking edition and journal names
         run: |
           # Checks that the edition can be read. It is not copied into the repo:
-          # the global edition is ~90 MB, and every build downloads it itself
-          # (prebuild: sync-live-data.mjs). src/lib/pcs-q.json stays a small
-          # fallback; data-editions.json below records the snapshot, and its
+          # the global editions are large, and every build downloads them itself
+          # (prebuild: sync-live-data.mjs). src/lib/citation-ranking.json and
+          # src/lib/pcs-q.json stay small fallbacks; data-editions.json below records the snapshot, and its
           # change is what triggers the Cloudflare rebuild.
           node scripts/sync-live-data.mjs --rankings-only
           node scripts/sync-ranking-titles.mjs || echo "Journal names unchanged (data layer unreachable)"

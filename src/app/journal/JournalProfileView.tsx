@@ -10,24 +10,13 @@ import { ArrowSquareOut, Books, Certificate, SealCheck } from '@phosphor-icons/r
 import { getJournalProfile, PSC_CONFIDENCE_TEXT, type JournalProfile } from '@/lib/journal-profile'
 import { countryName, recordHref } from '@/lib/records'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
-import { QuartileBadge, ZoneBadge } from '@/components/RankingTable'
-import { zoneOf } from '@/lib/zones'
+import { EvaluationPanel } from '@/components/Evaluation'
+import { evaluationFromProfile } from '@/lib/evaluation/journal'
 import { hasZone } from '@/lib/zone-certificate'
-import type { Quartile } from '@/lib/rankings'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
 
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
-
-const NOT_RANKED: Record<string, string> = {
-  no_pcs: 'No PCS for the current window',
-  too_few_items: 'Fewer than 5 eligible items in the window',
-  incomplete_fetch: 'Citation data incomplete',
-  no_psc_category: 'No subject category assigned',
-  multidisciplinary: 'Multidisciplinary journals are not ranked by subject',
-  psc_confidence_not_rank_eligible: 'Subject assignment is provisional',
-  category_below_min_size: 'Category has fewer than 20 ranked journals',
-}
 
 type State = { key: string; profile: JournalProfile | null; error?: boolean }
 
@@ -161,7 +150,7 @@ export function JournalProfileView() {
         </div>
 
         <aside className="space-y-6">
-          <RankingCard j={j} />
+          <EvaluationCard j={j} core={core} />
 
           <section aria-labelledby="ids" className="panel">
             <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
@@ -207,48 +196,18 @@ function Row({ k, v, mono }: { k: string; v: React.ReactNode; mono?: boolean }) 
   )
 }
 
-function RankingCard({ j }: { j: JournalProfile }) {
-  const r = j.rk
+function EvaluationCard({ j, core }: { j: JournalProfile; core: boolean }) {
+  const ev = evaluationFromProfile(j.ev, j.ev?.cat ? PSC_NAME[j.ev.cat] ?? null : null)
   return (
-    <section aria-labelledby="rank" className="panel p-4">
-      <div className="flex items-baseline justify-between">
-        <h2 id="rank" className="text-[15px] font-semibold">PCS-Q ranking</h2>
-        {r && <span className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{r.y}</span>}
-      </div>
-      {!r || r.pcs == null ? (
-        <p className="mt-2 text-[13.5px]" style={{ color: 'var(--muted)' }}>
-          {r?.ex ? NOT_RANKED[r.ex] ?? 'Not ranked' : 'Not yet ranked. Rankings are computed for every indexed journal each cycle.'}
-        </p>
-      ) : (
-        <dl className="mt-3 space-y-3 text-[13.5px]">
-          <div className="flex items-center justify-between gap-3">
-            <dt style={{ color: 'var(--muted)' }}>PCS</dt>
-            <dd className="font-mono tnum">{r.pcs.toFixed(2)}{r.n != null && <span style={{ color: 'var(--soft)' }}> · {fmt(r.n)} items</span>}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt style={{ color: 'var(--muted)' }}>All journals</dt>
-            <dd className="flex items-center gap-2">
-              {r.or != null && <span className="font-mono tnum text-[12.5px]">{fmt(r.or)} / {fmt(r.os)}</span>}
-              <QuartileBadge q={r.oq as Quartile | null} />
-              <ZoneBadge z={zoneOf(r.or, r.os)} />
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt style={{ color: 'var(--muted)' }}>{r.cat && r.cq ? <Link href={`/rankings/${r.cat}/`} className="link">In {r.cat}</Link> : 'In category'}</dt>
-            <dd className="flex items-center gap-2">
-              {r.cq
-                ? <><span className="font-mono tnum text-[12.5px]">{fmt(r.cr)} / {fmt(r.cs)}</span><QuartileBadge q={r.cq as Quartile} /><ZoneBadge z={zoneOf(r.cr, r.cs)} /></>
-                : <span className="text-[12.5px] text-right" style={{ color: 'var(--muted)' }}>{r.ex ? NOT_RANKED[r.ex] ?? 'Not ranked' : 'Not ranked'}</span>}
-            </dd>
-          </div>
-        </dl>
-      )}
+    <section aria-labelledby="evaluation" className="panel p-4">
+      <h2 id="evaluation" className="text-[15px] font-semibold mb-3">Evaluation</h2>
+      <EvaluationPanel ev={ev} core={core ? 'core' : 'indexed'} idPrefix="pev" showPqf={core} />
       {hasZone(j) && (
         <Link href={`/certificate/zone/?issn=${encodeURIComponent(j.k)}`} className="btn mt-4 w-full justify-center" prefetch={false}>
           <Certificate className="h-4 w-4" /> Zone certificate
         </Link>
       )}
-      <Link href="/rankings/" className="link mt-3 inline-block text-[12.5px]">How rankings work</Link>
+      <Link href="/methodology/" className="link mt-3 inline-block text-[12.5px]">How journals are evaluated</Link>
     </section>
   )
 }

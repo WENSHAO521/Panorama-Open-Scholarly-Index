@@ -13,7 +13,7 @@ import raw from './pci.json'
 // methodology and scope. No POSI-R-* release has been produced
 // (POSI-R-1.0-SPEC.md) - real Citation Q exists for exactly the 2 Core
 // Collection journals with both a real PCI and a real-PCI peer pool
-// reaching MIN_CATEGORY_SIZE=20 (see src/lib/citation-rankings.ts), not
+// reaching MIN_CATEGORY_SIZE=20 (legacy PCI Citation Q, retired by POSI-EVAL-1.0), not
 // for PCI generally. Every field below is passed through unmodified from
 // posi-data's schema/metric.schema.json-declared PCI subset.
 export interface PciEntry {

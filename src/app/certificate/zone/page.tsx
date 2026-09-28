@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/db'
 
 export const metadata = {
   title: 'Zone certificate',
-  description: 'Issue a verifiable certificate of a journal’s POSI Zone (POSI 分区) in the current Journal Rankings. Free and immediate.',
+  description: 'Issue a verifiable certificate of a journal’s official POSI Zone (POSI 分区): its PNCI percentile zone within its PSC category. Free and immediate.',
 }
 
 export default function ZoneCertificatePage() {
@@ -14,9 +14,9 @@ export default function ZoneCertificatePage() {
       <div className="no-print">
         <PageHeader title="Zone certificate" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Certificate', href: '/certificate/' }, { label: 'Zone' }]}>
           <p className="max-w-[68ch]">
-            A certificate of the journal&apos;s POSI Zone (POSI 分区) in the current Journal Rankings, within its subject
-            category and across all ranked journals. It is issued for every journal that has a zone and can be verified
-            by anyone from its QR code. See <Link href="/docs/certificates/#zone-certificates" className="link">how zone certificates work</Link>.
+            A certificate of the journal&apos;s POSI Zone (POSI 分区) in the current Citation Ranking: the zone of its PNCI
+            percentile within its PSC subject category. It is issued for every journal with an official zone and can be
+            verified by anyone from its QR code. See <Link href="/docs/certificates/#zone-certificates" className="link">how zone certificates work</Link>.
           </p>
         </PageHeader>
       </div>

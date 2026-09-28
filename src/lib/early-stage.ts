@@ -75,7 +75,7 @@ export function hasRealEarlyStageScore(r: EarlyStageRating | null | undefined): 
 
 // True only when a record is ranking-eligible today - v1.1 rating_status
 // 'official' only (AJR-SPEC.md § 6 explicitly excludes 'provisional' from
-// E-Q/M-Q ranking even though its score is shown). Legacy has no such
+// an official rating even though its score is shown). Legacy has no such
 // distinction, so 'early_stage' is the closest equivalent.
 export function isOfficiallyRated(r: EarlyStageRating | null | undefined): boolean {
   if (!r) return false
@@ -92,13 +92,6 @@ export function earlyStageDisplayTotal(r: EarlyStageRating | null | undefined): 
   if (!r || isMatureStage(r)) return null
   if (isEarlyStageV1_1(r) && r.rating_status !== 'official' && r.rating_status !== 'provisional') return null
   return r.total
-}
-
-// The real, ranking-eligible quartile - null unless isOfficiallyRated(r).
-// Prefers the v1.1 shape's human-readable quartile_label when present.
-export function earlyStageQuartile(r: EarlyStageRating | null | undefined): string | null {
-  if (!r || !isOfficiallyRated(r)) return null
-  return isEarlyStageV1_1(r) ? (r.quartile_label ?? r.quartile) : r.provisional_quartile
 }
 
 // "Lifecycle" meaning lifecycle-window membership - Observation /
@@ -127,9 +120,9 @@ export interface EarlyStageStatusDisplay {
   title?: string
 }
 
-const PENDING_AJR_M_TITLE = 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet - no journal has a published M-Q.'
+const PENDING_AJR_M_TITLE = 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet - no journal has a published AJR-M score.'
 const NOT_YET_RATEABLE_TITLE = 'Below the minimum evidence bar - often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.'
-const PROVISIONAL_TITLE = 'Real AJR-E score, shown, but evidence coverage is below the threshold required for E-Q ranking eligibility (AJR-SPEC.md § 6).'
+const PROVISIONAL_TITLE = 'Real AJR-E score, shown, but evidence coverage is below the threshold for an official AJR rating (AJR-SPEC.md § 6).'
 
 // A single label/color/notability/title tuple for a one-line lifecycle
 // status badge (LifecycleRatingsTable's Status column, and anywhere else a

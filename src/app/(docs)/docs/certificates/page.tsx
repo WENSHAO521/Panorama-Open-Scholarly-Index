@@ -66,21 +66,26 @@ export default function CertificatesDoc() {
         <h2 id="zone-certificates">Zone certificates</h2>
         <p>
           A <Link href="/certificate/zone/">zone certificate</Link> (POSI 分区证书) states a journal&apos;s{' '}
-          <Link href="/methodology/#zones">POSI Zone</Link> in the current Journal Rankings: Zone 1 for the top 5% of a
-          ranking, Zone 2 for the next 15%, Zone 3 for the next 30% and Zone 4 for the rest. It is available for every
-          journal that has a zone, from the journal&apos;s profile page, and needs no application.
+          <Link href="/methodology/#zones">POSI Zone</Link> in the current Citation Ranking: the zone of its PNCI
+          percentile within its PSC subject category (Zone 1: top 5%; Zone 2: top 5–20%; Zone 3: top 20–50%; Zone 4:
+          lower 50%). It is available for every journal with an <strong>official</strong> zone (an official ranking in a
+          category of at least 50 ranked journals), from the journal&apos;s profile page, and needs no application.
         </p>
         <ul>
-          <li>The zone within the journal&apos;s subject category when it is ranked there, and the zone across all ranked journals, each with its rank, ranking size and quartile.</li>
-          <li>The journal&apos;s title, publisher, ISSNs and POSI ID, its POSI Citation Score and the ranking edition, data snapshot and zone rule (<code>{ZONES_VERSION}</code>) it was read from.</li>
-          <li>While zones are published as a trial, the certificate says so.</li>
+          <li>The category, the zone, the citation rank, category size, percentile and Citation Quartile.</li>
+          <li>The journal&apos;s title, publisher, ISSNs and POSI ID, its PNCI, and the ranking snapshot, data snapshot and zone rule (<code>{ZONES_VERSION}</code>) it was read from.</li>
         </ul>
         <p>
           The <strong>certificate number</strong> (<code>PZ-XXXX-XXXX-XXXX</code>) is the first 12 hexadecimal digits
-          of SHA-256 over <code>POSI-ZONE-CERT-1|zone rule|date of issue|POSI ID|edition year|category|category zone|overall zone</code>.
+          of SHA-256 over <code>POSI-ZONE-CERT-2|zone rule|date of issue|POSI ID|edition year|category|zone</code>.
           Verification recomputes it from the journal&apos;s current ranking record. Ranks are deliberately left out:
-          they move slightly with every monthly refresh, so a certificate stays valid while its zones hold and stops
-          verifying when a zone changes or the edition year moves on. The code is in <code>src/lib/zone-certificate.ts</code>.
+          they move slightly with every refresh, so a certificate stays valid while its zone holds and stops verifying
+          when the zone changes or the edition year moves on. The code is in <code>src/lib/zone-certificate.ts</code>.
+        </p>
+        <p>
+          Certificates issued before 28 September 2026 stated zones of the retired PCS-based trial
+          (<code>POSI-ZONES-1.0</code>, <code>POSI-ZONE-CERT-1</code>). That ranking has been withdrawn, so they no longer
+          verify.
         </p>
 
         <h2>Appropriate use</h2>

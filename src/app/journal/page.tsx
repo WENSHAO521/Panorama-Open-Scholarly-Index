@@ -3,7 +3,7 @@ import { JournalProfileView } from './JournalProfileView'
 
 export const metadata = {
   title: 'Journal',
-  description: 'Journal profile in the Panorama Open Scholarly Index: identifiers, publications and citations per year, subject, topics and PCS-Q ranking.',
+  description: 'Journal profile in the Panorama Open Scholarly Index: identifiers, publications and citations per year, subject, topics, and its evaluation: Core Collection status, AJR rating and PNCI citation ranking.',
 }
 
 export default function JournalProfilePage() {

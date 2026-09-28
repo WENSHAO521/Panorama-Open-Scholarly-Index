@@ -2,7 +2,10 @@ import Link from 'next/link'
 import { getCoreCollection } from '@/lib/data'
 import { getJournalRanking, categoryName } from '@/lib/rankings'
 import { countryName } from '@/lib/records'
-import { QuartileBadge, ZoneBadge } from '@/components/RankingTable'
+import { ajrOf } from '@/lib/evaluation/journal'
+import { getPQFStatus, PQF_DISCLAIMER } from '@/lib/evaluation/rules'
+import { fmtScore, pqfStatusLabel } from '@/lib/evaluation/display'
+import { QuartileBadge, ZoneBadge } from '@/components/Evaluation'
 import { PageHeader, fmt } from '@/components/db'
 
 export const metadata = {
@@ -13,7 +16,7 @@ export const metadata = {
 export default function CoreCollectionPage() {
   const journals = getCoreCollection().slice().sort((a, b) => a.title.localeCompare(b.title))
   const rows = journals.map(j => ({ j, r: getJournalRanking(j.posi_id) }))
-  const ranked = rows.filter(x => x.r).length
+  const ranked = rows.filter(x => x.r?.rank != null).length
 
   return (
     <div className="pb-12">
@@ -33,7 +36,7 @@ export default function CoreCollectionPage() {
       <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px rounded-[2px] overflow-hidden max-w-[640px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Certified journals', fmt(journals.length)],
-          ['Ranked', fmt(ranked)],
+          ['With a Citation Ranking', fmt(ranked)],
           ['Publishers', fmt(new Set(journals.map(j => j.publisher)).size)],
         ].map(([k, v]) => (
           <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
@@ -51,9 +54,11 @@ export default function CoreCollectionPage() {
               <th>Publisher</th>
               <th>ISSN</th>
               <th>Subject</th>
-              <th className="text-right">PCS</th>
-              <th>Quartile</th>
-              <th>Zone</th>
+              <th>PQF</th>
+              <th>AJR</th>
+              <th className="text-right">PNCI</th>
+              <th>Citation Quartile</th>
+              <th>POSI Zone</th>
             </tr>
           </thead>
           <tbody>
@@ -68,17 +73,20 @@ export default function CoreCollectionPage() {
                 </td>
                 <td className="font-mono text-[12.5px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
                 <td className="text-[13px]">{j.psc_category ? categoryName(j.psc_category) ?? j.psc_category : <span style={{ color: 'var(--muted)' }}>Not yet classified</span>}</td>
-                <td className="text-right font-mono tnum text-[13px]">{r ? r.pcs.toFixed(2) : '-'}</td>
-                <td><QuartileBadge q={r?.q ?? r?.oQ ?? null} /></td>
-                <td><ZoneBadge z={r ? (r.q ? r.zone : r.oZone) : null} /></td>
+                <td className="text-[13px] whitespace-nowrap">{pqfStatusLabel(getPQFStatus((j.pqf ?? j.ojqf)?.total))}</td>
+                <td className="text-[13px] whitespace-nowrap">{(() => { const a = ajrOf(j); return a.rating ? `${a.model} · Rating ${a.rating}` : <span style={{ color: 'var(--muted)' }}>{a.lifecycle === 'observation' ? 'Observation' : a.model === 'AJR-M' ? 'AJR-M not yet rated' : 'Not rated'}</span> })()}</td>
+                <td className="text-right font-mono tnum text-[13px]">{fmtScore(r?.pnci, '-')}</td>
+                <td><QuartileBadge q={r?.q} provisional={r?.status === 'provisional'} /></td>
+                <td><ZoneBadge z={r?.zone} status={r?.zoneStatus} /></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-        Quartile is the category quartile where the journal is ranked in its subject, otherwise the quartile across
-        all journals. See <Link href="/methodology/" className="link">methodology</Link>.
+        PQF shows the Core Collection eligibility status. {PQF_DISCLAIMER} AJR is the lifecycle rating (A+ to D).
+        Citation Quartile (C-Q1 to C-Q4) and POSI Zone come from the journal&rsquo;s PNCI percentile within its PSC
+        category. See <Link href="/methodology/" className="link">methodology</Link>.
       </p>
     </div>
   )

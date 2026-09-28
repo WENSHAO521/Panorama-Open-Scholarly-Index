@@ -27,7 +27,9 @@
  *     Global Benchmark seed (~1,023 records total, safe to bundle). See
  *     posi-data's pjr-seed-corpus-global993-2026 audit. Written through
  *     unmodified — see src/lib/pci.ts for the typed loader.
- *   - src/lib/citation-rankings.json — real Citation Q (PJR-SPEC.md § 8),
+ *   - src/lib/citation-rankings.json — DEPRECATED archive of the PCI-based
+ *     Citation Q (PJR-SPEC.md § 8), retired by POSI-EVAL-1.0; kept in sync
+ *     for the record, read by no page. Original note:
  *     Core Collection journal_ids only. Tiny (2 records as of this
  *     writing) — every other Core Collection journal either lacks real
  *     PCI or its PSC category's real-PCI peer pool hasn't reached

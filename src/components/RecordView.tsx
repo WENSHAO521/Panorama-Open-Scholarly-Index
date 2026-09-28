@@ -14,12 +14,16 @@ import type { PciEntry } from '@/lib/pci'
 import type { CitationStatsEntry } from '@/lib/citation-stats'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, collectionOf, verificationOf, freshnessOf, countryName } from '@/lib/records'
 import { BASIS, FIELD_BY_KEY, type Basis } from '@/lib/schema'
-import { earlyStageStatus, earlyStageDisplayTotal, earlyStageQuartile, earlyStageLifecycleLabel } from '@/lib/early-stage'
+import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation/journal'
+import { fmtScore } from '@/lib/evaluation/display'
+import { EvaluationPanel } from './Evaluation'
 import { alternateTitleLabel } from '@/lib/titles'
+import { PQF_DISCLAIMER } from '@/lib/evaluation/rules'
 import { CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
-  ranking?: { rank: number | null; n: number | null; pct: number | null; q: string | null; cat: string | null; catName: string | null; oRank: number; oN: number; zone?: number | null } | null
+  /** POSI-EVAL-1.0 evaluation; built from the record alone when absent */
+  evaluation?: JournalEvaluation | null
   pcs?: PcsEntry | null
   pci?: PciEntry | null
   citationStats?: CitationStatsEntry | null
@@ -80,49 +84,14 @@ function Metric({ name, value, sub, version, sample, href }: {
   )
 }
 
-const ZONE_TONE: Record<number, string> = { 1: 'var(--teal)', 2: 'var(--info)', 3: 'var(--ink-2)', 4: 'var(--muted)' }
-
-/** The journal's place in the Journal Rankings, above the indicators. */
-function RankingSummary({ r }: { r: NonNullable<RecordMetrics['ranking']> }) {
-  const cells: [string, React.ReactNode, React.ReactNode?][] = r.rank !== null
-    ? [
-        ['Category rank', <>{fmt(r.rank)}<span className="text-[15px] font-normal" style={{ color: 'var(--muted)' }}> / {fmt(r.n)}</span></>,
-          <Link key="c" href={`/rankings/${r.cat}/`} className="link">{r.catName ?? r.cat}</Link>],
-        ['Quartile', r.q ? `PCS-${r.q}` : '-', r.pct != null ? `Percentile ${r.pct.toFixed(1)}` : null],
-        ['POSI Zone', r.zone ? <span style={{ color: ZONE_TONE[r.zone] }}>Zone {r.zone}</span> : '-', <Link key="z" href="/methodology/#zones" className="link">Trial edition</Link>],
-        ['Overall rank', <>{fmt(r.oRank)}<span className="text-[15px] font-normal" style={{ color: 'var(--muted)' }}> / {fmt(r.oN)}</span></>, 'All ranked journals'],
-      ]
-    : [
-        ['Overall rank', <>{fmt(r.oRank)}<span className="text-[15px] font-normal" style={{ color: 'var(--muted)' }}> / {fmt(r.oN)}</span></>, 'All ranked journals'],
-        ['Category rank', <span key="n" className="text-[15px] font-normal" style={{ color: 'var(--soft)' }}>Not ranked</span>, 'No category with enough ranked journals'],
-      ]
-  return (
-    <div className="mb-6">
-      <p className="text-[12px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>Journal Rankings, by PCS</p>
-      <dl className={`stat-strip grid-cols-2 ${r.rank !== null ? 'lg:grid-cols-4' : ''}`}>
-        {cells.map(([k, v, note]) => (
-          <div key={k}>
-            <dt>{k}</dt>
-            <dd className="mt-1 figure text-[24px] leading-tight">{v}</dd>
-            {note && <dd className="note">{note}</dd>}
-          </div>
-        ))}
-      </dl>
-    </div>
-  )
-}
-
 export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Journal; metrics?: RecordMetrics; jsonHref?: string }) {
   const k = collectionOf(j)
   const v = verificationOf(j)
   const f = freshnessOf(j)
   const pqf = j.pqf ?? j.ojqf ?? null
   const autoPqf = !pqf ? j.auto_pqf ?? null : null
-  const r = j.early_stage_rating
-  const status = earlyStageStatus(r)
-  const ajrTotal = earlyStageDisplayTotal(r)
-  const ajrQ = earlyStageQuartile(r)
-  const { pcs, pci, citationStats, pscName, ranking } = metrics
+  const { pcs, pci, citationStats, pscName } = metrics
+  const evaluation = metrics.evaluation ?? buildJournalEvaluation({ journal: j, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? null })
   const oa = citationStats?.stats
 
   return (
@@ -193,44 +162,41 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="indicators">
-            <SectionTitle id="indicators">Indicators</SectionTitle>
-            {ranking && <RankingSummary r={ranking} />}
-            <div className="stat-strip grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-y-2">
-              <Metric
-                name="Lifecycle rating"
-                value={ajrTotal !== null ? ajrTotal.toFixed(1) : <span className="text-[16px] font-medium" style={{ color: status.color }}>{status.label}</span>}
-                sub={ajrTotal !== null ? <>{status.label}{ajrQ ? `, ${ajrQ}` : ''}. {earlyStageLifecycleLabel(r)}</> : earlyStageLifecycleLabel(r)}
-                version={r?.version ?? null}
-                href="/rankings/"
-              />
+            <SectionTitle id="indicators" aside={evaluation.evaluationVersion}>Evaluation</SectionTitle>
+            <div className="panel p-4">
+              <EvaluationPanel ev={evaluation} core={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'} />
+            </div>
+            <div className="mt-4 stat-strip grid-cols-1 sm:grid-cols-2 gap-y-2">
               <Metric
                 name="Citation score (PCS)"
-                value={pcs?.pcs != null ? pcs.pcs.toFixed(2) : null}
-                sub={pcs ? `${pcs.pcs_window_start_year} to ${pcs.pcs_window_end_year}, ${fmt(pcs.pcs_eligible_items)} items` : 'Not computed for this record'}
+                value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
+                sub={pcs ? `Supplementary. ${pcs.pcs_window_start_year} to ${pcs.pcs_window_end_year}, ${fmt(pcs.pcs_eligible_items)} items` : 'Not computed for this record'}
                 sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
                 version={pcs?.pcs_methodology_version}
                 href="/methodology/#pcs"
               />
               <Metric
                 name="Citation impact (PCI)"
-                value={pci?.pci != null ? pci.pci.toFixed(2) : null}
+                value={pci?.pci != null ? fmtScore(pci.pci) : null}
                 sub={pci ? `${pci.pci_window_start_year} to ${pci.pci_window_end_year}, ${fmt(pci.pci_citable_items)} citable items` : 'Not computed for this record'}
                 sample={pci ? sampleLabel(pci.pci_citable_items) : null}
                 version={pci?.pci_methodology_version}
-                href="/methodology/"
+                href="/methodology/#pci"
               />
-              <Metric
-                name={pqf ? 'Editorial selection (PQF)' : 'PQF (automated)'}
-                value={pqf ? pqf.total : autoPqf ? autoPqf.total : null}
-                sub={pqf ? `Grade ${pqf.grade}, evaluated ${pqf.evaluated_at}` : autoPqf ? 'Automated pre-screen, not an admission decision' : 'Not assessed'}
-                version={(pqf ?? autoPqf)?.version ?? null}
-                href="/editorial-policy/#certification"
-              />
+              {!pqf && autoPqf && (
+                <Metric
+                  name="PQF pre-screen (automated)"
+                  value={autoPqf.total}
+                  sub="Automated pre-screen, not an admission decision or a ranking"
+                  version={autoPqf.version}
+                  href="/methodology/#pqf"
+                />
+              )}
             </div>
             {oa && (
               <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>
                 OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}
-                <span className="tnum">{oa.two_yr_mean_citedness?.toFixed(2) ?? 'n/a'}</span>, h-index{' '}
+                <span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, h-index{' '}
                 <span className="tnum">{fmt(oa.h_index)}</span>, fetched {citationStats?.fetched_at?.slice(0, 10)}.
               </p>
             )}
@@ -288,6 +254,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
           {pqf && (
             <section aria-labelledby="pqf">
               <SectionTitle id="pqf" aside={pqf.version}>PQF sub-factors</SectionTitle>
+              <p className="text-[13px] mb-3 max-w-[70ch]" style={{ color: 'var(--muted)' }}>{PQF_DISCLAIMER}</p>
               <div className="panel overflow-x-auto">
                 <table className="dtable">
                   <thead><tr><th>Factor</th><th className="text-right">Score</th><th className="text-right">Max</th></tr></thead>
