@@ -134,7 +134,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
               {j.posi_id && <span className="id-tag">{j.posi_id}</span>}
               {j.issn_online && <span className="id-tag">eISSN {j.issn_online}</span>}
               {j.issn_print && j.issn_print !== j.issn_online && <span className="id-tag">pISSN {j.issn_print}</span>}
-              <PosiGrades size="md" showEmpty tier={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'}
+              <PosiGrades size="md" showEmpty tier={k === 'core' ? 'core' : 'indexed'}
                 ajr={evaluation.ajr.rating} quartile={evaluation.ranking.quartile} quartileProvisional={evaluation.ranking.status === 'provisional'}
                 zone={evaluation.ranking.zone} zoneStatus={evaluation.ranking.zoneStatus} />
               <VerificationPill v={v} />
@@ -163,14 +163,6 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
             This journal is indexed but not certified. POSI built this record from open registries and has not
             reviewed it, so treat each field as <strong>needs check</strong>. The journal can{' '}
             <Link href="/certification/" className="link">apply for certification</Link>.
-          </Note>
-        </div>
-      )}
-      {k === 'candidate' && (
-        <div className="mb-6">
-          <Note tone="warn">
-            This journal was certified, but a PQF re-review found it below the bar. It remains indexed and is
-            excluded from the Core Collection and its mark until re-review.
           </Note>
         </div>
       )}
@@ -217,7 +209,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="indicators">
             <SectionTitle id="indicators" aside={<span className="font-mono text-[12px]">{evaluation.evaluationVersion}</span>}>Evaluation status</SectionTitle>
-            <EvaluationCards ev={evaluation} core={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'} autoPqf={autoPqf} />
+            <EvaluationCards ev={evaluation} core={k === 'core' ? 'core' : 'indexed'} autoPqf={autoPqf} />
           </section>
 
           <section aria-labelledby="details">

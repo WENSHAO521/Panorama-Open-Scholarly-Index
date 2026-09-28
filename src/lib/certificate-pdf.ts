@@ -7,8 +7,8 @@ import psc from './psc-v1.0.snapshot.json'
 import { SEAL, serratedPath } from './seal'
 import type { Journal } from './types'
 
-// Core Collection certificate: one A4 landscape PDF per Core Collection (and
-// candidate) journal, generated at build time (see
+// Core Collection certificate: one A4 landscape PDF per Core Collection
+// journal, generated at build time (see
 // src/app/(docs)/api/certificate/[code]/pdf/route.ts). Every field is read
 // from the journal record. The QR code opens the journal's live POSI record,
 // which is authoritative.
@@ -23,7 +23,6 @@ const SOFT = rgb(0.55, 0.59, 0.61)
 const RULE = rgb(0.8, 0.82, 0.83)
 const BRAND_RED = rgb(0.89, 0.024, 0.075)
 const TEAL = rgb(0.11, 0.31, 0.561) // #1c4f8f, the site accent
-const GOLD = rgb(0.62, 0.45, 0.05)
 const SEAL_INK = hex(SEAL.ink)
 
 const SITE_ORIGIN = 'https://posi.panorama-sg.com'
@@ -170,8 +169,7 @@ function drawTrackedOpacity(page: PDFPage, text: string, x: number, y: number, s
 }
 
 export async function generateCertificatePdf(journal: Journal): Promise<Uint8Array> {
-  const candidate = journal.collection_status === 'candidate'
-  const accent = candidate ? GOLD : TEAL
+  const accent = TEAL
   const code = journal.journal_code
   const since = journal.created_at ? journal.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10)
   const issued = new Date().toISOString().slice(0, 10)
@@ -199,7 +197,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
 
   doc.setTitle(`${certNo} ${title}`)
   doc.setAuthor('Panorama Open Scholarly Index, Panorama Scholarly Group Ltd.')
-  doc.setSubject(candidate ? 'Record of Core Collection candidate status' : 'Certificate of Core Collection certification')
+  doc.setSubject('Certificate of Core Collection certification')
   doc.setProducer('Panorama Open Scholarly Index')
 
   const page = doc.addPage([842, 595]) // A4 landscape
@@ -223,9 +221,9 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   page.drawLine({ start: { x: L, y: H - 106 }, end: { x: R, y: H - 106 }, thickness: 0.6, color: RULE })
 
   // Title block
-  centered(page, candidate ? 'CORE COLLECTION CANDIDATE' : 'CORE COLLECTION', H - 144, 8.5, sansBold, accent, 2.6)
+  centered(page, 'CORE COLLECTION', H - 144, 8.5, sansBold, accent, 2.6)
   centered(page, 'Certificate', H - 188, 46, serifBold, INK, 1)
-  centered(page, candidate ? 'Record of Candidate Status' : 'of Core Collection Certification', H - 212, 15, serifItalic, MUTED)
+  centered(page, 'of Core Collection Certification', H - 212, 15, serifItalic, MUTED)
 
   let size = 30
   let lines = wrap(title, titleFont, size, 640)
@@ -244,9 +242,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   centered(page, journal.publisher || '', y - 2, 10.5, sans, MUTED)
   y -= 32
 
-  const statement = candidate
-    ? `was admitted to the Core Collection of the Panorama Open Scholarly Index on ${longDate(since)} and is currently under re-evaluation. It is not certified while this review is in progress.`
-    : `has been evaluated under the POSI Quality Framework and is certified in the Core Collection of the Panorama Open Scholarly Index, with effect from ${longDate(since)}.`
+  const statement = `has been evaluated under the POSI Quality Framework and is certified in the Core Collection of the Panorama Open Scholarly Index, with effect from ${longDate(since)}.`
   for (const line of wrap(statement, serif, 13.5, 580)) {
     centered(page, line, y, 13.5, serif, INK)
     y -= 18
@@ -289,7 +285,7 @@ export async function generateCertificatePdf(journal: Journal): Promise<Uint8Arr
   page.drawText(SIGNATORY, { x: lineL, y: 62, size: 10.5, font: serifBold, color: INK })
   page.drawText('Authorized Signatory', { x: lineL, y: 52, size: 7.5, font: sans, color: INK })
   page.drawText('Editorial Office, Panorama Open Scholarly Index', { x: lineL, y: 43, size: 7.5, font: sans, color: MUTED })
-  seal(page, R - 34, 82, 40, sansBold, candidate ? 'CANDIDATE' : 'CERTIFIED')
+  seal(page, R - 34, 82, 40, sansBold, 'CERTIFIED')
 
   return doc.save()
 }

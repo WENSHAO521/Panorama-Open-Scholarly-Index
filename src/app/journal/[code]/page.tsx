@@ -11,7 +11,7 @@ import { buildJournalEvaluation } from '@/lib/evaluation/journal'
 import Link from 'next/link'
 import { Certificate, ChartLine, FilePdf } from '@phosphor-icons/react/dist/ssr'
 
-// Core, Candidate and Global Benchmark records get a static page. Discovered
+// Core, other curated and Global Benchmark records get a static page. Discovered
 // records (~24k) are served by the in-browser viewer at /record/ to stay
 // inside Cloudflare Pages' 20,000-file limit.
 export const dynamicParams = false

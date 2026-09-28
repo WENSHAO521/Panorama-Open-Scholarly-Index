@@ -66,7 +66,7 @@ export function JournalProfileView() {
           </>}
         </nav>
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <PosiGrades size="md" showEmpty tier={core ? 'core' : curated?.k === 'candidate' ? 'candidate' : 'indexed'}
+          <PosiGrades size="md" showEmpty tier={core ? 'core' : 'indexed'}
             ajr={ev.ajr.rating} quartile={ev.ranking.quartile} quartileProvisional={ev.ranking.status === 'provisional'}
             zone={ev.ranking.zone} zoneStatus={ev.ranking.zoneStatus} />
           {j.oa && <span className="chip">Open access</span>}

@@ -59,13 +59,12 @@ export interface Journal {
   // best-guess in that case, but should be treated as unreliable.
   psc_category?: string | null
   psc_confidence?: 'high' | 'low' | null
-  // undefined/'core': full Core Collection membership. 'candidate': admitted
-  // once, but a PQF re-review found it below the eligibility bar (PQF total
-  // < 40, "Not Eligible") - keeps its journal record and page, but is
-  // excluded from Core Collection counts, rankings, badges, and
-  // certificates until re-review restores it. See data.ts's
-  // getCoreCollection()/getCandidateJournals().
-  collection_status?: 'core' | 'candidate'
+  // undefined/'core': Core Collection membership. Any other value (the
+  // posi-data schema's statuses; 'candidate' is a retired one) means the
+  // journal keeps its curated record and page but is indexed, not
+  // certified: no Core mark, count or certificate. See data.ts's
+  // getCoreCollection()/getCuratedNonCoreJournals().
+  collection_status?: 'core' | 'candidate' | 'discovered' | 'under_review' | 'suspended' | 'ceased' | 'withdrawn' | 'delisted' | 'archived'
   article_count: number
   created_at: string
   updated_at: string

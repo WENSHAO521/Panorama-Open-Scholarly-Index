@@ -91,9 +91,9 @@ const AUDITS = [
 export default function DatasetsPage() {
   const idx = getAllRecords().map(toIndexRecord)
   const group = (ks: Collection[]) => idx.filter(r => ks.includes(r.k))
-  const core = group(['core', 'candidate'])
+  const core = group(['core'])
   const bench = group(['benchmark'])
-  const disc = group(['discovered'])
+  const disc = group(['discovered', 'curated'])
 
   const { records: directory, source } = getDirectory()
   const categories = getDirectoryCategories().filter(c => c.count > 0)

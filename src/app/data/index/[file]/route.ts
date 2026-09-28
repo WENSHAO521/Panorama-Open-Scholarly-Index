@@ -4,9 +4,9 @@ import { toIndexRecord, type IndexRecord, type Collection } from '@/lib/records'
 import { getAllRecords } from '@/lib/records-data'
 
 const GROUPS: Record<string, Collection[]> = {
-  core: ['core', 'candidate'],
+  core: ['core'],
   benchmark: ['benchmark'],
-  discovered: ['discovered'],
+  discovered: ['discovered', 'curated'],
 }
 
 export const dynamic = 'force-static'
