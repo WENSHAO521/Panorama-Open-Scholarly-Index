@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation'
 import { DownloadSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import type { DirRecord } from '@/lib/global-journals'
 import { fmt } from './db'
+import { dataUrl } from '@/lib/data-base'
 
 const PAGE = 50
 type Sort = 'title' | 'works'
@@ -43,7 +44,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
 
   useEffect(() => {
     const ctrl = new AbortController()
-    fetch(`/data/journals/${file}`, { signal: ctrl.signal })
+    fetch(dataUrl(`journals/${file}`), { signal: ctrl.signal })
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then((rows: DirRecord[]) => setData({ file, rows }))
       .catch(e => { if (e.name !== 'AbortError') setData({ file, error: true }) })

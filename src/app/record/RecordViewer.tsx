@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import type { Journal } from '@/lib/types'
 import { shardOf } from '@/lib/records'
 import { RecordView } from '@/components/RecordView'
+import { dataUrl } from '@/lib/data-base'
 
 type State = { kind: 'loading' } | { kind: 'missing' } | { kind: 'error' } | { kind: 'ok'; journal: Journal }
 type Keyed = { code: string; state: State }
@@ -18,7 +19,7 @@ export function RecordViewer() {
   useEffect(() => {
     if (!code) return
     let cancelled = false
-    fetch(`/data/records/discovered-${shardOf(code)}.json`)
+    fetch(dataUrl(`records/discovered-${shardOf(code)}.json`))
       .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json() })
       .then((rows: Journal[]) => {
         if (cancelled) return
@@ -29,7 +30,7 @@ export function RecordViewer() {
     return () => { cancelled = true }
   }, [code])
 
-  if (state.kind === 'ok') return <RecordView journal={state.journal} jsonHref={`/data/records/discovered-${shardOf(code)}.json`} />
+  if (state.kind === 'ok') return <RecordView journal={state.journal} jsonHref={dataUrl(`records/discovered-${shardOf(code)}.json`)} />
 
   if (state.kind === 'loading') {
     return (

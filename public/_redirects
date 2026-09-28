@@ -6,6 +6,10 @@
 /data/rankings/citation-2026-all-* https://data.posi.panorama-sg.com/downloads/rankings/citation-2026-all.csv 301
 /data/rankings/* https://data.posi.panorama-sg.com/downloads/rankings/:splat 301
 
+# 2026-09-28 the site's data files moved to the data layer as well
+# (data.posi.panorama-sg.com/site/v1/); this site is a front end.
+/data/* https://data.posi.panorama-sg.com/site/v1/:splat 301
+
 # /pqf-scores was a public PQF letter-grade leaderboard (A+ through E),
 # retired in favor of PQF's coarse Eligible/Review Required/Insufficient
 # Evidence/Not Eligible status (see /pqf) — a ranked leaderboard conflicts

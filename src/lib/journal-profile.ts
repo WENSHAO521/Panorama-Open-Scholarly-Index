@@ -2,6 +2,8 @@
 // into /data/j/<shard>.json: every indexed journal, keyed by ISSN-L, with
 // aliases for its other ISSNs and its OpenAlex source id.
 
+import { dataUrl } from './data-base'
+
 export interface JournalProfile {
   /** ISSN-L, or the first ISSN */
   k: string
@@ -108,7 +110,7 @@ const cache = new Map<string, Promise<Shard | null>>()
 function loadShard(name: string): Promise<Shard | null> {
   let p = cache.get(name)
   if (!p) {
-    p = fetch(`/data/j/${name}.json`)
+    p = fetch(dataUrl(`j/${name}.json`))
       .then(r => (r.ok ? r.json() : null))
       .catch(e => { cache.delete(name); throw e })
     cache.set(name, p)

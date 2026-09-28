@@ -4,6 +4,7 @@ import { toIndexRecord, type Collection } from '@/lib/records'
 import { DISCOVERED_JOURNALS } from '@/lib/data'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
 import { getRankings, RANKING_DOWNLOADS } from '@/lib/rankings'
+import { DATA_BASE, dataUrl } from '@/lib/data-base'
 import { PUBLISHER_SHARD_COUNT } from '@/lib/publishers'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
@@ -101,24 +102,24 @@ export default function DatasetsPage() {
   const { all, ranked, year } = getRankings()
 
   const global: DataFile[] = [
-    { path: '/data/journals/index.json', rows: categories.length, bytes: null, what: 'Global journal directory: totals, and the file list for each subject category' },
-    { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 4,000 journals are split by first letter' },
-    { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
-    { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
+    { path: dataUrl('journals/index.json'), rows: categories.length, bytes: null, what: 'Global journal directory: totals, and the file list for each subject category' },
+    { path: dataUrl('journals/{category}.json'), rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 4,000 journals are split by first letter' },
+    { path: dataUrl('meta/publishers.json'), rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
+    { path: `${DATA_BASE}/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
     { path: `${RANKING_DOWNLOADS}/citation-${year}.json`, alt: `${RANKING_DOWNLOADS}/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals. Served from data.posi.panorama-sg.com` },
     { path: `${RANKING_DOWNLOADS}/citation-${year}-all.csv`, rows: all.length, bytes: null, what: 'Every journal of the Citation Ranking edition, all ranking statuses, as one CSV' },
     { path: `${RANKING_DOWNLOADS}/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
   ]
 
   const curated: DataFile[] = [
-    { path: '/data/index/core.json', alt: '/data/index/core.csv', rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection records, compact index' },
-    { path: '/data/index/benchmark.json', alt: '/data/index/benchmark.csv', rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
-    { path: '/data/index/discovered.json', alt: '/data/index/discovered.csv', rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
-    { path: '/data/journal/{code}.json', rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
-    { path: '/data/records/discovered-{00-63}.json', rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 64 shards by a hash of the record key' },
-    { path: '/data/meta/psc.json', rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
-    { path: '/data/meta/schema.json', rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },
-    { path: '/data/meta/stats.json', rows: null, bytes: null, what: 'Record counts by collection and verification state' },
+    { path: dataUrl('index/core.json'), alt: dataUrl('index/core.csv'), rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection records, compact index' },
+    { path: dataUrl('index/benchmark.json'), alt: dataUrl('index/benchmark.csv'), rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
+    { path: dataUrl('index/discovered.json'), alt: dataUrl('index/discovered.csv'), rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
+    { path: dataUrl('journal/{code}.json'), rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
+    { path: dataUrl('records/discovered-{00-63}.json'), rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 64 shards by a hash of the record key' },
+    { path: dataUrl('meta/psc.json'), rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
+    { path: dataUrl('meta/schema.json'), rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },
+    { path: dataUrl('meta/stats.json'), rows: null, bytes: null, what: 'Record counts by collection and verification state' },
   ]
 
   return (
@@ -126,7 +127,7 @@ export default function DatasetsPage() {
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
           The global journal directory, publishers, rankings, curated journal records and the subject classification,
-          under open licences. Every file is regenerated from the current data; ranking downloads are served from the POSI data layer, data.posi.panorama-sg.com.
+          under open licences. Every file is regenerated from the current data and served from the POSI data layer, data.posi.panorama-sg.com.
         </p>
       </PageHeader>
 
