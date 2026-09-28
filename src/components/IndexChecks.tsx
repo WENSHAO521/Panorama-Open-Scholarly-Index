@@ -1,6 +1,6 @@
 'use client'
 
-// Links out to Web of Science, Scopus and PubMed/MEDLINE for this journal. POSI is
+// Links out to Web of Science, Scopus and PubMed for this journal. POSI is
 // independent of both. Web of Science: Clarivate's Master Journal List takes
 // the ISSN in the URL. Scopus: the journal's own Scopus page when Elsevier's
 // Scopus source title list (reduced to src/lib/scopus-sources.json, served
@@ -15,14 +15,38 @@ import { SCOPUS_RANK, scopusKey, scopusShard, scopusSourceHref, type ScopusEntry
 
 export const mjlHref = (issn: string) => `https://mjl.clarivate.com/search-results?issn=${encodeURIComponent(issn)}`
 export const SCOPUS_SOURCES = 'https://www.scopus.com/sources'
-/** NLM Catalog search by ISSN (covers MEDLINE and every other NLM-held journal). */
+/** NLM Catalog search by ISSN, for a journal not in the PubMed list. */
 export const nlmCatalogHref = (issn: string) => `https://www.ncbi.nlm.nih.gov/nlmcatalog/?term=${encodeURIComponent(`${issn}[issn]`)}`
+/** A journal's own NLM Catalog page, which states its MEDLINE indexing status. */
+export const nlmRecordHref = (nlmId: string) => `https://www.ncbi.nlm.nih.gov/nlmcatalog/${encodeURIComponent(nlmId)}`
 
 type Shard = { as_of: string; list: string; d: Record<string, ScopusEntry> }
 const shards = new Map<string, Promise<Shard | null>>()
 function loadShard(name: string) {
   if (!shards.has(name)) shards.set(name, fetch(`/data/scopus/${name}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null))
   return shards.get(name)!
+}
+
+type PubmedShard = { as_of: string; d: Record<string, string> }
+const pubmedShards = new Map<string, Promise<PubmedShard | null>>()
+function loadPubmed(name: string) {
+  if (!pubmedShards.has(name)) pubmedShards.set(name, fetch(`/data/pubmed/${name}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null))
+  return pubmedShards.get(name)!
+}
+
+/** NLM ID of the journal in NLM's list of journals cited in PubMed, if any. */
+function usePubmed(issns: string[]) {
+  const [state, setState] = useState<{ nlmId: string | null; asOf: string | null } | null>(null)
+  const sig = issns.map(scopusKey).filter((k): k is string => !!k).join(',')
+  useEffect(() => {
+    let live = true
+    const ks = sig ? sig.split(',') : []
+    Promise.all(ks.map(k => loadPubmed(scopusShard(k)).then(s => ({ s, id: s?.d[k] ?? null })))).then(found => {
+      if (live) setState({ nlmId: found.find(f => f.id)?.id ?? null, asOf: found.find(f => f.s)?.s?.as_of ?? null })
+    })
+    return () => { live = false }
+  }, [sig])
+  return state
 }
 
 /** The best entry among the journal's ISSNs, and the list's date. */
@@ -61,6 +85,7 @@ function status(e: ScopusEntry | null): { text: string; tone: string } {
 export function IndexChecks({ issns }: { issns: string[] }) {
   const issn = issns[0]
   const scopus = useScopus(issns)
+  const pubmed = usePubmed(issns)
   const id = scopus?.entry?.[0] ?? null
   const [copied, setCopied] = useState(false)
   async function copy() {
@@ -101,12 +126,23 @@ export function IndexChecks({ issns }: { issns: string[] }) {
           </button>
         </p>
       )}
-      <a href={nlmCatalogHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
+      <a href={pubmed?.nlmId ? nlmRecordHref(pubmed.nlmId) : nlmCatalogHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
         style={{ background: 'var(--pubmed-brand)', borderColor: 'var(--pubmed-brand)', color: 'var(--on-pubmed-brand)' }}>
-        <BookOpenText className="h-4 w-4" /> PubMed / MEDLINE
+        <BookOpenText className="h-4 w-4" /> PubMed
       </a>
+      {pubmed && (
+        <p className="flex items-start gap-1.5 text-[12px] leading-snug" style={{ color: 'var(--ink-2)' }}>
+          <span aria-hidden className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: pubmed.nlmId ? 'var(--verified)' : 'var(--muted)' }} />
+          <span>
+            {pubmed.nlmId
+              ? <>In PubMed’s journal list, NLM ID <span className="font-mono">{pubmed.nlmId}</span>. Its NLM Catalog page states MEDLINE indexing.</>
+              : 'Not found in PubMed’s journal list'}
+            <span style={{ color: 'var(--soft)' }}> · NLM, {listDate(pubmed.asOf)}</span>
+          </span>
+        </p>
+      )}
       <p className="text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>
-        Opens Clarivate’s Master Journal List, Scopus and the NLM Catalog (PubMed, MEDLINE). POSI is independent of all three; the Scopus status is as stated in Elsevier’s published source list.
+        Opens Clarivate’s Master Journal List, Scopus and the NLM Catalog. POSI is independent of all three; the Scopus and PubMed statuses are as stated in Elsevier’s and NLM’s published journal lists.
       </p>
     </div>
   )
