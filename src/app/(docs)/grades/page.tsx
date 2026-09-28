@@ -70,7 +70,7 @@ export default function GradesPage() {
         <ul>
           <li>
             They are not Web of Science or Scopus labels. POSI is independent of both and does not record whether a
-            journal is in SCIE, SSCI, AHCI, ESCI or Scopus. Each journal page links to Clarivate’s Master Journal List
+            journal is in SCIE, SSCI, AHCI, ESCI or Scopus. Each journal page links to Clarivate’s Master Journal List and to Scopus Sources
             so that can be checked at the source.
           </li>
           <li>They describe journals, not individual articles or researchers. See <Link href="/responsible-use/">responsible use</Link>.</li>
