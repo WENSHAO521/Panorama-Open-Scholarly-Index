@@ -8,6 +8,8 @@ import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
 import { RankingsPending } from '@/components/Evaluation'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
+import { CaretRight, Certificate, Database, Medal, Quotes, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
+import type { Icon } from '@phosphor-icons/react'
 
 export const metadata = {
   title: { absolute: 'Panorama Open Scholarly Index (POSI)' },
@@ -16,15 +18,59 @@ export const metadata = {
   alternates: { canonical: '/' },
 }
 
-const SERVICES = [
-  { label: 'Certificate of indexing', href: '/certificate/', note: 'For authors of indexed publications' },
-  { label: 'Verify a certificate', href: '/certificate/verify/', note: 'Check a certificate number' },
-  { label: 'Journal certification', href: '/certification/', note: 'Apply for the Core Collection' },
-  { label: 'Citation generator', href: '/cite/', note: 'PSG, APA, MLA and Chicago from a DOI or ISBN' },
-  { label: 'PSG citation format', href: '/psg-format/', note: 'The PSG author-date standard' },
-  { label: 'Logos and journal marks', href: '/logos/', note: 'POSI marks for journal websites' },
-  { label: 'Data downloads', href: '/datasets/', note: 'Directory, rankings and records' },
+type Service = { label: string; href: string; note: string; icon: Icon }
+
+// Grouped by who each service is for; the first of each group is the main task.
+const SERVICE_GROUPS: { title: string; items: Service[] }[] = [
+  { title: 'For authors', items: [
+    { label: 'Certificate of indexing', href: '/certificate/', note: 'For authors of indexed publications', icon: Certificate },
+    { label: 'Verify a certificate', href: '/certificate/verify/', note: 'Check a certificate number', icon: SealCheck },
+    { label: 'Citation generator', href: '/cite/', note: 'PSG, APA, MLA and Chicago from a DOI or ISBN', icon: Quotes },
+    { label: 'PSG citation format', href: '/psg-format/', note: 'The PSG author-date standard', icon: TextAa },
+  ] },
+  { title: 'For journals', items: [
+    { label: 'Journal certification', href: '/certification/', note: 'Apply for the Core Collection', icon: Stamp },
+    { label: 'Logos and journal marks', href: '/logos/', note: 'POSI marks for journal websites', icon: Medal },
+  ] },
+  { title: 'Data', items: [
+    { label: 'Data downloads', href: '/datasets/', note: 'Directory, rankings and records', icon: Database },
+  ] },
 ]
+
+function IconBadge({ icon: I }: { icon: Icon }) {
+  return (
+    <span aria-hidden className="h-8 w-8 shrink-0 grid place-items-center rounded-[4px]" style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}>
+      <I className="h-[18px] w-[18px]" />
+    </span>
+  )
+}
+
+/** Services grouped by who they are for, each with an icon, in the sidebar. */
+function ServicesList() {
+  return (
+    <SideBlock title="Services">
+      {SERVICE_GROUPS.map((g, gi) => (
+        <div key={g.title} style={gi ? { borderTop: '1px solid var(--line)' } : undefined}>
+          <h3 className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--soft)' }}>{g.title}</h3>
+          <ul className="pb-1.5">
+            {g.items.map(s => (
+              <li key={s.href}>
+                <Link href={s.href} className="group flex items-center gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]">
+                  <IconBadge icon={s.icon} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13.5px] font-medium leading-snug" style={{ color: 'var(--ink)' }}>{s.label}</span>
+                    <span className="block text-[12px] leading-snug" style={{ color: 'var(--muted)' }}>{s.note}</span>
+                  </span>
+                  <CaretRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" style={{ color: 'var(--soft)' }} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </SideBlock>
+  )
+}
 
 const QUICK = [
   { label: 'All journals', href: '/journals/' },
@@ -146,18 +192,7 @@ export default function HomePage() {
         </div>
 
         <aside className="space-y-5">
-          <SideBlock title="Services">
-            <ul>
-              {SERVICES.map((s, i) => (
-                <li key={s.href} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                  <Link href={s.href} className="block px-4 py-2.5 transition-colors hover:bg-[var(--hover)]">
-                    <span className="block text-[13.5px] font-medium" style={{ color: 'var(--teal)' }}>{s.label}</span>
-                    <span className="block text-[12px]" style={{ color: 'var(--muted)' }}>{s.note}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </SideBlock>
+          <ServicesList />
 
           <SideBlock title="News" href="/announcements/">
             <ul>
