@@ -251,7 +251,9 @@
     "journal_code": "hnex",
     "title": "Health Nexus",
     "short_title": "Health Nexus",
-    "alternate_titles": ["Health Nexus: Interdisciplinary Medical Research Journal"],
+    "alternate_titles": [
+      "Health Nexus: Interdisciplinary Medical Research Journal"
+    ],
     "issn_print": null,
     "issn_online": "3053-7037",
     "publisher": "Panorama Scholarly Group",
@@ -496,7 +498,7 @@
     "cover_image_url": "https://panorama-sg.com/QKFM/TTS.png",
     "oai_base_url": null,
     "registration_country": "Germany",
-    "doaj_status": "not_listed",
+    "doaj_status": "application_submitted",
     "openalex_source_id": "S5407052764",
     "metadata_quality_score": 92,
     "transparency_score": 84,
@@ -650,7 +652,7 @@
     "cover_image_url": "https://panorama-sg.com/QKFM/RESONANCE.png",
     "oai_base_url": "https://journals.panorama-sg.com/index.php/Resonance/oai",
     "registration_country": "Germany",
-    "doaj_status": "not_listed",
+    "doaj_status": "application_submitted",
     "openalex_source_id": "S5407051440",
     "metadata_quality_score": 92,
     "transparency_score": 100,
@@ -2014,7 +2016,9 @@
     "journal_code": "rae",
     "title": "Research on Architecture and Environment",
     "short_title": "RAE",
-    "alternate_titles": ["建筑与环境研究"],
+    "alternate_titles": [
+      "建筑与环境研究"
+    ],
     "issn_print": "3105-319X",
     "issn_online": "3105-5842",
     "publisher": "China Architecture Culture Publishing House",
