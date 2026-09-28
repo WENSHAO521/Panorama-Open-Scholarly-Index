@@ -18,7 +18,7 @@ import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation
 import { fmtScore } from '@/lib/evaluation/display'
 import { EvaluationCards } from './Evaluation'
 import { PosiGrades } from './PosiGrades'
-import { WosCheck } from './WosCheck'
+import { IndexChecks } from './IndexChecks'
 import { alternateTitleLabel } from '@/lib/titles'
 import { PQF_DISCLAIMER } from '@/lib/evaluation/rules'
 import { FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
@@ -297,7 +297,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
             <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
             {links}
             <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
-            {issn && <WosCheck issn={issn} />}
+            {issn && <IndexChecks issn={issn} />}
           </div>
           <div className="panel p-4 space-y-4 text-[13.5px]">
             <div>

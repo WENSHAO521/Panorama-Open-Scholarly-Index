@@ -17,7 +17,7 @@ import psc from '@/lib/psc-v1.0.snapshot.json'
 import { fmt } from '@/components/db'
 import { YearTrend } from '@/components/YearTrend'
 import { PosiGrades } from '@/components/PosiGrades'
-import { WosCheck } from '@/components/WosCheck'
+import { IndexChecks } from '@/components/IndexChecks'
 
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
 
@@ -184,7 +184,7 @@ export function JournalProfileView() {
                 <SealCheck className="h-4 w-4" /> Apply for certification
               </Link>
             )}
-            <div className="mt-3"><WosCheck issn={j.k} /></div>
+            <div className="mt-3"><IndexChecks issn={j.k} /></div>
           </section>
         </aside>
       </div>
