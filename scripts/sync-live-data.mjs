@@ -62,8 +62,16 @@ function slim(corpus) {
 
 /** Keep in step with src/lib/journal-search.ts. */
 const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
+// Latin words of 2+ letters, and each Chinese character on its own (Chinese
+// titles have no spaces between words).
 function titleWords(t) {
-  return t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !STOP_WORDS.has(w))
+  return (t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+|\p{Script=Han}/gu) ?? [])
+    .filter(w => (w.length >= 2 || /\p{Script=Han}/u.test(w)) && !STOP_WORDS.has(w))
+}
+// Index file a word lives in: its first two letters, or one of 64 buckets
+// for Chinese characters.
+function prefixOf(w) {
+  return /\p{Script=Han}/u.test(w) ? `zh${w.codePointAt(0) % 64}` : w.slice(0, 2)
 }
 
 /** Registry titles occasionally carry control characters. */
@@ -219,7 +227,7 @@ if (!RANKINGS_ONLY) {
       const { title, alt } = titlesOf(r.posi_id, r.title, r.alternate_titles)
       const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
       if (alt.length) entry.push(alt.join(' | '))
-      for (const p of new Set([title, ...alt].flatMap(titleWords).map(w => w.slice(0, 2)))) {
+      for (const p of new Set([title, ...alt].flatMap(titleWords).map(prefixOf))) {
         if (!byPrefix.has(p)) byPrefix.set(p, [])
         byPrefix.get(p).push(entry)
       }
