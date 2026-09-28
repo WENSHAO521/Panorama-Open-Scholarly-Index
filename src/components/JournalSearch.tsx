@@ -89,7 +89,7 @@ export function JournalSearch() {
                       <div className="flex flex-wrap items-center gap-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
                         {h.works > 0 && <span className="font-mono tnum">{fmt(h.works)} works</span>}
                         {h.oa && <span>Open access</span>}
-                        <PosiGrades tier={curated?.k === 'core' ? 'core' : curated?.k === 'candidate' ? 'candidate' : 'indexed'}
+                        <PosiGrades tier={curated?.k === 'core' ? 'core' : 'indexed'}
                           ajr={h.ajr} quartile={h.quartile} quartileProvisional={h.status === 'provisional'}
                           zone={h.zone} zoneStatus={h.zoneStatus ?? 'not_assigned'} />
                       </div>

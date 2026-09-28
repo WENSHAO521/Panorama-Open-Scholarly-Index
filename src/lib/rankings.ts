@@ -16,7 +16,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 
-import { getCoreCollection, getCandidateJournals } from './data'
+import { getCoreCollection, getCuratedNonCoreJournals } from './data'
 import { alternateTitleText } from './titles'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 import { getAllPciEntries } from './pci'
@@ -113,7 +113,7 @@ const PSC_NAME = Object.fromEntries(PSC.map(c => [c.code, c.name]))
 function metaIndex(): { meta: Map<string, Meta>; coreIds: Set<string> } {
   const meta = new Map<string, Meta>()
   const coreIds = new Set(getCoreCollection().map(j => j.posi_id).filter((x): x is string => !!x))
-  for (const j of [...getCoreCollection(), ...getCandidateJournals(), ...BENCHMARK_JOURNALS]) {
+  for (const j of [...getCoreCollection(), ...getCuratedNonCoreJournals(), ...BENCHMARK_JOURNALS]) {
     if (!j.posi_id) continue
     const a = ajrOf(j)
     meta.set(j.posi_id, {

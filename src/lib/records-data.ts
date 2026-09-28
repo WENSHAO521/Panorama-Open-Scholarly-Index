@@ -1,12 +1,12 @@
 // Server-only access to the vendored datasets, in the record model's terms.
 // Never import this from a client component: it pulls in every record.
 import type { Journal } from './types'
-import { ALL_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection, getCandidateJournals } from './data'
+import { ALL_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection, getCuratedNonCoreJournals } from './data'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 
-/** Journals that get a statically generated record page (Core, Candidate, Benchmark). */
+/** Journals that get a statically generated record page (Core, other curated, Benchmark). */
 export function getStaticRecordJournals(): Journal[] {
-  return [...getCoreCollection(), ...getCandidateJournals(), ...BENCHMARK_JOURNALS]
+  return [...getCoreCollection(), ...getCuratedNonCoreJournals(), ...BENCHMARK_JOURNALS]
 }
 
 /** Every record, any collection. */

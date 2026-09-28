@@ -9,7 +9,7 @@ import type { CitationQuartile, PosiZone, ZoneStatus } from '@/lib/evaluation/ru
 import { QUARTILE_TOOLTIP } from '@/lib/evaluation/rules'
 import { ZONE_SHARE, quartileLabel } from '@/lib/evaluation/display'
 
-export type GradeTier = 'core' | 'candidate' | 'indexed'
+export type GradeTier = 'core' | 'indexed'
 
 export interface PosiGradesProps {
   tier: GradeTier
@@ -27,7 +27,6 @@ type Seg = { key: string; text: string; title: string; style?: React.CSSProperti
 
 const TIER: Record<GradeTier, { text: string; title: string; style: React.CSSProperties }> = {
   core: { text: 'Core', title: 'Core Collection: certified after PQF editorial evaluation', style: { background: 'var(--teal-soft)', color: 'var(--teal)' } },
-  candidate: { text: 'Under review', title: 'Certified, now under PQF re-review', style: { color: 'var(--partial)' } },
   indexed: { text: 'Indexed', title: 'Indexed from registry metadata; not certified', style: { color: 'var(--ink-2)' } },
 }
 

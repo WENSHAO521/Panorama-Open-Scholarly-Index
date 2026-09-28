@@ -91,7 +91,7 @@ const soft = (s: string) => <span style={{ color: 'var(--soft)' }}>{s}</span>
  */
 export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
   ev: JournalEvaluation
-  core: 'core' | 'candidate' | 'indexed' | null
+  core: 'core' | 'indexed' | null
   idPrefix?: string
   showPqf?: boolean
 }) {
@@ -102,7 +102,7 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
   return (
     <div className="space-y-1">
       <Block title="Core Collection" id={`${idPrefix}-core`}>
-        <Row k="Status" v={core === 'core' ? <span className="font-medium" style={{ color: 'var(--teal)' }}>Eligible, certified</span> : core === 'candidate' ? 'Under re-review' : 'Indexed, not certified'} />
+        <Row k="Status" v={core === 'core' ? <span className="font-medium" style={{ color: 'var(--teal)' }}>Eligible, certified</span> : 'Indexed, not certified'} />
       </Block>
 
       {showPqf && (
@@ -171,7 +171,7 @@ function Card({ step, title, version, state, value, children, action }: {
  */
 export function EvaluationCards({ ev, core, autoPqf }: {
   ev: JournalEvaluation
-  core: 'core' | 'candidate' | 'indexed'
+  core: 'core' | 'indexed'
   autoPqf?: { total: number; version: string } | null
 }) {
   const r = ev.ranking
@@ -183,12 +183,12 @@ export function EvaluationCards({ ev, core, autoPqf }: {
   return (
     <div>
       <div className="grid sm:grid-cols-2 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
-        <Card step={1} title="Core Collection" state={core === 'core' ? 'done' : core === 'candidate' ? 'pending' : 'none'}
-          value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>Eligible, certified</span> : core === 'candidate' ? 'Under re-review' : 'Indexed, not certified'}
+        <Card step={1} title="Core Collection" state={core === 'core' ? 'done' : 'none'}
+          value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>Eligible, certified</span> : 'Indexed, not certified'}
           action={core === 'core'
             ? <Link href="/core-collection/" className="link">Core Collection</Link>
             : <Link href="/certification/" className="link">Apply for certification →</Link>}>
-          <p>{core === 'core' ? 'Passed editorial evaluation under the POSI Quality Framework.' : core === 'candidate' ? 'A PQF re-review found this journal below the bar.' : 'Listed in the journal directory. Certification is by application.'}</p>
+          <p>{core === 'core' ? 'Passed editorial evaluation under the POSI Quality Framework.' : 'Listed in the journal directory. Certification is by application.'}</p>
         </Card>
 
         <Card step={2} title="PQF" version={ev.pqf.version} state={ev.pqf.status === 'eligible' ? 'done' : ev.pqf.score != null ? 'pending' : 'none'}

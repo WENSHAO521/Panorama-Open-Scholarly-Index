@@ -25,23 +25,21 @@ export const OTHER_INDEXED_JOURNALS: Journal[] = coreCollectionJournals.filter(j
 
 export const ALL_JOURNALS: Journal[] = [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS, ...DISCOVERED_JOURNALS]
 
-// The single definition of "Core Collection" - a journal admitted through
-// PQF editorial selection that has since fallen below the eligibility bar
-// (collection_status: 'candidate') keeps its record and journal page, but
-// is not counted as, or treated with the privileges of, full Core
-// Collection membership (badges, certificates, ranking-page inclusion)
-// until re-review restores it. See scripts/rate-early-stage.mjs's PQF
-// eligibility bands (Eligible/Review Required/Insufficient Evidence/Not
-// Eligible) - 'candidate' is set manually after a Not Eligible finding,
-// not computed automatically by any script.
+// The single definition of "Core Collection": a curated record whose
+// collection_status is unset or 'core'. There is no candidate tier (retired
+// 28 September 2026): a record with any other status, such as a journal a
+// PQF re-review found below the bar, keeps its record and journal page as
+// an indexed, not certified, journal, with no Core mark, count or
+// certificate.
+const isCore = (j: Journal) => !j.collection_status || j.collection_status === 'core'
+
 export function getCoreCollection(): Journal[] {
-  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
-    .filter(j => j.collection_status !== 'candidate')
+  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS].filter(isCore)
 }
 
-export function getCandidateJournals(): Journal[] {
-  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS]
-    .filter(j => j.collection_status === 'candidate')
+/** Curated records outside the Core Collection: indexed, not certified. */
+export function getCuratedNonCoreJournals(): Journal[] {
+  return [...PSG_JOURNALS, ...INDEXED_JOURNALS, ...SHIHARR_JOURNALS, ...OTHER_INDEXED_JOURNALS].filter(j => !isCore(j))
 }
 
 // ISSN → journal_code lookup for mapping Crossref responses

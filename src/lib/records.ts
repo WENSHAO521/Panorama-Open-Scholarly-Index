@@ -20,7 +20,7 @@ import { DATA_CUTOFF } from './release'
 // Pure model code only: safe to import from client components. Anything
 // that touches the vendored datasets lives in records-data.ts (server only).
 
-export type Collection = 'core' | 'candidate' | 'benchmark' | 'discovered'
+export type Collection = 'core' | 'curated' | 'benchmark' | 'discovered'
 
 export type Verification = 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'NEEDS_CHECK' | 'REJECTED'
 
@@ -34,7 +34,7 @@ export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 //             editorial evaluation. Only Core journals carry the Core mark and are
 //             certified.
 //
-// The internal collection keys (core / candidate / benchmark / discovered)
+// The internal collection keys (core / curated / benchmark / discovered)
 // stay as they are in the data files; they only say where a curated record
 // came from. A journal with no curated record at all is still indexed and is
 // served as journal profiles at /journal/.
@@ -64,10 +64,10 @@ export const COLLECTIONS: Record<Collection, { label: string; short: string; des
     short: 'Core',
     description: TIERS.core.description,
   },
-  candidate: {
-    label: 'Certification under review',
+  curated: {
+    label: 'Indexed, curated record',
     short: 'Indexed',
-    description: 'Indexed. Previously certified; a PQF re-review found it below the bar, so it is excluded from the Core Collection and its mark until re-review.',
+    description: 'Indexed. POSI holds a curated record with a permanent POSI-J id. Not certified: not in the Core Collection.',
   },
   benchmark: {
     label: 'Indexed, benchmark set',
@@ -122,13 +122,13 @@ export const FRESHNESS: Record<Freshness, { label: string; rule: string; color: 
 export function collectionOf(j: Journal): Collection {
   if (j.id.startsWith('j-disc-')) return 'discovered'
   if (j.is_external_benchmark) return 'benchmark'
-  if (j.collection_status === 'candidate') return 'candidate'
+  if (j.collection_status && j.collection_status !== 'core') return 'curated'
   return 'core'
 }
 
 export function verificationOf(j: Journal): Verification {
   const c = collectionOf(j)
-  if (c === 'core' || c === 'candidate') return 'VERIFIED'
+  if (c === 'core' || c === 'curated') return 'VERIFIED'
   if (c === 'benchmark') return j.openalex_source_id && (j.issn_online || j.issn_print) ? 'PARTIALLY_VERIFIED' : 'NEEDS_CHECK'
   return 'NEEDS_CHECK'
 }
