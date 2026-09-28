@@ -5,6 +5,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { publisherHref, type PublisherRow } from '@/lib/publishers'
 import { fmt } from './db'
+import { dataUrl } from '@/lib/data-base'
 
 const PAGE = 50
 type Sort = 'journals' | 'name' | 'works' | 'oa'
@@ -18,7 +19,7 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
 
   // The first rows are rendered at build time; the full list loads in the background.
   useEffect(() => {
-    fetch('/data/meta/publishers.json').then(r => r.json()).then((all: PublisherRow[]) => { setRows(all); setFull(true) }).catch(() => {})
+    fetch(dataUrl('meta/publishers.json')).then(r => r.json()).then((all: PublisherRow[]) => { setRows(all); setFull(true) }).catch(() => {})
   }, [])
   const filterKey = `${q}|${sort}`
   const [pageState, setPageState] = useState({ key: filterKey, n: 1 })

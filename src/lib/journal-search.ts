@@ -2,6 +2,7 @@
 // (built at prebuild), ISSNs and OpenAlex ids through the profile shards.
 
 import { getJournalProfile } from './journal-profile'
+import { dataUrl } from '@/lib/data-base'
 
 export interface JournalHit {
   key: string
@@ -46,7 +47,7 @@ const cache = new Map<string, Promise<IndexFile>>()
 function loadFile(name: string): Promise<IndexFile> {
   let hit = cache.get(name)
   if (!hit) {
-    hit = fetch(`/data/jt/${name}.json`)
+    hit = fetch(dataUrl(`jt/${name}.json`))
       .then(r => (r.ok ? r.json() : []))
       .catch(e => { cache.delete(name); throw e })
     cache.set(name, hit)

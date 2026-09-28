@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from 'react'
 import type { IndexRecord } from './records'
+import { dataUrl } from '@/lib/data-base'
 
 export type IssnMap = Map<string, IndexRecord>
 
@@ -13,7 +14,7 @@ let cache: Promise<IssnMap> | null = null
 
 function load(): Promise<IssnMap> {
   if (!cache) {
-    cache = Promise.all(['core', 'benchmark'].map(g => fetch(`/data/index/${g}.json`).then(r => (r.ok ? r.json() : []))))
+    cache = Promise.all(['core', 'benchmark'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
       .then((groups: IndexRecord[][]) => {
         const m: IssnMap = new Map()
         for (const r of groups.flat()) for (const i of r.i) m.set(i.toUpperCase(), r)

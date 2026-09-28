@@ -10,6 +10,7 @@ import { getCitationRecord, getPcsValue, categoryName } from '@/lib/rankings'
 import { buildJournalEvaluation } from '@/lib/evaluation/journal'
 import Link from 'next/link'
 import { Certificate, ChartLine, FilePdf } from '@phosphor-icons/react/dist/ssr'
+import { dataUrl } from '@/lib/data-base'
 
 // Core, other curated and Global Benchmark records get a static page. Discovered
 // records (~24k) are served by the in-browser viewer at /record/ to stay
@@ -55,7 +56,7 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
     <div className="wrap pb-12">
       <RecordView
         journal={j}
-        jsonHref={`/data/journal/${j.journal_code}.json`}
+        jsonHref={dataUrl(`journal/${j.journal_code}.json`)}
         metrics={{
           pcs,
           pci,

@@ -16,6 +16,7 @@
 
 import { DATA_CUTOFF } from './release'
 import type { IndexRecord } from './records'
+import { dataUrl } from './data-base'
 
 export const MAX_DOIS = 20
 export const SNAPSHOT = DATA_CUTOFF
@@ -98,7 +99,7 @@ let curated: Promise<IndexRecord[]> | null = null
 /** Core and Benchmark curated records (small files); used to name the journal's POSI tier. */
 function loadCurated(): Promise<IndexRecord[]> {
   if (!curated) {
-    curated = Promise.all(['core', 'benchmark'].map(g => fetch(`/data/index/${g}.json`).then(r => (r.ok ? r.json() : []))))
+    curated = Promise.all(['core', 'benchmark'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
       .then((g: IndexRecord[][]) => g.flat())
       .catch(() => [])
   }

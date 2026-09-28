@@ -10,6 +10,8 @@
 // /publisher/?id=<slug>, reading a hashed shard under /data/publishers/, to
 // stay inside Cloudflare Pages' 20,000-file limit.
 
+import { dataUrl } from './data-base'
+
 export interface PublisherRow {
   /** publisher name as registered */
   name: string
@@ -100,5 +102,5 @@ export function publisherShardOf(slug: string): string {
 export const PUBLISHER_SHARDS = Array.from({ length: PUBLISHER_SHARD_COUNT }, (_, i) => i.toString(16).padStart(2, '0'))
 
 export function publisherJsonHref(slug: string): string {
-  return `/data/publishers/${publisherShardOf(slug)}.json`
+  return dataUrl(`publishers/${publisherShardOf(slug)}.json`)
 }

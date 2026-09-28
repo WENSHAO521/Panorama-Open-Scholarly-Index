@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { JOURNAL_FIELDS, INDEX_KEYS, BASIS, type Basis } from '@/lib/schema'
 import { PageHeader, SectionTitle, BasisTag } from '@/components/db'
+import { dataUrl } from '@/lib/data-base'
 
 export const metadata = {
   title: 'Record schema',
@@ -15,7 +16,7 @@ export default function SchemaPage() {
         <p className="max-w-[65ch]">
           The fields of a journal record, as published in <span className="font-mono">/data/journal/&#123;code&#125;.json</span> and
           the Discovered shards. Each field states its basis so declared claims are never mistaken for measurements.
-          Machine-readable copy: <a href="/data/meta/schema.json" className="link font-mono">/data/meta/schema.json</a>.
+          Machine-readable copy: <a href={dataUrl('meta/schema.json')} className="link font-mono">{dataUrl('meta/schema.json')}</a>.
         </p>
       </PageHeader>
 

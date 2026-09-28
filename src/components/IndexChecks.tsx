@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react'
 import { BookOpenText, Check, Copy } from '@phosphor-icons/react/dist/ssr'
 import { SCOPUS_RANK, scopusKey, scopusShard, scopusSourceHref, type ScopusEntry } from '@/lib/scopus'
+import { dataUrl } from '@/lib/data-base'
 
 export const mjlHref = (issn: string) => `https://mjl.clarivate.com/search-results?issn=${encodeURIComponent(issn)}`
 export const SCOPUS_SOURCES = 'https://www.scopus.com/sources'
@@ -23,14 +24,14 @@ export const nlmRecordHref = (nlmId: string) => `https://www.ncbi.nlm.nih.gov/nl
 type Shard = { as_of: string; list: string; d: Record<string, ScopusEntry> }
 const shards = new Map<string, Promise<Shard | null>>()
 function loadShard(name: string) {
-  if (!shards.has(name)) shards.set(name, fetch(`/data/scopus/${name}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null))
+  if (!shards.has(name)) shards.set(name, fetch(dataUrl(`scopus/${name}.json`)).then(r => (r.ok ? r.json() : null)).catch(() => null))
   return shards.get(name)!
 }
 
 type PubmedShard = { as_of: string; d: Record<string, string> }
 const pubmedShards = new Map<string, Promise<PubmedShard | null>>()
 function loadPubmed(name: string) {
-  if (!pubmedShards.has(name)) pubmedShards.set(name, fetch(`/data/pubmed/${name}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null))
+  if (!pubmedShards.has(name)) pubmedShards.set(name, fetch(dataUrl(`pubmed/${name}.json`)).then(r => (r.ok ? r.json() : null)).catch(() => null))
   return pubmedShards.get(name)!
 }
 
