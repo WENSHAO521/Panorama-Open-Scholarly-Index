@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Data sources and access',
   description: 'Where POSI data comes from, how often it is updated, and how to download and reuse it.',
+  alternates: { canonical: '/docs/data/' },
 }
 
 const SOURCES = [

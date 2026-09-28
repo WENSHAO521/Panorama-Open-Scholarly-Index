@@ -5,6 +5,7 @@ import { PageHeader, SectionTitle, BasisTag } from '@/components/db'
 export const metadata = {
   title: 'Record schema',
   description: 'Every field in a POSI journal record: type, provenance basis, source and meaning, plus the short keys used in the index files.',
+  alternates: { canonical: '/docs/schema/' },
 }
 
 export default function SchemaPage() {

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'News',
   description: 'Updates to POSI coverage, methodology and services.',
+  alternates: { canonical: '/announcements/' },
 }
 
 function when(d: string) {

@@ -15,9 +15,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
-  if (code === 'all') return { title: 'Citation Rankings, all categories', description: 'Every journal ranked by PNCI within its PSC category, listed together; ranks are category ranks.' }
+  if (code === 'all') return { title: 'Citation Rankings, all categories', description: 'Every journal ranked by PNCI within its PSC category, listed together; ranks are category ranks.', alternates: { canonical: '/rankings/all/' } }
   const c = getCategories().find(x => x.code === code)
-  return c ? { title: `${c.name} journal citation ranking`, description: `Journals in ${c.name} (${c.code}) ranked by PNCI, with citation percentile, Citation Quartile (C-Q1 to C-Q4) and POSI Zone.` } : {}
+  return c ? { title: `${c.name} journal citation ranking`, description: `Journals in ${c.name} (${c.code}) ranked by PNCI, with citation percentile, Citation Quartile (C-Q1 to C-Q4) and POSI Zone.`, alternates: { canonical: `/rankings/${c.code}/` } } : {}
 }
 
 export default async function CategoryRankingPage(props: { params: Promise<{ code: string }> }) {

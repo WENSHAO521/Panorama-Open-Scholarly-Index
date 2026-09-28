@@ -7,6 +7,7 @@ import { PageHeader, fmt } from '@/components/db'
 export const metadata = {
   title: 'Subject categories',
   description: 'The POSI Subject Classification (PSC): six domains and 42 categories, with the number of indexed and ranked journals in each.',
+  alternates: { canonical: '/subjects/' },
 }
 
 const CATS = psc.categories as { code: string; name: string; level: number; parent: string | null }[]

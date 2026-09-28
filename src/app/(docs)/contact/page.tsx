@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Contact',
   description: 'Contact the POSI editorial team about certification, record corrections, certificates and data.',
+  alternates: { canonical: '/contact/' },
 }
 
 const TOPICS = [

@@ -30,6 +30,7 @@ export async function generateMetadata(props: { params: Promise<{ code: string }
   return {
     title: j.title,
     description: `POSI journal record for ${j.title}${j.issn_online ? ` (eISSN ${j.issn_online})` : ''}: identifiers, Core Collection status, PQF, AJR rating, PNCI citation ranking and provenance.`,
+    alternates: { canonical: `/journal/${j.journal_code}/` },
   }
 }
 

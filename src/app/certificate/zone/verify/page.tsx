@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Verify a zone certificate',
   description: 'Check that a POSI zone certificate matches the journal’s zones in the current Journal Rankings.',
+  alternates: { canonical: '/certificate/zone/verify/' },
 }
 
 export default function VerifyZoneCertificatePage() {

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Verify a certificate',
   description: 'Check that a POSI indexing certificate is unaltered and that every listed publication is still indexed.',
+  alternates: { canonical: '/certificate/verify/' },
 }
 
 export default function VerifyCertificatePage() {

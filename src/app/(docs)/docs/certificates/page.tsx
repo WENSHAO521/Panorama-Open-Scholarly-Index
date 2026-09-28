@@ -6,6 +6,7 @@ import { ZONES_VERSION } from '@/lib/zones'
 export const metadata = {
   title: 'How certificates work',
   description: 'What a POSI certificate of indexing states, how its numbers are derived, and how it is verified without a server.',
+  alternates: { canonical: '/docs/certificates/' },
 }
 
 export default function CertificatesDoc() {

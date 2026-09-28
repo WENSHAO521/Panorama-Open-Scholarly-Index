@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Editorial policy',
   description: 'How journals are indexed in POSI, how the Core Collection is certified, and how coverage is reviewed, changed and appealed.',
+  alternates: { canonical: '/editorial-policy/' },
 }
 
 const PQF = [

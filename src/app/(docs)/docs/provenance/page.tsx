@@ -6,6 +6,7 @@ import { PageHeader, SectionTitle, VerificationPill, FreshnessTag, fmt } from '@
 export const metadata = {
   title: 'Provenance and verification',
   description: 'How POSI assigns verification and freshness states, orders its sources, resolves duplicates and labels small samples.',
+  alternates: { canonical: '/docs/provenance/' },
 }
 
 const TIERS = [

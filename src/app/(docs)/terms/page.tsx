@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Terms of use',
   description: 'Terms governing use of the Panorama Open Scholarly Index at posi.panorama-sg.com.',
+  alternates: { canonical: '/terms/' },
 }
 
 export default function TermsPage() {

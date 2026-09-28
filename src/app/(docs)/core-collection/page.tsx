@@ -11,6 +11,7 @@ import { PageHeader, fmt } from '@/components/db'
 export const metadata = {
   title: 'Core Collection',
   description: 'Journals certified for the POSI Core Collection after editorial evaluation under the POSI Quality Framework.',
+  alternates: { canonical: '/core-collection/' },
 }
 
 export default function CoreCollectionPage() {

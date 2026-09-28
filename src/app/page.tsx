@@ -13,6 +13,7 @@ export const metadata = {
   title: { absolute: 'Panorama Open Scholarly Index (POSI)' },
   description:
     'The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.',
+  alternates: { canonical: '/' },
 }
 
 const SERVICES = [

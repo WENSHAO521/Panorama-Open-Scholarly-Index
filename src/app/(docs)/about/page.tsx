@@ -7,6 +7,7 @@ import { PageHeader, fmt } from '@/components/db'
 export const metadata = {
   title: 'About POSI',
   description: 'The Panorama Open Scholarly Index is a citation index and journal directory published by Panorama Scholarly Group Ltd.',
+  alternates: { canonical: '/about/' },
 }
 
 export default function AboutPage() {

@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Responsible use',
   description: 'How POSI journal rankings, certification and data should and should not be used.',
+  alternates: { canonical: '/responsible-use/' },
 }
 
 export default function ResponsibleUsePage() {

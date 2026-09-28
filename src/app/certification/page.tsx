@@ -6,6 +6,7 @@ import { CertificationApply } from '@/components/CertificationApply'
 export const metadata = {
   title: 'Apply for certification',
   description: 'Every journal with DOIs at Crossref or a record in OpenAlex is indexed by POSI. Journals apply for certification to enter the Core Collection.',
+  alternates: { canonical: '/certification/' },
 }
 
 const PQF = [

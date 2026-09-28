@@ -12,6 +12,7 @@ import { SnapshotPanel } from '@/components/SnapshotPanel'
 export const metadata = {
   title: 'Datasets',
   description: 'Download every POSI file: the global journal directory, publishers, rankings, curated journal records in JSON and CSV, the PSC subject classification and the checksummed canonical snapshot.',
+  alternates: { canonical: '/datasets/' },
 }
 
 function kb(bytes: number) {
