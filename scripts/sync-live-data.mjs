@@ -14,7 +14,8 @@
  *                         or pcs-q.json in older snapshots); its PCS-Q quartiles are retired
  *   journals-global.json  the global journal corpus (every Crossref and
  *                         OpenAlex journal), from the newest posi-engine release
- *                         tagged global-index-* (asset global-corpus.json.gz)
+ *                         tagged journals-* (monthly directory refresh) or
+ *                         global-index-* (yearly ranking), asset global-corpus.json.gz
  *   public/data/j/*.json  journal profiles for /journal/, in 1024 hashed shards,
  *                         built from the corpus, the OpenAlex profiles asset
  *                         (openalex-profiles.jsonl.gz), the Citation Ranking edition
@@ -202,8 +203,10 @@ if (!RANKINGS_ONLY) {
     } else {
       try {
         const releases = await get(RELEASES)
-        const rel = releases.find(r => r.tag_name?.startsWith('global-index-') && !r.draft)
-        if (!rel) throw new Error('no global-index release yet')
+        // Newest first: the monthly journals-<YYYY-MM> directory refresh or
+        // the yearly global-index-<cycle> ranking release, whichever is newer.
+        const rel = releases.find(r => /^(journals|global-index)-/.test(r.tag_name ?? '') && !r.draft)
+        if (!rel) throw new Error('no journals-* or global-index-* release yet')
         assetBase = `${RELEASE_DOWNLOADS}/download/${rel.tag_name}`
       } catch (e) {
         assetBase = `${RELEASE_DOWNLOADS}/latest/download`
