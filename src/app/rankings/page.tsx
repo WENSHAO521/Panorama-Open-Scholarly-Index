@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getCategories, getRankings, RANKING_AVAILABLE, RANKING_SNAPSHOT, RANKING_VERSION, PNCI_VERSION, RANKING_THRESHOLDS } from '@/lib/rankings'
+import { getCategories, getRankings, RANKING_AVAILABLE, RANKING_DOWNLOADS, RANKING_SNAPSHOT, RANKING_VERSION, PNCI_VERSION, RANKING_THRESHOLDS } from '@/lib/rankings'
 import { RANKING_BASIS } from '@/lib/evaluation/rules'
 import { fmtSnapshot } from '@/lib/evaluation/display'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
@@ -25,7 +25,7 @@ export default function RankingsPage() {
       <PageHeader
         title="Journal Citation Rankings"
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Rankings' }]}
-        actions={RANKING_AVAILABLE ? <a href={`/data/rankings/citation-${year}.csv`} className="btn btn-primary">Download {year}</a> : undefined}
+        actions={RANKING_AVAILABLE ? <a href={`${RANKING_DOWNLOADS}/citation-${year}.csv`} className="btn btn-primary">Download {year}</a> : undefined}
       >
         <p className="max-w-[70ch]">
           Journals are ranked by <strong>PNCI</strong>, the POSI Normalized Citation Indicator, within their PSC subject

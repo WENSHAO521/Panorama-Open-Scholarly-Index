@@ -3,7 +3,7 @@ import { getAllRecords, getStaticRecordJournals } from '@/lib/records-data'
 import { toIndexRecord, type Collection } from '@/lib/records'
 import { DISCOVERED_JOURNALS } from '@/lib/data'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
-import { getRankings } from '@/lib/rankings'
+import { getRankings, RANKING_DOWNLOADS } from '@/lib/rankings'
 import { PUBLISHER_SHARD_COUNT } from '@/lib/publishers'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { PageHeader, SectionTitle, fmt } from '@/components/db'
@@ -102,12 +102,12 @@ export default function DatasetsPage() {
 
   const global: DataFile[] = [
     { path: '/data/journals/index.json', rows: categories.length, bytes: null, what: 'Global journal directory: totals, and the file list for each subject category' },
-    { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 20,000 journals are split by first letter' },
+    { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 4,000 journals are split by first letter' },
     { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
     { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
-    { path: `/data/rankings/citation-${year}.json`, alt: `/data/rankings/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals, and the edition's JSON lists the complete CSV of every journal, in parts` },
-    { path: `/data/rankings/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
-    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: null, bytes: null, what: 'Deprecated: PCS values only, kept for existing links; its rank, quartile and zone columns are empty since PCS-Q was retired' },
+    { path: `${RANKING_DOWNLOADS}/citation-${year}.json`, alt: `${RANKING_DOWNLOADS}/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals. Served from data.posi.panorama-sg.com` },
+    { path: `${RANKING_DOWNLOADS}/citation-${year}-all.csv`, rows: all.length, bytes: null, what: 'Every journal of the Citation Ranking edition, all ranking statuses, as one CSV' },
+    { path: `${RANKING_DOWNLOADS}/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
   ]
 
   const curated: DataFile[] = [
@@ -126,7 +126,7 @@ export default function DatasetsPage() {
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
           The global journal directory, publishers, rankings, curated journal records and the subject classification,
-          under open licences. Every file is regenerated on each deployment from the current data.
+          under open licences. Every file is regenerated from the current data; ranking downloads are served from the POSI data layer, data.posi.panorama-sg.com.
         </p>
       </PageHeader>
 

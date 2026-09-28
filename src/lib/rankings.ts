@@ -65,6 +65,9 @@ export const RANKING_SNAPSHOT: string | null = E.snapshot_date ?? null
 export const RANKING_YEAR: number = E.metric_year
 /** True once a PNCI-1.0 edition has been published. */
 export const RANKING_AVAILABLE = E.records.length > 0
+/** Ranking downloads (CSV, per-category JSON), published by posi-data-delivery
+ *  (scripts/build-downloads.mjs) rather than built into this site. */
+export const RANKING_DOWNLOADS = 'https://data.posi.panorama-sg.com/downloads/rankings'
 export { RANKING_THRESHOLDS }
 
 export interface RankedJournal {
