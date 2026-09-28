@@ -7,7 +7,7 @@
 // lookups are done by the caller and passed in.
 
 import Link from 'next/link'
-import { ArrowSquareOut, DownloadSimple, Globe } from '@phosphor-icons/react/dist/ssr'
+import { ArrowSquareOut, Certificate, DownloadSimple, Globe } from '@phosphor-icons/react/dist/ssr'
 import type { Journal } from '@/lib/types'
 import type { PcsEntry } from '@/lib/pcs'
 import type { PciEntry } from '@/lib/pci'
@@ -289,6 +289,11 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="panel p-4 space-y-2">
+            <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
+            {links}
+            <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
+          </div>
           <div className="panel p-4 space-y-4 text-[13.5px]">
             <div>
               <p className="font-medium" style={{ color: 'var(--ink)' }}>Verification: {VERIFICATION[v].label}</p>
@@ -305,11 +310,6 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
               <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{COLLECTIONS[k].description}</p>
             </div>
             <Link href="/docs/provenance/" className="link text-[13px] inline-block">How states are assigned</Link>
-          </div>
-          <div className="panel p-4 text-[13.5px] space-y-2">
-            <p className="font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
-            {links}
-            <Link href="/certificate/" className="link block">Certificate of indexing</Link>
           </div>
           <div className="panel p-4 text-[13px]">
             <p className="font-medium mb-2" style={{ color: 'var(--ink)' }}>Cite this record</p>
