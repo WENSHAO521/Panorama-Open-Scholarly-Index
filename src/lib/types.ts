@@ -11,8 +11,11 @@ export interface JournalApc {
 export interface Journal {
   id: string
   journal_code: string
+  /** Title as registered with the ISSN Portal. */
   title: string
   short_title: string
+  /** Other titles the journal is registered under elsewhere (Crossref, OpenAlex), kept searchable. */
+  alternate_titles?: string[] | null
   issn_print: string | null
   issn_online: string | null
   publisher: string

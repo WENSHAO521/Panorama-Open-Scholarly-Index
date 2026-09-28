@@ -11,7 +11,8 @@ export interface JournalHit {
   oa: boolean
 }
 
-type Entry = [string, string, string | null, number, 0 | 1]
+/** [key, title, publisher, works, open access, alternate titles joined by ' | '] */
+type Entry = [string, string, string | null, number, 0 | 1, string?]
 
 /** Keep in step with scripts/sync-live-data.mjs. */
 const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
@@ -56,12 +57,15 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   const full = words.join(' ')
   const scored: { e: Entry; score: number }[] = []
   for (const e of entries) {
-    const tw = titleWords(e[1])
-    // every query word must prefix-match some title word
-    if (!words.every(w => tw.some(t => t.startsWith(w)))) continue
-    const joined = tw.join(' ')
-    const score = joined === full ? 3 : joined.startsWith(full) ? 2 : words.every(w => tw.includes(w)) ? 1 : 0
-    scored.push({ e, score })
+    let best = -1
+    for (const title of [e[1], ...(e[5]?.split(' | ') ?? [])]) {
+      const tw = titleWords(title)
+      // every query word must prefix-match some title word
+      if (!words.every(w => tw.some(t => t.startsWith(w)))) continue
+      const joined = tw.join(' ')
+      best = Math.max(best, joined === full ? 3 : joined.startsWith(full) ? 2 : words.every(w => tw.includes(w)) ? 1 : 0)
+    }
+    if (best >= 0) scored.push({ e, score: best })
   }
   // entries arrive sorted by works, so a stable sort keeps that as the tiebreak
   scored.sort((a, b) => b.score - a.score)

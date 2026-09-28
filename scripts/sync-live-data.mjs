@@ -52,7 +52,7 @@ async function get(url, as = 'json') {
 // Only the fields the site uses, to keep build memory and page data small.
 function slim(corpus) {
   return corpus.map(r => ({
-    posi_id: r.posi_id, curated: !!r.curated, title: clean(r.title), publisher: r.publisher,
+    posi_id: r.posi_id, curated: !!r.curated, title: titlesOf(r.posi_id, r.title).title, publisher: r.publisher,
     issns: r.issns ?? [], issn_l: r.issn_l ?? null, openalex_source_id: r.openalex_source_id ?? null,
     country: r.country ?? null, open_access: r.open_access ?? null, in_doaj: r.in_doaj ?? null,
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
@@ -68,6 +68,24 @@ function titleWords(t) {
 
 /** Registry titles occasionally carry control characters. */
 const clean = t => t?.replace(/[\u0000-\u001f\u007f-\u009f]/g, '').trim() || null
+
+// Core Collection titles are checked against the ISSN Portal and win over the
+// title Crossref / OpenAlex carry, which can lag a rename. The registry title
+// and any alternate_titles stay searchable as "also known as".
+const CURATED = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/core-collection.json'), 'utf-8'))
+  .filter(j => j.posi_id).map(j => [j.posi_id, j]))
+function titlesOf(posiId, registryTitle, more = []) {
+  const c = CURATED.get(posiId)
+  const title = clean(c?.title) ?? clean(registryTitle)
+  // one entry per title that differs only in punctuation or case
+  const seen = new Set([titleKey(title)])
+  const alt = [...(c?.alternate_titles ?? []), registryTitle, ...more].map(clean)
+    .filter(t => t && !seen.has(titleKey(t)) && seen.add(titleKey(t)))
+  return { title, alt }
+}
+function titleKey(t) {
+  return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
+}
 
 // 1. Ranking edition
 {
@@ -85,6 +103,7 @@ const clean = t => t?.replace(/[\u0000-\u001f\u007f-\u009f]/g, '').trim() || nul
       edition = await get(`${DATA}${dir}collections/pcs-q.json`)
     }
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
+    for (const r of edition.records) if (CURATED.has(r.journal_id)) r.title = titlesOf(r.journal_id, r.title).title
     writeFileSync(out, JSON.stringify(edition))
     console.log(`sync-live-data: rankings ${edition.methodology_version} ${edition.metric_year}, ${edition.records.length} journals`)
   } catch (e) {
@@ -136,8 +155,7 @@ if (!RANKINGS_ONLY) {
     lines = null
 
     // APCs POSI has verified on the journal's own website (Core Collection records).
-    const verifiedApc = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/core-collection.json'), 'utf-8'))
-      .filter(j => j.posi_id && j.apc).map(j => [j.posi_id, j.apc]))
+    const verifiedApc = new Map([...CURATED.values()].filter(j => j.apc).map(j => [j.posi_id, j.apc]))
 
     const edition = JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8'))
     const ranks = new Map(edition.records.map(r => [r.journal_id, r]))
@@ -151,9 +169,10 @@ if (!RANKINGS_ONLY) {
       const o = r.openalex_source_id ? oa.get(r.openalex_source_id) : null
       const rk = ranks.get(r.posi_id)
       const va = verifiedApc.get(r.posi_id)
+      const tt = titlesOf(r.posi_id, r.title ?? o?.t, o?.alt)
       const prof = {
         k: key, pid: r.posi_id, cur: r.curated ? 1 : undefined,
-        t: clean(r.title) ?? clean(o?.t) ?? key, ab: o?.ab, alt: o?.alt,
+        t: tt.title ?? key, ab: o?.ab, alt: tt.alt.length ? tt.alt : undefined,
         pub: r.publisher ?? o?.pub, cc: r.country ?? o?.cc, is: r.issns ?? [key],
         hp: o?.hp, apc: va ? (va.currency === 'USD' ? va.amount : undefined) : r.apc_usd ?? o?.apc,
         apcx: va ? (va.amount === 0 ? 'None' : `${va.currency} ${va.amount.toLocaleString('en-US')}`) : undefined,
@@ -187,7 +206,8 @@ if (!RANKINGS_ONLY) {
 
 // 4. Journal title index for /journals/ search: every title word (minus
 // generic words) -> its first two letters -> one file. Entries are
-// [key, title, publisher, works, open access], most works first.
+// [key, title, publisher, works, open access, alternate titles?], most works
+// first; alternate titles are matched but not shown.
 if (!RANKINGS_ONLY) {
   const dir = join(ROOT, 'public/data/jt')
   try {
@@ -196,8 +216,10 @@ if (!RANKINGS_ONLY) {
     for (const r of corpus) {
       const key = r.issn_l ?? r.issns?.[0]
       if (!key || !r.title) continue
-      const entry = [key, clean(r.title), r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
-      for (const p of new Set(titleWords(r.title).map(w => w.slice(0, 2)))) {
+      const { title, alt } = titlesOf(r.posi_id, r.title)
+      const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
+      if (alt.length) entry.push(alt.join(' | '))
+      for (const p of new Set([title, ...alt].flatMap(titleWords).map(w => w.slice(0, 2)))) {
         if (!byPrefix.has(p)) byPrefix.set(p, [])
         byPrefix.get(p).push(entry)
       }
