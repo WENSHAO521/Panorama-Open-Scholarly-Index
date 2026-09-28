@@ -17,9 +17,11 @@ import { BASIS, FIELD_BY_KEY } from '@/lib/schema'
 import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation/journal'
 import { fmtScore } from '@/lib/evaluation/display'
 import { EvaluationCards } from './Evaluation'
+import { PosiGrades } from './PosiGrades'
+import { WosCheck } from './WosCheck'
 import { alternateTitleLabel } from '@/lib/titles'
 import { PQF_DISCLAIMER } from '@/lib/evaluation/rules'
-import { CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
+import { FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
   /** POSI-EVAL-1.0 evaluation; built from the record alone when absent */
@@ -132,7 +134,9 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
               {j.posi_id && <span className="id-tag">{j.posi_id}</span>}
               {j.issn_online && <span className="id-tag">eISSN {j.issn_online}</span>}
               {j.issn_print && j.issn_print !== j.issn_online && <span className="id-tag">pISSN {j.issn_print}</span>}
-              <CollectionTag k={k} />
+              <PosiGrades size="md" showEmpty tier={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'}
+                ajr={evaluation.ajr.rating} quartile={evaluation.ranking.quartile} quartileProvisional={evaluation.ranking.status === 'provisional'}
+                zone={evaluation.ranking.zone} zoneStatus={evaluation.ranking.zoneStatus} />
               <VerificationPill v={v} />
               <FreshnessTag f={f} />
             </div>
@@ -293,6 +297,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
             <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
             {links}
             <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
+            {issn && <WosCheck issn={issn} />}
           </div>
           <div className="panel p-4 space-y-4 text-[13.5px]">
             <div>
