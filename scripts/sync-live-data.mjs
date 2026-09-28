@@ -87,7 +87,8 @@ function titlesOf(posiId, registryTitle, more = []) {
   const title = clean(c?.title) ?? clean(registryTitle)
   // one entry per title that differs only in punctuation or case
   const seen = new Set([titleKey(title)])
-  const alt = [...(c?.alternate_titles ?? []), registryTitle, ...more].map(clean)
+  // an alternate title is a string or { title, type, lang?, until? }
+  const alt = [...(c?.alternate_titles ?? []), registryTitle, ...more].map(a => clean(typeof a === 'string' ? a : a?.title))
     .filter(t => t && !seen.has(titleKey(t)) && seen.add(titleKey(t)))
   return { title, alt }
 }

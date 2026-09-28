@@ -73,7 +73,7 @@ export function RankingTable({ rows, overall = false, fileName }: { rows: Ranked
       (status === 'all' || (status === 'core') === r.core) &&
       (quart === 'all' || (overall ? r.oQ : r.q) === quart) &&
       (!zone || (overall ? r.oZone : r.zone) === zone) &&
-      (!needle || r.title.toLowerCase().includes(needle) || (r.publisher ?? '').toLowerCase().includes(needle) || r.issn.some(i => i.includes(needle.toUpperCase()))),
+      (!needle || r.title.toLowerCase().includes(needle) || !!r.alt?.some(t => t.toLowerCase().includes(needle)) || (r.publisher ?? '').toLowerCase().includes(needle) || r.issn.some(i => i.includes(needle.toUpperCase()))),
     )
   }, [rows, status, quart, zone, dq, overall])
 
