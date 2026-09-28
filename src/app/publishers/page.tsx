@@ -5,6 +5,7 @@ import { PageHeader, fmt } from '@/components/db'
 export const metadata = {
   title: 'Publishers',
   description: 'Every publisher with journals indexed in POSI, from Crossref and OpenAlex, with journal counts, open-access share and works.',
+  alternates: { canonical: '/publishers/' },
 }
 
 export default function PublishersPage() {

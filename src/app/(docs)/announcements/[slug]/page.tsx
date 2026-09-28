@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params
   const a = getAnnouncementBySlug(slug)
-  return a ? { title: a.title, description: a.summary } : { title: 'News item not found' }
+  return a ? { title: a.title, description: a.summary, alternates: { canonical: `/announcements/${a.slug}/` } } : { title: 'News item not found' }
 }
 
 export default async function AnnouncementDetailPage(props: { params: Promise<{ slug: string }> }) {

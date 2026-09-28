@@ -43,20 +43,44 @@ export interface JournalProfile {
   cr?: number
   src?: string[]
   oid?: string
-  rk?: {
-    y: number
-    pcs: number | null
-    n: number | null
-    oq: string | null
-    op: number | null
-    or: number | null
-    os: number | null
-    cat: string | null
-    cq: string | null
-    cp: number | null
-    cr: number | null
-    cs: number | null
-    ex?: string
+  /**
+   * POSI-EVAL-1.0 evaluation (scripts/sync-live-data.mjs). Ranking fields come
+   * from the Citation Ranking edition (PNCI within the PSC category); pcs is a
+   * supplementary indicator and ranks nothing.
+   */
+  ev?: {
+    /** metric year */
+    y?: number
+    /** ranking snapshot date, YYYY-MM-DD */
+    snap?: string
+    pnci?: number
+    /** PNCI model version */
+    pm?: string
+    /** eligible citable items */
+    n?: number
+    /** citation coverage, 0–1 */
+    cov?: number
+    /** ranking PSC category */
+    cat?: string
+    /** citation rank and category cohort size */
+    r?: number
+    rt?: number
+    /** citation percentile */
+    p?: number
+    /** Citation Quartile (Q1–Q4, shown as C-Q1–C-Q4) */
+    q?: 'Q1' | 'Q2' | 'Q3' | 'Q4'
+    /** POSI Zone and its status */
+    z?: 1 | 2 | 3 | 4
+    zs?: 'official' | 'provisional' | 'not_assigned'
+    /** citation_ranking_status and its reason */
+    st?: 'official' | 'provisional' | 'insufficient_items' | 'insufficient_category' | 'incomplete_coverage' | 'observation' | 'not_available'
+    why?: string
+    pcs?: number
+    pci?: number
+    /** [AJR Rating, AJR model, AJR score, rating status], curated journals only */
+    ajr?: [string, string, number, string]
+    /** PQF score, curated journals only */
+    pqf?: number
   }
 }
 

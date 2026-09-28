@@ -3,7 +3,9 @@ import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
 import { IndexGlance } from '@/components/IndexGlance'
 import { getCoreCollection } from '@/lib/data'
-import { getRankings, getCategories, getCategoryRanking } from '@/lib/rankings'
+import { getRankings, getCategories, getCategoryRanking, countOfficialQuartile, RANKING_AVAILABLE, RANKING_SNAPSHOT } from '@/lib/rankings'
+import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
+import { RankingsPending } from '@/components/Evaluation'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
 
@@ -11,6 +13,7 @@ export const metadata = {
   title: { absolute: 'Panorama Open Scholarly Index (POSI)' },
   description:
     'The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.',
+  alternates: { canonical: '/' },
 }
 
 const SERVICES = [
@@ -59,7 +62,8 @@ export default function HomePage() {
   const coverage: [string, React.ReactNode, string][] = [
     ['Publications', <LiveWorksCount key="w" />, '/publications/'],
     ['Indexed journals', fmt(directoryTotal), '/journals/'],
-    ['Ranked journals', fmt(ranked.length), '/rankings/'],
+    ['Ranked journals', RANKING_AVAILABLE ? fmt(ranked.length) : 'Pending', '/rankings/'],
+    ['C-Q1 journals (official)', RANKING_AVAILABLE ? fmt(countOfficialQuartile('Q1')) : 'Pending', '/rankings/'],
     ['Subject categories', fmt(cats.length), '/subjects/'],
     ['Core Collection', fmt(coreCount), '/core-collection/'],
   ]
@@ -104,20 +108,21 @@ export default function HomePage() {
         <div className="min-w-0 space-y-8">
           <section aria-labelledby="rankings">
             <div className="flex items-end justify-between gap-4 pb-2 mb-3" style={{ borderBottom: '2px solid var(--ink)' }}>
-              <h2 id="rankings" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>Journal Rankings {year}</h2>
+              <h2 id="rankings" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>Journal Citation Rankings {year}</h2>
               <Link href="/rankings/" className="link text-[13px]">All categories</Link>
             </div>
             <p className="text-[13px] mb-3" style={{ color: 'var(--muted)' }}>
-              Journals ranked by POSI Citation Score within subject categories. Largest categories shown; the leading journal in each.
+              Journals ranked by PNCI within their PSC subject category{RANKING_SNAPSHOT ? `, snapshot ${fmtSnapshot(RANKING_SNAPSHOT)}` : ''}. Largest categories shown, with the highest-PNCI journal in each.
             </p>
-            <div className="overflow-x-auto" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+            {!RANKING_AVAILABLE && <RankingsPending />}
+            {RANKING_AVAILABLE && <div className="overflow-x-auto" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
               <table className="dtable">
                 <thead>
                   <tr>
                     <th>Category</th>
                     <th className="text-right">Ranked</th>
-                    <th>Rank 1</th>
-                    <th className="text-right">PCS</th>
+                    <th>Highest PNCI</th>
+                    <th className="text-right">PNCI</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,12 +134,12 @@ export default function HomePage() {
                       </td>
                       <td className="text-right font-mono tnum">{fmt(c.ranked)}</td>
                       <td className="max-w-[220px] xl:max-w-[340px] truncate" title={c.lead?.title}>{c.lead?.title ?? '-'}</td>
-                      <td className="text-right font-mono tnum">{c.lead ? c.lead.pcs.toFixed(2) : '-'}</td>
+                      <td className="text-right font-mono tnum">{fmtScore(c.lead?.pnci, '-')}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div>}
           </section>
 
           <IndexGlance records={getDirectory().records} cats={dirCats} publishers={getPublishers().slice(0, 8)} />

@@ -6,6 +6,7 @@ import { SubjectGrid } from '@/components/SubjectGrid'
 export const metadata = {
   title: 'Open access journal directory',
   description: 'Open access journals indexed in POSI, by subject category, with DOAJ listing marked.',
+  alternates: { canonical: '/journals/open-access/' },
 }
 
 export default function OpenAccessDirectoryPage() {

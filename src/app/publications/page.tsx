@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Publications',
   description: 'Search scholarly publications by date, access and type, with links to journal records, rankings and certificates of indexing.',
+  alternates: { canonical: '/publications/' },
 }
 
 export default function PublicationsPage() {

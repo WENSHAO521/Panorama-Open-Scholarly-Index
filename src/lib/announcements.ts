@@ -9,6 +9,21 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'journal-evaluation-architecture-1-0',
+    title: 'POSI Journal Evaluation Architecture 1.0: PNCI Citation Rankings, AJR Ratings and Citation Quartiles',
+    date: '2026-09-28',
+    pinned: true,
+    summary:
+      'POSI now evaluates journals in five separate layers: PQF for Core Collection eligibility, AJR ratings (A+ to D) for lifecycle development, the PCI, PNCI and PCS citation indicators, a Citation Ranking by PNCI within each subject category with Citation Quartiles C-Q1 to C-Q4, and POSI Zones. PCS-based quartiles and the E-Q and M-Q quartiles are retired.',
+    body: [
+      'PQF decides Core Collection eligibility and nothing else: a score from 0 to 100 and a status of Eligible (70 and above), Review Required (50 to 69.99), Insufficient Evidence (40 to 49.99) or Not Eligible (below 40). PQF is not a citation ranking and does not determine Citation Quartiles or POSI Zones.',
+      'AJR rates a journal’s lifecycle and publishing development: AJR-E for journals 12 to 59 months old, AJR-M from 60 months, and an observation period before that. Each gives an AJR Score and an AJR Rating from A+ (90 and above) to D (below 50). AJR Ratings are absolute lifecycle ratings, not citation quartiles; the E-Q and M-Q quartiles are withdrawn and are not converted into ratings.',
+      'The official Citation Ranking uses PNCI, the POSI Normalized Citation Indicator: each item’s citations relative to items of the same subject field, publication year and document type. Journals are ranked within their PSC category; tied journals share rank and percentile; the percentile gives the Citation Quartile (C-Q1 at 75 and above) and the POSI Zone (Zone 1 at 95 and above, Zone 2 at 80, Zone 3 at 50). An official ranking needs at least 20 eligible items from two publication years and 90% citation coverage; categories need 20 ranked journals for quartiles and 50 for official zones.',
+      'PCS remains published as a supplementary independent citation indicator. It no longer determines any rank, quartile or zone, and the PCS-Q quartiles and the PCS-based zone trial are retired. The first Citation Ranking edition under PNCI-1.0 is computed from item-level citation data in the next data cycle; until then journal pages show their PCS and PCI with the status "Not yet ranked". Zone certificates issued under the PCS-based trial no longer verify.',
+      'The complete method, with formulas, thresholds, tie handling, versions and limitations, is set out in the methodology.',
+    ],
+  },
+  {
     slug: 'global-ranking-edition-2026',
     title: 'The 2026 Journal Rankings now cover every indexed journal',
     date: '2026-09-27',

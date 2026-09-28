@@ -1,0 +1,11 @@
+{
+  "evaluation_version": "POSI-EVAL-1.0",
+  "ranking_methodology_version": "CITATION-RANK-1.0",
+  "pnci_model_version": "PNCI-1.0",
+  "zones_version": "POSI-ZONES-2.0",
+  "metric_year": 2026,
+  "snapshot_date": null,
+  "generated_at": null,
+  "note": "Committed fallback: no PNCI-1.0 Citation Ranking edition has been published yet. scripts/sync-live-data.mjs replaces it with collections/citation-ranking.json.gz from the data layer when one exists.",
+  "records": []
+}

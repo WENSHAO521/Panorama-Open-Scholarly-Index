@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Privacy policy',
   description: 'What information posi.panorama-sg.com processes, what it does not collect, and how to contact POSI about privacy.',
+  alternates: { canonical: '/privacy/' },
 }
 
 export default function PrivacyPage() {

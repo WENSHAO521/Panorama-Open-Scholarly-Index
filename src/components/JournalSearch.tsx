@@ -5,6 +5,7 @@
 // (Core Collection and others) are marked.
 
 import Link from 'next/link'
+import { QuartileBadge, ZoneBadge } from './Evaluation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
@@ -82,12 +83,17 @@ export function JournalSearch() {
                       <div className="min-w-0">
                         <Link href={journalHref(h.key)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{h.title}</Link>
                         <p className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>
-                          {[h.publisher, `ISSN ${h.key}`].filter(Boolean).join(', ')}
+                          {[h.publisher, `ISSN ${h.key}`, h.psc ? `PSC ${h.psc}` : null].filter(Boolean).join(', ')}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                      <div className="flex flex-wrap items-center gap-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
                         {h.works > 0 && <span className="font-mono tnum">{fmt(h.works)} works</span>}
                         {h.oa && <span>Open access</span>}
+                        {h.ajr && <span className="chip" title="AJR Rating: lifecycle rating, not a quartile">AJR {h.ajr}</span>}
+                        {h.quartile
+                          ? <QuartileBadge q={h.quartile} provisional={h.status === 'provisional'} />
+                          : <span className="text-[12px]" style={{ color: 'var(--soft)' }}>{h.status === 'provisional' ? 'Provisional' : 'Not yet ranked'}</span>}
+                        {h.zone != null && <ZoneBadge z={h.zone} status={h.zoneStatus ?? 'not_assigned'} />}
                         <span className="chip" style={curated?.k === 'core' ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : undefined}>
                           {curated?.k === 'core' ? 'Core' : 'Indexed'}
                         </span>

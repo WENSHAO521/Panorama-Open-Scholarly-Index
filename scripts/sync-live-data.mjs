@@ -6,19 +6,23 @@
  * committed), so the site reflects the latest edition on every build with no
  * manual step:
  *
- *   pcs-q.json            the PCS-Q ranking edition, from the data layer
- *                         (collections/pcs-q.json.gz, or pcs-q.json in older snapshots)
- *                         (data.posi.panorama-sg.com -> current.json ->
- *                         manifest -> collections/pcs-q.json)
+ *   citation-ranking.json the POSI Citation Ranking edition (POSI-EVAL-1.0: PNCI-1.0,
+ *                         CITATION-RANK-1.0, POSI-ZONES-2.0), from the data layer
+ *                         (data.posi.panorama-sg.com -> current.json -> manifest ->
+ *                         collections/citation-ranking.json.gz)
+ *   pcs-q.json            the PCS edition, for PCS values only (collections/pcs-q.json.gz,
+ *                         or pcs-q.json in older snapshots); its PCS-Q quartiles are retired
  *   journals-global.json  the global journal corpus (every Crossref and
  *                         OpenAlex journal), from the newest posi-engine release
  *                         tagged global-index-* (asset global-corpus.json.gz)
  *   public/data/j/*.json  journal profiles for /journal/, in 1024 hashed shards,
  *                         built from the corpus, the OpenAlex profiles asset
- *                         (openalex-profiles.jsonl.gz) and the ranking edition
+ *                         (openalex-profiles.jsonl.gz), the Citation Ranking edition
+ *                         and PCS
  *
- * Never fails the build. Rankings fall back to the committed
- * src/lib/pcs-q.json; the journal directory falls back to the curated records.
+ * Never fails the build. The ranking falls back to the committed
+ * src/lib/citation-ranking.json, PCS to src/lib/pcs-q.json; the journal
+ * directory falls back to the curated records.
  * POSI_GLOBAL_CORPUS=<path> and POSI_OPENALEX_PROFILES=<path> use local files
  * instead (development). --rankings-only syncs the ranking edition alone (the
  * scheduled data sync, which only needs that and runs every few hours).
@@ -96,28 +100,68 @@ function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
 
-// 1. Ranking edition
+// AJR Rating by posi_id for curated journals: [rating, model, score, rating status]. The
+// rating is the one stored with the record (AJR-RATING-1.0) or, for records
+// synced before it, derived from the score by the same table as
+// src/lib/evaluation/rules.ts getAJRRating(); the build's invariant check
+// fails if the two ever disagree.
+const AJR_SCALE = [['A+', 90], ['A', 85], ['A−', 80], ['B+', 75], ['B', 70], ['B−', 65], ['C+', 60], ['C', 50], ['D', 0]]
+function ajrRatings() {
+  const out = new Map()
+  for (const j of CURATED.values()) {
+    const r = j.early_stage_rating
+    if (!r || r.version !== 'AJR-E-1.1' || !['official', 'provisional'].includes(r.rating_status) || r.lifecycle_stage === 'mature' || r.total == null) continue
+    const rating = r.rating ?? AJR_SCALE.find(([, min]) => r.total >= min)?.[0]
+    out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status])
+  }
+  return out
+}
+
+// 1. Editions: the Citation Ranking (the ranking) and PCS (values only).
+let current = null
+try { current = await get(`${DATA}/current.json`) } catch (e) { console.warn(`sync-live-data: data layer unavailable (${e.message})`) }
+const snapshotDir = current ? current.manifest.replace(/manifest\.json$/, '') : null
+
+{
+  const out = join(GEN, 'citation-ranking.json')
+  try {
+    if (!snapshotDir) throw new Error('no current snapshot')
+    const edition = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/citation-ranking.json.gz`, 'buffer')).toString('utf-8'))
+    if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
+    for (const r of edition.records) if (CURATED.has(r.journal_id)) r.title = titlesOf(r.journal_id, r.title).title
+    writeFileSync(out, JSON.stringify(edition))
+    console.log(`sync-live-data: citation ranking ${edition.ranking_methodology_version} ${edition.pnci_model_version} snapshot ${edition.snapshot_date}, ${edition.records.length} journals`)
+  } catch (e) {
+    if (!existsSync(out)) copyFileSync(join(ROOT, 'src/lib/citation-ranking.json'), out)
+    console.warn(`sync-live-data: citation ranking uses the committed edition (${e.message})`)
+  }
+}
+
 {
   const out = join(GEN, 'pcs-q.json')
   try {
-    const current = await get(`${DATA}/current.json`)
-    const dir = current.manifest.replace(/manifest\.json$/, '')
+    if (!snapshotDir) throw new Error('no current snapshot')
     // Published gzipped since the global edition (~90 MB as JSON); older
     // snapshots carry plain pcs-q.json.
     let edition
     try {
-      edition = JSON.parse(gunzipSync(await get(`${DATA}${dir}collections/pcs-q.json.gz`, 'buffer')).toString('utf-8'))
+      edition = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/pcs-q.json.gz`, 'buffer')).toString('utf-8'))
     } catch (e) {
       if (!/^404 /.test(e.message)) throw e
-      edition = await get(`${DATA}${dir}collections/pcs-q.json`)
+      edition = await get(`${DATA}${snapshotDir}collections/pcs-q.json`)
     }
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
-    for (const r of edition.records) if (CURATED.has(r.journal_id)) r.title = titlesOf(r.journal_id, r.title).title
+    // Only what the site reads: PCS values and identity. The PCS-Q rank,
+    // percentile and quartile fields are retired (POSI-EVAL-1.0).
+    edition.records = edition.records.map(r => ({
+      journal_id: r.journal_id, metric_year: r.metric_year, pcs: r.pcs, pcs_eligible_items: r.pcs_eligible_items,
+      title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title, publisher: r.publisher ?? null, issn: r.issn ?? [],
+    }))
     writeFileSync(out, JSON.stringify(edition))
-    console.log(`sync-live-data: rankings ${edition.methodology_version} ${edition.metric_year}, ${edition.records.length} journals`)
+    console.log(`sync-live-data: PCS ${edition.methodology_version} ${edition.metric_year}, ${edition.records.length} journals`)
   } catch (e) {
     if (!existsSync(out)) copyFileSync(join(ROOT, 'src/lib/pcs-q.json'), out)
-    console.warn(`sync-live-data: rankings use the committed edition (${e.message})`)
+    console.warn(`sync-live-data: PCS uses the committed edition (${e.message})`)
   }
 }
 
@@ -166,8 +210,10 @@ if (!RANKINGS_ONLY) {
     // APCs POSI has verified on the journal's own website (Core Collection records).
     const verifiedApc = new Map([...CURATED.values()].filter(j => j.apc).map(j => [j.posi_id, j.apc]))
 
-    const edition = JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8'))
-    const ranks = new Map(edition.records.map(r => [r.journal_id, r]))
+    const citation = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
+    const ranks = new Map(citation.records.map(r => [r.journal_id, r]))
+    const pcsValues = new Map(JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8')).records.map(r => [r.journal_id, r]))
+    const ajr = ajrRatings()
 
     const shards = new Map()
     const shard = k => { const n = shardOf(k); if (!shards.has(n)) shards.set(n, { p: {}, a: {} }); return shards.get(n) }
@@ -177,6 +223,7 @@ if (!RANKINGS_ONLY) {
       if (!key) continue
       const o = r.openalex_source_id ? oa.get(r.openalex_source_id) : null
       const rk = ranks.get(r.posi_id)
+      const pv = pcsValues.get(r.posi_id)
       const va = verifiedApc.get(r.posi_id)
       const tt = titlesOf(r.posi_id, r.title ?? o?.t, [...(r.alternate_titles ?? []), ...(o?.alt ?? [])])
       const prof = {
@@ -190,11 +237,17 @@ if (!RANKINGS_ONLY) {
         cy: o?.cy, tp: o?.tp, soc: o?.soc,
         s: r.psc_category ?? undefined, sc: r.psc_confidence ?? undefined,
         cr: r.crossref_total_dois ?? undefined, src: r.sources, oid: r.openalex_source_id ?? undefined,
-        rk: rk ? {
-          y: rk.metric_year, pcs: rk.pcs, n: rk.pcs_eligible_items,
-          oq: rk.overall_quartile, op: rk.overall_percentile, or: rk.overall_rank, os: rk.overall_size,
-          cat: rk.category_code, cq: rk.quartile, cp: rk.percentile, cr: rk.rank, cs: rk.category_size,
-          ex: rk.exclusion_reason ?? undefined,
+        // POSI-EVAL-1.0 evaluation: Citation Ranking (PNCI) and PCS; see
+        // src/lib/journal-profile.ts JournalProfile.ev for the keys.
+        ev: rk || pv || CURATED.has(r.posi_id) ? {
+          y: rk?.metric_year ?? pv?.metric_year, snap: rk?.ranking_snapshot_date ?? undefined,
+          pnci: rk?.pnci ?? undefined, pm: rk?.pnci_model_version ?? undefined,
+          n: rk?.eligible_citable_items ?? pv?.pcs_eligible_items ?? undefined, cov: rk?.citation_coverage ?? undefined,
+          cat: rk?.ranking_category_id ?? undefined, r: rk?.citation_rank ?? undefined, rt: rk?.citation_rank_total ?? undefined,
+          p: rk?.citation_percentile ?? undefined, q: rk?.citation_quartile ?? undefined, z: rk?.posi_zone ?? undefined,
+          zs: rk?.zone_status ?? undefined, st: rk?.citation_ranking_status ?? undefined, why: rk?.ranking_status_reason ?? undefined,
+          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? undefined, ajr: ajr.get(r.posi_id),
+          pqf: CURATED.get(r.posi_id)?.pqf?.total ?? undefined,
         } : undefined,
       }
       shard(key).p[key] = prof
@@ -215,19 +268,28 @@ if (!RANKINGS_ONLY) {
 
 // 4. Journal title index for /journals/ search: every title word (minus
 // generic words) -> its first two letters -> one file. Entries are
-// [key, title, publisher, works, open access, alternate titles?], most works
-// first; alternate titles are matched but not shown.
+// [key, title, publisher, works, open access, alternate titles, evaluation?],
+// most works first; alternate titles are matched but not shown. evaluation is
+// [PSC category, Citation Quartile, POSI Zone, ranking status, AJR Rating, zone status].
 if (!RANKINGS_ONLY) {
   const dir = join(ROOT, 'public/data/jt')
   try {
     if (!corpus) throw new Error('no corpus')
     const byPrefix = new Map()
+    const citation = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
+    const ranks = new Map(citation.records.map(r => [r.journal_id, r]))
+    const ajr = ajrRatings()
     for (const r of corpus) {
       const key = r.issn_l ?? r.issns?.[0]
       if (!key || !r.title) continue
       const { title, alt } = titlesOf(r.posi_id, r.title, r.alternate_titles)
       const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
-      if (alt.length) entry.push(alt.join(' | '))
+      const rk = ranks.get(r.posi_id)
+      const ev = rk || ajr.has(r.posi_id)
+        ? [rk?.ranking_category_id ?? r.psc_category ?? null, rk?.citation_quartile ?? null, rk?.posi_zone ?? null, rk?.citation_ranking_status ?? null, ajr.get(r.posi_id)?.[0] ?? null, rk?.zone_status ?? null]
+        : null
+      if (alt.length || ev) entry.push(alt.join(' | '))
+      if (ev) entry.push(ev)
       for (const p of new Set([title, ...alt].flatMap(titleWords).map(prefixOf))) {
         if (!byPrefix.has(p)) byPrefix.set(p, [])
         byPrefix.get(p).push(entry)

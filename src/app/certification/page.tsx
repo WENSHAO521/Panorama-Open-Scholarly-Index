@@ -6,6 +6,7 @@ import { CertificationApply } from '@/components/CertificationApply'
 export const metadata = {
   title: 'Apply for certification',
   description: 'Every journal with DOIs at Crossref or a record in OpenAlex is indexed by POSI. Journals apply for certification to enter the Core Collection.',
+  alternates: { canonical: '/certification/' },
 }
 
 const PQF = [
@@ -57,7 +58,7 @@ export default function CertificationPage() {
           <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>Automatic, no application</p>
           <ul className="mt-4 space-y-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>
             <li>Searchable journal page and publications</li>
-            <li>Ranked in POSI Rankings when citation data is sufficient</li>
+            <li>Ranked in the Citation Rankings when its citation data meet the minimum requirements (the same rule as every journal)</li>
             <li>Authors can issue certificates of indexing</li>
           </ul>
         </div>

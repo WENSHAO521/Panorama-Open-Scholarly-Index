@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Conflict of interest',
   description: 'Panorama Scholarly Group publishes POSI and also publishes journals. This disclosure lists those journals and the safeguards that apply.',
+  alternates: { canonical: '/coi/' },
 }
 
 export default function CoiPage() {

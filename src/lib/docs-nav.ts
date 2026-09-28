@@ -24,9 +24,14 @@ export const DOCS_NAV: DocsSection[] = [
   },
   {
     title: 'Methodology',
-    blurb: 'Subject classification, the POSI Citation Score and the rankings.',
+    blurb: 'The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.',
     links: [
       { label: 'Methodology', href: '/methodology/' },
+      { label: 'PQF: Core Collection eligibility', href: '/pqf/' },
+      { label: 'AJR ratings', href: '/ratings/' },
+      { label: 'AJR-E', href: '/ratings/early-stage/' },
+      { label: 'AJR-M', href: '/ratings/mature/' },
+      { label: 'Citation indicators', href: '/pci/' },
       { label: 'Certificates', href: '/docs/certificates/' },
       { label: 'PSG citation format', href: '/psg-format/' },
     ],

@@ -40,7 +40,6 @@ export const metadata: Metadata = {
   authors: [{ name: "Panorama Scholarly Group Ltd", url: "https://panorama-sg.com" }],
   keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "journal rankings", "citation index", "PSC", "provenance"],
   icons: { icon: "/favicon.svg" },
-  alternates: { canonical: "/" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   openGraph: {
     type: "website",

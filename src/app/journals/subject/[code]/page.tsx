@@ -13,7 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata(props: { params: Promise<{ code: string }> }) {
   const { code } = await props.params
-  return { title: `${categoryLabel(code)} journals`, description: `Every journal indexed in POSI in ${categoryLabel(code)}.` }
+  return { title: `${categoryLabel(code)} journals`, description: `Every journal indexed in POSI in ${categoryLabel(code)}.`, alternates: { canonical: `/journals/subject/${code}/` } }
 }
 
 export default async function SubjectJournalsPage(props: { params: Promise<{ code: string }> }) {

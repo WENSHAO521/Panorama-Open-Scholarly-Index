@@ -1,11 +1,13 @@
-// /data/rankings/pcs-<year>.csv: every ranked journal in one file.
-// /data/rankings/pcs-<year>.json: the edition's parameters and the list of
-// per-category files, /data/rankings/pcs-<year>-<category>.json (ranked and
-// unranked journals of that category; "unclassified" for journals without
-// one). The global edition as a single JSON file is larger than a static
-// host serves (Cloudflare Pages: 25 MiB per file).
-import { getRankings, RANKING_VERSION, MIN_ITEMS } from '@/lib/rankings'
-import { ZONES_VERSION, ZONE_BOUNDS } from '@/lib/zones'
+// POSI Citation Ranking downloads (POSI-EVAL-1.0):
+//   /data/rankings/citation-<year>.json             the edition's parameters and the per-category files
+//   /data/rankings/citation-<year>.csv              every journal of the edition, all statuses
+//   /data/rankings/citation-<year>-<category>.json  the journals of one PSC category ("unclassified": none)
+//
+// Deprecated, kept so existing links and scripts keep working:
+//   /data/rankings/pcs-<year>.json, .csv, -<category>.json  PCS values only. The
+//   PCS-Q rank, percentile, quartile and zone columns are empty: PCS no longer
+//   determines any rank (see the `deprecated` notice in pcs-<year>.json).
+import { getRankings, RANKING_VERSION, PNCI_VERSION, ZONES_EDITION_VERSION, EVALUATION_EDITION_VERSION, RANKING_SNAPSHOT, RANKING_THRESHOLDS, type RankedJournal } from '@/lib/rankings'
 
 export const dynamic = 'force-static'
 export const dynamicParams = false
@@ -13,41 +15,75 @@ export const dynamicParams = false
 const UNCLASSIFIED = 'unclassified'
 const catKey = (c: string | null) => c ?? UNCLASSIFIED
 
-function categoryFiles() {
-  const { ranked, notRanked, year } = getRankings()
-  const byCat = new Map<string, { ranked: number; not_ranked: number }>()
-  const bump = (c: string | null, k: 'ranked' | 'not_ranked') => {
-    const e = byCat.get(catKey(c)) ?? { ranked: 0, not_ranked: 0 }
-    e[k]++
-    byCat.set(catKey(c), e)
+function categories(prefix: string) {
+  const { all, year } = getRankings()
+  const byCat = new Map<string, { journals: number; ranked: number; official: number }>()
+  for (const r of all) {
+    const e = byCat.get(catKey(r.cat)) ?? { journals: 0, ranked: 0, official: 0 }
+    e.journals++
+    if (r.rank != null) e.ranked++
+    if (r.status === 'official') e.official++
+    byCat.set(catKey(r.cat), e)
   }
-  for (const r of ranked) bump(r.cat, 'ranked')
-  for (const r of notRanked) bump(r.cat, 'not_ranked')
-  return [...byCat].sort(([a], [b]) => a.localeCompare(b)).map(([category, n]) => ({ category, file: `/data/rankings/pcs-${year}-${category}.json`, ...n }))
+  return [...byCat].sort(([a], [b]) => a.localeCompare(b)).map(([category, n]) => ({ category, file: `/data/rankings/${prefix}-${year}-${category}.json`, ...n }))
 }
 
 export function generateStaticParams() {
   const { year } = getRankings()
-  return [
-    { file: `pcs-${year}.json` },
-    { file: `pcs-${year}.csv` },
-    ...categoryFiles().map(c => ({ file: `pcs-${year}-${c.category}.json` })),
-  ]
+  return ['citation', 'pcs'].flatMap(prefix => [
+    { file: `${prefix}-${year}.json` },
+    { file: `${prefix}-${year}.csv` },
+    ...categories(prefix).map(c => ({ file: `${prefix}-${year}-${c.category}.json` })),
+  ])
+}
+
+const cell = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
+
+function row(r: RankedJournal) {
+  return {
+    posi_id: r.id, title: r.title, publisher: r.publisher, issn: r.issn, collection: r.core ? 'core' : 'indexed',
+    ranking_category_id: r.cat, pnci: r.pnci, eligible_citable_items: r.items, citation_coverage: r.coverage,
+    citation_rank: r.rank, citation_rank_total: r.n, citation_percentile: r.pct, citation_quartile: r.q,
+    posi_zone: r.zone, zone_status: r.zoneStatus, citation_ranking_status: r.status, ranking_status_reason: r.reason,
+    ajr_rating: r.ajr, lifecycle_stage: r.lifecycle, pci: r.pci, pcs: r.pcs,
+  }
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ file: string }> }) {
   const { file } = await params
-  const { ranked, notRanked, year } = getRankings()
-  const meta = { version: RANKING_VERSION, zones: { version: ZONES_VERSION, bounds: ZONE_BOUNDS }, metric: 'PCS', year, min_items: MIN_ITEMS }
-  if (file === `pcs-${year}.json`) {
-    return Response.json({ ...meta, ranked: ranked.length, not_ranked: notRanked.length, csv: `/data/rankings/pcs-${year}.csv`, categories: categoryFiles() })
+  const { all, year } = getRankings()
+  const legacy = file.startsWith('pcs-')
+  const prefix = legacy ? 'pcs' : 'citation'
+  const meta = {
+    evaluation_version: EVALUATION_EDITION_VERSION, ranking_methodology_version: RANKING_VERSION, pnci_model_version: PNCI_VERSION,
+    zones_version: ZONES_EDITION_VERSION, metric_year: year, ranking_snapshot_date: RANKING_SNAPSHOT, ranking_metric: 'PNCI',
+    thresholds: RANKING_THRESHOLDS,
+    note: 'Citation Quartiles and POSI Zones are based on PNCI-derived percentiles within eligible PSC categories. PCS and PCI are descriptive.',
+  }
+  const deprecated = {
+    deprecated: true,
+    notice: 'PCS-Q is retired (POSI-EVAL-1.0, 2026-09-28). PCS is a supplementary citation indicator and does not determine the official POSI Citation Rank, Citation Percentile, Citation Quartile, or POSI Zone. Rank, percentile, quartile and zone fields in this file are empty.',
+    superseded_by: `/data/rankings/citation-${year}.json`,
+  }
+  if (file === `${prefix}-${year}.json`) {
+    return Response.json(legacy
+      ? { ...deprecated, metric: 'PCS', year, journals: all.length, csv: `/data/rankings/pcs-${year}.csv`, categories: categories('pcs') }
+      : { ...meta, journals: all.length, ranked: all.filter(r => r.rank != null).length, csv: `/data/rankings/citation-${year}.csv`, categories: categories('citation') })
   }
   if (file.endsWith('.json')) {
-    const cat = file.slice(`pcs-${year}-`.length, -'.json'.length)
-    return Response.json({ ...meta, category: cat, ranked: ranked.filter(r => catKey(r.cat) === cat), not_ranked: notRanked.filter(r => catKey(r.cat) === cat) })
+    const cat = file.slice(`${prefix}-${year}-`.length, -'.json'.length)
+    const rows = all.filter(r => catKey(r.cat) === cat)
+    if (legacy) {
+      return Response.json({ ...deprecated, metric: 'PCS', year, category: cat, journals: rows.map(r => ({ id: r.id, title: r.title, publisher: r.publisher, issn: r.issn, cat: r.cat, core: r.core, pcs: r.pcs, pci: r.pci, rank: null, n: null, pct: null, q: null, zone: null })) })
+    }
+    return Response.json({ ...meta, category: cat, journals: rows.sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity) || (b.pnci ?? -1) - (a.pnci ?? -1)).map(row) })
   }
-  const cell = (v: unknown) => { const s = v == null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s }
-  const head = 'posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci,category_rank,category_n,category_percentile,category_quartile,category_zone,overall_rank,overall_n,overall_percentile,overall_quartile,overall_zone'
-  const body = ranked.map(r => [r.id, r.title, r.publisher, r.issn.join(' '), r.cat, r.core ? 'core' : 'indexed', r.pcs, r.items, r.pci, r.rank, r.n, r.pct, r.q, r.zone, r.oRank, r.oN, r.oPct, r.oQ, r.oZone].map(cell).join(','))
-  return new Response([head, ...body].join('\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8' } })
+  if (legacy) {
+    const head = 'posi_id,title,publisher,issn,psc_category,status,pcs,eligible_items,pci,category_rank,category_n,category_percentile,category_quartile,category_zone,overall_rank,overall_n,overall_percentile,overall_quartile,overall_zone'
+    const body = all.filter(r => r.pcs != null).map(r => [r.id, r.title, r.publisher, r.issn.join(' '), r.cat, r.core ? 'core' : 'indexed', r.pcs, r.items, r.pci, '', '', '', '', '', '', '', '', '', ''].map(cell).join(','))
+    return new Response([head, ...body].join('\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8' } })
+  }
+  const cols = Object.keys(row(all[0] ?? ({ issn: [] } as unknown as RankedJournal)))
+  const body = all.map(r => { const o = row(r) as Record<string, unknown>; return cols.map(c => cell(Array.isArray(o[c]) ? (o[c] as string[]).join(' ') : o[c])).join(',') })
+  return new Response([cols.join(','), ...body].join('\n'), { headers: { 'Content-Type': 'text/csv; charset=utf-8' } })
 }

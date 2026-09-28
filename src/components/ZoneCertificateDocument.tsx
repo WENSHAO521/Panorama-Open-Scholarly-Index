@@ -6,7 +6,8 @@
 
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { ZONE_BOUNDS, ZONES_VERSION, type Zone } from '@/lib/zones'
+import { ZONES, ZONES_VERSION, type Zone } from '@/lib/zones'
+import { fmtScore, fmtPercentile, fmtSnapshot } from '@/lib/evaluation/display'
 import { ZONE_SHARE, type ZoneCertificateData, type ZonePlacement } from '@/lib/zone-certificate'
 import {
   garamond, signature, Mark, Signature, longDate, verifyHost,
@@ -16,7 +17,7 @@ import {
 const n = (v: number) => v.toLocaleString('en-GB')
 
 function scopeText(p: ZonePlacement) {
-  return p.scope === 'category' ? `in the subject category ${p.label}` : 'across all ranked journals'
+  return `in the PSC subject category ${p.label}`
 }
 
 /**
@@ -30,14 +31,14 @@ function ZoneScale({ p, title }: { p: ZonePlacement; title: string }) {
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 5 }}>
         <div style={{ minWidth: 0, lineHeight: 1.35 }}>
           <span style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: SOFT, whiteSpace: 'nowrap' }}>{title}</span>
-          <span style={{ fontSize: 12, marginLeft: 8 }}>{p.scope === 'category' ? p.label : 'All ranked journals'}</span>
+          <span style={{ fontSize: 12, marginLeft: 8 }}>{p.label}</span>
         </div>
         <div style={{ flexShrink: 0, fontFamily: MONO, fontSize: 10.5, color: MUTED, whiteSpace: 'nowrap' }}>
-          Rank {n(p.rank)} / {n(p.size)}{p.quartile ? ` · ${p.quartile}` : ''}
+          Rank {n(p.rank)} / {n(p.size)} · percentile {fmtPercentile(p.percentile)}{p.quartile ? ` · ${p.quartile}` : ''}
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
-        {ZONE_BOUNDS.map(([z]) => {
+        {ZONES.map(z => {
           const on = z === p.zone
           return (
             <div key={z} style={{
@@ -61,7 +62,7 @@ export function ZoneCertificateDocument({ data }: { data: ZoneCertificateData })
       .then(setQr).catch(() => setQr(null))
   }, [data.verifyUrl])
 
-  const { journal: j, primary: p, secondary: s } = data
+  const { journal: j, primary: p } = data
   const titleSize = j.title.length > 120 ? 20 : j.title.length > 80 ? 23 : 28
 
   return (
@@ -111,22 +112,21 @@ export function ZoneCertificateDocument({ data }: { data: ZoneCertificateData })
               <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 56, lineHeight: 0.95 }}>{p.zone}</div>
             </div>
             <p style={{ fontFamily: SERIF, fontSize: 16, lineHeight: 1.45, margin: 0 }}>
-              is placed in <strong style={{ fontWeight: 600 }}>Zone {p.zone}</strong> ({ZONE_SHARE[p.zone]}) of the {data.year} POSI Journal
-              Rankings {scopeText(p)}, ranked {n(p.rank)} of {n(p.size)} journals by the POSI Citation Score.
-              {s && <> Across all ranked journals it is in <strong style={{ fontWeight: 600 }}>Zone {s.zone}</strong>, ranked {n(s.rank)} of {n(s.size)}.</>}
+              is placed in <strong style={{ fontWeight: 600 }}>Zone {p.zone}</strong> ({ZONE_SHARE[p.zone]}) of the {data.year} POSI
+              Citation Ranking {scopeText(p)}: ranked {n(p.rank)} of {n(p.size)} journals by PNCI, the POSI Normalized
+              Citation Indicator, at the {fmtPercentile(p.percentile)} percentile.
             </p>
           </div>
           <div style={{ display: 'grid', gap: 12, minWidth: 0 }}>
-            <ZoneScale p={p} title={p.scope === 'category' ? 'Subject category' : 'Overall'} />
-            {s && <ZoneScale p={s} title="Overall" />}
+            <ZoneScale p={p} title="Subject category" />
           </div>
         </div>
 
         <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(5, auto)', justifyContent: 'space-between', gap: 0, margin: '16px 0 0', borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}` }}>
           {([
             ['POSI ID', j.pid],
-            ['PCS', `${data.pcs.toFixed(2)}${data.items != null ? ` · ${n(data.items)} items` : ''}`],
-            ['Ranking edition', `PCS-Q ${data.year}`],
+            ['PNCI', `${fmtScore(data.pnci)}${data.items != null ? ` · ${n(data.items)} items` : ''}`],
+            ['Ranking snapshot', data.rankingSnapshot ? fmtSnapshot(data.rankingSnapshot) : String(data.year)],
             ['Data snapshot', data.snapshot],
             ['Zone rule', ZONES_VERSION],
           ] as const).map(([k, v], i) => (
@@ -138,10 +138,9 @@ export function ZoneCertificateDocument({ data }: { data: ZoneCertificateData })
         </dl>
 
         <p style={{ margin: '8px 0 0', fontSize: 10.5, color: MUTED }}>
-          Zones divide each ranking by rank position: Zone 1 is the top 5% of journals, Zone 2 the next 15%, Zone 3 the
-          next 30% and Zone 4 the remaining half. They are computed from the published ranking edition; no journal is
-          placed in a zone by hand.
-          {data.trial && <> <strong style={{ color: INK, fontWeight: 600 }}>Trial.</strong> POSI Zones are published as a trial ahead of the December release of record, and the rule may be refined in a versioned change.</>}
+          Zones read the journal&rsquo;s PNCI percentile within its PSC category: Zone 1 is the top 5%, Zone 2 the top
+          5–20%, Zone 3 the top 20–50% and Zone 4 the lower half. They are computed from the published Citation Ranking
+          edition, are independent of the Citation Quartile, and no journal is placed in a zone by hand.
         </p>
 
         <footer style={{ marginTop: 'auto', paddingTop: 8, display: 'grid', gridTemplateColumns: '96px minmax(0, 460px) 1fr 270px', gap: 20, alignItems: 'end' }}>

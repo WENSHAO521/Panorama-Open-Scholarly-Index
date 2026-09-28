@@ -31,7 +31,7 @@ export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 //   Indexed   Every journal with DOIs registered at Crossref or a source
 //             record in OpenAlex. Nothing to apply for; coverage is automatic.
 //   Core      Journals that applied for certification and passed the PQF
-//             editorial evaluation. Only Core journals are ranked, carry the Core mark and
+//             editorial evaluation. Only Core journals carry the Core mark and are
 //             certified.
 //
 // The internal collection keys (core / candidate / benchmark / discovered)
@@ -48,7 +48,7 @@ export const TIERS: Record<Tier, { label: string; short: string; description: st
   core: {
     label: 'Core Collection',
     short: 'Core',
-    description: 'Certified. The journal applied for certification and passed the PQF editorial evaluation. Core journals are ranked and may display the POSI Core Collection mark.',
+    description: 'Certified. The journal applied for certification and passed the PQF editorial evaluation. Core journals may display the POSI Core Collection mark; they are ranked under the same citation rules as every journal.',
   },
   indexed: {
     label: 'Indexed',
@@ -67,7 +67,7 @@ export const COLLECTIONS: Record<Collection, { label: string; short: string; des
   candidate: {
     label: 'Certification under review',
     short: 'Indexed',
-    description: 'Indexed. Previously certified; a PQF re-review found it below the bar, so it is excluded from Core rankings and the Core Collection mark until re-review.',
+    description: 'Indexed. Previously certified; a PQF re-review found it below the bar, so it is excluded from the Core Collection and its mark until re-review.',
   },
   benchmark: {
     label: 'Indexed, benchmark set',

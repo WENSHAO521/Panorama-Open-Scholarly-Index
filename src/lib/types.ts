@@ -327,6 +327,9 @@ export interface EarlyStageRatingLegacy {
   // journal lacks real governance - unknown evidence is not equivalent to
   // failed criteria. null only when no ISSN exists to rate at all.
   evidence_coverage: number | null
+  // DEPRECATED (POSI-EVAL-1.0): E-Q/M-Q are retired and never read or shown;
+  // AJR publishes an AJR Score + AJR Rating (src/lib/evaluation/rules.ts
+  // getAJRRating). Kept only because historical records carry it.
   // E-Q1-E-Q4 (eligibility === 'early_stage') or M-Q1-M-Q4 (eligibility ===
   // 'mature') - see scripts/rank-lifecycle.mjs. null until a same-category
   // (or same-domain fallback) PSC peer cohort clears the minimum size gate
@@ -371,6 +374,8 @@ export interface EarlyStageRatingV1_1 {
   // Show this instead of generic hardcoded prose wherever there's room -
   // it is the real, journal-specific reason, not a guess.
   not_rateable_reason: string | null
+  // DEPRECATED (POSI-EVAL-1.0), with quartile_label/cohort_*/ranking_method:
+  // AJR is not ranked into quartiles. Never read. AJR Rating: `rating`.
   // Replaces the legacy shape's `provisional_quartile` entirely - that
   // field does not exist on this shape. null on every Core Collection
   // journal today (0 of 31 assigned - structurally correct per the audit:
@@ -410,6 +415,11 @@ export interface EarlyStageRatingV1_1 {
   first_published: string | null
   months_since_launch: number | null
   rated_at: string
+  /** AJR Rating (AJR-RATING-1.0) from `total`, written by posi-data's POSI-EVAL-1.0 migration. */
+  rating?: string | null
+  rating_version?: string
+  /** legacy quartile fields present on the record, kept for history */
+  deprecated_fields?: string[]
 }
 
 export interface Evidence {

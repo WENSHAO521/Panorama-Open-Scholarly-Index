@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Documentation',
   description: 'How POSI works: policies, methodology, data sources, record schema and provenance.',
+  alternates: { canonical: '/docs/' },
 }
 
 export default function DocsHome() {

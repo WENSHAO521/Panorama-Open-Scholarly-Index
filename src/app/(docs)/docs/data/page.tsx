@@ -4,17 +4,18 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Data sources and access',
   description: 'Where POSI data comes from, how often it is updated, and how to download and reuse it.',
+  alternates: { canonical: '/docs/data/' },
 }
 
 const SOURCES = [
-  ['Crossref', 'Journal list, ISSNs, DOI counts, article metadata, citation counts for PCS, certificate checks', 'Daily'],
+  ['Crossref', 'Journal list, ISSNs, DOI counts, article metadata, item-level citation counts for PNCI and PCS, certificate checks', 'Daily'],
   ['OpenAlex', 'Journal profiles, topics, output and citations per year, h-index, open access and DOAJ status, publication search', 'Daily; search is live'],
   ['POSI editorial', 'Core Collection records, PQF evaluations, verified classifications, certification decisions', 'On each decision'],
 ]
 
 const FORMATS = [
   ['Journal directory', 'CSV per subject category', <Link key="j" href="/journals/">Journals</Link>],
-  ['Rankings', 'CSV and JSON per category and overall', <Link key="r" href="/rankings/">Rankings</Link>],
+  ['Citation Rankings', 'CSV and JSON per PSC category', <Link key="r" href="/rankings/">Rankings</Link>],
   ['Journal records', 'JSON per record', <Link key="d" href="/datasets/">Data downloads</Link>],
   ['Publication search results', 'CSV, BibTeX and RIS', <Link key="p" href="/publications/">Publications</Link>],
   ['Full data snapshots', 'JSON, versioned', <Link key="s" href="/datasets/">Data downloads</Link>],

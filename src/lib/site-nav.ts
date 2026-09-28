@@ -17,9 +17,9 @@ export const PRIMARY_NAV: NavGroup[] = [
   {
     label: 'Rankings',
     links: [
-      { label: 'Journal Rankings', href: '/rankings/', description: 'Ranks, quartiles and POSI Zones by subject category' },
-      { label: 'Overall ranking', href: '/rankings/all/', description: 'All ranked journals in one list' },
-      { label: 'Methodology', href: '/methodology/', description: 'How the POSI Citation Score and quartiles are calculated' },
+      { label: 'Citation Rankings', href: '/rankings/', description: 'PNCI ranks, Citation Quartiles and POSI Zones by subject category' },
+      { label: 'All categories', href: '/rankings/all/', description: 'Every ranked journal, with its category rank' },
+      { label: 'Methodology', href: '/methodology/', description: 'PQF, AJR, citation indicators and the ranking method' },
     ],
   },
   { label: 'Publications', href: '/publications/' },
@@ -28,7 +28,7 @@ export const PRIMARY_NAV: NavGroup[] = [
     links: [
       { label: 'Certificate of indexing', href: '/certificate/', description: 'For authors of indexed publications' },
       { label: 'Verify a certificate', href: '/certificate/verify/', description: 'Check a certificate number' },
-      { label: 'Zone certificate', href: '/certificate/zone/', description: 'A journal’s POSI Zone in the Journal Rankings' },
+      { label: 'Zone certificate', href: '/certificate/zone/', description: 'A journal’s official POSI Zone in its subject category' },
       { label: 'Journal certification', href: '/certification/', description: 'Apply for the Core Collection' },
       { label: 'Citation generator', href: '/cite/', description: 'PSG, APA, MLA and Chicago citations from a DOI or ISBN' },
       { label: 'PSG citation format', href: '/psg-format/', description: 'The PSG author-date citation standard' },
@@ -41,7 +41,7 @@ export const PRIMARY_NAV: NavGroup[] = [
     links: [
       { label: 'About POSI', href: '/about/', description: 'Publisher, coverage and independence' },
       { label: 'Editorial policy', href: '/editorial-policy/', description: 'Indexing, certification and coverage changes' },
-      { label: 'Methodology', href: '/methodology/', description: 'Subjects, citation score and rankings' },
+      { label: 'Methodology', href: '/methodology/', description: 'The journal evaluation architecture' },
       { label: 'Documentation', href: '/docs/', description: 'Data sources, schema and provenance' },
       { label: 'News', href: '/announcements/', description: 'Updates and coverage changes' },
       { label: 'Contact', href: '/contact/', description: 'Corrections, certification and data enquiries' },
@@ -65,7 +65,7 @@ export const FOOTER_NAV: { title: string; links: NavLink[] }[] = [
       { label: 'Journals', href: '/journals/' },
       { label: 'Publishers', href: '/publishers/' },
       { label: 'Subject categories', href: '/subjects/' },
-      { label: 'Journal Rankings', href: '/rankings/' },
+      { label: 'Citation Rankings', href: '/rankings/' },
     ],
   },
   {

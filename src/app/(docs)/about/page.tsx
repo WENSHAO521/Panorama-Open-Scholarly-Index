@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { getDirectory } from '@/lib/global-journals'
 import { getCoreCollection, PSG_JOURNALS } from '@/lib/data'
-import { getRankings } from '@/lib/rankings'
+import { getRankings, RANKING_AVAILABLE } from '@/lib/rankings'
 import { PageHeader, fmt } from '@/components/db'
 
 export const metadata = {
   title: 'About POSI',
   description: 'The Panorama Open Scholarly Index is a citation index and journal directory published by Panorama Scholarly Group Ltd.',
+  alternates: { canonical: '/about/' },
 }
 
 export default function AboutPage() {
@@ -21,8 +22,8 @@ export default function AboutPage() {
         <p className="max-w-[68ch]">
           The Panorama Open Scholarly Index (POSI) is a citation index and journal directory published by
           Panorama Scholarly Group Ltd. It covers every scholarly journal registered with Crossref or described
-          by OpenAlex, certifies journals for its Core Collection after editorial evaluation, and ranks journals
-          within subject categories.
+          by OpenAlex, certifies journals for its Core Collection after editorial evaluation, rates their lifecycle
+          development (AJR), and ranks journals by PNCI within subject categories.
         </p>
       </PageHeader>
 
@@ -30,7 +31,7 @@ export default function AboutPage() {
         {[
           ['Indexed journals', fmt(indexed)],
           ['Core Collection', fmt(core)],
-          ['Ranked journals', fmt(ranked.length)],
+          ['Ranked journals', RANKING_AVAILABLE ? fmt(ranked.length) : 'Pending'],
           ['Publications', 'Over 300 million'],
         ].map(([k, v]) => (
           <div key={k}>
@@ -47,7 +48,7 @@ export default function AboutPage() {
             <li><Link href="/publications/">Publication search</Link> across more than 300 million works, with citation export and open access links.</li>
             <li>A <Link href="/journals/">journal directory</Link> of every indexed journal, with a profile page for each: identifiers, output and citations per year, subject, topics and ranking.</li>
             <li>The <Link href="/core-collection/">Core Collection</Link>: journals that applied for certification and passed editorial evaluation.</li>
-            <li><Link href="/rankings/">Journal rankings</Link> with ranks, percentiles and quartiles within subject categories and across all journals.</li>
+            <li><Link href="/rankings/">Journal rankings</Link> by PNCI within subject categories, with citation ranks, percentiles, Citation Quartiles (C-Q1 to C-Q4) and POSI Zones.</li>
             <li><Link href="/certificate/">Certificates of indexing</Link> for authors, verifiable by anyone.</li>
             <li><Link href="/datasets/">Data downloads</Link> of the directory, rankings and records.</li>
           </ul>
@@ -57,8 +58,8 @@ export default function AboutPage() {
           <h2 id="coverage">Coverage</h2>
           <p>
             POSI indexes journals, not individual submissions. A journal is included when it has an ISSN and is
-            registered with Crossref or described by OpenAlex. Indexed journals appear in the directory and in the
-            rankings. The Core Collection is a separate tier that a journal enters only by applying for
+            registered with Crossref or described by OpenAlex. Indexed journals appear in the directory and, when their
+            citation data meet the minimum requirements, in the Citation Rankings. The Core Collection is a separate tier that a journal enters only by applying for
             certification. The rules are set out in the <Link href="/editorial-policy/">editorial policy</Link>.
           </p>
           <p>

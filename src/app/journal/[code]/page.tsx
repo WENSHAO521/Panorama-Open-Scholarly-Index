@@ -6,7 +6,8 @@ import { getPciEntry } from '@/lib/pci'
 import { getCitationStats } from '@/lib/citation-stats'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { RecordView } from '@/components/RecordView'
-import { getJournalRanking, categoryName } from '@/lib/rankings'
+import { getCitationRecord, getPcsValue, categoryName } from '@/lib/rankings'
+import { buildJournalEvaluation } from '@/lib/evaluation/journal'
 import Link from 'next/link'
 
 // Core, Candidate and Global Benchmark records get a static page. Discovered
@@ -28,7 +29,8 @@ export async function generateMetadata(props: { params: Promise<{ code: string }
   if (!j) return { title: 'Record not found' }
   return {
     title: j.title,
-    description: `POSI journal record for ${j.title}${j.issn_online ? ` (eISSN ${j.issn_online})` : ''}: identifiers, declared and registry metadata, indicators and provenance.`,
+    description: `POSI journal record for ${j.title}${j.issn_online ? ` (eISSN ${j.issn_online})` : ''}: identifiers, Core Collection status, PQF, AJR rating, PNCI citation ranking and provenance.`,
+    alternates: { canonical: `/journal/${j.journal_code}/` },
   }
 }
 
@@ -38,7 +40,13 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
   const { code } = await props.params
   const j = find(code)
   if (!j) notFound()
-  const ranking = getJournalRanking(j.posi_id)
+  const record = getCitationRecord(j.posi_id)
+  const pcs = getPcsEntry(j.posi_id)
+  const pci = getPciEntry(j.posi_id)
+  const evaluation = buildJournalEvaluation({
+    journal: j, ranking: record, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? getPcsValue(j.posi_id),
+    categoryName: categoryName(record?.ranking_category_id ?? null),
+  })
 
   return (
     <div className="wrap">
@@ -46,18 +54,18 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
         journal={j}
         jsonHref={`/data/journal/${j.journal_code}.json`}
         metrics={{
-          pcs: getPcsEntry(j.posi_id),
-          pci: getPciEntry(j.posi_id),
+          pcs,
+          pci,
           citationStats: getCitationStats(j.journal_code),
           pscName: j.psc_category ? PSC_NAME[j.psc_category] ?? null : null,
-          ranking: ranking ? { ...ranking, catName: categoryName(ranking.cat) } : null,
+          evaluation,
         }}
       />
       {(j.issn_online || j.issn_print) && (
         <div className="mt-8 flex flex-wrap gap-2 pb-10">
           <Link href={`/publications/?issn=${j.issn_online ?? j.issn_print}&sort=newest`} className="btn btn-primary">Browse publications</Link>
           <Link href={`/journal/?issn=${j.issn_online ?? j.issn_print}`} className="btn">Journal profile</Link>
-          {(ranking?.zone || ranking?.oZone) && (
+          {evaluation.ranking.zone != null && (
             <Link href={`/certificate/zone/?issn=${j.issn_online ?? j.issn_print}`} className="btn" prefetch={false}>Zone certificate</Link>
           )}
           {collectionOf(j) === 'core' && (

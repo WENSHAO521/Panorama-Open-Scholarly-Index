@@ -8,6 +8,7 @@ import { SubjectGrid } from '@/components/SubjectGrid'
 export const metadata = {
   title: 'Journals',
   description: 'Every journal indexed in the Panorama Open Scholarly Index, organised by subject category, with open access and DOAJ status and the Core Collection marked.',
+  alternates: { canonical: '/journals/' },
 }
 
 export default function JournalsPage() {

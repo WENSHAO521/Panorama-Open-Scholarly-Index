@@ -8,6 +8,7 @@ import { PageHeader, SectionTitle } from '@/components/db'
 export const metadata = {
   title: 'Logos and journal marks',
   description: 'Official POSI marks for journal websites: Indexed in POSI for every indexed journal, and the Core Collection mark for certified journals. SVG and PNG, with embed code and usage rules.',
+  alternates: { canonical: '/logos/' },
 }
 
 // Sizes read from the files themselves (scripts/build-logos.mjs writes them).

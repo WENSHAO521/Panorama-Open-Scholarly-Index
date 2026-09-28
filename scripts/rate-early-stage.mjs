@@ -19,9 +19,9 @@
  * "external metadata, zero weight" rule as everywhere else in POSI (see
  * EARLY-STAGE-RATING-SPEC.md § 5).
  *
- * No E-Q1-E-Q4 quartile is computed: that needs a same-cohort peer group
- * within a PSC category, and PSC classification hasn't been wired into
- * ranking yet (see AJR-SPEC.md § 5 and spec status note).
+ * No quartile is ever computed: AJR is an absolute lifecycle rating (AJR
+ * Score + AJR Rating A+ … D, src/lib/evaluation/rules.ts getAJRRating(),
+ * POSI-EVAL-1.0). The E-Q/M-Q quartiles are retired.
  *
  * Operates directly on a corpus JSON file (Journal[]) — src/lib's vendored
  * core-collection.json/global-benchmark.json by default, or any other path
@@ -447,11 +447,10 @@ function scoreReachConcentration(articles) {
 // journal's editorial governance/integrity/infrastructure evidence is just
 // as computable as a new one's. Age decides two things: whether a journal
 // is evaluated at all (0-11 months: 'observation', too early to mean
-// anything), and which quartile track a score feeds into once it is
-// ('early_stage', 12-59 months, eligible for a future E-Q1-E-Q4 once a
-// real peer cohort exists; 'mature', 60+ months, whose quartile track is
-// Citation Q — PCI-based — not E-Q). Neither status is a judgment about
-// quality, only about which evaluation applies.
+// anything), and which AJR model applies ('early_stage', 12-59 months:
+// AJR-E; 'mature', 60+ months: AJR-M). Neither status is a judgment about
+// quality, only about which evaluation applies. No stage leads to a
+// quartile (POSI-EVAL-1.0).
 function computeEligibility({ firstPublished, monthsSinceLaunch, articleCount, site }) {
   if (!firstPublished) return 'unknown'
   if (monthsSinceLaunch <= OBSERVATION_MAX_MONTHS) return 'observation'
@@ -546,11 +545,9 @@ function toRateTarget(j) {
 // code path here (or anywhere in this script) that accepts a manually-
 // supplied score, percentile, or quartile as input — see spec §5.
 
-// NOTE: always re-run scripts/rank-lifecycle.mjs after this script — every
-// re-run of this script resets provisional_quartile to null (this script
-// doesn't know about PSC cohorts), so a stale quartile from a previous
-// rank-lifecycle.mjs run would otherwise survive un-refreshed instead of
-// being recomputed against the new ratings.
+// provisional_quartile is a deprecated legacy field (E-Q/M-Q, retired by
+// POSI-EVAL-1.0): always written as null so the record keeps its shape. The
+// AJR Rating is read from `total` (src/lib/evaluation/rules.ts).
 function applyRating(journals, id, rating) {
   const idx = journals.findIndex(j => j.id === id)
   if (idx === -1) return

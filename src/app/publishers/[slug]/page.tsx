@@ -20,6 +20,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   return {
     title: p.name,
     description: `${p.name} in POSI: ${p.n} indexed journals, ${Math.round((p.oa / p.n) * 100)}% open access, with subjects, countries and every journal.`,
+    alternates: { canonical: `/publishers/${slug}/` },
   }
 }
 

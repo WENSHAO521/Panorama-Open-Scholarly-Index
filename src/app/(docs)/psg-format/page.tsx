@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'PSG Citation Format',
   description:
     'PSG Author-Date Citation Format - the official citation standard of Panorama Scholarly Group. Covers in-text citations, reference list rules, and examples for journals, books, datasets, software, AI tools, and multilingual sources.',
+  alternates: { canonical: '/psg-format/' },
 }
 
 function Code({ children }: { children: React.ReactNode }) {

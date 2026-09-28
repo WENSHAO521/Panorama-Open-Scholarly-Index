@@ -12,6 +12,7 @@ import { SnapshotPanel } from '@/components/SnapshotPanel'
 export const metadata = {
   title: 'Datasets',
   description: 'Download every POSI file: the global journal directory, publishers, rankings, curated journal records in JSON and CSV, the PSC subject classification and the checksummed canonical snapshot.',
+  alternates: { canonical: '/datasets/' },
 }
 
 function kb(bytes: number) {
@@ -50,8 +51,12 @@ const AUDIT_BASE = 'https://github.com/WENSHAO521/posi-data/tree/master/audits/'
 // Audits published in posi-data, newest first.
 const AUDITS = [
   {
-    name: 'Global index and PCS-Q edition', date: '2026-09-27', path: 'global-index/global-index-2026-09-26',
-    desc: 'Every journal registered with Crossref or described by OpenAlex, 158,242 after merging on ISSN; PCS computed from Crossref for each (journals looked up under each of their ISSNs), 103,021 ranked, 51,029 within their subject category.',
+    name: 'POSI Journal Evaluation Architecture 1.0', date: '2026-09-28', path: 'migrations/evaluation-architecture-1.0-2026',
+    desc: 'AJR Ratings (A+ to D) added from each published AJR score; legacy E-Q/M-Q quartiles, PCS-Q quartiles and PCI Citation Q kept as archive and retired as rankings. Citation Rankings move to PNCI-1.0.',
+  },
+  {
+    name: 'Global index and PCS edition', date: '2026-09-27', path: 'global-index/global-index-2026-09-26',
+    desc: 'Every journal registered with Crossref or described by OpenAlex, 158,242 after merging on ISSN; PCS computed from Crossref for each (journals looked up under each of their ISSNs). Its PCS-Q ranks are retired (POSI-EVAL-1.0).',
   },
   {
     name: 'PCS ETL, full scope', date: '2026-08-14', path: 'pcs-etl/pcs-etl-v1-global1024-2026',
@@ -93,15 +98,16 @@ export default function DatasetsPage() {
   const { records: directory, source } = getDirectory()
   const categories = getDirectoryCategories().filter(c => c.count > 0)
   const publishers = getPublishers()
-  const { ranked, notRanked, year } = getRankings()
+  const { all, ranked, year } = getRankings()
 
   const global: DataFile[] = [
     { path: '/data/journals/index.json', rows: categories.length, bytes: null, what: 'Global journal directory: totals, and the file list for each subject category' },
     { path: '/data/journals/{category}.json', rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 20,000 journals are split by first letter' },
     { path: '/data/meta/publishers.json', rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
     { path: `/data/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
-    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: ranked.length + notRanked.length, bytes: null, what: `Journal Rankings ${year}: the edition's parameters and the file list for each subject category; the CSV has every ranked journal` },
-    { path: `/data/rankings/pcs-${year}-{category}.json`, rows: ranked.length + notRanked.length, bytes: null, what: 'PCS with category and overall rank, percentile, quartile and POSI Zone, one file per PSC category; unranked journals with the reason' },
+    { path: `/data/rankings/citation-${year}.json`, alt: `/data/rankings/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has every journal (${ranked.length.toLocaleString('en-US')} ranked)` },
+    { path: `/data/rankings/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
+    { path: `/data/rankings/pcs-${year}.json`, alt: `/data/rankings/pcs-${year}.csv`, rows: null, bytes: null, what: 'Deprecated: PCS values only, kept for existing links; its rank, quartile and zone columns are empty since PCS-Q was retired' },
   ]
 
   const curated: DataFile[] = [

@@ -9,10 +9,18 @@ export interface JournalHit {
   publisher: string | null
   works: number
   oa: boolean
+  /** POSI-EVAL-1.0 summary, when the journal has one */
+  psc?: string | null
+  quartile?: 'Q1' | 'Q2' | 'Q3' | 'Q4' | null
+  zone?: 1 | 2 | 3 | 4 | null
+  status?: string | null
+  ajr?: string | null
+  zoneStatus?: 'official' | 'provisional' | 'not_assigned' | null
 }
 
-/** [key, title, publisher, works, open access, alternate titles joined by ' | '] */
-type Entry = [string, string, string | null, number, 0 | 1, string?]
+type Evaluation = [string | null, 'Q1' | 'Q2' | 'Q3' | 'Q4' | null, 1 | 2 | 3 | 4 | null, string | null, string | null, ('official' | 'provisional' | 'not_assigned' | null)?]
+/** [key, title, publisher, works, open access, alternate titles joined by ' | ', [PSC, quartile, zone, ranking status, AJR Rating, zone status]] */
+type Entry = [string, string, string | null, number, 0 | 1, string?, Evaluation?]
 
 /** Keep in step with scripts/sync-live-data.mjs. */
 const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
@@ -52,7 +60,7 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   if (ISSN_RE.test(query) || /^S\d+$/i.test(query)) {
     const p = await getJournalProfile(query, signal)
     return p
-      ? { hits: [{ key: p.k, title: p.t, publisher: p.pub ?? null, works: p.w ?? p.cr ?? 0, oa: !!p.oa }], total: 1 }
+      ? { hits: [{ key: p.k, title: p.t, publisher: p.pub ?? null, works: p.w ?? p.cr ?? 0, oa: !!p.oa, psc: p.ev?.cat ?? p.s ?? null, quartile: p.ev?.q ?? null, zone: p.ev?.z ?? null, status: p.ev?.st ?? null, ajr: p.ev?.ajr?.[0] ?? null, zoneStatus: p.ev?.zs ?? null }], total: 1 }
       : { hits: [], total: 0 }
   }
 
@@ -67,7 +75,7 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   const scored: { e: Entry; score: number }[] = []
   for (const e of entries) {
     let best = -1
-    for (const title of [e[1], ...(e[5]?.split(' | ') ?? [])]) {
+    for (const title of [e[1], ...(e[5] ? e[5].split(' | ') : [])]) {
       const tw = titleWords(title)
       // every query word must prefix-match some title word
       if (!words.every(w => tw.some(t => t.startsWith(w)))) continue
@@ -80,6 +88,9 @@ export async function searchJournals(q: string, limit = 50, signal?: AbortSignal
   scored.sort((a, b) => b.score - a.score)
   return {
     total: scored.length,
-    hits: scored.slice(0, limit).map(({ e }) => ({ key: e[0], title: e[1], publisher: e[2], works: e[3], oa: e[4] === 1 })),
+    hits: scored.slice(0, limit).map(({ e }) => ({
+      key: e[0], title: e[1], publisher: e[2], works: e[3], oa: e[4] === 1,
+      ...(e[6] ? { psc: e[6][0], quartile: e[6][1], zone: e[6][2], status: e[6][3], ajr: e[6][4], zoneStatus: e[6][5] ?? null } : {}),
+    })),
   }
 }

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/db'
 export const metadata = {
   title: 'Indexing certificate',
   description: 'Issue a verifiable certificate of indexing for your journal publications. Free, instant, checked against Crossref, OpenAlex and the live POSI index.',
+  alternates: { canonical: '/certificate/' },
 }
 
 export default function CertificatePage() {

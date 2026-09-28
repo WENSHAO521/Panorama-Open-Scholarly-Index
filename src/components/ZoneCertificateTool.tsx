@@ -64,8 +64,9 @@ export function ZoneCertificateTool() {
   if (!cert) {
     return (
       <Note tone="warn">
-        <strong>{j.t}</strong> has no POSI Zone in the current ranking edition, so no zone certificate can be issued.
-        Zones are given to journals ranked by the POSI Citation Score. <Link href={journalHref(j.k)} className="link">See the journal&apos;s ranking status</Link>.
+        <strong>{j.t}</strong> has no official POSI Zone in the current Citation Ranking edition, so no zone certificate
+        can be issued. Zones come from the journal&apos;s PNCI percentile within its PSC category; an official zone needs an
+        official ranking in a category of at least 50 ranked journals. <Link href={journalHref(j.k)} className="link">See the journal&apos;s ranking status</Link>.
       </Note>
     )
   }
