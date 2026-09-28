@@ -24,10 +24,12 @@ export function IndexChecks({ issn }: { issn: string }) {
   }
   return (
     <div className="space-y-2">
-      <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
+      <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
+        style={{ background: 'var(--wos-brand)', borderColor: 'var(--wos-brand)', color: 'var(--on-wos-brand)' }}>
         <ArrowSquareOut className="h-4 w-4" /> Check Web of Science listing
       </a>
-      <a href={SCOPUS_SOURCES} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
+      <a href={SCOPUS_SOURCES} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
+        style={{ background: 'var(--scopus-brand)', borderColor: 'var(--scopus-brand)', color: 'var(--on-scopus-brand)' }}>
         <ArrowSquareOut className="h-4 w-4" /> Check Scopus listing
       </a>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>

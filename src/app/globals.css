@@ -34,6 +34,12 @@
   /* Chart series (categorical slots 1-2, validated as a pair on --surface). */
   --series-1: #2a78d6;
   --series-2: #eb6834;
+  /* External index buttons: each service's brand colour, text only (no logos).
+     White on the purple (7.8:1); ink on the orange, which fails with white. */
+  --wos-brand: #5e33bf;
+  --on-wos-brand: #ffffff;
+  --scopus-brand: #e9711c;
+  --on-scopus-brand: #13171c;
   --teal-line: #b7c8de;
   --on-teal: #ffffff;
 
