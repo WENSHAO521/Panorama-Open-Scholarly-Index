@@ -50,7 +50,7 @@ posi-engine ──release──▶ posi-data ──snapshot──▶ posi-data-d
   `src/lib/pcs-q.json`.
 - `scripts/sync-corpus.mjs` refreshes the small committed collections (Core
   Collection, curated Global Benchmark, PCS, PCI). The `data-sync` workflow
-  runs it every three hours and commits changes, which rebuilds the site.
+  runs it every 20 minutes and commits changes, which rebuilds the site.
 
 ## Code map
 

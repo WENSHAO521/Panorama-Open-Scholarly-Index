@@ -12,14 +12,15 @@ name: Data sync
 #      global corpus and ranking edition (scripts/sync-live-data.mjs).
 #
 # Upstream: posi-engine publishes global-index releases, posi-data imports the
-# ranking edition, and posi-data-delivery publishes snapshots. Each step checks
-# every three hours instead of relying on a fixed daily slot, because GitHub
-# delays scheduled runs by hours and sometimes drops them; a check that finds
-# nothing new changes nothing and costs about a minute.
+# ranking edition, and posi-data-delivery publishes snapshots. The steps check
+# every 20 minutes, staggered (posi-data :02, posi-data-delivery :08, this sync
+# :14, each hour at 20-minute steps), so a new edition reaches the site within
+# about an hour instead of up to nine. A check that finds nothing new changes
+# nothing and costs about a minute.
 
 on:
   schedule:
-    - cron: '41 */3 * * *'   # every three hours
+    - cron: '14,34,54 * * * *'   # every 20 minutes, 6 minutes after posi-data-delivery
   workflow_dispatch:
 
 concurrency:
