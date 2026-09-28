@@ -17,7 +17,6 @@ export const DOCS_NAV: DocsSection[] = [
     blurb: 'Indexing, certification, coverage changes and appropriate use.',
     links: [
       { label: 'Editorial policy', href: '/editorial-policy/' },
-      { label: 'Core Collection', href: '/core-collection/' },
       { label: 'Responsible use', href: '/responsible-use/' },
       { label: 'Conflict of interest', href: '/coi/' },
     ],

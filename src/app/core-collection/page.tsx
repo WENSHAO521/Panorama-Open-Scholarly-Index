@@ -20,7 +20,7 @@ export default function CoreCollectionPage() {
   const ranked = rows.filter(x => x.r?.rank != null).length
 
   return (
-    <div className="pb-12">
+    <div className="wrap pb-12">
       <PageHeader
         title="Core Collection"
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Journals', href: '/journals/' }, { label: 'Core Collection' }]}

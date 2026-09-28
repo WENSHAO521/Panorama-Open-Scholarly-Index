@@ -84,6 +84,17 @@ export function PageHeader({
   )
 }
 
+// Numbered in-page contents for long documentation pages; ids match the page's h2 anchors.
+export function OnThisPage({ items }: { items: [id: string, label: string][] }) {
+  return (
+    <nav aria-label="On this page" className="mb-10 max-w-[760px]">
+      <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[14px] list-decimal pl-5" style={{ color: 'var(--muted)' }}>
+        {items.map(([id, label]) => <li key={id}><a href={`#${id}`} className="hover:underline" style={{ color: 'var(--teal)' }}>{label}</a></li>)}
+      </ol>
+    </nav>
+  )
+}
+
 export function SectionTitle({ id, children, aside }: { id?: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 mb-3">

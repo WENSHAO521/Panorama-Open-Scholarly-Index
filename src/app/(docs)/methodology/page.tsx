@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { PageHeader } from '@/components/db'
+import { PageHeader, OnThisPage } from '@/components/db'
 import { RANKING_SNAPSHOT, RANKING_VERSION, PNCI_VERSION, ZONES_EDITION_VERSION, EVALUATION_EDITION_VERSION, getRankings } from '@/lib/rankings'
 import {
   AJR_RATING_SCALE, AJR_DISCLAIMER, PCS_DISCLAIMER, PQF_DISCLAIMER, PQF_STATUS_BANDS, PQF_STATUS_LABEL, RANKING_BASIS, RANKING_THRESHOLDS,
@@ -13,7 +13,7 @@ export const metadata = {
   alternates: { canonical: '/methodology/' },
 }
 
-const CONTENTS = [
+const CONTENTS: [string, string][] = [
   ['architecture', 'POSI Evaluation Architecture'],
   ['pqf', 'Core Collection Eligibility — PQF'],
   ['ajr', 'Journal Lifecycle Evaluation — AJR'],
@@ -44,11 +44,7 @@ export default function MethodologyPage() {
         </p>
       </PageHeader>
 
-      <nav aria-label="On this page" className="mb-10 max-w-[760px]">
-        <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[14px] list-decimal pl-5" style={{ color: 'var(--muted)' }}>
-          {CONTENTS.map(([id, label]) => <li key={id}><a href={`#${id}`} className="hover:underline" style={{ color: 'var(--teal)' }}>{label}</a></li>)}
-        </ol>
-      </nav>
+      <OnThisPage items={CONTENTS} />
 
       <div className="doc">
         <section aria-labelledby="architecture">

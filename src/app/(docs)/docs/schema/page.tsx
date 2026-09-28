@@ -40,7 +40,7 @@ export default function SchemaPage() {
               {JOURNAL_FIELDS.map(f => (
                 <tr key={f.key}>
                   <td className="font-mono text-[13px] whitespace-nowrap">{f.key}</td>
-                  <td className="font-mono text-[12px] whitespace-nowrap" style={{ color: 'var(--muted)' }}>{f.type}</td>
+                  <td className="font-mono text-[12px] min-w-[170px] max-w-[240px]" style={{ color: 'var(--muted)' }}>{f.type}</td>
                   <td><BasisTag b={f.basis} /></td>
                   <td className="text-[13px] whitespace-nowrap" style={{ color: 'var(--muted)' }}>{f.source}</td>
                   <td className="text-[13.5px]">{f.description}</td>
