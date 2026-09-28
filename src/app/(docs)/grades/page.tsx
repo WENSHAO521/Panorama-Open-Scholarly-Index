@@ -72,7 +72,8 @@ export default function GradesPage() {
             They are not Web of Science or Scopus labels, and are independent of both. POSI does not record whether a
             journal is in SCIE, SSCI, AHCI or ESCI; each journal page links to Clarivate’s Master Journal List to check.
             For Scopus, each journal page shows the journal’s status as stated in Elsevier’s published Scopus source
-            list, with the list’s date, and links to the journal’s Scopus page.
+            list, with the list’s date, and links to the journal’s Scopus page. For PubMed, it shows whether the journal
+            is in NLM’s list of journals cited in PubMed and links to its NLM Catalog record, which states MEDLINE indexing.
           </li>
           <li>They describe journals, not individual articles or researchers. See <Link href="/responsible-use/">responsible use</Link>.</li>
           <li>No publisher, editor or sponsor can change a grade by hand. See the <Link href="/editorial-policy/">editorial policy</Link>.</li>
