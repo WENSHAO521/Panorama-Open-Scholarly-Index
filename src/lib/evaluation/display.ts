@@ -9,6 +9,8 @@ import {
 
 export const NOT_AVAILABLE = 'Not available'
 export const NOT_YET_RANKED = 'Not yet ranked'
+/** Why a journal has no PCI: it is computed only for these journals so far. */
+export const PCI_SCOPE = 'PCI is computed for Core Collection and benchmark journals'
 
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x)
 

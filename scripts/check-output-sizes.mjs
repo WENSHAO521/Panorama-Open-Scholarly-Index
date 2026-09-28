@@ -30,7 +30,7 @@ const BROWSER_DIRS = ['data/j', 'data/jt', 'data/journals', 'data/records', 'dat
 if (!existsSync(OUT)) { console.log('check-output-sizes: no out/ directory, skipped'); process.exit(0) }
 
 const files = []
-const walk = dir => { for (const e of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, e.name); e.isDirectory() ? walk(p) : files.push([relative(OUT, p), statSync(p).size]) } }
+const walk = dir => { for (const e of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, e.name); if (e.isDirectory()) walk(p); else files.push([relative(OUT, p), statSync(p).size]) } }
 walk(OUT)
 
 const fmt = b => `${(b / MiB).toFixed(1)} MiB`
