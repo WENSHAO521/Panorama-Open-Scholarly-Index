@@ -13,10 +13,10 @@ import type { PcsEntry } from '@/lib/pcs'
 import type { PciEntry } from '@/lib/pci'
 import type { CitationStatsEntry } from '@/lib/citation-stats'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, collectionOf, verificationOf, freshnessOf, countryName } from '@/lib/records'
-import { BASIS, FIELD_BY_KEY, type Basis } from '@/lib/schema'
+import { BASIS, FIELD_BY_KEY } from '@/lib/schema'
 import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation/journal'
 import { fmtScore } from '@/lib/evaluation/display'
-import { EvaluationPanel } from './Evaluation'
+import { EvaluationCards } from './Evaluation'
 import { alternateTitleLabel } from '@/lib/titles'
 import { PQF_DISCLAIMER } from '@/lib/evaluation/rules'
 import { CollectionTag, FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
@@ -38,53 +38,70 @@ function sampleLabel(n: number | null | undefined): { label: string; tone: strin
   return { label: 'Adequate sample', tone: 'var(--verified)' }
 }
 
-function Val({ v, mono }: { v: React.ReactNode; mono?: boolean }) {
-  if (v === null || v === undefined || v === '') return <span style={{ color: 'var(--soft)' }}>Not recorded</span>
-  return <span className={mono ? 'font-mono text-[13px]' : undefined}>{v}</span>
-}
+type FieldSpec = { k: string; value: React.ReactNode; mono?: boolean }
 
-function FieldRow({ k, value, mono, basisOverride }: { k: string; value: React.ReactNode; mono?: boolean; basisOverride?: Basis }) {
-  const f = FIELD_BY_KEY[k]
+const isEmpty = (v: React.ReactNode) => v === null || v === undefined || v === ''
+
+/**
+ * One group of record fields. Fields with a value are listed with their
+ * source and basis; empty ones are named in a single "Not recorded" line so
+ * a sparse record stays short but still says what is missing.
+ */
+function FieldGroup({ id, title, intro, fields }: { id: string; title: string; intro?: string; fields: FieldSpec[] }) {
+  const have = fields.filter(f => !isEmpty(f.value))
+  const missing = fields.filter(f => isEmpty(f.value)).map(f => FIELD_BY_KEY[f.k]?.label ?? f.k)
   return (
-    <>
-      <dt>
-        <span className="block">{f?.label ?? k}</span>
-        {f && (
-          <span className="block text-[11.5px] mt-0.5" style={{ color: 'var(--soft)' }} title={BASIS[basisOverride ?? f.basis].description}>
-            {f.source} · {BASIS[basisOverride ?? f.basis].label.toLowerCase()}
-          </span>
-        )}
-      </dt>
-      <dd><Val v={value} mono={mono} /></dd>
-    </>
+    <section aria-labelledby={id} className="px-4 sm:px-5 py-4 first:border-t-0" style={{ borderTop: '1px solid var(--line-soft)' }}>
+      <h3 id={id} className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{title}</h3>
+      {intro && <p className="mt-1 text-[12.5px] max-w-[65ch]" style={{ color: 'var(--soft)' }}>{intro}</p>}
+      {have.length > 0 && (
+        <dl className="mt-3 grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[14px]">
+          {have.map(({ k, value, mono }) => {
+            const f = FIELD_BY_KEY[k]
+            return (
+              <div key={k} className="min-w-0">
+                <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                  {f?.label ?? k}
+                  {f && <span style={{ color: 'var(--soft)' }} title={BASIS[f.basis].description}> · {f.source} · {BASIS[f.basis].label.toLowerCase()}</span>}
+                </dt>
+                <dd className={`mt-0.5 break-words ${mono ? 'font-mono text-[13px]' : ''}`} style={{ color: 'var(--ink)' }}>{value}</dd>
+              </div>
+            )
+          })}
+        </dl>
+      )}
+      {missing.length > 0 && <p className="mt-3 text-[12.5px]" style={{ color: 'var(--soft)' }}>Not recorded: {missing.join(', ')}</p>}
+    </section>
   )
 }
 
-function Metric({ name, value, sub, version, sample, href }: {
-  name: string
+function Figure({ label, value, note, sample, href }: {
+  label: string
   value: React.ReactNode | null
-  sub?: React.ReactNode
-  version?: string | null
+  note?: React.ReactNode
   sample?: { label: string; tone: string } | null
   href?: string
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="label">{name}</p>
-        {version && <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{version}</span>}
-      </div>
+    <div className="flex flex-col">
+      <dt>{label}</dt>
       {value === null
-        ? <p className="text-[14px] py-1.5" style={{ color: 'var(--soft)' }}>Not computed</p>
-        : <p className="figure text-[26px] leading-tight">{value}</p>}
-      {sub && <p className="text-[12.5px] leading-snug" style={{ color: 'var(--muted)' }}>{sub}</p>}
-      {sample && <p className="text-[12px]" style={{ color: sample.tone }}>{sample.label}</p>}
-      {href && <Link href={href} className="text-[12.5px] link mt-auto pt-1">How it is calculated</Link>}
+        ? <dd className="text-[15px] py-1.5" style={{ color: 'var(--soft)' }}>Not computed</dd>
+        : <dd className="figure text-[24px] sm:text-[28px] leading-tight mt-1 tnum break-words">{value}</dd>}
+      {note && <dd className="note">{note}</dd>}
+      {sample && <dd className="text-[12px] mt-0.5" style={{ color: sample.tone }}>{sample.label}</dd>}
+      {href && <dd className="mt-1 text-[12.5px]"><Link href={href} className="link">How it is calculated</Link></dd>}
     </div>
   )
 }
 
-export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Journal; metrics?: RecordMetrics; jsonHref?: string }) {
+export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
+  journal: Journal
+  metrics?: RecordMetrics
+  jsonHref?: string
+  /** Extra per-journal links for the sidebar (profile, certificates). */
+  links?: React.ReactNode
+}) {
   const k = collectionOf(j)
   const v = verificationOf(j)
   const f = freshnessOf(j)
@@ -93,47 +110,42 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
   const { pcs, pci, citationStats, pscName } = metrics
   const evaluation = metrics.evaluation ?? buildJournalEvaluation({ journal: j, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? null })
   const oa = citationStats?.stats
+  const issn = j.issn_online ?? j.issn_print
 
   return (
     <article>
       <header className="pt-8 pb-6 md:pt-10">
-        <div className="min-w-0">
-          <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-            <Link href="/" className="hover:underline">POSI</Link>
-            <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
-            <Link href="/journals/" className="hover:underline">Journals</Link>
-            <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
-            <Link href={k === 'core' ? '/core-collection/' : `/journals/?collection=${k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
-          </nav>
-          <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
-          <p className="mt-1.5 text-[15px]" style={{ color: 'var(--muted)' }}>
-            {[j.publisher, countryName(j.registration_country || j.country)].filter(Boolean).join(', ')}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {j.posi_id && <span className="id-tag">{j.posi_id}</span>}
-            {j.issn_online && <span className="id-tag">eISSN {j.issn_online}</span>}
-            {j.issn_print && j.issn_print !== j.issn_online && <span className="id-tag">pISSN {j.issn_print}</span>}
-            <CollectionTag k={k} />
-            <VerificationPill v={v} />
-            <FreshnessTag f={f} />
+        <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+          <Link href="/" className="hover:underline">POSI</Link>
+          <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
+          <Link href="/journals/" className="hover:underline">Journals</Link>
+          <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
+          <Link href={k === 'core' ? '/core-collection/' : `/journals/?collection=${k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
+        </nav>
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0">
+            <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
+            <p className="mt-1.5 text-[15px]" style={{ color: 'var(--muted)' }}>
+              {[j.publisher, countryName(j.registration_country || j.country)].filter(Boolean).join(', ')}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {j.posi_id && <span className="id-tag">{j.posi_id}</span>}
+              {j.issn_online && <span className="id-tag">eISSN {j.issn_online}</span>}
+              {j.issn_print && j.issn_print !== j.issn_online && <span className="id-tag">pISSN {j.issn_print}</span>}
+              <CollectionTag k={k} />
+              <VerificationPill v={v} />
+              <FreshnessTag f={f} />
+            </div>
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px]">
+          <div className="flex flex-wrap items-center gap-2">
             {j.website_url && (
               <a href={j.website_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 <Globe className="h-4 w-4" /> Journal website
               </a>
             )}
-            {(j.issn_online || j.issn_print) && (
-              <Link href={`/publications/?issn=${j.issn_online ?? j.issn_print}&sort=newest`} className="link">Publications</Link>
-            )}
-            {j.openalex_source_id && (
-              <a href={`https://openalex.org/${j.openalex_source_id}`} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
-                OpenAlex <ArrowSquareOut className="h-3.5 w-3.5" />
-              </a>
-            )}
-            <Link href="/certificate/" className="link">Indexing certificate</Link>
+            {issn && <Link href={`/publications/?issn=${issn}&sort=newest`} className="btn">Publications</Link>}
             {jsonHref && (
-              <a href={jsonHref} className="link inline-flex items-center gap-1" download>
+              <a href={jsonHref} className="btn" download>
                 <DownloadSimple className="h-4 w-4" /> Record JSON
               </a>
             )}
@@ -159,96 +171,92 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
         </div>
       )}
 
+      <section aria-label="Key figures" className="mb-10">
+        <dl className="stat-strip grid-cols-2 lg:grid-cols-4 gap-y-2">
+          <Figure
+            label="Citation impact (PCI)"
+            value={pci?.pci != null ? fmtScore(pci.pci) : null}
+            note={pci ? <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</> : undefined}
+            sample={pci ? sampleLabel(pci.pci_citable_items) : null}
+            href="/methodology/#pci"
+          />
+          <Figure
+            label="Citation score (PCS)"
+            value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
+            note={pcs ? <>Supplementary · {pcs.pcs_window_start_year}–{pcs.pcs_window_end_year} · {fmt(pcs.pcs_eligible_items)} items{pcs.pcs_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pcs.pcs_methodology_version}</span></>}</> : undefined}
+            sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
+            href="/methodology/#pcs"
+          />
+          <Figure
+            label="Articles"
+            value={j.article_count != null ? fmt(j.article_count) : null}
+            note={FIELD_BY_KEY.article_count?.source}
+          />
+          <div className="flex flex-col min-w-0">
+            <dt>Subject</dt>
+            {j.psc_category
+              ? <dd className="text-[16px] sm:text-[17px] font-semibold leading-snug mt-1.5" style={{ color: 'var(--ink)' }}>{pscName ?? j.psc_category}</dd>
+              : <dd className="text-[15px] py-1.5" style={{ color: 'var(--soft)' }}>Not yet classified</dd>}
+            {j.psc_category && <dd className="note"><span className="font-mono">{j.psc_category}</span>{j.psc_confidence && ` · confidence ${j.psc_confidence}`}</dd>}
+          </div>
+        </dl>
+        {oa && (
+          <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+            OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}
+            <span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, h-index{' '}
+            <span className="tnum">{fmt(oa.h_index)}</span>, fetched {citationStats?.fetched_at?.slice(0, 10)}.
+          </p>
+        )}
+      </section>
+
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="indicators">
-            <SectionTitle id="indicators" aside={evaluation.evaluationVersion}>Evaluation</SectionTitle>
-            <div className="panel p-4">
-              <EvaluationPanel ev={evaluation} core={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'} />
+            <SectionTitle id="indicators" aside={<span className="font-mono text-[12px]">{evaluation.evaluationVersion}</span>}>Evaluation status</SectionTitle>
+            <EvaluationCards ev={evaluation} core={k === 'core' ? 'core' : k === 'candidate' ? 'candidate' : 'indexed'} autoPqf={autoPqf} />
+          </section>
+
+          <section aria-labelledby="details">
+            <SectionTitle id="details">Record details</SectionTitle>
+            <div className="panel overflow-hidden">
+              <FieldGroup id="identity" title="Identity" fields={[
+                { k: 'posi_id', value: j.posi_id, mono: true },
+                { k: 'issn_online', value: j.issn_online, mono: true },
+                { k: 'issn_print', value: j.issn_print, mono: true },
+                { k: 'openalex_source_id', value: j.openalex_source_id && (
+                  <a href={`https://openalex.org/${j.openalex_source_id}`} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
+                    {j.openalex_source_id} <ArrowSquareOut className="h-3.5 w-3.5" />
+                  </a>
+                ), mono: true },
+                { k: 'title', value: j.title },
+                ...(j.alternate_titles?.length ? [{ k: 'alternate_titles', value: j.alternate_titles.map(alternateTitleLabel).join('; ') }] : []),
+                { k: 'publisher', value: j.publisher },
+                { k: 'registration_country', value: countryName(j.registration_country) },
+              ]} />
+              <FieldGroup id="declared" title="Declared by the publisher"
+                intro="Stated by the journal about itself. POSI records these as declared and does not present them as measured."
+                fields={[
+                  { k: 'country', value: countryName(j.country) },
+                  { k: 'language', value: j.language },
+                  { k: 'website_url', value: j.website_url && <a href={j.website_url} className="link break-all" target="_blank" rel="noopener noreferrer">{j.website_url.replace(/^https?:\/\//, '')}</a> },
+                  { k: 'frequency', value: j.frequency },
+                  { k: 'license', value: j.license },
+                  { k: 'peer_review_type', value: j.peer_review_type },
+                  { k: 'apc', value: j.apc && (
+                    <span className="block">
+                      <span className="font-medium">{j.apc.amount === 0 ? 'No APC' : `${j.apc.currency} ${j.apc.amount.toLocaleString('en-US')}`}</span>
+                      {j.apc.note && <span className="block text-[13px] mt-0.5" style={{ color: 'var(--ink-2)' }}>{j.apc.note}</span>}
+                      <span className="block text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>
+                        As stated on the <a href={j.apc.source_url} className="link" target="_blank" rel="noopener noreferrer">journal’s website</a>, checked {j.apc.checked_at}
+                      </span>
+                    </span>
+                  ) },
+                ]} />
+              <FieldGroup id="observed" title="Registry and computed values" fields={[
+                { k: 'open_access', value: j.open_access ? 'Yes' : 'No' },
+                { k: 'doaj_status', value: j.doaj_status ? j.doaj_status.replace(/_/g, ' ') : null },
+              ]} />
             </div>
-            <div className="mt-4 stat-strip grid-cols-1 sm:grid-cols-2 gap-y-2">
-              <Metric
-                name="Citation score (PCS)"
-                value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
-                sub={pcs ? `Supplementary. ${pcs.pcs_window_start_year} to ${pcs.pcs_window_end_year}, ${fmt(pcs.pcs_eligible_items)} items` : 'Not computed for this record'}
-                sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
-                version={pcs?.pcs_methodology_version}
-                href="/methodology/#pcs"
-              />
-              <Metric
-                name="Citation impact (PCI)"
-                value={pci?.pci != null ? fmtScore(pci.pci) : null}
-                sub={pci ? `${pci.pci_window_start_year} to ${pci.pci_window_end_year}, ${fmt(pci.pci_citable_items)} citable items` : 'Not computed for this record'}
-                sample={pci ? sampleLabel(pci.pci_citable_items) : null}
-                version={pci?.pci_methodology_version}
-                href="/methodology/#pci"
-              />
-              {!pqf && autoPqf && (
-                <Metric
-                  name="PQF pre-screen (automated)"
-                  value={autoPqf.total}
-                  sub="Automated pre-screen, not an admission decision or a ranking"
-                  version={autoPqf.version}
-                  href="/methodology/#pqf"
-                />
-              )}
-            </div>
-            {oa && (
-              <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>
-                OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}
-                <span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, h-index{' '}
-                <span className="tnum">{fmt(oa.h_index)}</span>, fetched {citationStats?.fetched_at?.slice(0, 10)}.
-              </p>
-            )}
-          </section>
-
-          <section aria-labelledby="identity">
-            <SectionTitle id="identity">Identity</SectionTitle>
-            <dl className="panel fields overflow-hidden">
-              <FieldRow k="posi_id" value={j.posi_id} mono />
-              <FieldRow k="issn_online" value={j.issn_online} mono />
-              <FieldRow k="issn_print" value={j.issn_print} mono />
-              <FieldRow k="openalex_source_id" value={j.openalex_source_id} mono />
-              <FieldRow k="title" value={j.title} />
-              {j.alternate_titles?.length ? <FieldRow k="alternate_titles" value={j.alternate_titles.map(alternateTitleLabel).join('; ')} /> : null}
-              <FieldRow k="publisher" value={j.publisher} />
-              <FieldRow k="registration_country" value={countryName(j.registration_country)} />
-            </dl>
-          </section>
-
-          <section aria-labelledby="declared">
-            <SectionTitle id="declared">Declared by the publisher</SectionTitle>
-            <p className="text-[13.5px] mb-3 max-w-[65ch]" style={{ color: 'var(--muted)' }}>
-              Stated by the journal about itself. POSI records these as declared and does not present them as measured.
-            </p>
-            <dl className="panel fields overflow-hidden">
-              <FieldRow k="country" value={countryName(j.country)} />
-              <FieldRow k="language" value={j.language} />
-              <FieldRow k="frequency" value={j.frequency} />
-              <FieldRow k="license" value={j.license} />
-              <FieldRow k="peer_review_type" value={j.peer_review_type} />
-              <FieldRow k="website_url" value={j.website_url ? <a href={j.website_url} className="link break-all" target="_blank" rel="noopener noreferrer">{j.website_url}</a> : null} />
-              <FieldRow k="apc" value={j.apc ? (
-                <span className="block">
-                  <span className="font-medium">{j.apc.amount === 0 ? 'No APC' : `${j.apc.currency} ${j.apc.amount.toLocaleString('en-US')}`}</span>
-                  {j.apc.note && <span className="block text-[13px] mt-0.5" style={{ color: 'var(--ink-2)' }}>{j.apc.note}</span>}
-                  <span className="block text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                    As stated on the <a href={j.apc.source_url} className="link" target="_blank" rel="noopener noreferrer">journal’s website</a>, checked {j.apc.checked_at}
-                  </span>
-                </span>
-              ) : null} />
-            </dl>
-          </section>
-
-          <section aria-labelledby="observed">
-            <SectionTitle id="observed">Registry and computed values</SectionTitle>
-            <dl className="panel fields overflow-hidden">
-              <FieldRow k="article_count" value={fmt(j.article_count)} mono />
-              <FieldRow k="open_access" value={j.open_access ? 'Yes' : 'No'} />
-              <FieldRow k="doaj_status" value={j.doaj_status ? j.doaj_status.replace(/_/g, ' ') : null} />
-              <FieldRow k="psc_category" value={j.psc_category ? <><span className="font-mono">{j.psc_category}</span>{pscName ? ` ${pscName}` : ''}</> : null} />
-              <FieldRow k="psc_confidence" value={j.psc_confidence} />
-            </dl>
           </section>
 
           {pqf && (
@@ -297,6 +305,11 @@ export function RecordView({ journal: j, metrics = {}, jsonHref }: { journal: Jo
               <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{COLLECTIONS[k].description}</p>
             </div>
             <Link href="/docs/provenance/" className="link text-[13px] inline-block">How states are assigned</Link>
+          </div>
+          <div className="panel p-4 text-[13.5px] space-y-2">
+            <p className="font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
+            {links}
+            <Link href="/certificate/" className="link block">Certificate of indexing</Link>
           </div>
           <div className="panel p-4 text-[13px]">
             <p className="font-medium mb-2" style={{ color: 'var(--ink)' }}>Cite this record</p>

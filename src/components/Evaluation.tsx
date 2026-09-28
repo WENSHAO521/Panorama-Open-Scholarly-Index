@@ -77,7 +77,7 @@ function Block({ title, id, children, aside }: { title: string; id: string; chil
         <h3 id={id} className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{title}</h3>
         {aside}
       </div>
-      <dl className="mt-1 text-[13.5px] divide-y" style={{ borderColor: 'var(--line-soft)' }}>{children}</dl>
+      <dl className="mt-1 text-[13.5px] divide-y divide-[var(--line-soft)]">{children}</dl>
     </section>
   )
 }
@@ -137,6 +137,98 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
         <Row k="Snapshot" v={r.snapshot ? fmtSnapshot(r.snapshot) : soft('Not yet generated')} note={r.methodology ? `${r.methodology} · ${ev.evaluationVersion}` : ev.evaluationVersion} />
       </Block>
       <p className="pt-2 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>{PCS_DISCLAIMER}</p>
+    </div>
+  )
+}
+
+type CardState = 'done' | 'pending' | 'none'
+const CARD_DOT: Record<CardState, string> = { done: 'var(--verified)', pending: 'var(--partial)', none: 'var(--soft)' }
+
+function Card({ step, title, version, state, value, children, action }: {
+  step: number; title: string; version?: string | null; state: CardState
+  value: React.ReactNode; children?: React.ReactNode; action?: React.ReactNode
+}) {
+  return (
+    <div className="p-4 flex flex-col gap-1.5 min-w-0" style={{ background: 'var(--surface)' }}>
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{step} · {title}</h3>
+        {version && <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{version}</span>}
+      </div>
+      <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: 'var(--ink)' }}>
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full shrink-0" style={{ background: CARD_DOT[state] }} />
+        <span className="min-w-0">{value}</span>
+      </div>
+      {children && <div className="text-[12.5px] leading-snug space-y-1" style={{ color: 'var(--muted)' }}>{children}</div>}
+      {action && <div className="mt-auto pt-1 text-[12.5px]">{action}</div>}
+    </div>
+  )
+}
+
+/**
+ * The evaluation as four status cards in the fixed order (Core Collection,
+ * PQF, AJR, Citation Ranking). Same values as EvaluationPanel, laid out so
+ * the state of each stage reads at a glance on the journal record.
+ */
+export function EvaluationCards({ ev, core, autoPqf }: {
+  ev: JournalEvaluation
+  core: 'core' | 'candidate' | 'indexed'
+  autoPqf?: { total: number; version: string } | null
+}) {
+  const r = ev.ranking
+  const ranked = r.rank != null
+  const provisional = r.status === 'provisional'
+  const a = ev.ajr
+  const c = ev.citations
+  const reason = rankingReason(r.reason, c.eligibleItems)
+  return (
+    <div>
+      <div className="grid sm:grid-cols-2 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+        <Card step={1} title="Core Collection" state={core === 'core' ? 'done' : core === 'candidate' ? 'pending' : 'none'}
+          value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>Eligible, certified</span> : core === 'candidate' ? 'Under re-review' : 'Indexed, not certified'}
+          action={core === 'core'
+            ? <Link href="/core-collection/" className="link">Core Collection</Link>
+            : <Link href="/certification/" className="link">Apply for certification →</Link>}>
+          <p>{core === 'core' ? 'Passed editorial evaluation under the POSI Quality Framework.' : core === 'candidate' ? 'A PQF re-review found this journal below the bar.' : 'Listed in the journal directory. Certification is by application.'}</p>
+        </Card>
+
+        <Card step={2} title="PQF" version={ev.pqf.version} state={ev.pqf.status === 'eligible' ? 'done' : ev.pqf.score != null ? 'pending' : 'none'}
+          value={ev.pqf.score != null ? <>{mono(`${fmtPqf(ev.pqf.score)} / 100`)} · {pqfStatusLabel(ev.pqf.status)}</> : 'Not assessed'}
+          action={<Link href="/pqf/" className="link">What PQF measures</Link>}>
+          {autoPqf && ev.pqf.score == null && <p>Automated pre-screen: {mono(String(autoPqf.total))} ({autoPqf.version}), not an admission decision.</p>}
+          <p>Eligibility framework; not a citation metric.</p>
+        </Card>
+
+        <Card step={3} title="AJR lifecycle" version={a.version}
+          state={a.score != null ? (a.status === 'provisional' ? 'pending' : 'done') : a.model === 'AJR-M' || a.lifecycle === 'observation' ? 'pending' : 'none'}
+          value={a.score != null
+            ? <span className="inline-flex flex-wrap items-center gap-2">{mono(`${fmtScore(a.score)} / 100`)}<AjrRatingBadge rating={a.rating} /></span>
+            : a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? 'Not yet rated' : 'Not rated'}
+          action={<Link href="/ratings/" className="link">About AJR</Link>}>
+          <p>
+            {a.model ? AJR_MODEL_NAME[a.model] : NOT_AVAILABLE}
+            {a.monthsSinceLaunch != null && ` · ${a.monthsSinceLaunch} months since first publication`}
+          </p>
+          {a.score != null && a.status === 'provisional' && <p>Provisional score: evidence coverage below the official threshold.</p>}
+          {a.score == null && a.reason && <p>{a.reason}.</p>}
+        </Card>
+
+        <Card step={4} title="Citation ranking" version={r.methodology} state={ranked ? (provisional ? 'pending' : 'done') : 'none'}
+          value={ranked
+            ? <span className="inline-flex flex-wrap items-center gap-2">{mono(`${r.rank} / ${r.total}`)}<QuartileBadge q={r.quartile} provisional={provisional} /><ZoneBadge z={r.zone} status={r.zoneStatus} /></span>
+            : RANKING_STATUS_LABEL[r.status]}
+          action={<Link href="/methodology/#ranking" className="link">Ranking method</Link>}>
+          {ranked && r.categoryId && <p>In <Link href={`/rankings/${r.categoryId}/`} className="link">{r.category ?? r.categoryId}</Link> · percentile {fmtPercentile(r.percentile)}</p>}
+          <p>
+            PNCI {c.pnci != null ? mono(fmtScore(c.pnci)) : NOT_AVAILABLE.toLowerCase()}
+            {' · '}{c.eligibleItems != null ? `${c.eligibleItems} eligible items` : 'eligible items not available'}
+            {c.coverage != null && ` · coverage ${fmtCoverage(c.coverage)}`}
+          </p>
+          {!ranked && reason && <p>{reason}.</p>}
+          {ranked && !r.zone && <p>{provisional ? 'No zone for a provisional ranking.' : 'No zone: category has fewer than 30 ranked journals.'}</p>}
+          <p>Snapshot: {r.snapshot ? fmtSnapshot(r.snapshot) : 'not yet generated'}</p>
+        </Card>
+      </div>
+      <p className="mt-2 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>{PQF_DISCLAIMER} {PCS_DISCLAIMER}</p>
     </div>
   )
 }

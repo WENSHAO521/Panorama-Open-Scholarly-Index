@@ -19,7 +19,7 @@ export default function AnnouncementsPage() {
       <PageHeader title="News" crumbs={[{ label: 'POSI', href: '/' }, { label: 'About', href: '/about/' }, { label: 'News' }]}>
         <p className="max-w-[68ch]">Updates to POSI coverage, methodology and services.</p>
       </PageHeader>
-      <ol className="max-w-[760px] panel divide-y" style={{ borderColor: 'var(--line-soft)' }}>
+      <ol className="max-w-[760px] panel divide-y divide-[var(--line-soft)]">
         {items.map(a => (
           <li key={a.slug} style={{ borderColor: 'var(--line-soft)' }}>
             <Link href={`/announcements/${a.slug}/`} className="block p-5 transition-colors hover:bg-[var(--hover)]">

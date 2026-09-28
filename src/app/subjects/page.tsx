@@ -70,7 +70,7 @@ export default function SubjectsPage() {
 
         <section aria-labelledby="other">
           <h2 id="other" className="text-[17px] font-semibold tracking-tight mb-3">Other groups</h2>
-          <ul className="panel divide-y text-[14px]" style={{ borderColor: 'var(--line-soft)' }}>
+          <ul className="panel divide-y divide-[var(--line-soft)] text-[14px]">
             {multi && (
               <li className="p-4" style={{ borderColor: 'var(--line-soft)' }}>
                 <Link href="/journals/subject/multidisciplinary/" className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>Multidisciplinary</Link>

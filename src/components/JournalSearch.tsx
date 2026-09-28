@@ -55,7 +55,7 @@ export function JournalSearch() {
       {q.trim() && (
         <section aria-label="Journal search results" className="mt-6">
           {!current && (
-            <div className="panel divide-y" aria-busy="true">
+            <div className="panel divide-y divide-[var(--line-soft)]" aria-busy="true">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="px-4 py-3 space-y-2" style={{ borderColor: 'var(--line-soft)' }}>
                   <div className="h-4 w-1/2 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
