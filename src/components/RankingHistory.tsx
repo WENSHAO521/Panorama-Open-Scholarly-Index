@@ -6,7 +6,7 @@
 
 import Link from 'next/link'
 import type { CitationQuartile, CitationRankingStatus, PosiZone, ZoneStatus } from '@/lib/evaluation/rules'
-import { QuartileBadge, ZoneBadge, RankingStatusBadge } from './Evaluation'
+import { QuartileBadge, ZoneBadge } from './Evaluation'
 import { fmt } from './db'
 
 export interface RankingHistoryRow {
@@ -22,32 +22,36 @@ export interface RankingHistoryRow {
   status: CitationRankingStatus
 }
 
+/** One compact entry per edition: year and badges, then category and rank. */
 export function RankingHistory({ rows }: { rows: RankingHistoryRow[] }) {
   if (!rows.length) return null
   return (
     <div>
-      <div className="panel overflow-x-auto">
-        <table className="dtable min-w-[520px]">
-          <thead><tr><th>Edition</th><th>Category</th><th className="text-right">Rank</th><th>Quartile</th><th>Zone</th><th>Status</th></tr></thead>
-          <tbody>
-            {rows.map(r => {
-              const href = r.cat ? `${r.current ? '/rankings' : `/rankings/edition/${r.year}`}/${r.cat}/` : null
-              return (
-                <tr key={r.year}>
-                  <td className="font-mono tnum whitespace-nowrap">{r.year}{r.current && <span className="ml-1.5 text-[11.5px]" style={{ color: 'var(--muted)' }}>current</span>}</td>
-                  <td className="text-[13.5px]">{href ? <Link href={href} className="link">{r.catName ?? r.cat}</Link> : (r.catName ?? r.cat ?? '–')}</td>
-                  <td className="text-right font-mono tnum whitespace-nowrap">{r.rank != null ? `${fmt(r.rank)} / ${fmt(r.total ?? 0)}` : '–'}</td>
-                  <td><QuartileBadge q={r.q} provisional={r.status === 'provisional'} /></td>
-                  <td><ZoneBadge z={r.zone} status={r.zoneStatus ?? 'not_assigned'} /></td>
-                  <td><RankingStatusBadge status={r.status} /></td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="mt-2 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>
-        Each edition is published once a year and kept as published; ranks compare a journal with its category in that year.
+      <ol className="divide-y divide-[var(--line-soft)]">
+        {rows.map(r => {
+          const href = r.cat ? `${r.current ? '/rankings' : `/rankings/edition/${r.year}`}/${r.cat}/` : null
+          const zone = r.zone && r.zoneStatus !== 'not_assigned'
+          return (
+            <li key={r.year} className="py-2.5 first:pt-0 last:pb-0">
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-mono tnum text-[14px] font-semibold" style={{ color: 'var(--ink)' }}>
+                  {r.year}{r.current && <span className="ml-1.5 font-sans text-[11.5px] font-normal" style={{ color: 'var(--muted)' }}>current</span>}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <QuartileBadge q={r.q} provisional={r.status === 'provisional'} />
+                  {zone && <ZoneBadge z={r.zone} status={r.zoneStatus!} />}
+                </span>
+              </div>
+              <p className="mt-1 text-[12.5px] leading-snug" style={{ color: 'var(--muted)' }}>
+                {href ? <Link href={href} className="link">{r.catName ?? r.cat}</Link> : (r.catName ?? r.cat ?? '–')}
+                {r.rank != null && <> · rank <span className="font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(r.rank)}</span> of {fmt(r.total ?? 0)}</>}
+              </p>
+            </li>
+          )
+        })}
+      </ol>
+      <p className="mt-2.5 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>
+        Editions are kept as published; each ranks the journal within its category that year.
       </p>
     </div>
   )

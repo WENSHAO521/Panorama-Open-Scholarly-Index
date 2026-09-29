@@ -156,7 +156,6 @@ export function JournalProfileView() {
 
         <aside className="space-y-6">
           <EvaluationCard j={j} core={core} />
-          <HistoryCard j={j} />
 
           <section aria-labelledby="ids" className="panel">
             <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
@@ -205,10 +204,17 @@ function Row({ k, v, mono }: { k: string; v: React.ReactNode; mono?: boolean }) 
 
 function EvaluationCard({ j, core }: { j: JournalProfile; core: boolean }) {
   const ev = evaluationFromProfile(j.ev, j.ev?.cat ? PSC_NAME[j.ev.cat] ?? null : null)
+  const history = historyRows(j)
   return (
     <section aria-labelledby="evaluation" className="panel p-4">
       <h2 id="evaluation" className="text-[15px] font-semibold mb-3">Evaluation</h2>
       <EvaluationPanel ev={ev} core={core ? 'core' : 'indexed'} idPrefix="pev" showPqf={core} />
+      {history.length > 0 && (
+        <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--line-soft)' }}>
+          <h3 id="history" className="mb-2.5 text-[13px] font-semibold">Ranking history</h3>
+          <RankingHistory rows={history} />
+        </div>
+      )}
       {hasZone(j) && (
         <Link href={`/certificate/zone/?issn=${encodeURIComponent(j.k)}`} className="btn mt-4 w-full justify-center" prefetch={false}>
           <Certificate className="h-4 w-4" /> Zone certificate
@@ -219,7 +225,7 @@ function EvaluationCard({ j, core }: { j: JournalProfile; core: boolean }) {
   )
 }
 
-function HistoryCard({ j }: { j: JournalProfile }) {
+function historyRows(j: JournalProfile): RankingHistoryRow[] {
   const rows: RankingHistoryRow[] = []
   const ev = j.ev
   if (ev?.r != null && ev.y != null && ev.st) {
@@ -229,13 +235,7 @@ function HistoryCard({ j }: { j: JournalProfile }) {
     if (year === ev?.y) continue
     rows.push({ year, current: false, cat, catName: cat ? PSC_NAME[cat] ?? null : null, rank, total, q, zone, zoneStatus, status })
   }
-  if (!rows.length) return null
-  return (
-    <section aria-labelledby="history" className="panel p-4">
-      <h2 id="history" className="text-[15px] font-semibold mb-3">Ranking history</h2>
-      <RankingHistory rows={rows} />
-    </section>
-  )
+  return rows
 }
 
 function Skeleton() {
