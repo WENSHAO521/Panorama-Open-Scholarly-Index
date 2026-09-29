@@ -48,7 +48,7 @@ export function SnapshotPanel() {
   if (error) {
     return (
       <div className="panel p-5 text-[14px]" style={{ color: 'var(--muted)' }}>
-        The data layer at <span className="font-mono">{BASE}</span> could not be reached. Please try again shortly.
+        Snapshot information could not be loaded. Please try again shortly.
       </div>
     )
   }

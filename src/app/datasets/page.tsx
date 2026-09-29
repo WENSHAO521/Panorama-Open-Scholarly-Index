@@ -22,6 +22,9 @@ function kb(bytes: number) {
 
 interface DataFile { path: string; alt?: string; rows: number | null; bytes: number | null; what: string }
 
+/** Short name shown for a file: its path under the data or rankings folder. */
+const fileName = (url: string) => url.replace(`${RANKING_DOWNLOADS}/`, 'rankings/').replace(`${DATA_BASE}/`, '')
+
 function FileTable({ files }: { files: DataFile[] }) {
   return (
     <div className="panel overflow-x-auto">
@@ -31,7 +34,7 @@ function FileTable({ files }: { files: DataFile[] }) {
           {files.map(f => (
             <tr key={f.path}>
               <td className="font-mono text-[13px] whitespace-nowrap">
-                {f.path.includes('{') ? f.path : <a className="link" href={f.path}>{f.path}</a>}
+                {f.path.includes('{') ? fileName(f.path) : <a className="link" href={f.path}>{fileName(f.path)}</a>}
               </td>
               <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
               <td className="text-right font-mono tnum text-[13px]">{f.rows === null ? '' : fmt(f.rows)}</td>
@@ -106,7 +109,7 @@ export default function DatasetsPage() {
     { path: dataUrl('journals/{category}.json'), rows: directory.length, bytes: JSON.stringify(directory).length, what: 'Every indexed journal, one file per PSC category; categories over 4,000 journals are split by first letter' },
     { path: dataUrl('meta/publishers.json'), rows: publishers.length, bytes: JSON.stringify(publishers).length, what: 'Every publisher with indexed journals: journal, Core, open-access and DOAJ counts, and works' },
     { path: `${DATA_BASE}/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
-    { path: `${RANKING_DOWNLOADS}/citation-${year}.json`, alt: `${RANKING_DOWNLOADS}/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals. Served from data.posi.panorama-sg.com` },
+    { path: `${RANKING_DOWNLOADS}/citation-${year}.json`, alt: `${RANKING_DOWNLOADS}/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals` },
     { path: `${RANKING_DOWNLOADS}/citation-${year}-all.csv`, rows: all.length, bytes: null, what: 'Every journal of the Citation Ranking edition, all ranking statuses, as one CSV' },
     { path: `${RANKING_DOWNLOADS}/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
   ]
@@ -127,7 +130,7 @@ export default function DatasetsPage() {
       <PageHeader title="Datasets" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Datasets' }]}>
         <p className="max-w-[65ch]">
           The global journal directory, publishers, rankings, curated journal records and the subject classification,
-          under open licences. Every file is regenerated from the current data and served from the POSI data layer, data.posi.panorama-sg.com.
+          under open licences. Every file is regenerated from the current data.
         </p>
       </PageHeader>
 
@@ -154,8 +157,7 @@ export default function DatasetsPage() {
         <section aria-labelledby="canonical">
           <SectionTitle id="canonical">Canonical snapshot</SectionTitle>
           <p className="text-[14px] mb-4 max-w-[70ch]" style={{ color: 'var(--muted)' }}>
-            The authoritative, immutable copy is published at <span className="font-mono">data.posi.panorama-sg.com</span>.
-            Each snapshot records the data and engine versions it was computed from, with SHA-256 checksums.
+            Each snapshot is immutable and records the data and engine versions it was computed from, with SHA-256 checksums.
           </p>
           <SnapshotPanel />
         </section>
