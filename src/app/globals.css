@@ -365,3 +365,12 @@ pre.code {
 /* Home page world map */
 .map-country { stroke: var(--surface); stroke-width: 0.5; transition: fill 120ms; }
 .map-country:hover { stroke: var(--ink); stroke-width: 1.2; }
+
+/*
+ * Interface languages. IBM Plex Sans has no CJK glyphs; name a system CJK
+ * face per language so Han characters take the right regional forms.
+ */
+:lang(ja) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', 'Noto Sans JP', 'Noto Sans CJK JP', sans-serif; --font-display: var(--font-body); }
+:lang(ko) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', sans-serif; --font-display: var(--font-body); }
+:lang(zh-CN) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif; --font-display: var(--font-body); }
+:lang(zh-TW) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', 'Noto Sans CJK TC', sans-serif; --font-display: var(--font-body); }

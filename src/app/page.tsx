@@ -8,6 +8,7 @@ import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
 import { RankingsPending } from '@/components/Evaluation'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
+import { T } from '@/components/I18n'
 import { CaretRight, Certificate, Database, Medal, Quotes, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
 import type { Icon } from '@phosphor-icons/react'
 
@@ -51,15 +52,15 @@ function ServicesList() {
     <SideBlock title="Services">
       {SERVICE_GROUPS.map((g, gi) => (
         <div key={g.title} style={gi ? { borderTop: '1px solid var(--line)' } : undefined}>
-          <h3 className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--soft)' }}>{g.title}</h3>
+          <h3 className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--soft)' }}><T>{g.title}</T></h3>
           <ul className="pb-1.5">
             {g.items.map(s => (
               <li key={s.href}>
                 <Link href={s.href} className="group flex items-center gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]">
                   <IconBadge icon={s.icon} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[13.5px] font-medium leading-snug" style={{ color: 'var(--ink)' }}>{s.label}</span>
-                    <span className="block text-[12px] leading-snug" style={{ color: 'var(--muted)' }}>{s.note}</span>
+                    <span className="block text-[13.5px] font-medium leading-snug" style={{ color: 'var(--ink)' }}><T>{s.label}</T></span>
+                    <span className="block text-[12px] leading-snug" style={{ color: 'var(--muted)' }}><T>{s.note}</T></span>
                   </span>
                   <CaretRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" style={{ color: 'var(--soft)' }} />
                 </Link>
@@ -88,8 +89,8 @@ function SideBlock({ title, href, children }: { title: string; href?: string; ch
   return (
     <section aria-label={title} style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
       <div className="flex items-center justify-between px-4 h-10" style={{ borderBottom: '1px solid var(--line)' }}>
-        <h2 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>{title}</h2>
-        {href && <Link href={href} className="link text-[12.5px]">View all</Link>}
+        <h2 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}><T>{title}</T></h2>
+        {href && <Link href={href} className="link text-[12.5px]"><T>View all</T></Link>}
       </div>
       {children}
     </section>
@@ -108,8 +109,8 @@ export default function HomePage() {
   const coverage: [string, React.ReactNode, string][] = [
     ['Publications', <LiveWorksCount key="w" />, '/publications/'],
     ['Indexed journals', fmt(directoryTotal), '/journals/'],
-    ['Ranked journals', RANKING_AVAILABLE ? fmt(ranked.length) : 'Pending', '/rankings/'],
-    ['C-Q1 journals (official)', RANKING_AVAILABLE ? fmt(countOfficialQuartile('Q1')) : 'Pending', '/rankings/'],
+    ['Ranked journals', RANKING_AVAILABLE ? fmt(ranked.length) : <T key="p">Pending</T>, '/rankings/'],
+    ['C-Q1 journals (official)', RANKING_AVAILABLE ? fmt(countOfficialQuartile('Q1')) : <T key="p">Pending</T>, '/rankings/'],
     ['Subject categories', fmt(cats.length), '/subjects/'],
     ['Core Collection', fmt(coreCount), '/core-collection/'],
   ]
@@ -123,25 +124,25 @@ export default function HomePage() {
               Panorama Open Scholarly Index
             </h1>
             <p className="mt-1.5 text-[14.5px]" style={{ color: 'var(--ink-2)' }}>
-              Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.
+              <T>Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.</T>
             </p>
             <div className="mt-6 max-w-[860px]">
               <HomeSearch />
             </div>
             <nav aria-label="Browse" className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
-              <span style={{ color: 'var(--muted)' }}>Browse:</span>
-              {QUICK.map(l => <Link key={l.href} href={l.href} className="link">{l.label}</Link>)}
+              <span style={{ color: 'var(--muted)' }}><T>Browse:</T></span>
+              {QUICK.map(l => <Link key={l.href} href={l.href} className="link"><T>{l.label}</T></Link>)}
             </nav>
           </div>
 
           <section aria-label="Coverage" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
             <h2 className="px-4 h-9 flex items-center text-[12.5px] font-semibold" style={{ color: 'var(--ink-2)', borderBottom: '1px solid var(--line)' }}>
-              Coverage
+              <T>Coverage</T>
             </h2>
             <dl>
               {coverage.map(([k, v, href], i) => (
                 <Link key={k} href={href} className="grid grid-cols-[1fr_auto] items-baseline gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                  <dt className="text-[13px]" style={{ color: 'var(--ink-2)' }}>{k}</dt>
+                  <dt className="text-[13px]" style={{ color: 'var(--ink-2)' }}><T>{k}</T></dt>
                   <dd className="font-mono text-[13.5px] tnum" style={{ color: 'var(--ink)' }}>{v}</dd>
                 </Link>
               ))}
@@ -154,20 +155,24 @@ export default function HomePage() {
         <div className="min-w-0 space-y-8">
           <section aria-labelledby="rankings">
             <div className="flex items-end justify-between gap-4 pb-2 mb-3" style={{ borderBottom: '2px solid var(--ink)' }}>
-              <h2 id="rankings" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>Journal Citation Rankings {year}</h2>
-              <Link href="/rankings/" className="link text-[13px]">All categories</Link>
+              <h2 id="rankings" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>
+                <T vars={{ year }}>{'Journal Citation Rankings {year}'}</T>
+              </h2>
+              <Link href="/rankings/" className="link text-[13px]"><T>All categories</T></Link>
             </div>
             <p className="text-[13px] mb-3" style={{ color: 'var(--muted)' }}>
-              Journals ranked by PNCI within their PSC subject category{RANKING_SNAPSHOT ? `, snapshot ${fmtSnapshot(RANKING_SNAPSHOT)}` : ''}. Largest categories shown, with the highest-PNCI journal in each.
+              {RANKING_SNAPSHOT
+                ? <T vars={{ snapshot: fmtSnapshot(RANKING_SNAPSHOT) }}>{'Journals ranked by PNCI within their PSC subject category, snapshot {snapshot}. Largest categories shown, with the highest-PNCI journal in each.'}</T>
+                : <T>Journals ranked by PNCI within their PSC subject category. Largest categories shown, with the highest-PNCI journal in each.</T>}
             </p>
             {!RANKING_AVAILABLE && <RankingsPending />}
             {RANKING_AVAILABLE && <div className="overflow-x-auto" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
               <table className="dtable">
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th className="text-right">Ranked</th>
-                    <th>Highest PNCI</th>
+                    <th><T>Category</T></th>
+                    <th className="text-right"><T>Ranked</T></th>
+                    <th><T>Highest PNCI</T></th>
                     <th className="text-right">PNCI</th>
                   </tr>
                 </thead>
@@ -210,13 +215,12 @@ export default function HomePage() {
           <SideBlock title="About POSI">
             <div className="px-4 py-3 text-[13px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
               <p>
-                POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by
-                certification. Rankings describe journals, not individual researchers.
+                <T>POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by certification. Rankings describe journals, not individual researchers.</T>
               </p>
               <ul className="mt-2.5 space-y-1">
-                <li><Link href="/editorial-policy/" className="link">Editorial policy</Link></li>
-                <li><Link href="/methodology/" className="link">Methodology</Link></li>
-                <li><Link href="/responsible-use/" className="link">Responsible use</Link></li>
+                <li><Link href="/editorial-policy/" className="link"><T>Editorial policy</T></Link></li>
+                <li><Link href="/methodology/" className="link"><T>Methodology</T></Link></li>
+                <li><Link href="/responsible-use/" className="link"><T>Responsible use</T></Link></li>
               </ul>
             </div>
           </SideBlock>

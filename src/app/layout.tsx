@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LOCALE_BOOT_SCRIPT, T } from "@/components/I18n";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -57,14 +58,18 @@ export const viewport = { colorScheme: 'light', themeColor: '#ffffff' }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+    // lang is switched on the client when a reader picks another interface language.
+    <html lang="en" suppressHydrationWarning className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LOCALE_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
           style={{ background: 'var(--teal)', color: '#fff' }}
         >
-          Skip to content
+          <T>Skip to content</T>
         </a>
         <SiteHeader />
         <main id="main-content" className="flex-1">{children}</main>
