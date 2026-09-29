@@ -218,7 +218,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
           {!!metrics.rankingHistory?.length && (
             <section aria-labelledby="ranking-history">
               <SectionTitle id="ranking-history">Ranking history</SectionTitle>
-              <RankingHistory rows={metrics.rankingHistory} />
+              <div className="panel p-4 max-w-[560px]"><RankingHistory rows={metrics.rankingHistory} /></div>
             </section>
           )}
 
