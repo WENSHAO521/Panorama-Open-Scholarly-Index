@@ -117,6 +117,26 @@ const ko: Record<string, string> = {
   'POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by certification. Rankings describe journals, not individual researchers.':
     'POSI는 Crossref 또는 OpenAlex에 등록된 모든 저널을 색인합니다. 저널은 인증을 통해 코어 컬렉션에 포함됩니다. 순위는 저널을 설명할 뿐, 개별 연구자를 평가하지 않습니다.',
 
+  // Home page: rankings notice, index at a glance, metadata
+  "POSI home": "POSI 홈",
+  "Citation index and journal rankings": "인용 색인 및 저널 순위",
+  "The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.": "Panorama Scholarly Group Ltd가 발행하는 Panorama Open Scholarly Index: 문헌, 저널, 저널 순위 및 색인 증명서.",
+  "The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) has not been published yet. It is computed from item-level citation data in the next data cycle. The earlier PCS-based quartiles (PCS-Q) were retired on 28 September 2026: PCS is a supplementary indicator and no longer determines any rank, quartile or zone.": "POSI-EVAL-1.0(PNCI-1.0) 기반의 첫 인용 순위 판은 아직 발표되지 않았습니다. 다음 데이터 주기에 문헌 단위 인용 데이터로 산출됩니다. 이전의 PCS 기반 사분위(PCS-Q)는 2026년 9월 28일 폐지되었습니다. PCS는 보조 지표이며 더 이상 순위, 사분위 또는 존을 결정하지 않습니다.",
+  "The index at a glance": "한눈에 보는 색인",
+  "All subject categories": "전체 주제 분류",
+  "{n} classified journals by subject. Each block’s area is its number of indexed journals; select one to browse it.": "주제별로 분류된 저널 {n}종. 각 블록의 면적은 색인된 저널 수를 나타내며, 선택하면 해당 분류를 볼 수 있습니다.",
+  "Where journals are published": "저널 발행 국가",
+  "{n} countries and territories": "{n}개 국가 및 지역",
+  "none": "없음",
+  "Largest publishers": "주요 출판사",
+  "All publishers": "전체 출판사",
+  "Open access": "오픈 액세스",
+  "Browse": "둘러보기",
+  "of indexed journals are open access; {n}% are listed in DOAJ.": "의 색인 저널이 오픈 액세스이며, {n}%가 DOAJ에 등재되어 있습니다.",
+  "Open access, in DOAJ": "오픈 액세스, DOAJ 등재",
+  "Open access, not in DOAJ": "오픈 액세스, DOAJ 미등재",
+  "Not open access": "비오픈 액세스",
+
   // Not found
   'This page is not in the index': '이 페이지는 색인에 없습니다',
   'The address may have moved during the redesign. Search publications and journals, or start from the documentation.':

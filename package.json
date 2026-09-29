@@ -12,7 +12,7 @@
     "sync": "node scripts/discover-journals.mjs --openalex-doaj --write --limit 100 && node scripts/calc-discovered-mqs.mjs && node scripts/auto-pqf.mjs --write",
     "citation-stats": "node scripts/fetch-citation-stats.mjs",
     "prebuild": "node --max-old-space-size=6144 scripts/sync-live-data.mjs",
-    "postbuild": "node scripts/check-output-sizes.mjs && node scripts/drop-served-data.mjs",
+    "postbuild": "node scripts/set-html-lang.mjs && node scripts/check-output-sizes.mjs && node scripts/drop-served-data.mjs",
     "sync-live-data": "node scripts/sync-live-data.mjs"
   },
   "dependencies": {

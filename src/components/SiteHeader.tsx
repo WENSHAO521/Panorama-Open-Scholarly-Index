@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
-import { LanguageSwitcher, useT } from './I18n'
+import { LanguageSwitcher, useLocalizedHref, useT } from './I18n'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -111,6 +111,7 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
 export function SiteHeader() {
   const pathname = norm(usePathname() || '/')
   const t = useT()
+  const home = useLocalizedHref('/')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -142,7 +143,7 @@ export function SiteHeader() {
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
       <div className="wrap flex items-center gap-5 h-14">
-        <Link href="/" aria-label="POSI home" className="shrink-0"><Logo /></Link>
+        <Link href={home} aria-label={t('POSI home')} className="shrink-0"><Logo /></Link>
         <nav aria-label="Primary" className="hidden lg:flex items-center">
           {PRIMARY_NAV.map(g => g.links ? (
             <Dropdown

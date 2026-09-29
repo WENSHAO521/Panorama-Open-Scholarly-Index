@@ -374,3 +374,5 @@ pre.code {
 :lang(ko) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', sans-serif; --font-display: var(--font-body); }
 :lang(zh-CN) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif; --font-display: var(--font-body); }
 :lang(zh-TW) { --font-body: var(--font-ibm), 'IBM Plex Sans', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', 'Noto Sans CJK TC', sans-serif; --font-display: var(--font-body); }
+/* Korean wraps between words (spaces), not inside them. */
+:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }

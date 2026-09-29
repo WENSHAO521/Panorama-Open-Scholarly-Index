@@ -117,6 +117,26 @@ const ja: Record<string, string> = {
   'POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by certification. Rankings describe journals, not individual researchers.':
     'POSI は Crossref または OpenAlex に登録されたすべてのジャーナルを収録します。ジャーナルは認定によりコアコレクションに入ります。ランキングはジャーナルを評価するものであり、個々の研究者を評価するものではありません。',
 
+  // Home page: rankings notice, index at a glance, metadata
+  "POSI home": "POSI ホーム",
+  "Citation index and journal rankings": "引用索引とジャーナルランキング",
+  "The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.": "Panorama Scholarly Group Ltd が発行する Panorama Open Scholarly Index：文献、ジャーナル、ジャーナルランキング、収録証明書。",
+  "The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) has not been published yet. It is computed from item-level citation data in the next data cycle. The earlier PCS-based quartiles (PCS-Q) were retired on 28 September 2026: PCS is a supplementary indicator and no longer determines any rank, quartile or zone.": "POSI-EVAL-1.0（PNCI-1.0）に基づく最初の引用ランキング版はまだ公開されていません。次回のデータ更新で、文献単位の引用データから算出されます。従来の PCS に基づく四分位（PCS-Q）は 2026 年 9 月 28 日に廃止されました。PCS は補助指標であり、順位・四分位・ゾーンの決定には用いられません。",
+  "The index at a glance": "索引の概況",
+  "All subject categories": "全主題分類",
+  "{n} classified journals by subject. Each block’s area is its number of indexed journals; select one to browse it.": "主題別に分類されたジャーナル {n} 誌。各ブロックの面積は収録ジャーナル数を表します。選択すると閲覧できます。",
+  "Where journals are published": "ジャーナルの出版国",
+  "{n} countries and territories": "{n} の国と地域",
+  "none": "なし",
+  "Largest publishers": "主要出版社",
+  "All publishers": "全出版社",
+  "Open access": "オープンアクセス",
+  "Browse": "閲覧",
+  "of indexed journals are open access; {n}% are listed in DOAJ.": "の収録ジャーナルがオープンアクセスで、{n}% が DOAJ に掲載されています。",
+  "Open access, in DOAJ": "オープンアクセス（DOAJ 掲載）",
+  "Open access, not in DOAJ": "オープンアクセス（DOAJ 未掲載）",
+  "Not open access": "非オープンアクセス",
+
   // Not found
   'This page is not in the index': 'このページは索引にありません',
   'The address may have moved during the redesign. Search publications and journals, or start from the documentation.':

@@ -117,6 +117,26 @@ const zhHant: Record<string, string> = {
   'POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by certification. Rankings describe journals, not individual researchers.':
     'POSI 收錄所有在 Crossref 或 OpenAlex 註冊的期刊。期刊經認證後進入核心合集。排名描述的是期刊，而非研究人員個人。',
 
+  // Home page: rankings notice, index at a glance, metadata
+  "POSI home": "POSI 首頁",
+  "Citation index and journal rankings": "引文索引與期刊排名",
+  "The Panorama Open Scholarly Index, published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.": "Panorama Open Scholarly Index 由 Panorama Scholarly Group Ltd 出版：文獻、期刊、期刊排名與收錄證書。",
+  "The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) has not been published yet. It is computed from item-level citation data in the next data cycle. The earlier PCS-based quartiles (PCS-Q) were retired on 28 September 2026: PCS is a supplementary indicator and no longer determines any rank, quartile or zone.": "依據 POSI-EVAL-1.0（PNCI-1.0）的首個引文排名版本尚未發布，將於下一資料週期依文獻層級引文資料計算。先前以 PCS 為基礎的分區（PCS-Q）已於 2026 年 9 月 28 日停用：PCS 僅為輔助指標，不再決定任何排名、分區或 Zone。",
+  "The index at a glance": "索引概覽",
+  "All subject categories": "全部學科分類",
+  "{n} classified journals by subject. Each block’s area is its number of indexed journals; select one to browse it.": "依學科分類的期刊共 {n} 種。每個方塊的面積代表收錄期刊數量，點選即可瀏覽。",
+  "Where journals are published": "期刊出版國家／地區",
+  "{n} countries and territories": "{n} 個國家與地區",
+  "none": "無",
+  "Largest publishers": "主要出版機構",
+  "All publishers": "所有出版機構",
+  "Open access": "開放取用",
+  "Browse": "瀏覽",
+  "of indexed journals are open access; {n}% are listed in DOAJ.": "的收錄期刊為開放取用；{n}% 收錄於 DOAJ。",
+  "Open access, in DOAJ": "開放取用，收錄於 DOAJ",
+  "Open access, not in DOAJ": "開放取用，未收錄於 DOAJ",
+  "Not open access": "非開放取用",
+
   // Not found
   'This page is not in the index': '此頁面不在索引中',
   'The address may have moved during the redesign. Search publications and journals, or start from the documentation.':

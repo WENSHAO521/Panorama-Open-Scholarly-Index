@@ -4,6 +4,7 @@
 
 import Link from 'next/link'
 import { Note } from './db'
+import { T } from './I18n'
 import type { JournalEvaluation } from '@/lib/evaluation/journal'
 import {
   AJR_MODEL_NAME, PCS_DISCLAIMER, PQF_DISCLAIMER, QUARTILE_TOOLTIP,
@@ -237,9 +238,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
 export function RankingsPending() {
   return (
     <Note tone="info">
-      The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) has not been published yet. It is computed from
-      item-level citation data in the next data cycle. The earlier PCS-based quartiles (PCS-Q) were retired on
-      28 September 2026: PCS is a supplementary indicator and no longer determines any rank, quartile or zone.
+      <T>The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) has not been published yet. It is computed from item-level citation data in the next data cycle. The earlier PCS-based quartiles (PCS-Q) were retired on 28 September 2026: PCS is a supplementary indicator and no longer determines any rank, quartile or zone.</T>
     </Note>
   )
 }

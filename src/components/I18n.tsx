@@ -1,12 +1,18 @@
 'use client'
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { CaretDown, Check, Globe } from '@phosphor-icons/react/dist/ssr'
-import { DEFAULT_LOCALE, LOCALES, LOCALE_STORAGE_KEY, htmlLang, isLocale, translate, type Locale } from '@/lib/i18n/locales'
+import {
+  DEFAULT_LOCALE, LOCALES, LOCALE_STORAGE_KEY, LOCALIZED_PAGES, htmlLang, isLocale, localeFromPath,
+  localizedPath, translate, unlocalizedPath, type Locale,
+} from '@/lib/i18n/locales'
 
-// The chosen language lives in localStorage and is shared by every
-// component through one tiny external store. The server snapshot is always
-// English, so the static HTML hydrates cleanly and switches afterwards.
+// Which language the interface shows:
+//   1. on a localized address (/ja/, /zh-cn/ ...) the prefix decides, and
+//      the page is rendered in that language at build time;
+//   2. elsewhere, the reader's saved choice (localStorage), applied after
+//      hydration because the static HTML of those pages is English.
 
 const listeners = new Set<() => void>()
 
@@ -26,19 +32,34 @@ function subscribe(cb: () => void) {
   return () => { listeners.delete(cb); window.removeEventListener('storage', onStorage) }
 }
 
-export function setLocale(locale: Locale) {
-  try { window.localStorage.setItem(LOCALE_STORAGE_KEY, locale) } catch { /* private mode: this page view only */ }
-  document.documentElement.lang = htmlLang(locale)
+/** Remember the reader's language (for pages without a localized address). */
+export function saveLocale(locale: Locale) {
+  try {
+    if (window.localStorage.getItem(LOCALE_STORAGE_KEY) === locale) return
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+  } catch { /* private mode: this page view only */ }
   listeners.forEach(l => l())
 }
 
-export function useLocale(): Locale {
+/** The reader's saved language, ignoring the address. */
+export function useSavedLocale(): Locale {
   return useSyncExternalStore(subscribe, read, () => DEFAULT_LOCALE)
+}
+
+export function useLocale(): Locale {
+  const fromPath = localeFromPath(usePathname() || '/')
+  const saved = useSavedLocale()
+  return fromPath ?? saved
 }
 
 export function useT() {
   const locale = useLocale()
   return (text: string, vars?: Record<string, string | number>) => translate(locale, text, vars)
+}
+
+/** A localized page's address in the current language: useLocalizedHref('/') -> '/zh-cn/'. */
+export function useLocalizedHref(page: string): string {
+  return localizedPath(page, useLocale())
 }
 
 /** Translated text, for use inside server components: <T>Browse journals</T>. */
@@ -47,15 +68,41 @@ export function T({ children, vars }: { children: string; vars?: Record<string, 
 }
 
 /**
- * Runs before hydration: sets <html lang> from the saved choice so CJK text
- * gets the right fonts and glyph forms from the first paint.
+ * Runs in <head>, before first paint:
+ *   - on the English copy of a localized page, a reader who chose another
+ *     language goes straight to that language's copy (no English flash);
+ *   - otherwise sets <html lang> from the address prefix, or else the saved
+ *     choice, so CJK text gets the right fonts and glyph forms.
  */
-export const LOCALE_BOOT_SCRIPT = `try{var l=localStorage.getItem(${JSON.stringify(LOCALE_STORAGE_KEY)});var m={ja:'ja',ko:'ko','zh-Hans':'zh-CN','zh-Hant':'zh-TW'};if(m[l])document.documentElement.lang=m[l]}catch(e){}`
+export const LOCALE_BOOT_SCRIPT = `try{var L=${JSON.stringify(LOCALES.filter(l => l.path).map(l => [l.path, l.code, l.lang]))},P=${JSON.stringify(LOCALIZED_PAGES)},d=document.documentElement,u=location.pathname,p=u.split('/')[1],s=localStorage.getItem(${JSON.stringify(LOCALE_STORAGE_KEY)}),i,x;for(i=0;i<L.length;i++)if(L[i][0]===p)x=L[i];if(!x)for(i=0;i<L.length;i++)if(L[i][1]===s)x=L[i];if(x&&x[0]!==p&&P.indexOf(u)>=0)location.replace('/'+x[0]+u+location.search+location.hash);else if(x)d.lang=x[2]}catch(e){}`
+
+/**
+ * On a localized address: remember the language, so the pages that exist
+ * only once keep showing the interface in it.
+ */
+export function RememberLocale({ locale }: { locale: Locale }) {
+  useEffect(() => { saveLocale(locale) }, [locale])
+  return null
+}
+
+/**
+ * On the unprefixed (English) copy of a localized page: a reader who chose
+ * another language is taken to that language's copy. Full page loads are
+ * redirected earlier by LOCALE_BOOT_SCRIPT; this covers in-app navigation.
+ */
+export function RedirectToSavedLocale({ page }: { page: string }) {
+  const saved = useSavedLocale()
+  const router = useRouter()
+  useEffect(() => { if (saved !== DEFAULT_LOCALE) router.replace(localizedPath(page, saved)) }, [saved, page, router])
+  return null
+}
 
 /** Header control: a globe button with the five interface languages. */
 export function LanguageSwitcher({ inverted = false, align = 'right' }: { inverted?: boolean; align?: 'left' | 'right' }) {
   const locale = useLocale()
   const t = useT()
+  const router = useRouter()
+  const page = unlocalizedPath(usePathname() || '/')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const current = LOCALES.find(l => l.code === locale)!
@@ -101,7 +148,11 @@ export function LanguageSwitcher({ inverted = false, align = 'right' }: { invert
             <li key={l.code} role="option" aria-selected={l.code === locale} lang={htmlLang(l.code)}>
               <button
                 type="button"
-                onClick={() => { setLocale(l.code); setOpen(false) }}
+                onClick={() => {
+                  saveLocale(l.code)
+                  setOpen(false)
+                  if (LOCALIZED_PAGES.includes(page)) router.push(localizedPath(page, l.code))
+                }}
                 className="w-full flex items-center justify-between gap-3 px-3 py-1.5 text-left transition-colors hover:bg-[var(--hover)]"
                 style={{ color: 'var(--ink)', fontWeight: l.code === locale ? 600 : 400 }}
               >
