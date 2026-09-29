@@ -9,6 +9,20 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'data-layer-2026-09',
+    title: 'POSI data now served from data.posi.panorama-sg.com, with complete ranking downloads',
+    date: '2026-09-29',
+    summary:
+      'All of POSI’s data files, from journal profiles and search to rankings and snapshots, are now published on the POSI data layer at data.posi.panorama-sg.com. The Citation Ranking 2026 can be downloaded as one complete CSV, and existing /data/ links keep working.',
+    body: [
+      'posi.panorama-sg.com is now the front end of POSI only. The data it shows is published separately on the POSI data layer, data.posi.panorama-sg.com: journal profiles, the title search index, the subject directory, publishers, curated records, and the Scopus and PubMed journal lists (under /site/v1/), together with the data snapshots and the ranking downloads. Pages load their data from there, so the website and the data can be updated independently, and the files can be fetched directly by anyone, with cross-origin access allowed.',
+      'The 2026 Citation Ranking edition (CITATION-RANK-1.0, PNCI-1.0) covers 158,242 journals, of which 50,983 are ranked within their subject category (47,847 officially, 3,136 provisionally). It can be downloaded from data.posi.panorama-sg.com/downloads/rankings/: the ranked journals as one CSV, every journal of the edition as one complete CSV, and one JSON file per subject category, with an index file listing them. These files are regenerated whenever a new edition is published.',
+      'Addresses under posi.panorama-sg.com/data/ redirect to the same files on the data layer, so existing links and scripts keep working. The retired PCS files now lead to the Datasets page.',
+      'Each data snapshot is also archived as a GitHub release of the posi-data-delivery repository (snapshot-<snapshot id>), holding its collection files, manifest and checksums. The data layer serves the current and the most recent snapshots in full, and the manifest and checksums of every earlier snapshot, whose files remain in its release.',
+      'Journal pages now say where PCI is available: PCI is computed for Core Collection and benchmark journals, and other journals show it as not computed rather than not available. Ranking and quartile information, which uses PNCI, is unaffected.',
+    ],
+  },
+  {
     slug: 'journal-evaluation-architecture-1-0',
     title: 'POSI Journal Evaluation Architecture 1.0: PNCI Citation Rankings, AJR Ratings and Citation Quartiles',
     date: '2026-09-28',
