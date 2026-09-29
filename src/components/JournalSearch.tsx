@@ -7,7 +7,8 @@
 import Link from 'next/link'
 import { PosiGrades } from './PosiGrades'
 import { useEffect, useState, type FormEvent } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useLocaleRouter } from './I18n'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { searchJournals, type JournalHit } from '@/lib/journal-search'
 import { journalHref } from '@/lib/journal-profile'
@@ -15,7 +16,7 @@ import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { fmt } from './db'
 
 export function JournalSearch() {
-  const router = useRouter()
+  const router = useLocaleRouter()
   const params = useSearchParams()
   const q = params.get('q') ?? ''
   const [draft, setDraft] = useState({ for: q, v: q })

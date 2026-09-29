@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
-import { LanguageSwitcher, useLocalizedHref, useT } from './I18n'
+import { LanguageSwitcher, useLocaleRouter, useLocalize, useT } from './I18n'
+import { unlocalizedPath } from '@/lib/i18n/locales'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -33,7 +34,7 @@ export function Logo({ inverted = false }: { inverted?: boolean }) {
 }
 
 function HeaderSearch({ onDone }: { onDone?: () => void }) {
-  const router = useRouter()
+  const router = useLocaleRouter()
   const t = useT()
   const [q, setQ] = useState('')
   function submit(e: FormEvent) {
@@ -70,6 +71,7 @@ function groupActive(g: NavGroup, pathname: string) {
 function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; active: boolean; open: boolean; onOpen: () => void; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const t = useT()
+  const localize = useLocalize()
   const id = `menu-${group.label.toLowerCase()}`
   return (
     <div
@@ -95,7 +97,7 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
           <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--teal)', boxShadow: '0 6px 18px rgba(15, 23, 32, 0.12)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
-                <Link href={l.href} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
+                <Link href={localize(l.href)} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
                   <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{t(l.label)}</span>
                   {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{t(l.description)}</span>}
                 </Link>
@@ -109,9 +111,10 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
 }
 
 export function SiteHeader() {
-  const pathname = norm(usePathname() || '/')
+  const pathname = norm(unlocalizedPath(usePathname() || '/'))
   const t = useT()
-  const home = useLocalizedHref('/')
+  const localize = useLocalize()
+  const home = localize('/')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -130,7 +133,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-4">
           <nav aria-label="Utility" className="flex items-center gap-4">
             {UTILITY_NAV.map(l => (
-              <Link key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{t(l.label)}</Link>
+              <Link key={l.href} href={localize(l.href)} className="transition-colors hover:text-[var(--band-ink)]">{t(l.label)}</Link>
             ))}
           </nav>
           <span aria-hidden className="h-3.5" style={{ borderLeft: '1px solid var(--band-line)' }} />
@@ -157,7 +160,7 @@ export function SiteHeader() {
           ) : (
             <Link
               key={g.label}
-              href={g.href!}
+              href={localize(g.href!)}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
               className="inline-flex h-14 items-center px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
               style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--teal)' : undefined }}
@@ -202,14 +205,14 @@ export function SiteHeader() {
                           <ul className="pb-2">
                             {g.links.map(l => (
                               <li key={l.href}>
-                                <Link href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 pl-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>{t(l.label)}</Link>
+                                <Link href={localize(l.href)} onClick={() => setMobileOpen(false)} className="block py-2 pl-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>{t(l.label)}</Link>
                               </li>
                             ))}
                           </ul>
                         )}
                       </>
                     ) : (
-                      <Link href={g.href!} onClick={() => setMobileOpen(false)} className="block py-3 text-[15px]" style={{ color: 'var(--ink)' }}>{t(g.label)}</Link>
+                      <Link href={localize(g.href!)} onClick={() => setMobileOpen(false)} className="block py-3 text-[15px]" style={{ color: 'var(--ink)' }}>{t(g.label)}</Link>
                     )}
                   </li>
                 ))}

@@ -5,13 +5,15 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { DOCS_NAV } from '@/lib/docs-nav'
-import { useT } from './I18n'
+import { useLocalize, useT } from './I18n'
+import { unlocalizedPath } from '@/lib/i18n/locales'
 
 function norm(p: string) { return p.endsWith('/') ? p : p + '/' }
 
 export function DocsSidebar() {
-  const pathname = norm(usePathname() || '/')
+  const pathname = norm(unlocalizedPath(usePathname() || '/'))
   const t = useT()
+  const localize = useLocalize()
   const [open, setOpen] = useState(false)
   const current = DOCS_NAV.flatMap(s => s.links).find(l => norm(l.href) === pathname)
 
@@ -26,7 +28,7 @@ export function DocsSidebar() {
               return (
                 <li key={l.href}>
                   <Link
-                    href={l.href}
+                    href={localize(l.href)}
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={`block py-[5px] text-[13.5px] leading-snug ${active ? '' : 'hover:underline underline-offset-2'}`}

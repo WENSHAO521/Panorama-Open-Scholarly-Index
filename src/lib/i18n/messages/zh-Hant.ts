@@ -83,6 +83,14 @@ const zhHant: Record<string, string> = {
   'Record schema': '紀錄結構',
   'Provenance and verification': '來源追溯與驗證',
 
+  // Documentation home
+  "Policies, methodology and data documentation for the Panorama Open Scholarly Index.": "Panorama Open Scholarly Index 的政策、評鑑方法與資料文件。",
+  "Who publishes POSI, what it covers, and how to reach us.": "POSI 的出版者、收錄範圍與聯絡方式。",
+  "Indexing, certification, coverage changes and appropriate use.": "收錄、認證、收錄範圍變更與適當使用。",
+  "The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.": "評鑑架構：PQF、AJR、引文指標與引文排名。",
+  "Sources, record fields, provenance and downloads.": "資料來源、紀錄欄位、來源追溯與下載。",
+  "Terms of use and privacy.": "使用條款與隱私。",
+
   // Home page
   'Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.':
     '引文索引、期刊排名與期刊目錄。由 Panorama Scholarly Group Ltd 出版。',

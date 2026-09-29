@@ -83,6 +83,14 @@ const zhHans: Record<string, string> = {
   'Record schema': '记录结构',
   'Provenance and verification': '溯源与验证',
 
+  // Documentation home
+  "Policies, methodology and data documentation for the Panorama Open Scholarly Index.": "Panorama Open Scholarly Index 的政策、评价方法与数据文档。",
+  "Who publishes POSI, what it covers, and how to reach us.": "POSI 的出版方、收录范围与联系方式。",
+  "Indexing, certification, coverage changes and appropriate use.": "收录、认证、收录范围变更与合理使用。",
+  "The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.": "评价体系：PQF、AJR、引文指标与引文排名。",
+  "Sources, record fields, provenance and downloads.": "数据来源、记录字段、溯源与下载。",
+  "Terms of use and privacy.": "使用条款与隐私。",
+
   // Home page
   'Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.':
     '引文索引、期刊排名与期刊目录。由 Panorama Scholarly Group Ltd 出版。',

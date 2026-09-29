@@ -83,6 +83,14 @@ const ko: Record<string, string> = {
   'Record schema': '레코드 스키마',
   'Provenance and verification': '출처 및 검증',
 
+  // Documentation home
+  "Policies, methodology and data documentation for the Panorama Open Scholarly Index.": "Panorama Open Scholarly Index의 정책, 평가 방법론 및 데이터 문서.",
+  "Who publishes POSI, what it covers, and how to reach us.": "POSI의 발행 기관, 수록 범위, 연락 방법.",
+  "Indexing, certification, coverage changes and appropriate use.": "색인, 인증, 수록 범위 변경 및 적절한 이용.",
+  "The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.": "평가 체계: PQF, AJR, 인용 지표 및 인용 순위.",
+  "Sources, record fields, provenance and downloads.": "데이터 출처, 레코드 필드, 출처 정보 및 다운로드.",
+  "Terms of use and privacy.": "이용약관 및 개인정보 처리방침.",
+
   // Home page
   'Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.':
     '인용 색인, 저널 순위, 저널 디렉터리. Panorama Scholarly Group Ltd 발행.',

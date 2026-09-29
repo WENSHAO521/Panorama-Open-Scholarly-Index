@@ -2,7 +2,6 @@
 // (/ja/, /ko/, /zh-cn/, /zh-tw/). Interface text goes through <T>, which
 // renders in the address's language at build time.
 
-import Link from 'next/link'
 import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
 import { IndexGlance } from '@/components/IndexGlance'
@@ -12,7 +11,7 @@ import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
 import { RankingsPending } from '@/components/Evaluation'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
-import { T } from '@/components/I18n'
+import { LocaleLink, T } from '@/components/I18n'
 import { CaretRight, Certificate, Database, Medal, Quotes, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
 import type { Icon } from '@phosphor-icons/react'
 import { localeInfo, type Locale } from '@/lib/i18n/locales'
@@ -54,14 +53,14 @@ function ServicesList() {
           <ul className="pb-1.5">
             {g.items.map(s => (
               <li key={s.href}>
-                <Link href={s.href} className="group flex items-center gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]">
+                <LocaleLink href={s.href} className="group flex items-center gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]">
                   <IconBadge icon={s.icon} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13.5px] font-medium leading-snug" style={{ color: 'var(--ink)' }}><T>{s.label}</T></span>
                     <span className="block text-[12px] leading-snug" style={{ color: 'var(--muted)' }}><T>{s.note}</T></span>
                   </span>
                   <CaretRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" style={{ color: 'var(--soft)' }} />
-                </Link>
+                </LocaleLink>
               </li>
             ))}
           </ul>
@@ -89,7 +88,7 @@ function SideBlock({ title, href, children }: { title: string; href?: string; ch
     <section aria-label={title} style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
       <div className="flex items-center justify-between px-4 h-10" style={{ borderBottom: '1px solid var(--line)' }}>
         <h2 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}><T>{title}</T></h2>
-        {href && <Link href={href} className="link text-[12.5px]"><T>View all</T></Link>}
+        {href && <LocaleLink href={href} className="link text-[12.5px]"><T>View all</T></LocaleLink>}
       </div>
       {children}
     </section>
@@ -130,7 +129,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             </div>
             <nav aria-label="Browse" className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
               <span style={{ color: 'var(--muted)' }}><T>Browse:</T></span>
-              {QUICK.map(l => <Link key={l.href} href={l.href} className="link"><T>{l.label}</T></Link>)}
+              {QUICK.map(l => <LocaleLink key={l.href} href={l.href} className="link"><T>{l.label}</T></LocaleLink>)}
             </nav>
           </div>
 
@@ -140,10 +139,10 @@ export function HomePage({ locale }: { locale: Locale }) {
             </h2>
             <dl>
               {coverage.map(([k, v, href], i) => (
-                <Link key={k} href={href} className="grid grid-cols-[1fr_auto] items-baseline gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
+                <LocaleLink key={k} href={href} className="grid grid-cols-[1fr_auto] items-baseline gap-3 px-4 py-2 transition-colors hover:bg-[var(--hover)]" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
                   <dt className="text-[13px]" style={{ color: 'var(--ink-2)' }}><T>{k}</T></dt>
                   <dd className="font-mono text-[13.5px] tnum" style={{ color: 'var(--ink)' }}>{v}</dd>
-                </Link>
+                </LocaleLink>
               ))}
             </dl>
           </section>
@@ -157,7 +156,7 @@ export function HomePage({ locale }: { locale: Locale }) {
               <h2 id="rankings" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>
                 <T vars={{ year }}>{'Journal Citation Rankings {year}'}</T>
               </h2>
-              <Link href="/rankings/" className="link text-[13px]"><T>All categories</T></Link>
+              <LocaleLink href="/rankings/" className="link text-[13px]"><T>All categories</T></LocaleLink>
             </div>
             <p className="text-[13px] mb-3" style={{ color: 'var(--muted)' }}>
               {RANKING_SNAPSHOT
@@ -180,7 +179,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                     <tr key={c.code}>
                       <td className="whitespace-nowrap">
                         <span className="font-mono text-[12px] mr-2" style={{ color: 'var(--muted)' }}>{c.code}</span>
-                        <Link href={`/rankings/${c.code}/`} className="link">{c.name}</Link>
+                        <LocaleLink href={`/rankings/${c.code}/`} className="link">{c.name}</LocaleLink>
                       </td>
                       <td className="text-right font-mono tnum">{fmt(c.ranked)}</td>
                       <td className="max-w-[220px] xl:max-w-[340px] truncate" title={c.lead?.title}>{c.lead?.title ?? '-'}</td>
@@ -202,10 +201,10 @@ export function HomePage({ locale }: { locale: Locale }) {
             <ul>
               {news.map((a, i) => (
                 <li key={a.slug} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                  <Link href={`/announcements/${a.slug}/`} className="block px-4 py-2.5 transition-colors hover:bg-[var(--hover)]">
+                  <LocaleLink href={`/announcements/${a.slug}/`} className="block px-4 py-2.5 transition-colors hover:bg-[var(--hover)]">
                     <time dateTime={a.date} className="block font-mono text-[11.5px]" style={{ color: 'var(--muted)' }}>{when(a.date, locale)}</time>
                     <span className="block text-[13px] leading-snug mt-0.5" style={{ color: 'var(--ink)' }}>{a.title}</span>
-                  </Link>
+                  </LocaleLink>
                 </li>
               ))}
             </ul>
@@ -217,9 +216,9 @@ export function HomePage({ locale }: { locale: Locale }) {
                 <T>POSI indexes every journal registered with Crossref or OpenAlex. Journals enter the Core Collection by certification. Rankings describe journals, not individual researchers.</T>
               </p>
               <ul className="mt-2.5 space-y-1">
-                <li><Link href="/editorial-policy/" className="link"><T>Editorial policy</T></Link></li>
-                <li><Link href="/methodology/" className="link"><T>Methodology</T></Link></li>
-                <li><Link href="/responsible-use/" className="link"><T>Responsible use</T></Link></li>
+                <li><LocaleLink href="/editorial-policy/" className="link"><T>Editorial policy</T></LocaleLink></li>
+                <li><LocaleLink href="/methodology/" className="link"><T>Methodology</T></LocaleLink></li>
+                <li><LocaleLink href="/responsible-use/" className="link"><T>Responsible use</T></LocaleLink></li>
               </ul>
             </div>
           </SideBlock>

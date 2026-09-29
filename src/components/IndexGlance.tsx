@@ -4,7 +4,6 @@
 // open-access share.
 // Server component; every figure is computed at build time.
 
-import Link from 'next/link'
 import type { DirCategory, DirRecord } from '@/lib/global-journals'
 import type { PublisherRow } from '@/lib/publishers'
 import { publisherHref } from '@/lib/publishers'
@@ -13,7 +12,7 @@ import { squarify, type Rect } from '@/lib/treemap'
 import { MAP_H, MAP_W, countryCode, getWorldShapes } from '@/lib/world-map'
 import { MapHover } from './MapHover'
 import { fmt } from './db'
-import { T } from './I18n'
+import { LocaleLink, T } from './I18n'
 
 // One fixed hue per domain (validated categorical order; identity is also
 // carried by the legend and direct labels). Multidisciplinary is neutral.
@@ -78,7 +77,7 @@ function Treemap({ cells, w, h, className }: { cells: Cell[]; w: number; h: numb
         const fitsName = c.r.w >= longestWord * 6.6 + 16 && lines <= 3 && c.r.h >= lines * 15 + 26
         const fitsCount = !fitsName && c.r.w >= 44 && c.r.h >= 24
         return (
-          <Link
+          <LocaleLink
             key={c.code}
             href={`/journals/subject/${c.code}/`}
             title={`${c.name} (${c.domainName}): ${fmt(c.count)} journals`}
@@ -97,7 +96,7 @@ function Treemap({ cells, w, h, className }: { cells: Cell[]; w: number; h: numb
               </span>
             )}
             {fitsCount && <span className="block px-1.5 pt-1 font-mono text-[11px] tnum" style={{ color: 'var(--ink-2)' }}>{fmt(c.count)}</span>}
-          </Link>
+          </LocaleLink>
         )
       })}
     </div>
@@ -112,7 +111,7 @@ function Bars({ rows }: { rows: { label: string; value: number; href?: string }[
         const label = <span className="block truncate text-[13px]" style={{ color: r.href ? 'var(--teal)' : 'var(--ink)' }}>{r.label}</span>
         return (
           <li key={r.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-1" title={`${r.label}: ${fmt(r.value)} journals`}>
-            {r.href ? <Link href={r.href} prefetch={false} className="min-w-0 hover:underline">{label}</Link> : <span className="min-w-0">{label}</span>}
+            {r.href ? <LocaleLink href={r.href} prefetch={false} className="min-w-0 hover:underline">{label}</LocaleLink> : <span className="min-w-0">{label}</span>}
             <span className="font-mono text-[12px] tnum" style={{ color: 'var(--ink-2)' }}>{fmt(r.value)}</span>
             <span className="col-span-2 block h-[6px] rounded-[1px]" style={{ background: 'var(--surface-2)' }}>
               <span className="block h-full rounded-r-[2px]" style={{ width: `${Math.max(1.5, (r.value / max) * 100)}%`, background: 'var(--teal)' }} />
@@ -154,7 +153,7 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
         <h2 id="glance" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>
           <T>The index at a glance</T>
         </h2>
-        <Link href="/subjects/" className="link text-[13px]"><T>All subject categories</T></Link>
+        <LocaleLink href="/subjects/" className="link text-[13px]"><T>All subject categories</T></LocaleLink>
       </div>
       <p className="text-[13px] mb-3" style={{ color: 'var(--muted)' }}>
         <T vars={{ n: fmt(classified) }}>{'{n} classified journals by subject. Each block’s area is its number of indexed journals; select one to browse it.'}</T>
@@ -206,14 +205,14 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
         <div className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}><T>Largest publishers</T></h3>
-            <Link href="/publishers/" className="link text-[12.5px]"><T>All publishers</T></Link>
+            <LocaleLink href="/publishers/" className="link text-[12.5px]"><T>All publishers</T></LocaleLink>
           </div>
           <Bars rows={topPublishers} />
         </div>
         <div className="p-4 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}><T>Open access</T></h3>
-            <Link href="/journals/open-access/" className="link text-[12.5px]"><T>Browse</T></Link>
+            <LocaleLink href="/journals/open-access/" className="link text-[12.5px]"><T>Browse</T></LocaleLink>
           </div>
           <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pct(oa)}%</p>
           <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}><T vars={{ n: pct(doaj) }}>{'of indexed journals are open access; {n}% are listed in DOAJ.'}</T></p>

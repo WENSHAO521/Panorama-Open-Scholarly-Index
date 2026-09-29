@@ -5,7 +5,8 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useLocaleRouter } from './I18n'
 import { ArrowSquareOut, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
 import { getJournalProfile, journalHref, type JournalProfile } from '@/lib/journal-profile'
 import { buildZoneCertificate, type ZoneCertificateData } from '@/lib/zone-certificate'
@@ -17,7 +18,7 @@ import { Note } from './db'
 type State = { key: string; profile: JournalProfile | null; cert: ZoneCertificateData | null; error?: boolean }
 
 function IssnForm() {
-  const router = useRouter()
+  const router = useLocaleRouter()
   const [v, setV] = useState('')
   function go(e: FormEvent) {
     e.preventDefault()

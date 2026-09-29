@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LOCALE_BOOT_SCRIPT, T } from "@/components/I18n";
+import { KeepLocale, LOCALE_BOOT_SCRIPT, T } from "@/components/I18n";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -71,6 +71,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         >
           <T>Skip to content</T>
         </a>
+        <KeepLocale />
         <SiteHeader />
         <main id="main-content" className="flex-1">{children}</main>
         <SiteFooter />

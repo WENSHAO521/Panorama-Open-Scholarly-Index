@@ -1,11 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
-import { useT } from './I18n'
+import { useT, useLocaleRouter } from './I18n'
 
 const SCOPES = [
   { key: 'sources', label: 'Journals', placeholder: 'Journal title or ISSN' },
@@ -15,7 +14,7 @@ const SCOPES = [
 type Scope = typeof SCOPES[number]['key']
 
 export function HomeSearch() {
-  const router = useRouter()
+  const router = useLocaleRouter()
   const t = useT()
   const [q, setQ] = useState('')
   const [scope, setScope] = useState<Scope>('sources')

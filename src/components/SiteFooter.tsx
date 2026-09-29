@@ -1,7 +1,6 @@
-import Link from 'next/link'
 import { Logo } from './SiteHeader'
 import { FOOTER_NAV } from '@/lib/site-nav'
-import { T } from './I18n'
+import { LocaleLink, T } from './I18n'
 
 export function SiteFooter() {
   const year = new Date().getFullYear()
@@ -23,7 +22,7 @@ export function SiteFooter() {
             <ul className="space-y-1.5 text-[13px]">
               {col.links.map(l => (
                 <li key={l.href}>
-                  <Link href={l.href} className="hover:underline" style={{ color: 'var(--band-muted)' }}><T>{l.label}</T></Link>
+                  <LocaleLink href={l.href} className="hover:underline" style={{ color: 'var(--band-muted)' }}><T>{l.label}</T></LocaleLink>
                 </li>
               ))}
             </ul>

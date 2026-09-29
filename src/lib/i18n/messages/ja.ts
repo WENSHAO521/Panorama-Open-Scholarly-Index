@@ -83,6 +83,14 @@ const ja: Record<string, string> = {
   'Record schema': 'レコードスキーマ',
   'Provenance and verification': '出所と検証',
 
+  // Documentation home
+  "Policies, methodology and data documentation for the Panorama Open Scholarly Index.": "Panorama Open Scholarly Index のポリシー、評価方法、データに関するドキュメント。",
+  "Who publishes POSI, what it covers, and how to reach us.": "POSI の発行者、収録範囲、連絡先。",
+  "Indexing, certification, coverage changes and appropriate use.": "収録、認定、収録範囲の変更と適切な利用。",
+  "The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.": "評価の枠組み：PQF、AJR、引用指標、引用ランキング。",
+  "Sources, record fields, provenance and downloads.": "データソース、レコード項目、出所、ダウンロード。",
+  "Terms of use and privacy.": "利用規約とプライバシー。",
+
   // Home page
   'Citation index, journal rankings and journal directory. Published by Panorama Scholarly Group Ltd.':
     '引用索引、ジャーナルランキング、ジャーナル・ディレクトリ。Panorama Scholarly Group Ltd 発行。',

@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { T } from '@/components/I18n'
+import { LocaleLink, T } from '@/components/I18n'
 
 export default function NotFound() {
   return (
@@ -10,9 +9,9 @@ export default function NotFound() {
         <T>The address may have moved during the redesign. Search publications and journals, or start from the documentation.</T>
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
-        <Link href="/publications/" className="btn btn-primary"><T>Search publications</T></Link>
-        <Link href="/journals/" className="btn"><T>Browse sources</T></Link>
-        <Link href="/docs/" className="btn"><T>Documentation</T></Link>
+        <LocaleLink href="/publications/" className="btn btn-primary"><T>Search publications</T></LocaleLink>
+        <LocaleLink href="/journals/" className="btn"><T>Browse sources</T></LocaleLink>
+        <LocaleLink href="/docs/" className="btn"><T>Documentation</T></LocaleLink>
       </div>
     </div>
   )

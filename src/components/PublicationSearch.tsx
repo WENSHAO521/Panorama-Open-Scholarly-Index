@@ -4,7 +4,8 @@
 // the URL so every result page is shareable and bookmarkable.
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useLocaleRouter } from './I18n'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { searchWorks, typeFacets, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type SortKey, type Facet } from '@/lib/openalex'
 import { Note } from './db'
@@ -29,7 +30,7 @@ const PRESETS = [
 type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ok'; count: number; results: Work[]; via?: 'crossref' }
 
 export function PublicationSearch() {
-  const router = useRouter()
+  const router = useLocaleRouter()
   const sp = useSearchParams()
 
   const q = sp.get('q') ?? ''
