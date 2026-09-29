@@ -9,17 +9,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
-    slug: 'data-layer-2026-09',
-    title: 'POSI data now served from data.posi.panorama-sg.com, with complete ranking downloads',
-    date: '2026-09-29',
+    slug: 'citation-ranking-2026',
+    title: 'The 2026 POSI Citation Ranking is published: 50,983 journals ranked by PNCI',
+    date: '2026-09-28',
+    pinned: true,
     summary:
-      'All of POSI’s data files, from journal profiles and search to rankings and snapshots, are now published on the POSI data layer at data.posi.panorama-sg.com. The Citation Ranking 2026 can be downloaded as one complete CSV, and existing /data/ links keep working.',
+      'The first Citation Ranking edition under POSI Journal Evaluation Architecture 1.0 is published. It evaluates all 158,242 indexed journals and ranks 50,983 of them by PNCI within 30 subject categories, with Citation Quartiles and POSI Zones. It replaces the earlier PCS-based ranking, and journal pages now show the new ranks.',
     body: [
-      'posi.panorama-sg.com is now the front end of POSI only. The data it shows is published separately on the POSI data layer, data.posi.panorama-sg.com: journal profiles, the title search index, the subject directory, publishers, curated records, and the Scopus and PubMed journal lists (under /site/v1/), together with the data snapshots and the ranking downloads. Pages load their data from there, so the website and the data can be updated independently, and the files can be fetched directly by anyone, with cross-origin access allowed.',
-      'The 2026 Citation Ranking edition (CITATION-RANK-1.0, PNCI-1.0) covers 158,242 journals, of which 50,983 are ranked within their subject category (47,847 officially, 3,136 provisionally). It can be downloaded from data.posi.panorama-sg.com/downloads/rankings/: the ranked journals as one CSV, every journal of the edition as one complete CSV, and one JSON file per subject category, with an index file listing them. These files are regenerated whenever a new edition is published.',
-      'Addresses under posi.panorama-sg.com/data/ redirect to the same files on the data layer, so existing links and scripts keep working. The retired PCS files now lead to the Datasets page.',
-      'Each data snapshot is also archived as a GitHub release of the posi-data-delivery repository (snapshot-<snapshot id>), holding its collection files, manifest and checksums. The data layer serves the current and the most recent snapshots in full, and the manifest and checksums of every earlier snapshot, whose files remain in its release.',
-      'Journal pages now say where PCI is available: PCI is computed for Core Collection and benchmark journals, and other journals show it as not computed rather than not available. Ranking and quartile information, which uses PNCI, is unaffected.',
+      'On 28 September 2026 POSI published the 2026 Citation Ranking (CITATION-RANK-1.0, PNCI-1.0), the first edition computed under POSI Journal Evaluation Architecture 1.0. It replaces the PCS-based 2026 ranking: PCS is still published as a supplementary indicator, but no rank, quartile or zone is now derived from it.',
+      'The edition evaluates all 158,242 journals in the POSI index. 91,148 journals have a PNCI, the POSI Normalized Citation Indicator, which compares the citations of each of a journal’s items with those of items of the same subject field, publication year and document type. 50,983 journals are ranked within their PSC subject category across 30 categories: 47,847 with an official ranking and 3,136 with a provisional one. Each ranked journal carries its rank, percentile, Citation Quartile (C-Q1 to C-Q4) and, where its category is large enough, a POSI Zone.',
+      'A journal is not ranked when its evidence is too thin: an official ranking needs at least 20 eligible items from two publication years and 90% citation coverage, and a provisional one at least 10 items. Journals whose subject assignment is not confident, general journals listed as Multidisciplinary, and journals not yet classified are evaluated but not ranked within a category. Every journal page states its ranking status and the reason.',
+      'PCI is computed for Core Collection and benchmark journals; other journals show it as not computed. It is descriptive and does not affect rank, quartile or zone.',
+      'The complete edition can be downloaded from the POSI data layer at data.posi.panorama-sg.com/downloads/rankings/: the ranked journals as one CSV, every journal of the edition as one complete CSV, and one JSON file per subject category. From this release all POSI data, including journal profiles, search and the directory, is served from data.posi.panorama-sg.com; addresses under posi.panorama-sg.com/data/ redirect there, so existing links keep working.',
+      'Rankings are computed once a year and published in early December; the 2026 edition was published on 28 September, when POSI entered full operation. New journals are added to the index every month and are ranked in the next yearly edition. The method is set out in the methodology.',
     ],
   },
   {
