@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { TRANSLATION_GUARD_SCRIPT } from "@/lib/translation-guard";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -58,6 +59,10 @@ export const viewport = { colorScheme: 'light', themeColor: '#ffffff' }
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+      <head>
+        {/* Before React loads: survive browser page translation (see lib/translation-guard). */}
+        <script dangerouslySetInnerHTML={{ __html: TRANSLATION_GUARD_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
