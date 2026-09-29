@@ -17,6 +17,7 @@ import { BASIS, FIELD_BY_KEY } from '@/lib/schema'
 import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation/journal'
 import { PCI_SCOPE, fmtScore } from '@/lib/evaluation/display'
 import { EvaluationCards } from './Evaluation'
+import { RankingHistory, type RankingHistoryRow } from './RankingHistory'
 import { PosiGrades } from './PosiGrades'
 import { IndexChecks } from './IndexChecks'
 import { alternateTitleLabel } from '@/lib/titles'
@@ -30,6 +31,8 @@ export interface RecordMetrics {
   pci?: PciEntry | null
   citationStats?: CitationStatsEntry | null
   pscName?: string | null
+  /** the journal's Citation Ranking in every edition that ranked it */
+  rankingHistory?: RankingHistoryRow[]
 }
 
 // scholarly-corpus-builder small-sample rule: n < 5 illustrative, 5-19 limited.
@@ -211,6 +214,13 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
             <SectionTitle id="indicators" aside={<span className="font-mono text-[12px]">{evaluation.evaluationVersion}</span>}>Evaluation status</SectionTitle>
             <EvaluationCards ev={evaluation} core={k === 'core' ? 'core' : 'indexed'} autoPqf={autoPqf} />
           </section>
+
+          {!!metrics.rankingHistory?.length && (
+            <section aria-labelledby="ranking-history">
+              <SectionTitle id="ranking-history">Ranking history</SectionTitle>
+              <RankingHistory rows={metrics.rankingHistory} />
+            </section>
+          )}
 
           <section aria-labelledby="details">
             <SectionTitle id="details">Record details</SectionTitle>

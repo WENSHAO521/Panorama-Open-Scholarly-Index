@@ -35,7 +35,7 @@
  * instead (development). --rankings-only syncs the ranking edition alone (the
  * scheduled data sync, which only needs that and runs every few hours).
  */
-import { mkdirSync, writeFileSync, existsSync, readFileSync, copyFileSync, rmSync } from 'fs'
+import { mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync, copyFileSync, rmSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
@@ -159,6 +159,56 @@ const snapshotDir = current ? current.manifest.replace(/manifest\.json$/, '') : 
   }
 }
 
+// 1b. Citation Ranking editions: every year's edition is archived frozen on
+// the data layer (/downloads/rankings/index.json). The list goes to
+// generated/editions/index.json, and each earlier year's edition, reduced to
+// what the edition pages (/rankings/edition/<year>/) and the journals'
+// ranking history read, to generated/editions/<year>.json.
+const EDITIONS = join(GEN, 'editions')
+{
+  rmSync(EDITIONS, { recursive: true, force: true })
+  mkdirSync(EDITIONS, { recursive: true })
+  const cur = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
+  const currentEntry = {
+    year: cur.metric_year, edition: null, revision: null, archives: [], current: true,
+    ranking_snapshot_date: cur.snapshot_date ?? null, evaluation_version: cur.evaluation_version,
+    ranking_methodology_version: cur.ranking_methodology_version, pnci_model_version: cur.pnci_model_version,
+    journals: cur.records.length, ranked: cur.records.filter(r => r.citation_rank != null).length,
+  }
+  let list = [currentEntry]
+  try {
+    const index = await get(`${DATA}/downloads/rankings/index.json`)
+    list = []
+    for (const e of index.editions) {
+      const entry = {
+        year: e.year, edition: e.edition, revision: e.revision, archives: e.archives, current: e.year === cur.metric_year,
+        ranking_snapshot_date: e.ranking_snapshot_date, evaluation_version: e.evaluation_version,
+        ranking_methodology_version: e.ranking_methodology_version, pnci_model_version: e.pnci_model_version,
+        journals: e.journals, ranked: e.ranked,
+      }
+      list.push(entry)
+      if (entry.current) continue
+      const ed = JSON.parse(gunzipSync(await get(`${DATA}${e.edition_file}`, 'buffer')).toString('utf-8'))
+      ed.records = ed.records.filter(r => r.ranking_category_id != null).map(r => ({
+        journal_id: r.journal_id, title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title ?? null,
+        publisher: r.publisher ?? null, issn: r.issn ?? [], ranking_category_id: r.ranking_category_id,
+        pnci: r.pnci, eligible_citable_items: r.eligible_citable_items, citation_coverage: r.citation_coverage,
+        citation_rank: r.citation_rank, citation_rank_total: r.citation_rank_total, citation_percentile: r.citation_percentile,
+        citation_quartile: r.citation_quartile, posi_zone: r.posi_zone, zone_status: r.zone_status,
+        citation_ranking_status: r.citation_ranking_status, ranking_status_reason: r.ranking_status_reason,
+        pci: r.pci ?? null, pcs: r.pcs ?? null, lifecycle_stage: r.lifecycle_stage ?? null,
+      }))
+      writeFileSync(join(EDITIONS, `${e.year}.json`), JSON.stringify(ed))
+    }
+    if (!list.some(e => e.current)) list.push(currentEntry)
+    console.log(`sync-live-data: ranking editions ${list.map(e => e.year + (e.current ? ' (current)' : '')).join(', ')}`)
+  } catch (e) {
+    console.warn(`sync-live-data: earlier ranking editions not loaded (${e.message})`)
+  }
+  list.sort((a, b) => b.year - a.year)
+  writeFileSync(join(EDITIONS, 'index.json'), JSON.stringify(list))
+}
+
 {
   const out = join(GEN, 'pcs-q.json')
   try {
@@ -248,6 +298,18 @@ if (!RANKINGS_ONLY) {
     // Citation Ranking edition carries PCI only when its run was given it.
     const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
     const ajr = ajrRatings()
+    // Ranking history from the earlier editions: [year, category, rank,
+    // category size, quartile, zone, zone status, ranking status].
+    const history = new Map()
+    for (const f of readdirSync(EDITIONS).filter(f => /^\d{4}\.json$/.test(f))) {
+      const ed = JSON.parse(readFileSync(join(EDITIONS, f), 'utf-8'))
+      for (const r of ed.records) {
+        if (r.citation_rank == null) continue
+        const h = history.get(r.journal_id) ?? []
+        h.push([ed.metric_year, r.ranking_category_id, r.citation_rank, r.citation_rank_total, r.citation_quartile ?? null, r.posi_zone ?? null, r.zone_status ?? null, r.citation_ranking_status])
+        history.set(r.journal_id, h)
+      }
+    }
 
     const shards = new Map()
     const shard = k => { const n = shardOf(k); if (!shards.has(n)) shards.set(n, { p: {}, a: {} }); return shards.get(n) }
@@ -283,6 +345,7 @@ if (!RANKINGS_ONLY) {
           pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? pciValues.get(r.posi_id) ?? undefined, ajr: ajr.get(r.posi_id),
           pqf: CURATED.get(r.posi_id)?.pqf?.total ?? undefined,
         } : undefined,
+        hist: history.get(r.posi_id)?.sort((a, b) => b[0] - a[0]),
       }
       shard(key).p[key] = prof
       for (const alias of [...(r.issns ?? []), r.openalex_source_id].filter(Boolean)) {
