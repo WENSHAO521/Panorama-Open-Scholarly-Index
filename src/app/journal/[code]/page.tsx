@@ -7,6 +7,7 @@ import { getCitationStats } from '@/lib/citation-stats'
 import psc from '@/lib/psc-v1.0.snapshot.json'
 import { RecordView } from '@/components/RecordView'
 import { getCitationRecord, getPcsValue, categoryName } from '@/lib/rankings'
+import { getRankingHistory } from '@/lib/ranking-editions'
 import { buildJournalEvaluation } from '@/lib/evaluation/journal'
 import Link from 'next/link'
 import { Certificate, ChartLine, FilePdf } from '@phosphor-icons/react/dist/ssr'
@@ -63,6 +64,7 @@ export default async function JournalRecordPage(props: { params: Promise<{ code:
           citationStats: getCitationStats(j.journal_code),
           pscName: j.psc_category ? PSC_NAME[j.psc_category] ?? null : null,
           evaluation,
+          rankingHistory: getRankingHistory(j.posi_id),
         }}
         links={issn && (
           <>

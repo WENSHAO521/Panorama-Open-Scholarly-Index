@@ -18,6 +18,7 @@ import { fmt } from '@/components/db'
 import { YearTrend } from '@/components/YearTrend'
 import { PosiGrades } from '@/components/PosiGrades'
 import { IndexChecks } from '@/components/IndexChecks'
+import { RankingHistory, type RankingHistoryRow } from '@/components/RankingHistory'
 
 const PSC_NAME: Record<string, string> = Object.fromEntries(psc.categories.map(c => [c.code, c.name]))
 
@@ -155,6 +156,7 @@ export function JournalProfileView() {
 
         <aside className="space-y-6">
           <EvaluationCard j={j} core={core} />
+          <HistoryCard j={j} />
 
           <section aria-labelledby="ids" className="panel">
             <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
@@ -213,6 +215,25 @@ function EvaluationCard({ j, core }: { j: JournalProfile; core: boolean }) {
         </Link>
       )}
       <Link href="/methodology/" className="link mt-3 inline-block text-[12.5px]">How journals are evaluated</Link>
+    </section>
+  )
+}
+
+function HistoryCard({ j }: { j: JournalProfile }) {
+  const rows: RankingHistoryRow[] = []
+  const ev = j.ev
+  if (ev?.r != null && ev.y != null && ev.st) {
+    rows.push({ year: ev.y, current: true, cat: ev.cat ?? null, catName: ev.cat ? PSC_NAME[ev.cat] ?? null : null, rank: ev.r, total: ev.rt ?? null, q: ev.q ?? null, zone: ev.z ?? null, zoneStatus: ev.zs ?? null, status: ev.st })
+  }
+  for (const [year, cat, rank, total, q, zone, zoneStatus, status] of j.hist ?? []) {
+    if (year === ev?.y) continue
+    rows.push({ year, current: false, cat, catName: cat ? PSC_NAME[cat] ?? null : null, rank, total, q, zone, zoneStatus, status })
+  }
+  if (!rows.length) return null
+  return (
+    <section aria-labelledby="history" className="panel p-4">
+      <h2 id="history" className="text-[15px] font-semibold mb-3">Ranking history</h2>
+      <RankingHistory rows={rows} />
     </section>
   )
 }

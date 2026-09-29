@@ -108,7 +108,7 @@ export interface Category {
   core: number
 }
 
-interface Meta { code: string | null; title: string; publisher: string | null; issn: string[]; alt?: string[]; ajr: AjrRating | null; lifecycle: LifecycleStage | null; ajrScore: number | null; storedRating: string | null }
+export interface Meta { code: string | null; title: string; publisher: string | null; issn: string[]; alt?: string[]; ajr: AjrRating | null; lifecycle: LifecycleStage | null; ajrScore: number | null; storedRating: string | null }
 
 const PSC = psc.categories as { code: string; name: string; level: number; parent: string | null }[]
 const PSC_NAME = Object.fromEntries(PSC.map(c => [c.code, c.name]))
@@ -133,6 +133,12 @@ function metaIndex(): { meta: Map<string, Meta>; coreIds: Set<string> } {
   return { meta, coreIds }
 }
 
+let metaCache: ReturnType<typeof metaIndex> | null = null
+/** Title, publisher, ISSNs and record code of every curated or named journal, for any edition's rows. */
+export function journalMeta(): Map<string, Meta> {
+  return (metaCache ??= metaIndex()).meta
+}
+
 let cache: { all: RankedJournal[]; ranked: RankedJournal[]; byId: Map<string, RankedJournal>; year: number } | null = null
 
 /**
@@ -144,7 +150,7 @@ export function getRankings() {
   const problems = [
     ...validateCitationEdition(E.records),
   ]
-  const { meta, coreIds } = metaIndex()
+  const { meta, coreIds } = (metaCache ??= metaIndex())
   problems.push(...validateAjrRatings([...meta.entries()].filter(([, m]) => m.ajrScore != null).map(([id, m]) => ({ id, score: m.ajrScore, storedRating: m.storedRating }))))
   if (problems.length) {
     throw new Error(`Evaluation invariants failed (${problems.length}):\n${problems.slice(0, 20).join('\n')}`)
@@ -173,7 +179,11 @@ export function getRankings() {
 
 /** Every PSC level-2 category, so every /rankings/<code>/ URL exists whether or not the category is ranked yet. */
 export function getCategories(): Category[] {
-  const { ranked } = getRankings()
+  return categoriesFrom(getRankings().ranked)
+}
+
+/** The PSC level-2 categories with their counts among `ranked` (any edition). */
+export function categoriesFrom(ranked: RankedJournal[]): Category[] {
   return PSC.filter(c => c.level === 2).map(c => {
     const rows = ranked.filter(r => r.cat === c.code)
     return {

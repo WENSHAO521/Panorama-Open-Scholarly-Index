@@ -84,6 +84,9 @@ export interface JournalProfile {
     /** PQF score, curated journals only */
     pqf?: number
   }
+  /** Earlier Citation Ranking editions that ranked the journal, newest first:
+   *  [year, category, rank, category size, quartile, zone, zone status, ranking status] */
+  hist?: [number, string | null, number, number | null, 'Q1' | 'Q2' | 'Q3' | 'Q4' | null, 1 | 2 | 3 | 4 | null, 'official' | 'provisional' | 'not_assigned' | null, NonNullable<NonNullable<JournalProfile['ev']>['st']>][]
 }
 
 interface Shard { p: Record<string, JournalProfile>; a: Record<string, string> }
