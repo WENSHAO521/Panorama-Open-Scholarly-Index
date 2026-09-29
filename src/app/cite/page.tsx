@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react'
-import { useLocaleRouter } from '@/components/I18n'
+import { useRouter } from 'next/navigation'
 import {
   MagnifyingGlass, XCircle, ArrowSquareOut, Copy, Check,
   BookOpen, Globe, PencilSimple, Plus, Trash, Newspaper,
@@ -645,7 +645,7 @@ const DEFAULT_B_FORM: ManualBookForm = {
 }
 
 function CitePage() {
-  const router = useLocaleRouter()
+  const router = useRouter()
   const [input, setInput] = useState('')
   const [autoResult, setAutoResult] = useState<AutoResult | null>(null)
   const lookupCount = useRef(0)

@@ -1,10 +1,10 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
-import { useT, useLocaleRouter } from './I18n'
 
 const SCOPES = [
   { key: 'sources', label: 'Journals', placeholder: 'Journal title or ISSN' },
@@ -14,8 +14,7 @@ const SCOPES = [
 type Scope = typeof SCOPES[number]['key']
 
 export function HomeSearch() {
-  const router = useLocaleRouter()
-  const t = useT()
+  const router = useRouter()
   const [q, setQ] = useState('')
   const [scope, setScope] = useState<Scope>('sources')
   const active = SCOPES.find(s => s.key === scope)!
@@ -36,7 +35,7 @@ export function HomeSearch() {
 
   return (
     <div className="w-full">
-      <div role="tablist" aria-label={t('Search scope')} className="flex">
+      <div role="tablist" aria-label="Search scope" className="flex">
         {SCOPES.map(s => (
           <button
             key={s.key}
@@ -49,24 +48,24 @@ export function HomeSearch() {
               ? { background: 'var(--surface)', color: 'var(--ink)', border: '1px solid var(--line)', borderBottomColor: 'var(--surface)', borderTop: '2px solid var(--teal)', marginBottom: -1, position: 'relative' }
               : { color: 'var(--muted)', border: '1px solid transparent' }}
           >
-            {t(s.label)}
+            {s.label}
           </button>
         ))}
       </div>
       <form onSubmit={submit} role="search" className="flex flex-col sm:flex-row gap-2 p-3" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
         <div className="relative flex-1">
-          <label htmlFor="home-search" className="sr-only">{t('Search')}: {t(active.label)}</label>
+          <label htmlFor="home-search" className="sr-only">Search {active.label.toLowerCase()}</label>
           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] pointer-events-none" style={{ color: 'var(--soft)' }} />
           <input
             id="home-search"
             type="search"
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder={t(active.placeholder)}
+            placeholder={active.placeholder}
             className="input h-11 pl-10 text-[15px]"
           />
         </div>
-        <button type="submit" className="btn btn-primary h-11 px-7 text-[14px]">{t('Search')}</button>
+        <button type="submit" className="btn btn-primary h-11 px-7 text-[14px]">Search</button>
       </form>
     </div>
   )
@@ -74,14 +73,13 @@ export function HomeSearch() {
 
 /** Live total of works in OpenAlex; shows the round figure until it arrives, or if it never does. */
 export function LiveWorksCount() {
-  const t = useT()
   const [n, setN] = useState<number | null>(null)
   useEffect(() => {
     const c = new AbortController()
     getTotalWorks(c.signal).then(setN).catch(() => { if (!c.signal.aborted) setN(-1) })
     return () => c.abort()
   }, [])
-  return n === null || n === -1 ? <>{t('Over 300 million')}</> : <>{n.toLocaleString('en-US')}</>
+  return n === null || n === -1 ? <>Over 300 million</> : <>{n.toLocaleString('en-US')}</>
 }
 
 /** Live total of journals in OpenAlex (every one is indexed by POSI). */

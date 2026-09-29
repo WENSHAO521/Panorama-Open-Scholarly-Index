@@ -2,8 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useLocaleRouter } from './I18n'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle, XCircle, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, type CertItem } from '@/lib/certificate'
 
@@ -29,7 +28,7 @@ function Banner({ verdict }: { verdict: Verdict }) {
 }
 
 function ManualEntry() {
-  const router = useLocaleRouter()
+  const router = useRouter()
   const [url, setUrl] = useState('')
   const [err, setErr] = useState('')
   function go(e: FormEvent) {

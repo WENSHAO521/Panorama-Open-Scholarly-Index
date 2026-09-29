@@ -1,13 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
-import { LanguageSwitcher, useLocaleRouter, useLocalize, useT } from './I18n'
-import { unlocalizedPath } from '@/lib/i18n/locales'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -34,8 +32,7 @@ export function Logo({ inverted = false }: { inverted?: boolean }) {
 }
 
 function HeaderSearch({ onDone }: { onDone?: () => void }) {
-  const router = useLocaleRouter()
-  const t = useT()
+  const router = useRouter()
   const [q, setQ] = useState('')
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -47,13 +44,13 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
   }
   return (
     <form onSubmit={submit} role="search" className="relative w-full">
-      <label htmlFor="header-search" className="sr-only">{t('Search publications')}</label>
+      <label htmlFor="header-search" className="sr-only">Search publications</label>
       <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
       <input
         id="header-search"
         value={q}
         onChange={e => setQ(e.target.value)}
-        placeholder={t('Search publications, or enter a DOI')}
+        placeholder="Search publications, or enter a DOI"
         className="input pl-8 h-8 text-[13px]"
       />
     </form>
@@ -70,8 +67,6 @@ function groupActive(g: NavGroup, pathname: string) {
 /** Desktop dropdown: opens on click or hover, closes on Escape, outside focus or navigation. */
 function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; active: boolean; open: boolean; onOpen: () => void; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
-  const t = useT()
-  const localize = useLocalize()
   const id = `menu-${group.label.toLowerCase()}`
   return (
     <div
@@ -89,7 +84,7 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
         className="inline-flex h-14 items-center gap-1 px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
         style={{ color: active || open ? 'var(--ink)' : 'var(--ink-2)', boxShadow: active ? 'inset 0 -2px 0 var(--teal)' : undefined }}
       >
-        {t(group.label)}
+        {group.label}
         <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
       </button>
       {open && (
@@ -97,9 +92,9 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
           <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--teal)', boxShadow: '0 6px 18px rgba(15, 23, 32, 0.12)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
-                <Link href={localize(l.href)} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
-                  <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{t(l.label)}</span>
-                  {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{t(l.description)}</span>}
+                <Link href={l.href} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
+                  <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
+                  {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
                 </Link>
               </li>
             ))}
@@ -111,10 +106,7 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
 }
 
 export function SiteHeader() {
-  const pathname = norm(unlocalizedPath(usePathname() || '/'))
-  const t = useT()
-  const localize = useLocalize()
-  const home = localize('/')
+  const pathname = norm(usePathname() || '/')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -130,15 +122,11 @@ export function SiteHeader() {
     <div className="hidden md:block" style={{ background: 'var(--band)', color: 'var(--band-muted)' }}>
       <div className="wrap flex h-8 items-center justify-between text-[12px]">
         <span>Panorama Scholarly Group Ltd.</span>
-        <div className="flex items-center gap-4">
-          <nav aria-label="Utility" className="flex items-center gap-4">
-            {UTILITY_NAV.map(l => (
-              <Link key={l.href} href={localize(l.href)} className="transition-colors hover:text-[var(--band-ink)]">{t(l.label)}</Link>
-            ))}
-          </nav>
-          <span aria-hidden className="h-3.5" style={{ borderLeft: '1px solid var(--band-line)' }} />
-          <LanguageSwitcher inverted />
-        </div>
+        <nav aria-label="Utility" className="flex items-center gap-4">
+          {UTILITY_NAV.map(l => (
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</Link>
+          ))}
+        </nav>
       </div>
     </div>
     <header
@@ -146,7 +134,7 @@ export function SiteHeader() {
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
       <div className="wrap flex items-center gap-5 h-14">
-        <Link href={home} aria-label={t('POSI home')} className="shrink-0"><Logo /></Link>
+        <Link href="/" aria-label="POSI home" className="shrink-0"><Logo /></Link>
         <nav aria-label="Primary" className="hidden lg:flex items-center">
           {PRIMARY_NAV.map(g => g.links ? (
             <Dropdown
@@ -160,12 +148,12 @@ export function SiteHeader() {
           ) : (
             <Link
               key={g.label}
-              href={localize(g.href!)}
+              href={g.href!}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
               className="inline-flex h-14 items-center px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
               style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--teal)' : undefined }}
             >
-              {t(g.label)}
+              {g.label}
             </Link>
           ))}
         </nav>
@@ -174,7 +162,7 @@ export function SiteHeader() {
           type="button"
           className="lg:hidden ml-auto md:ml-2 btn btn-sm"
           aria-expanded={mobileOpen}
-          aria-label={t(mobileOpen ? 'Close menu' : 'Open menu')}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           onClick={() => setMobileOpen(o => !o)}
         >
           {mobileOpen ? <X className="h-4 w-4" /> : <List className="h-4 w-4" />}
@@ -198,27 +186,26 @@ export function SiteHeader() {
                           className="w-full flex items-center justify-between py-3 text-[15px]"
                           style={{ color: 'var(--ink)' }}
                         >
-                          {t(g.label)}
+                          {g.label}
                           <CaretDown className="h-4 w-4" style={{ transform: expanded === g.label ? 'rotate(180deg)' : undefined }} />
                         </button>
                         {expanded === g.label && (
                           <ul className="pb-2">
                             {g.links.map(l => (
                               <li key={l.href}>
-                                <Link href={localize(l.href)} onClick={() => setMobileOpen(false)} className="block py-2 pl-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>{t(l.label)}</Link>
+                                <Link href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 pl-3 text-[14px]" style={{ color: 'var(--ink-2)' }}>{l.label}</Link>
                               </li>
                             ))}
                           </ul>
                         )}
                       </>
                     ) : (
-                      <Link href={localize(g.href!)} onClick={() => setMobileOpen(false)} className="block py-3 text-[15px]" style={{ color: 'var(--ink)' }}>{t(g.label)}</Link>
+                      <Link href={g.href!} onClick={() => setMobileOpen(false)} className="block py-3 text-[15px]" style={{ color: 'var(--ink)' }}>{g.label}</Link>
                     )}
                   </li>
                 ))}
               </ul>
             </nav>
-            <div className="md:hidden pt-1 text-[14px]"><LanguageSwitcher align="left" /></div>
           </div>
         </div>
       )}
