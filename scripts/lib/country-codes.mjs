@@ -10,7 +10,7 @@
 // ISO country (NE Niger, AG Antigua, BL St Barthelemy, CC Cocos Islands, SZ
 // Eswatini, GW Guinea-Bissau, NR Nauru, CK Cook Islands, CI Cote d'Ivoire), so
 // the scheme was decided per code from the titles and publishers carrying it.
-const MARC2 = {
+export const MARC2 = {
   AG: 'Argentina', BL: 'Brazil', BU: 'Bulgaria', CC: 'China', CI: 'Croatia', CK: 'Colombia',
   EM: 'Timor-Leste', GW: 'Germany', II: 'India', IO: 'Indonesia', KO: 'South Korea', LE: 'Lebanon',
   NE: 'Netherlands', NR: 'Nigeria', PO: 'Portugal', RM: 'Romania', SP: 'Spain', SZ: 'Switzerland',
@@ -19,7 +19,7 @@ const MARC2 = {
 }
 
 // Two-letter codes that were stored as ISO (checked the same way).
-const ISO2 = {
+export const ISO2 = {
   BB: 'Barbados', CD: 'Congo - Kinshasa', CR: 'Costa Rica', GM: 'Gambia',
   GP: 'Guadeloupe', GU: 'Guam', HK: 'Hong Kong', KR: 'South Korea', LY: 'Libya', ME: 'Montenegro',
   MU: 'Mauritius', PR: 'Puerto Rico', PS: 'Palestine', TT: 'Trinidad and Tobago',
@@ -27,7 +27,7 @@ const ISO2 = {
 
 // MARC three-letter codes: xx* and the UK nations / US states / Canadian and
 // Australian provinces. Anything ending in U is a US state (xxu = United States).
-const MARC3 = {
+export const MARC3 = {
   XXK: 'United Kingdom', ENK: 'United Kingdom', STK: 'United Kingdom', WLK: 'United Kingdom', NIK: 'United Kingdom',
   XXU: 'United States', XXC: 'Canada', XXA: 'Australia',
   ABC: 'Canada', BCC: 'Canada', MBC: 'Canada', NBC: 'Canada', NSC: 'Canada', ONC: 'Canada', QUC: 'Canada', SNC: 'Canada',

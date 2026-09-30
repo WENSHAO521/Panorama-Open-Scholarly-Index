@@ -28,11 +28,13 @@ const MARC_ONLY: Record<string, string> = {
  * In the corpus these are MARC: the "British Indian Ocean Territory"
  * journals are Indonesian universities, the "Guinea-Bissau" ones German
  * publishers, the "Eswatini" ones Springer International and Palgrave
- * (Switzerland), and so on. The few real journals of those territories
- * are outnumbered by far.
+ * (Switzerland), the "Cote d'Ivoire" ones Croatian, and so on. The few real
+ * journals of those territories are outnumbered by far. The corpus scripts
+ * decided the same codes (MARC2 and ISO2 in scripts/lib/country-codes.mjs);
+ * country-codes.test.ts keeps the two in step.
  */
 const MARC_OVER_ISO: Record<string, string> = {
-  AG: 'AR', AI: 'AM', BL: 'BR', CC: 'CN', CK: 'CO', GS: 'GE', GW: 'DE', IO: 'ID', LI: 'LT', MV: 'MD',
+  AG: 'AR', AI: 'AM', BL: 'BR', CC: 'CN', CI: 'HR', CK: 'CO', GS: 'GE', GW: 'DE', IO: 'ID', LI: 'LT', MV: 'MD',
   NE: 'NL', NR: 'NG', PN: 'PA', SJ: 'SD', SZ: 'CH',
 }
 
