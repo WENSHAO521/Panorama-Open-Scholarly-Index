@@ -3,6 +3,9 @@
 
 import { getJournalProfile } from './journal-profile'
 import { dataUrl } from '@/lib/data-base'
+import { titleWords, prefixOf, partOf } from './title-words.mjs'
+
+export { titleWords }
 
 export interface JournalHit {
   key: string
@@ -23,22 +26,6 @@ type Evaluation = [string | null, 'Q1' | 'Q2' | 'Q3' | 'Q4' | null, 1 | 2 | 3 | 
 /** [key, title, publisher, works, open access, alternate titles joined by ' | ', [PSC, quartile, zone, ranking status, AJR Rating, zone status]] */
 type Entry = [string, string, string | null, number, 0 | 1, string?, Evaluation?]
 
-/** Keep in step with scripts/sync-live-data.mjs. */
-const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
-
-const HAN = /\p{Script=Han}/u
-
-/** Latin words of 2+ letters, and each Chinese character on its own. Keep in step with scripts/sync-live-data.mjs. */
-export function titleWords(t: string): string[] {
-  return (t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+|\p{Script=Han}/gu) ?? [])
-    .filter(w => (w.length >= 2 || HAN.test(w)) && !STOP_WORDS.has(w))
-}
-
-/** Index file a word lives in. Keep in step with scripts/sync-live-data.mjs. */
-function prefixOf(w: string): string {
-  return HAN.test(w) ? `zh${w.codePointAt(0)! % 64}` : w.slice(0, 2)
-}
-
 const ISSN_RE = /^\d{4}-?\d{3}[\dXx]$/
 
 // Shared between callers: never tied to one caller's AbortSignal.
@@ -56,13 +43,17 @@ function loadFile(name: string): Promise<IndexFile> {
 }
 
 /** Entries for words starting with `word`, from file `name`. A large file is
- *  split by the next letter (see scripts/sync-live-data.mjs): follow the word's
- *  letters to the smallest file, or merge all parts when the word runs out. */
+ *  split by the next letter (see scripts/sync-live-data.mjs and partOf in
+ *  ./title-words.mjs): follow the word's letters to the smallest file, or
+ *  merge all parts when the word runs out. */
 async function loadPrefix(name: string, word: string): Promise<Entry[]> {
   const f = await loadFile(name)
   if (Array.isArray(f)) return f
-  const c = word[name.length]
-  if (c !== undefined) return f.parts.includes(c) ? loadPrefix(name + c, word) : []
+  if (word.length > name.length) {
+    const c = partOf(word, name.length)
+    if (c === '_') return f.parts.includes('_') ? loadFile(name + '_') as Promise<Entry[]> : []
+    return f.parts.includes(c) ? loadPrefix(name + c, word) : []
+  }
   const seen = new Set<string>()
   return (await Promise.all(f.parts.map(p => (p === '_' ? loadFile(name + '_') as Promise<Entry[]> : loadPrefix(name + p, word)))))
     .flat()

@@ -39,6 +39,7 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync, copyFi
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
+import { titleWords, prefixOf, neverSplit, partOf } from '../src/lib/title-words.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
@@ -84,20 +85,6 @@ function slim(corpus) {
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
     psc_category: r.psc_category ?? null, psc_confidence: r.psc_confidence ?? null,
   }))
-}
-
-/** Keep in step with src/lib/journal-search.ts. */
-const STOP_WORDS = new Set('journal journals international of and the for in on de la y e des du und der revista research da di del el et les en al'.split(' '))
-// Latin words of 2+ letters, and each Chinese character on its own (Chinese
-// titles have no spaces between words).
-function titleWords(t) {
-  return (t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().match(/[a-z0-9]+|\p{Script=Han}/gu) ?? [])
-    .filter(w => (w.length >= 2 || /\p{Script=Han}/u.test(w)) && !STOP_WORDS.has(w))
-}
-// Index file a word lives in: its first two letters, or one of 64 buckets
-// for Chinese characters.
-function prefixOf(w) {
-  return /\p{Script=Han}/u.test(w) ? `zh${w.codePointAt(0) % 64}` : w.slice(0, 2)
 }
 
 /** Registry titles occasionally carry control characters. */
@@ -366,8 +353,10 @@ if (!RANKINGS_ONLY) {
   }
 }
 
-// 4. Journal title index for /journals/ search: every title word (minus
-// generic words) -> its first two letters -> one file. Entries are
+// 4. Journal title index for /journals/ search: every title word in any
+// script (minus generic words; see src/lib/title-words.mjs) -> its first two
+// letters, or a bucket for Chinese characters and non-Latin words -> one
+// file. Entries are
 // [key, title, publisher, works, open access, alternate titles, evaluation?],
 // most works first; alternate titles are matched but not shown. evaluation is
 // [PSC category, Citation Quartile, POSI Zone, ranking status, AJR Rating, zone status].
@@ -407,12 +396,12 @@ if (!RANKINGS_ONLY) {
       const list = items.map(i => i.entry).sort((a, b) => b[3] - a[3])
       const json = JSON.stringify(list)
       const at = name.length
-      if (json.length > TITLE_PART_BYTES && !name.startsWith('zh')) {
+      if (json.length > TITLE_PART_BYTES && !neverSplit(name)) {
         const groups = new Map()
         for (const it of items) {
-          for (const c of new Set(it.words.map(w => w[at] ?? '_'))) {
+          for (const c of new Set(it.words.map(w => partOf(w, at)))) {
             if (!groups.has(c)) groups.set(c, [])
-            groups.get(c).push({ entry: it.entry, words: it.words.filter(w => (w[at] ?? '_') === c) })
+            groups.get(c).push({ entry: it.entry, words: it.words.filter(w => partOf(w, at) === c) })
           }
         }
         if (groups.size > 1) {
