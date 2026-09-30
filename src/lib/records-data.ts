@@ -4,7 +4,7 @@ import type { Journal } from './types'
 import { ALL_JOURNALS, DISCOVERED_JOURNALS, getCoreCollection, getCuratedNonCoreJournals } from './data'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 
-/** Journals that get a statically generated record page (Core and other curated). */
+/** Journals that get a statically generated record page (Core, other curated, Benchmark). */
 export function getStaticRecordJournals(): Journal[] {
   return [...getCoreCollection(), ...getCuratedNonCoreJournals(), ...BENCHMARK_JOURNALS]
 }

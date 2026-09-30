@@ -9,21 +9,6 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
-    slug: 'core-and-indexed-collections',
-    title: 'Two collections: Core Collection and Indexed; PCI reported for Core Collection journals',
-    date: '2026-09-30',
-    pinned: true,
-    summary:
-      'From 30 September 2026, POSI presents every journal in one of two collections, the Core Collection or Indexed. The Global Benchmark is no longer a separate collection: its journals are indexed journals. PCI is reported for Core Collection journals only. Rankings, quartiles and zones are unchanged.',
-    body: [
-      'From 30 September 2026, every journal in POSI belongs to one of two collections. The Core Collection holds the journals that applied for certification and passed the PQF editorial evaluation; they are certified and may display the POSI Core Collection mark. Every other journal is Indexed: indexed from Crossref and OpenAlex, not certified, and able to apply for certification.',
-      'The Global Benchmark, the set of 993 established journals that POSI curated to validate its methods, is no longer a separate collection. Its journals are indexed journals and are shown in the same way as every other indexed journal, with the same label, the same record page and the same data fields. Their record pages move to addresses without the former "bench-" prefix, and the old addresses redirect to the new ones. Every curated record is verified under one rule: Verified when its evidence was reviewed under PQF, Partially verified when its identity was resolved from its ISSN to an OpenAlex source.',
-      'PCI, the POSI Citation Impact, is now a Core Collection indicator and is reported for Core Collection journals only. Indexed journals no longer show a PCI; their citation performance is shown by PNCI and PCS. PCI has never determined a rank, quartile or zone, so no rank, Citation Quartile or POSI Zone changes.',
-      'In the data files, the collection of every former Global Benchmark record is "curated", and the compact indexes are published as core, curated and discovered. The separate benchmark index file is withdrawn; its records are in the curated index.',
-      'Nothing else changes. PQF, AJR, PNCI, PCS and the 2026 Citation Ranking are as published. The indicators and the collections are described in the methodology.',
-    ],
-  },
-  {
     slug: 'citation-ranking-2026',
     title: 'Publication of the 2026 POSI Citation Ranking',
     date: '2026-09-28',
@@ -34,7 +19,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
       'On 28 September 2026, POSI published the 2026 Citation Ranking (CITATION-RANK-1.0, PNCI-1.0). It is the first edition computed under POSI Journal Evaluation Architecture 1.0 and supersedes the PCS-based ranking previously published for 2026. PCS continues to be published as a supplementary indicator and does not determine any rank, quartile or zone.',
       'All 158,242 journals in the POSI index were evaluated. 50,983 journals are ranked within their PSC subject category, across 30 categories: 47,847 hold an official ranking and 3,136 a provisional ranking. For each ranked journal, POSI publishes its rank, percentile and Citation Quartile (C-Q1 to C-Q4), and its POSI Zone where the category meets the minimum size.',
       'Journals are ranked by PNCI, the POSI Normalized Citation Indicator, which compares the citations of each item with those of items of the same subject field, publication year and document type. A ranking requires sufficient evidence of citable items, publication years and citation coverage. Journals that do not meet these requirements, or whose subject assignment is not sufficiently certain, are evaluated but not ranked; their journal pages state the ranking status and the reason.',
-      'PCI is reported for Core Collection journals only (from 30 September 2026; see the announcement Two collections: Core Collection and Indexed). It is descriptive and does not affect rank, quartile or zone.',
+      'PCI is reported for Core Collection and benchmark journals. It is descriptive and does not affect rank, quartile or zone.',
       'The ranking can be consulted on the Rankings pages and on each journal page, and downloaded from the Rankings and Datasets pages. The method, including thresholds, tie handling and limitations, is set out in the methodology.',
       'The Citation Ranking is published once a year, in early December. The 2026 edition was published on 28 September, on POSI’s entry into full operation. Journals added to the index during the year are ranked in the next annual edition.',
     ],

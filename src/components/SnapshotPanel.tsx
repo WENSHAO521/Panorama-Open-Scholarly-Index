@@ -13,9 +13,7 @@ type Manifest = Record<string, string | number | boolean | null>
 interface Loaded { current: Current; manifest: Manifest; sums: { hash: string; path: string }[] }
 
 const VERSION_KEYS = ['lifecycle_version', 'psc_crosswalk_version', 'ajr_e_version', 'ajr_m_version', 'rank_version', 'evidence_version', 'pcs_version', 'pci_version', 'pcs_q_version']
-// The manifest's benchmark_* counts are left out: the Global Benchmark is no
-// longer a public collection.
-const COUNT_KEYS = ['journal_count', 'core_collection_count', 'pcs_computed_count', 'pci_computed_count', 'early_stage_rated_count', 'citation_q_ranked_count']
+const COUNT_KEYS = ['journal_count', 'core_collection_count', 'benchmark_curated_count', 'benchmark_publisher_catalog_count', 'pcs_computed_count', 'pci_computed_count', 'early_stage_rated_count', 'citation_q_ranked_count']
 
 function label(k: string) {
   return k.replace(/_count$/, '').replace(/_version$/, '').replace(/_/g, ' ').replace(/\b(ajr|pcs|pci|psc|q)\b/gi, m => m.toUpperCase()).replace(/^./, c => c.toUpperCase())

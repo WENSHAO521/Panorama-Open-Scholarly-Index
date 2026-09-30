@@ -49,9 +49,7 @@ posi-engine ──release──▶ posi-data ──snapshot──▶ posi-data-d
   falls back to the committed `src/lib/citation-ranking.json` and
   `src/lib/pcs-q.json`.
 - `scripts/sync-corpus.mjs` refreshes the small committed collections (Core
-  Collection, the former Global Benchmark records, PCS, PCI). Former Global
-  Benchmark records are shown as ordinary indexed (curated) journals, and PCI
-  is reported for Core Collection journals only. The `data-sync` workflow
+  Collection, curated Global Benchmark, PCS, PCI). The `data-sync` workflow
   runs it every 20 minutes and commits changes, which rebuilds the site.
 
 ## Code map

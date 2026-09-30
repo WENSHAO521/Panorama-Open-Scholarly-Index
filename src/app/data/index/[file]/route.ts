@@ -1,12 +1,12 @@
-// Static index files: /data/index/{core,curated,discovered}.{json,csv}
+// Static index files: /data/index/{core,benchmark,discovered}.{json,csv}
 // Generated at build time from the vendored corpus — there is no server.
 import { toIndexRecord, type IndexRecord, type Collection } from '@/lib/records'
 import { getAllRecords } from '@/lib/records-data'
 
 const GROUPS: Record<string, Collection[]> = {
   core: ['core'],
-  curated: ['curated'],
-  discovered: ['discovered'],
+  benchmark: ['benchmark'],
+  discovered: ['discovered', 'curated'],
 }
 
 export const dynamic = 'force-static'

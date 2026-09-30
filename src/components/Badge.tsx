@@ -32,6 +32,7 @@ export type BadgeVariant =
   | 'mature-stage'
   | 'discovered'
   | 'indexed'
+  | 'benchmark'
   | 'not-rateable'
   | 'provisional'
   | 'blocked'
@@ -82,9 +83,11 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
   // Stage 2 additions (rankings/journal-profile surfaces) - additive only,
   // reuse the same semantic tokens as their nearest sibling above rather
   // than introducing new raw colors. Kept as distinct variants (not aliased
-  // to 'mature-stage'/'not-eligible') so the label text stays the only thing
-  // that differs - never conflate "Blocked" with "Not Eligible" by reusing
-  // one variant name for two different meanings.
+  // to 'discovered'/'mature-stage'/'not-eligible') so the label text stays
+  // the only thing that differs - never conflate "Global Benchmark" with
+  // "Discovered", or "Blocked" with "Not Eligible", by reusing one variant
+  // name for two different meanings.
+  benchmark: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
   'not-rateable': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
   provisional: 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
   blocked: 'bg-[var(--posi-danger-bg)] text-[var(--posi-danger)] ring-1 ring-[var(--posi-danger-border)]',

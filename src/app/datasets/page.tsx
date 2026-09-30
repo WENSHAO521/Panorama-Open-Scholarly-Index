@@ -64,7 +64,7 @@ const AUDITS = [
   },
   {
     name: 'PCS ETL, full scope', date: '2026-08-14', path: 'pcs-etl/pcs-etl-v1-global1024-2026',
-    desc: 'POSI Citation Score from Crossref data for 4,320 journals (the 31 Core Collection journals and 4,289 curated reference journals): 6.77 million works fetched, PCS computed for 4,089.',
+    desc: 'POSI Citation Score from Crossref data for 4,320 journals (the 31 Core Collection journals and the full 4,289-journal Global Benchmark): 6.77 million works fetched, PCS computed for 4,089.',
   },
   {
     name: 'AJR-E-1.1 rerate, Core Collection', date: '2026-08-14', path: 'ratings/ajr-e-1.1-rerate-core30-2026',
@@ -76,15 +76,15 @@ const AUDITS = [
   },
   {
     name: 'Citation preview correction', date: '2026-08-13', path: 'migrations/citation-preview-correction-2026',
-    desc: 'Withdrew provisional citation quartiles on 3,245 curated reference records and replaced them with a diagnostic-only preview: membership of a curated set alone does not make a journal ranking-eligible.',
+    desc: 'Withdrew provisional citation quartiles on 3,245 Global Benchmark records and replaced them with a diagnostic-only preview: Benchmark membership alone does not make a journal ranking-eligible.',
   },
   {
     name: 'Elsevier and Frontiers expansion', date: '2026-08-12', path: 'migrations/elsevier-jnlactive-expansion-2026',
-    desc: "Curated reference set grown from 1,000 to 4,289 records from the publishers' own title lists (3,113 Elsevier, 183 Frontiers), with every identity conflict resolved in a second-round re-run.",
+    desc: "Global Benchmark grown from 1,000 to 4,289 records from the publishers' own title lists (3,113 Elsevier, 183 Frontiers), with every identity conflict resolved in a second-round re-run.",
   },
   {
-    name: 'Core and curated identity remap', date: '2026-08', path: 'migrations/benchmark-identity-remap-2026',
-    desc: 'All 1,000 curated reference and 31 Core Collection journals resolved against the 24,205-record registry: 0 new ids, 0 conflicts, 0 left for manual review.',
+    name: 'Core and Benchmark identity remap', date: '2026-08', path: 'migrations/benchmark-identity-remap-2026',
+    desc: 'All 1,000 Global Benchmark and 31 Core Collection journals resolved against the 24,205-record registry: 0 new ids, 0 conflicts, 0 left for manual review.',
   },
   {
     name: 'Initial journal migration', date: '2026', path: 'migrations/initial-journal-migration',
@@ -96,8 +96,8 @@ export default function DatasetsPage() {
   const idx = getAllRecords().map(toIndexRecord)
   const group = (ks: Collection[]) => idx.filter(r => ks.includes(r.k))
   const core = group(['core'])
-  const cur = group(['curated'])
-  const disc = group(['discovered'])
+  const bench = group(['benchmark'])
+  const disc = group(['discovered', 'curated'])
 
   const { records: directory, source } = getDirectory()
   const categories = getDirectoryCategories().filter(c => c.count > 0)
@@ -116,9 +116,9 @@ export default function DatasetsPage() {
 
   const curated: DataFile[] = [
     { path: dataUrl('index/core.json'), alt: dataUrl('index/core.csv'), rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection records, compact index' },
-    { path: dataUrl('index/curated.json'), alt: dataUrl('index/curated.csv'), rows: cur.length, bytes: JSON.stringify(cur).length, what: 'Other curated records (indexed, not certified), compact index' },
-    { path: dataUrl('index/discovered.json'), alt: dataUrl('index/discovered.csv'), rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered records (indexed, not certified), compact index' },
-    { path: dataUrl('journal/{code}.json'), rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and curated journal' },
+    { path: dataUrl('index/benchmark.json'), alt: dataUrl('index/benchmark.csv'), rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
+    { path: dataUrl('index/discovered.json'), alt: dataUrl('index/discovered.csv'), rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
+    { path: dataUrl('journal/{code}.json'), rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
     { path: dataUrl('records/discovered-{00-63}.json'), rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 64 shards by a hash of the record key' },
     { path: dataUrl('meta/psc.json'), rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
     { path: dataUrl('meta/schema.json'), rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },

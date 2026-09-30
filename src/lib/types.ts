@@ -45,9 +45,10 @@ export interface Journal {
   /** @deprecated use pqf */
   ojqf?: PqfScore
   early_stage_rating?: EarlyStageRating | null
-  // Set in the upstream source file of the former Global Benchmark records;
-  // removed when they are loaded (benchmark-journals.ts): since 2026-09-30
-  // they are ordinary indexed journals. Never read by the site.
+  // True only for BENCHMARK_JOURNALS - an external reference corpus used to
+  // validate AJR against internationally established journals. Never part
+  // of the Core Collection, never a POSI admission candidate, never counted
+  // in Indexed/Metric Eligible stats.
   is_external_benchmark?: boolean
   // PSC (POSI Subject Classification) - see posi-data's PSC-CROSSWALK.md.
   // Derived from OpenAlex's topic-aggregation data for the journal's ISSN,

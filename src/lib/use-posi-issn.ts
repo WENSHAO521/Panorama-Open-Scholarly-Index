@@ -14,7 +14,7 @@ let cache: Promise<IssnMap> | null = null
 
 function load(): Promise<IssnMap> {
   if (!cache) {
-    cache = Promise.all(['core', 'curated'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
+    cache = Promise.all(['core', 'benchmark'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
       .then((groups: IndexRecord[][]) => {
         const m: IssnMap = new Map()
         for (const r of groups.flat()) for (const i of r.i) m.set(i.toUpperCase(), r)
