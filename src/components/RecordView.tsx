@@ -127,7 +127,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
           <Link href="/journals/" className="hover:underline">Journals</Link>
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
-          <Link href={k === 'core' ? '/core-collection/' : `/journals/?collection=${k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
+          <Link href={k === 'core' ? '/core-collection/' : `/journals/?collection=${k === 'benchmark' ? 'curated' : k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
         </nav>
         <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="min-w-0">

@@ -70,10 +70,12 @@ export const COLLECTIONS: Record<Collection, { label: string; short: string; des
     short: 'Indexed',
     description: 'Indexed. POSI holds a curated record with a permanent POSI-J id. Not certified: not in the Core Collection.',
   },
+  // Former Global Benchmark records are ordinary indexed journals: shown
+  // exactly like any other curated record, with no benchmark label.
   benchmark: {
-    label: 'Indexed, benchmark set',
+    label: 'Indexed, curated record',
     short: 'Indexed',
-    description: 'Indexed. Also in the Global Benchmark reference set that POSI uses to validate its methodology.',
+    description: 'Indexed. POSI holds a curated record with a permanent POSI-J id. Not certified: not in the Core Collection.',
   },
   discovered: {
     label: 'Indexed, curated record',
