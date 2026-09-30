@@ -10,7 +10,7 @@ import type { PublisherRow } from '@/lib/publishers'
 import { publisherHref } from '@/lib/publishers'
 import { countryName } from '@/lib/records'
 import { squarify, type Rect } from '@/lib/treemap'
-import { MAP_H, MAP_W, countryCode, getWorldShapes } from '@/lib/world-map'
+import { MAP_H, MAP_W, countryCode, getSmallPlaceDots, getWorldShapes } from '@/lib/world-map'
 import { MapHover } from './MapHover'
 import { fmt } from './db'
 
@@ -47,6 +47,21 @@ function WorldMap({ counts }: { counts: Map<string, number> }) {
               style={{ fill: binFill(n) }} />
           )
         })}
+        {/* Every place too small to draw, as a dot: with journals on top, larger counts last. */}
+        {getSmallPlaceDots()
+          .map(d => ({ ...d, n: counts.get(d.code) ?? 0 }))
+          .sort((a, b) => a.n - b.n)
+          .map(d => {
+            let name = d.code
+            try { name = dn.of(d.code) ?? d.code } catch { /* keep the code */ }
+            return (
+              <g key={d.code} className={d.n ? 'map-dot' : 'map-dot map-dot-empty'}>
+                <circle cx={d.x} cy={d.y} r={d.n ? 3.6 : 2.4} data-name={name} data-n={d.n} style={{ fill: d.n ? binFill(d.n) : 'var(--hover)' }} />
+                {/* A larger, invisible target, so the dot is easy to hover. */}
+                <circle cx={d.x} cy={d.y} r={d.n ? 9 : 6} data-name={name} data-n={d.n} fill="transparent" />
+              </g>
+            )
+          })}
       </svg>
     </MapHover>
   )
@@ -185,6 +200,9 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
           ))}
           <li className="flex items-center gap-1.5">
             <span aria-hidden className="h-2.5 w-4 rounded-[1px]" style={{ background: 'var(--hover)', border: '1px solid var(--line)' }} />none
+          </li>
+          <li className="flex items-center gap-1.5">
+            <svg aria-hidden width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3.6" className="map-dot-key" /></svg>small country or territory
           </li>
         </ul>
         <ol className="mt-4 pt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-1.5 text-[12.5px]" style={{ borderTop: '1px solid var(--line-soft)' }}>

@@ -28,11 +28,13 @@ const MARC_ONLY: Record<string, string> = {
  * In the corpus these are MARC: the "British Indian Ocean Territory"
  * journals are Indonesian universities, the "Guinea-Bissau" ones German
  * publishers, the "Eswatini" ones Springer International and Palgrave
- * (Switzerland), and so on. The few real journals of those territories
- * are outnumbered by far.
+ * (Switzerland), the "Cote d'Ivoire" ones Croatian, and so on. The few real
+ * journals of those territories are outnumbered by far. The corpus scripts
+ * decided the same codes (MARC2 and ISO2 in scripts/lib/country-codes.mjs);
+ * country-codes.test.ts keeps the two in step.
  */
 const MARC_OVER_ISO: Record<string, string> = {
-  AG: 'AR', AI: 'AM', BL: 'BR', CC: 'CN', CK: 'CO', GS: 'GE', GW: 'DE', IO: 'ID', LI: 'LT', MV: 'MD',
+  AG: 'AR', AI: 'AM', BL: 'BR', CC: 'CN', CI: 'HR', CK: 'CO', GS: 'GE', GW: 'DE', IO: 'ID', LI: 'LT', MV: 'MD',
   NE: 'NL', NR: 'NG', PN: 'PA', SJ: 'SD', SZ: 'CH',
 }
 
@@ -49,6 +51,14 @@ const EXTRA_NAMES: Record<string, string> = {
   Congo: 'CG', 'Eq. Guinea': 'GQ', eSwatini: 'SZ', Palestine: 'PS', Myanmar: 'MM', Turkey: 'TR',
   'Solomon Is.': 'SB', 'N. Cyprus': 'CY', Somaliland: 'SO', 'Bosnia and Herz.': 'BA', Macedonia: 'MK',
   'Trinidad and Tobago': 'TT', 'S. Sudan': 'SS',
+  // Natural Earth 1:50m short names (the map's small places)
+  Vatican: 'VA', 'Marshall Is.': 'MH', 'N. Mariana Is.': 'MP', 'U.S. Virgin Is.': 'VI', 'British Virgin Is.': 'VG',
+  'Saint Helena': 'SH', 'Pitcairn Is.': 'PN', 'Cayman Is.': 'KY', 'Turks and Caicos Is.': 'TC',
+  'São Tomé and Principe': 'ST', 'St. Vin. and Gren.': 'VC', 'Saint Lucia': 'LC', 'St. Kitts and Nevis': 'KN',
+  'Cook Is.': 'CK', 'St. Pierre and Miquelon': 'PM', 'Wallis and Futuna Is.': 'WF', 'St-Martin': 'MF',
+  'St-Barthélemy': 'BL', 'Fr. Polynesia': 'PF', Åland: 'AX', 'Faeroe Is.': 'FO', Macao: 'MO', 'Hong Kong': 'HK',
+  'Cabo Verde': 'CV', 'Antigua and Barb.': 'AG', 'S. Geo. and the Is.': 'GS', 'Br. Indian Ocean Ter.': 'IO',
+  'Heard I. and McDonald Is.': 'HM',
 }
 
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })

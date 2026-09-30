@@ -1,34 +1,30 @@
 // World map geometry for the home page, projected to SVG paths at build time
-// (Natural Earth 1:110m via world-atlas, Equal Earth projection), keyed by
-// ISO 3166-1 alpha-2 code. Server only: nothing here ships to the browser.
+// (Natural Earth via world-atlas, Equal Earth projection), keyed by ISO
+// 3166-1 alpha-2 code. Server only: nothing here ships to the browser.
+// The geometry itself is built in world-geometry.ts.
 
-import { geoEqualEarth, geoPath } from 'd3-geo'
-import { feature } from 'topojson-client'
-import type { Topology, GeometryCollection } from 'topojson-specification'
-import world from 'world-atlas/countries-110m.json'
+import world110 from 'world-atlas/countries-110m.json'
+import world50 from 'world-atlas/countries-50m.json'
 import { isoCountry } from './country-codes'
+import { buildWorld, type CountryShape, type PlaceDot, type WorldGeometry } from './world-geometry'
 
-export const MAP_W = 960
-export const MAP_H = 420
-
-export interface CountryShape { code: string; name: string; d: string }
+export { MAP_H, MAP_W } from './world-geometry'
+export type { CountryShape, PlaceDot }
 
 /** A country field (ISO code, MARC code or name) as ISO alpha-2; see country-codes.ts. */
 export function countryCode(raw: string | null | undefined): string | null {
   return isoCountry(raw)
 }
 
-let shapes: CountryShape[] | null = null
+let geometry: WorldGeometry | null = null
+const getGeometry = () => (geometry ??= buildWorld(world110, world50))
 
+/** Countries drawn as shapes (the 1:110m map). */
 export function getWorldShapes(): CountryShape[] {
-  if (shapes) return shapes
-  const topo = world as unknown as Topology<{ countries: GeometryCollection<{ name: string }> }>
-  const fc = feature(topo, topo.objects.countries)
-  const features = fc.features.filter(f => f.id !== '010') // Antarctica
-  const projection = geoEqualEarth().fitExtent([[4, 4], [MAP_W - 4, MAP_H - 4]], { type: 'FeatureCollection', features })
-  const path = geoPath(projection).digits(0)
-  shapes = features
-    .map(f => ({ code: countryCode(f.properties.name) ?? '', name: f.properties.name, d: path(f) ?? '' }))
-    .filter(s => s.d)
-  return shapes
+  return getGeometry().shapes
+}
+
+/** Countries and territories too small for the 1:110m map, drawn as dots. */
+export function getSmallPlaceDots(): PlaceDot[] {
+  return getGeometry().dots
 }

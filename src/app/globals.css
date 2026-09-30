@@ -365,3 +365,7 @@ pre.code {
 /* Home page world map */
 .map-country { stroke: var(--surface); stroke-width: 0.5; transition: fill 120ms; }
 .map-country:hover { stroke: var(--ink); stroke-width: 1.2; }
+.map-dot circle:first-child, .map-dot-key { stroke: var(--teal); stroke-width: 1; }
+.map-dot-key { fill: color-mix(in srgb, var(--teal) 42%, var(--surface)); }
+.map-dot:hover circle:first-child { stroke: var(--ink); stroke-width: 1.4; }
+.map-dot-empty circle:first-child { stroke: var(--soft); stroke-width: 0.7; }
