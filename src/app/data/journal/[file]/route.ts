@@ -21,7 +21,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   const j = getStaticRecordJournals().find(x => x.journal_code === code)
   if (!j) return new Response('Not found', { status: 404 })
   const pcs = getPcsEntry(j.posi_id)
-  const pci = getPciEntry(j.posi_id)
+  // PCI is a Core Collection indicator: no other journal reports one.
+  const pci = collectionOf(j) === 'core' ? getPciEntry(j.posi_id) : null
   const ranking = getCitationRecord(j.posi_id)
   return Response.json({
     record: j,
