@@ -139,6 +139,11 @@ export function journalMeta(): Map<string, Meta> {
   return (metaCache ??= metaIndex()).meta
 }
 
+/** posi_ids of the Core Collection journals: the only journals that report PCI. */
+export function coreJournalIds(): Set<string> {
+  return (metaCache ??= metaIndex()).coreIds
+}
+
 let cache: { all: RankedJournal[]; ranked: RankedJournal[]; byId: Map<string, RankedJournal>; year: number } | null = null
 
 /**
@@ -155,6 +160,7 @@ export function getRankings() {
   if (problems.length) {
     throw new Error(`Evaluation invariants failed (${problems.length}):\n${problems.slice(0, 20).join('\n')}`)
   }
+  // PCI is a Core Collection indicator: no other journal reports one.
   const pci = new Map(getAllPciEntries().map(e => [e.journal_id, e.pci]))
   const pcsEdition = loadJson<{ records: PcsRecord[] }>('pcs-q.json', fallbackPcs)
   const pcs = new Map(pcsEdition.records.map(r => [r.journal_id, r]))
@@ -165,7 +171,7 @@ export function getRankings() {
     all.push({
       id: r.journal_id, code: m.code, title: m.title, ...(m.alt ? { alt: m.alt } : {}), publisher: m.publisher, issn: m.issn,
       cat: r.ranking_category_id, core: coreIds.has(r.journal_id),
-      pnci: r.pnci, pcs: r.pcs ?? p?.pcs ?? null, pci: r.pci ?? pci.get(r.journal_id) ?? null,
+      pnci: r.pnci, pcs: r.pcs ?? p?.pcs ?? null, pci: coreIds.has(r.journal_id) ? r.pci ?? pci.get(r.journal_id) ?? null : null,
       items: r.eligible_citable_items, coverage: r.citation_coverage,
       rank: r.citation_rank, n: r.citation_rank_total, pct: r.citation_percentile, q: r.citation_quartile,
       zone: r.posi_zone, zoneStatus: r.zone_status, status: r.citation_ranking_status, reason: r.ranking_status_reason,

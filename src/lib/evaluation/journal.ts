@@ -6,6 +6,7 @@
 
 import type { Journal } from '../types'
 import { isEarlyStageV1_1 } from '../early-stage'
+import { collectionOf } from '../records'
 import {
   getAJRRating, getPQFStatus, getLifecycleStage, EVALUATION_VERSION,
   type AjrModel, type AjrRating, type CitationQuartile, type CitationRankingStatus, type LifecycleStage, type PosiZone, type PqfStatus, type ZoneStatus,
@@ -115,11 +116,13 @@ export function buildJournalEvaluation(input: {
 }): JournalEvaluation {
   const { journal: j, ranking: r } = input
   const pqf = j?.pqf ?? j?.ojqf ?? null
+  // PCI is a Core Collection indicator: no other journal reports one.
+  const core = !!j && collectionOf(j) === 'core'
   return {
     pqf: { score: pqf?.total ?? null, status: getPQFStatus(pqf?.total), version: pqf?.version ?? null, evaluatedAt: pqf?.evaluated_at ?? null },
     ajr: ajrOf(j),
     citations: {
-      pci: input.pci ?? r?.pci ?? null,
+      pci: core ? input.pci ?? r?.pci ?? null : null,
       pnci: r?.pnci ?? null,
       pnciModel: r?.pnci_model_version ?? null,
       pcs: input.pcs ?? r?.pcs ?? null,
@@ -145,7 +148,9 @@ export function buildJournalEvaluation(input: {
   }
 }
 
-/** The evaluation carried by a journal profile shard (JournalProfile.ev), for the client-side journal page. */
+/** The evaluation carried by a journal profile shard (JournalProfile.ev), for
+ *  the client-side journal page. The shard carries PCI for Core Collection
+ *  journals only (scripts/sync-live-data.mjs). */
 export function evaluationFromProfile(ev: import('../journal-profile').JournalProfile['ev'], categoryName: string | null): JournalEvaluation {
   const ajr = ev?.ajr
   return {

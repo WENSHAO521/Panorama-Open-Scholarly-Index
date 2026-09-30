@@ -9,6 +9,20 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'pci-core-collection-only',
+    title: 'PCI reported for Core Collection journals only',
+    date: '2026-09-30',
+    pinned: true,
+    summary:
+      'From 30 September 2026, PCI, the POSI Citation Impact, is a Core Collection indicator and is reported for Core Collection journals only. Journals outside the Core Collection no longer show a PCI. Ranks, Citation Quartiles and POSI Zones are unchanged.',
+    body: [
+      'From 30 September 2026, PCI, the POSI Citation Impact, is a Core Collection indicator. It is reported for Core Collection journals only: journals that applied for certification and passed the PQF editorial evaluation.',
+      'Journals outside the Core Collection no longer show a PCI on their journal pages, in the evaluation panel, in the Citation Ranking tables or in the data files published with each journal record. Their citation performance continues to be shown by PNCI and PCS.',
+      'PCI has never determined a rank, quartile or zone. The official Citation Ranking is based on PNCI, so no rank, Citation Quartile or POSI Zone changes. PQF, AJR, PNCI, PCS and the 2026 Citation Ranking are otherwise as published.',
+      'A Core Collection journal shows a PCI once it has citable items in the two-year PCI window. The indicator is described on the citation indicators page and in the methodology.',
+    ],
+  },
+  {
     slug: 'citation-ranking-2026',
     title: 'Publication of the 2026 POSI Citation Ranking',
     date: '2026-09-28',
@@ -19,7 +33,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
       'On 28 September 2026, POSI published the 2026 Citation Ranking (CITATION-RANK-1.0, PNCI-1.0). It is the first edition computed under POSI Journal Evaluation Architecture 1.0 and supersedes the PCS-based ranking previously published for 2026. PCS continues to be published as a supplementary indicator and does not determine any rank, quartile or zone.',
       'All 158,242 journals in the POSI index were evaluated. 50,983 journals are ranked within their PSC subject category, across 30 categories: 47,847 hold an official ranking and 3,136 a provisional ranking. For each ranked journal, POSI publishes its rank, percentile and Citation Quartile (C-Q1 to C-Q4), and its POSI Zone where the category meets the minimum size.',
       'Journals are ranked by PNCI, the POSI Normalized Citation Indicator, which compares the citations of each item with those of items of the same subject field, publication year and document type. A ranking requires sufficient evidence of citable items, publication years and citation coverage. Journals that do not meet these requirements, or whose subject assignment is not sufficiently certain, are evaluated but not ranked; their journal pages state the ranking status and the reason.',
-      'PCI is reported for Core Collection and benchmark journals. It is descriptive and does not affect rank, quartile or zone.',
+      'PCI is reported for Core Collection journals only (from 30 September 2026; see the announcement PCI reported for Core Collection journals only). It is descriptive and does not affect rank, quartile or zone.',
       'The ranking can be consulted on the Rankings pages and on each journal page, and downloaded from the Rankings and Datasets pages. The method, including thresholds, tie handling and limitations, is set out in the methodology.',
       'The Citation Ranking is published once a year, in early December. The 2026 edition was published on 28 September, on POSI’s entry into full operation. Journals added to the index during the year are ranked in the next annual edition.',
     ],

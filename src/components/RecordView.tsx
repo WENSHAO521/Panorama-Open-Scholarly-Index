@@ -112,7 +112,9 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
   const f = freshnessOf(j)
   const pqf = j.pqf ?? j.ojqf ?? null
   const autoPqf = !pqf ? j.auto_pqf ?? null : null
-  const { pcs, pci, citationStats, pscName } = metrics
+  const { pcs, citationStats, pscName } = metrics
+  // PCI is a Core Collection indicator: no other journal reports one.
+  const pci = k === 'core' ? metrics.pci : null
   const evaluation = metrics.evaluation ?? buildJournalEvaluation({ journal: j, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? null })
   const oa = citationStats?.stats
   const issn = j.issn_online ?? j.issn_print
@@ -175,7 +177,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
           <Figure
             label="Citation impact (PCI)"
             value={pci?.pci != null ? fmtScore(pci.pci) : null}
-            note={pci?.pci == null ? PCI_SCOPE : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
+            note={pci?.pci == null ? (k === 'core' ? undefined : PCI_SCOPE) : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
             sample={pci ? sampleLabel(pci.pci_citable_items) : null}
             href="/methodology/#pci"
           />

@@ -123,7 +123,7 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
 
       <Block title="Citation Performance" id={`${idPrefix}-cit`} aside={<Link href="/methodology/#ranking" className="link text-[12px]">Method</Link>}>
         <Row k="PNCI" v={ev.citations.pnci != null ? mono(fmtScore(ev.citations.pnci)) : soft(NOT_AVAILABLE)} note={ev.citations.pnciModel ?? undefined} />
-        <Row k="PCI" v={ev.citations.pci != null ? mono(fmtScore(ev.citations.pci)) : soft('Not computed')} note={ev.citations.pci == null ? PCI_SCOPE : undefined} />
+        <Row k="PCI" v={ev.citations.pci != null ? mono(fmtScore(ev.citations.pci)) : soft(core === 'core' ? 'Not computed' : 'Not reported')} note={ev.citations.pci == null && core !== 'core' ? PCI_SCOPE : undefined} />
         <Row k="PCS" v={ev.citations.pcs != null ? mono(fmtScore(ev.citations.pcs)) : soft(NOT_AVAILABLE)} note="Supplementary; does not determine rank, quartile or zone" />
         <Row k="Eligible items" v={ev.citations.eligibleItems != null ? mono(String(ev.citations.eligibleItems)) : soft(NOT_AVAILABLE)}
           note={ev.citations.coverage != null ? `Citation coverage ${fmtCoverage(ev.citations.coverage)}` : undefined} />
