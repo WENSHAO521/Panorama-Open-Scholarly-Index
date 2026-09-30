@@ -49,6 +49,14 @@ const EXTRA_NAMES: Record<string, string> = {
   Congo: 'CG', 'Eq. Guinea': 'GQ', eSwatini: 'SZ', Palestine: 'PS', Myanmar: 'MM', Turkey: 'TR',
   'Solomon Is.': 'SB', 'N. Cyprus': 'CY', Somaliland: 'SO', 'Bosnia and Herz.': 'BA', Macedonia: 'MK',
   'Trinidad and Tobago': 'TT', 'S. Sudan': 'SS',
+  // Natural Earth 1:50m short names (the map's small places)
+  Vatican: 'VA', 'Marshall Is.': 'MH', 'N. Mariana Is.': 'MP', 'U.S. Virgin Is.': 'VI', 'British Virgin Is.': 'VG',
+  'Saint Helena': 'SH', 'Pitcairn Is.': 'PN', 'Cayman Is.': 'KY', 'Turks and Caicos Is.': 'TC',
+  'São Tomé and Principe': 'ST', 'St. Vin. and Gren.': 'VC', 'Saint Lucia': 'LC', 'St. Kitts and Nevis': 'KN',
+  'Cook Is.': 'CK', 'St. Pierre and Miquelon': 'PM', 'Wallis and Futuna Is.': 'WF', 'St-Martin': 'MF',
+  'St-Barthélemy': 'BL', 'Fr. Polynesia': 'PF', Åland: 'AX', 'Faeroe Is.': 'FO', Macao: 'MO', 'Hong Kong': 'HK',
+  'Cabo Verde': 'CV', 'Antigua and Barb.': 'AG', 'S. Geo. and the Is.': 'GS', 'Br. Indian Ocean Ter.': 'IO',
+  'Heard I. and McDonald Is.': 'HM',
 }
 
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })

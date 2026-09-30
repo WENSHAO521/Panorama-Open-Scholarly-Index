@@ -47,19 +47,18 @@ function WorldMap({ counts }: { counts: Map<string, number> }) {
               style={{ fill: binFill(n) }} />
           )
         })}
-        {/* Places too small to draw, as dots; smaller counts first so larger ones sit on top. */}
+        {/* Every place too small to draw, as a dot: with journals on top, larger counts last. */}
         {getSmallPlaceDots()
           .map(d => ({ ...d, n: counts.get(d.code) ?? 0 }))
-          .filter(d => d.n > 0)
           .sort((a, b) => a.n - b.n)
           .map(d => {
             let name = d.code
             try { name = dn.of(d.code) ?? d.code } catch { /* keep the code */ }
             return (
-              <g key={d.code} className="map-dot">
-                <circle cx={d.x} cy={d.y} r={3.6} data-name={name} data-n={d.n} style={{ fill: binFill(d.n) }} />
+              <g key={d.code} className={d.n ? 'map-dot' : 'map-dot map-dot-empty'}>
+                <circle cx={d.x} cy={d.y} r={d.n ? 3.6 : 2.4} data-name={name} data-n={d.n} style={{ fill: d.n ? binFill(d.n) : 'var(--hover)' }} />
                 {/* A larger, invisible target, so the dot is easy to hover. */}
-                <circle cx={d.x} cy={d.y} r={9} data-name={name} data-n={d.n} fill="transparent" />
+                <circle cx={d.x} cy={d.y} r={d.n ? 9 : 6} data-name={name} data-n={d.n} fill="transparent" />
               </g>
             )
           })}
