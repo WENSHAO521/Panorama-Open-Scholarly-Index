@@ -15,6 +15,7 @@
 // for display and for the static JSON files under /data/.
 
 import type { Journal } from './types'
+import { countryDisplayName } from './country-codes'
 import { DATA_CUTOFF } from './release'
 
 // Pure model code only: safe to import from client components. Anything
@@ -143,15 +144,9 @@ export function freshnessOf(j: Journal, cutoff = DATA_CUTOFF): Freshness {
   return 'STALE'
 }
 
-const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })
-
+/** A country field (ISO code, MARC code or name) as an English country name; see country-codes.ts. */
 export function countryName(raw: string | null | undefined): string | null {
-  if (!raw) return null
-  const v = raw.trim()
-  if (/^[A-Z]{2}$/.test(v)) {
-    try { return regionNames.of(v) ?? v } catch { return v }
-  }
-  return v
+  return countryDisplayName(raw)
 }
 
 /** Compact record used by the browser and by /data/index/*.json. Short keys keep the files small. */
