@@ -15,7 +15,7 @@ import type { CitationStatsEntry } from '@/lib/citation-stats'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, collectionOf, verificationOf, freshnessOf, countryName } from '@/lib/records'
 import { BASIS, FIELD_BY_KEY } from '@/lib/schema'
 import { buildJournalEvaluation, type JournalEvaluation } from '@/lib/evaluation/journal'
-import { PCI_SCOPE, fmtScore } from '@/lib/evaluation/display'
+import { fmtScore } from '@/lib/evaluation/display'
 import { EvaluationCards } from './Evaluation'
 import { RankingHistory, type RankingHistoryRow } from './RankingHistory'
 import { PosiGrades } from './PosiGrades'
@@ -173,14 +173,17 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
       )}
 
       <section aria-label="Key figures" className="mb-10">
-        <dl className="stat-strip grid-cols-2 lg:grid-cols-4 gap-y-2">
-          <Figure
-            label="Citation impact (PCI)"
-            value={pci?.pci != null ? fmtScore(pci.pci) : null}
-            note={pci?.pci == null ? (k === 'core' ? undefined : PCI_SCOPE) : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
-            sample={pci ? sampleLabel(pci.pci_citable_items) : null}
-            href="/methodology/#pci"
-          />
+        <dl className={`stat-strip grid-cols-2 ${k === 'core' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-y-2`}>
+          {/* PCI is a Core Collection indicator: other journals do not show it at all. */}
+          {k === 'core' && (
+            <Figure
+              label="Citation impact (PCI)"
+              value={pci?.pci != null ? fmtScore(pci.pci) : null}
+              note={pci?.pci == null ? undefined : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
+              sample={pci ? sampleLabel(pci.pci_citable_items) : null}
+              href="/methodology/#pci"
+            />
+          )}
           <Figure
             label="Citation score (PCS)"
             value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
