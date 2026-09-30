@@ -111,7 +111,7 @@ export default function DatasetsPage() {
     { path: `${DATA_BASE}/publishers/{00-${(PUBLISHER_SHARD_COUNT - 1).toString(16)}}.json`, rows: publishers.length, bytes: null, what: `Publisher details with subjects, countries and every journal, in ${PUBLISHER_SHARD_COUNT} hashed shards` },
     { path: `${RANKING_DOWNLOADS}/citation-${year}.json`, alt: `${RANKING_DOWNLOADS}/citation-${year}.csv`, rows: all.length, bytes: null, what: `Citation Ranking ${year} (PNCI-1.0): the edition's versions, snapshot date and thresholds, and the file list per subject category; the CSV has the ${ranked.length.toLocaleString('en-US')} ranked journals` },
     { path: `${RANKING_DOWNLOADS}/citation-${year}-all.csv`, rows: all.length, bytes: null, what: 'Every journal of the Citation Ranking edition, all ranking statuses, as one CSV' },
-    { path: `${RANKING_DOWNLOADS}/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCI and PCS as descriptive fields' },
+    { path: `${RANKING_DOWNLOADS}/citation-${year}-{category}.json`, rows: all.length, bytes: null, what: 'PNCI, citation rank, percentile, Citation Quartile, POSI Zone and ranking status per journal, one file per PSC category, with PCS as a descriptive field and PCI, also descriptive, for Core Collection journals only' },
   ]
 
   const curated: DataFile[] = [
