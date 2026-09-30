@@ -1,3 +1,8 @@
+# 2026-09-30 the Global Benchmark is no longer a separate collection: its
+# journals are ordinary indexed journals, and their record pages dropped the
+# "bench-" code prefix.
+/journal/bench-* /journal/:splat 301
+
 # 2026-09-28 ranking downloads moved to the data layer (posi-data-delivery,
 # downloads/rankings/), keeping large files out of this site's deploy. The
 # retired PCS files lead to the datasets page; the one-day split CSV parts

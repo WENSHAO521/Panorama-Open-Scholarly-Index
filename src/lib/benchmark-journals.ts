@@ -27,7 +27,25 @@
 import type { Journal } from './types'
 import globalBenchmarkRaw from './global-benchmark.json'
 
-export const BENCHMARK_JOURNALS: Journal[] = globalBenchmarkRaw as Journal[]
+// Since 2026-09-30 these journals are ordinary indexed journals, not a
+// separate collection: each record is presented exactly like any other
+// curated record (collection_status "discovered", collection "curated").
+// The source file still carries the old benchmark identity, so it is
+// normalized here: the "bench-" code prefix (and "j-bench-" id prefix) is
+// dropped - public/_redirects sends the old /journal/bench-*/ URLs on - and
+// the is_external_benchmark flag is removed.
+function asIndexed(j: Journal): Journal {
+  const out: Journal = {
+    ...j,
+    id: j.id.replace(/^j-bench-/, 'j-'),
+    journal_code: j.journal_code.replace(/^bench-/, ''),
+    collection_status: j.collection_status ?? 'discovered',
+  }
+  delete out.is_external_benchmark
+  return out
+}
+
+export const BENCHMARK_JOURNALS: Journal[] = (globalBenchmarkRaw as Journal[]).map(asIndexed)
 
 // Kept for backward compatibility with existing call sites - every record
 // in this file is already curated-only (source_note is never set here),

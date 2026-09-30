@@ -36,8 +36,7 @@ export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 //             certified.
 //
 // The internal collection keys (core / curated / discovered) only say where
-// a record came from. Former Global Benchmark records are ordinary curated
-// records: collection "curated", tier Indexed. A journal with no curated record at all is still indexed and is
+// a record came from. A journal with no curated record at all is still indexed and is
 // served as journal profiles at /journal/.
 export type Tier = 'core' | 'indexed'
 
@@ -117,19 +116,20 @@ export const FRESHNESS: Record<Freshness, { label: string; rule: string; color: 
 
 export function collectionOf(j: Journal): Collection {
   if (j.id.startsWith('j-disc-')) return 'discovered'
-  // Former Global Benchmark records carry no collection_status: without this
-  // they would read as Core.
-  if (j.is_external_benchmark) return 'curated'
   if (j.collection_status && j.collection_status !== 'core') return 'curated'
   return 'core'
 }
 
 export function verificationOf(j: Journal): Verification {
+  // One rule for every curated record: verified when its evidence was
+  // reviewed under PQF, partially verified when only its identity was
+  // resolved (ISSN to an OpenAlex source), otherwise needs check.
   const c = collectionOf(j)
-  // Former Global Benchmark records were resolved against OpenAlex, not
-  // reviewed under PQF, so they are verified only as far as that went.
-  if (j.is_external_benchmark) return j.openalex_source_id && (j.issn_online || j.issn_print) ? 'PARTIALLY_VERIFIED' : 'NEEDS_CHECK'
-  if (c === 'core' || c === 'curated') return 'VERIFIED'
+  if (c === 'core') return 'VERIFIED'
+  if (c === 'curated') {
+    if (j.pqf || j.ojqf) return 'VERIFIED'
+    return j.openalex_source_id && (j.issn_online || j.issn_print) ? 'PARTIALLY_VERIFIED' : 'NEEDS_CHECK'
+  }
   return 'NEEDS_CHECK'
 }
 
