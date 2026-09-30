@@ -51,7 +51,7 @@ export const JOURNAL_FIELDS: FieldDef[] = [
   { key: 'psc_confidence', label: 'PSC confidence', type: 'enum', basis: 'computed', source: 'posi-engine', description: 'high · low. Low means no single topic dominated - common for multidisciplinary journals.' },
   { key: 'pqf', label: 'PQF assessment', type: 'object', basis: 'computed', source: 'posi-engine (PQF v1.0)', description: 'Editorial-selection evidence score, six sub-factors. Admission gate for the Core Collection only.' },
   { key: 'early_stage_rating', label: 'AJR lifecycle rating', type: 'object', basis: 'computed', source: 'posi-engine (AJR-E / AJR-M)', description: 'Lifecycle stage and, where rateable, the automated journal rating. Null fields are never filled with estimates.' },
-  { key: 'collection', label: 'Collection', type: 'enum', basis: 'curated', source: 'posi-data', description: 'core · curated · benchmark · discovered. Only core is certified; curated, benchmark and discovered are all indexed journals, and benchmark is kept only as a data key for former Global Benchmark records.' },
+  { key: 'collection', label: 'Collection', type: 'enum', basis: 'curated', source: 'posi-data', description: 'core · curated · discovered. Only core is certified; curated and discovered are indexed journals. curated is a POSI curated record outside the Core Collection.' },
   { key: 'verification', label: 'Verification', type: 'enum', basis: 'curated', source: 'Derived (see Provenance)', description: 'VERIFIED · PARTIALLY_VERIFIED · NEEDS_CHECK · REJECTED.' },
   { key: 'updated_at', label: 'Record updated', type: 'datetime', basis: 'curated', source: 'posi-data', description: 'Last time any field of the record changed.' },
 ]

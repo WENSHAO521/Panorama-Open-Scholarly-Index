@@ -96,8 +96,8 @@ export default function DatasetsPage() {
   const idx = getAllRecords().map(toIndexRecord)
   const group = (ks: Collection[]) => idx.filter(r => ks.includes(r.k))
   const core = group(['core'])
-  const bench = group(['benchmark'])
-  const disc = group(['discovered', 'curated'])
+  const cur = group(['curated'])
+  const disc = group(['discovered'])
 
   const { records: directory, source } = getDirectory()
   const categories = getDirectoryCategories().filter(c => c.count > 0)
@@ -116,9 +116,9 @@ export default function DatasetsPage() {
 
   const curated: DataFile[] = [
     { path: dataUrl('index/core.json'), alt: dataUrl('index/core.csv'), rows: core.length, bytes: JSON.stringify(core).length, what: 'Core Collection records, compact index' },
-    { path: dataUrl('index/benchmark.json'), alt: dataUrl('index/benchmark.csv'), rows: bench.length, bytes: JSON.stringify(bench).length, what: 'Global Benchmark curated seed, compact index' },
-    { path: dataUrl('index/discovered.json'), alt: dataUrl('index/discovered.csv'), rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered and other curated (not certified) records, compact index' },
-    { path: dataUrl('journal/{code}.json'), rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and Benchmark journal' },
+    { path: dataUrl('index/curated.json'), alt: dataUrl('index/curated.csv'), rows: cur.length, bytes: JSON.stringify(cur).length, what: 'Other curated records (indexed, not certified), compact index' },
+    { path: dataUrl('index/discovered.json'), alt: dataUrl('index/discovered.csv'), rows: disc.length, bytes: JSON.stringify(disc).length, what: 'Discovered records (indexed, not certified), compact index' },
+    { path: dataUrl('journal/{code}.json'), rows: getStaticRecordJournals().length, bytes: null, what: 'Full record with status and indicators, one file per Core and curated journal' },
     { path: dataUrl('records/discovered-{00-63}.json'), rows: DISCOVERED_JOURNALS.length, bytes: JSON.stringify(DISCOVERED_JOURNALS).length, what: 'Full Discovered records, 64 shards by a hash of the record key' },
     { path: dataUrl('meta/psc.json'), rows: psc.categories.length, bytes: JSON.stringify(psc).length, what: 'PSC subject taxonomy v' + psc.version },
     { path: dataUrl('meta/schema.json'), rows: null, bytes: null, what: 'Field dictionary and index key map (see Record schema)' },

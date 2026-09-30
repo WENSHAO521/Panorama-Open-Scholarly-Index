@@ -96,10 +96,10 @@ export function verifyPath(code: string, issued: string, snapshot: string, dois:
 }
 
 let curated: Promise<IndexRecord[]> | null = null
-/** Core and Benchmark curated records (small files); used to name the journal's POSI tier. */
+/** Core and other curated records (small files); used to name the journal's POSI tier. */
 function loadCurated(): Promise<IndexRecord[]> {
   if (!curated) {
-    curated = Promise.all(['core', 'benchmark'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
+    curated = Promise.all(['core', 'curated'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
       .then((g: IndexRecord[][]) => g.flat())
       .catch(() => [])
   }

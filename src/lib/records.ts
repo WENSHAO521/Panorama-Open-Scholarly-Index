@@ -1,7 +1,7 @@
 // The open-database record model.
 //
-// Every journal POSI knows about - Core Collection, curated Global
-// Benchmark seed, or auto-discovered - is presented as one uniform record
+// Every journal POSI knows about - Core Collection, other curated record,
+// or auto-discovered - is presented as one uniform record
 // type with an explicit collection, a provenance verification state, and a
 // freshness state. The states follow the provenance discipline of
 // scholarly-corpus-builder (references/provenance-schema.md and
@@ -21,7 +21,7 @@ import { DATA_CUTOFF } from './release'
 // Pure model code only: safe to import from client components. Anything
 // that touches the vendored datasets lives in records-data.ts (server only).
 
-export type Collection = 'core' | 'curated' | 'benchmark' | 'discovered'
+export type Collection = 'core' | 'curated' | 'discovered'
 
 export type Verification = 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'NEEDS_CHECK' | 'REJECTED'
 
@@ -35,9 +35,9 @@ export type Freshness = 'CURRENT' | 'AGING' | 'STALE' | 'UNKNOWN'
 //             editorial evaluation. Only Core journals carry the Core mark and are
 //             certified.
 //
-// The internal collection keys (core / curated / benchmark / discovered)
-// stay as they are in the data files; they only say where a curated record
-// came from. A journal with no curated record at all is still indexed and is
+// The internal collection keys (core / curated / discovered) only say where
+// a record came from. Former Global Benchmark records are ordinary curated
+// records: collection "curated", tier Indexed. A journal with no curated record at all is still indexed and is
 // served as journal profiles at /journal/.
 export type Tier = 'core' | 'indexed'
 
@@ -66,13 +66,6 @@ export const COLLECTIONS: Record<Collection, { label: string; short: string; des
     description: TIERS.core.description,
   },
   curated: {
-    label: 'Indexed, curated record',
-    short: 'Indexed',
-    description: 'Indexed. POSI holds a curated record with a permanent POSI-J id. Not certified: not in the Core Collection.',
-  },
-  // Former Global Benchmark records are ordinary indexed journals: shown
-  // exactly like any other curated record, with no benchmark label.
-  benchmark: {
     label: 'Indexed, curated record',
     short: 'Indexed',
     description: 'Indexed. POSI holds a curated record with a permanent POSI-J id. Not certified: not in the Core Collection.',
@@ -124,15 +117,19 @@ export const FRESHNESS: Record<Freshness, { label: string; rule: string; color: 
 
 export function collectionOf(j: Journal): Collection {
   if (j.id.startsWith('j-disc-')) return 'discovered'
-  if (j.is_external_benchmark) return 'benchmark'
+  // Former Global Benchmark records carry no collection_status: without this
+  // they would read as Core.
+  if (j.is_external_benchmark) return 'curated'
   if (j.collection_status && j.collection_status !== 'core') return 'curated'
   return 'core'
 }
 
 export function verificationOf(j: Journal): Verification {
   const c = collectionOf(j)
+  // Former Global Benchmark records were resolved against OpenAlex, not
+  // reviewed under PQF, so they are verified only as far as that went.
+  if (j.is_external_benchmark) return j.openalex_source_id && (j.issn_online || j.issn_print) ? 'PARTIALLY_VERIFIED' : 'NEEDS_CHECK'
   if (c === 'core' || c === 'curated') return 'VERIFIED'
-  if (c === 'benchmark') return j.openalex_source_id && (j.issn_online || j.issn_print) ? 'PARTIALLY_VERIFIED' : 'NEEDS_CHECK'
   return 'NEEDS_CHECK'
 }
 

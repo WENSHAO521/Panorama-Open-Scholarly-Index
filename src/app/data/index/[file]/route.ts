@@ -1,12 +1,15 @@
-// Static index files: /data/index/{core,benchmark,discovered}.{json,csv}
+// Static index files: /data/index/{core,curated,discovered}.{json,csv}
 // Generated at build time from the vendored corpus — there is no server.
+// benchmark.{json,csv} is a legacy copy of curated for pages deployed before
+// the Global Benchmark label was retired; nothing links to it.
 import { toIndexRecord, type IndexRecord, type Collection } from '@/lib/records'
 import { getAllRecords } from '@/lib/records-data'
 
 const GROUPS: Record<string, Collection[]> = {
   core: ['core'],
-  benchmark: ['benchmark'],
-  discovered: ['discovered', 'curated'],
+  curated: ['curated'],
+  discovered: ['discovered'],
+  benchmark: ['curated'],
 }
 
 export const dynamic = 'force-static'
