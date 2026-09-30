@@ -294,9 +294,11 @@ if (!RANKINGS_ONLY) {
     const citation = JSON.parse(readFileSync(join(GEN, 'citation-ranking.json'), 'utf-8'))
     const ranks = new Map(citation.records.map(r => [r.journal_id, r]))
     const pcsValues = new Map(JSON.parse(readFileSync(join(GEN, 'pcs-q.json'), 'utf-8')).records.map(r => [r.journal_id, r]))
-    // PCI for the curated journals (src/lib/pci.json, from posi-data): the
-    // Citation Ranking edition carries PCI only when its run was given it.
+    // PCI (src/lib/pci.json, from posi-data; the Citation Ranking edition
+    // carries PCI only when its run was given it). PCI is a Core Collection
+    // indicator: no other journal's profile reports one.
     const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
+    const coreIds = new Set([...CURATED.values()].filter(j => !j.collection_status || j.collection_status === 'core').map(j => j.posi_id))
     const ajr = ajrRatings()
     // Ranking history from the earlier editions: [year, category, rank,
     // category size, quartile, zone, zone status, ranking status].
@@ -342,7 +344,7 @@ if (!RANKINGS_ONLY) {
           cat: rk?.ranking_category_id ?? undefined, r: rk?.citation_rank ?? undefined, rt: rk?.citation_rank_total ?? undefined,
           p: rk?.citation_percentile ?? undefined, q: rk?.citation_quartile ?? undefined, z: rk?.posi_zone ?? undefined,
           zs: rk?.zone_status ?? undefined, st: rk?.citation_ranking_status ?? undefined, why: rk?.ranking_status_reason ?? undefined,
-          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: rk?.pci ?? pciValues.get(r.posi_id) ?? undefined, ajr: ajr.get(r.posi_id),
+          pcs: pv?.pcs ?? rk?.pcs ?? undefined, pci: coreIds.has(r.posi_id) ? rk?.pci ?? pciValues.get(r.posi_id) ?? undefined : undefined, ajr: ajr.get(r.posi_id),
           pqf: CURATED.get(r.posi_id)?.pqf?.total ?? undefined,
         } : undefined,
         hist: history.get(r.posi_id)?.sort((a, b) => b[0] - a[0]),

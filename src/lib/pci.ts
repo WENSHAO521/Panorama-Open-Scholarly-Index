@@ -38,8 +38,10 @@ const BY_JOURNAL_ID: Record<string, PciEntry> = Object.fromEntries(
   PCI_RECORDS.map(r => [r.journal_id, r])
 )
 
-/** All synced PCI records - currently the curated Global Benchmark seed
- * only, including pci: null entries. */
+/** All synced PCI records, including pci: null entries. The file also
+ * covers the Global Benchmark seed, but PCI is a Core Collection indicator:
+ * pages report it for Core Collection journals only (see
+ * evaluation/journal.ts, rankings.ts and scripts/sync-live-data.mjs). */
 export function getAllPciEntries(): PciEntry[] {
   return PCI_RECORDS
 }

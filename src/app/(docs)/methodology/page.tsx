@@ -121,7 +121,8 @@ export default function MethodologyPage() {
           <p>
             The source citation performance indicator: citations to a journal&rsquo;s citable items from a two-year
             publication window, per item, from OpenAlex (<code>PCI-1.0</code>). PCI is not normalized by field and is not
-            compared across fields.
+            compared across fields. PCI is a Core Collection indicator: it is reported for Core Collection journals only,
+            and indexed journals have none.
           </p>
           <h3 id="pnci">PNCI — POSI Normalized Citation Indicator</h3>
           <p>The primary ranking metric. Each eligible item&rsquo;s citations are divided by the expected citations of items like it:</p>

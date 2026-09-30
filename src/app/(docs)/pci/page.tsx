@@ -4,7 +4,7 @@ import { PCS_DISCLAIMER, RANKING_BASIS } from '@/lib/evaluation/rules'
 
 export const metadata = {
   title: 'Citation indicators: PCI, PNCI and PCS',
-  description: 'POSI Citation Analytics: PCI (source citation impact), PNCI (normalized by field, year and document type; the metric of the official Citation Rankings) and PCS (a supplementary Crossref indicator).',
+  description: 'POSI Citation Analytics: PCI (source citation impact, Core Collection journals only), PNCI (normalized by field, year and document type; the metric of the official Citation Rankings) and PCS (a supplementary Crossref indicator).',
   alternates: { canonical: '/pci/' },
 }
 
@@ -23,6 +23,10 @@ export default function PciPage() {
           Citations to a journal&rsquo;s citable items from a two-year publication window, per item, from OpenAlex
           (<code>PCI-1.0</code>; a five-year variant, PCI-5, is computed alongside). PCI is the source citation performance
           indicator. It is not normalized by field, so it is not compared across fields, and it does not decide a rank.
+        </p>
+        <p>
+          PCI is a Core Collection indicator: it is reported for Core Collection journals only. Indexed journals have no
+          PCI; their citation performance is shown by PNCI and PCS.
         </p>
         <h2 id="pnci">PNCI — POSI Normalized Citation Indicator</h2>
         <p className="formula">PNCI = (1 / n) × Σ C<sub>i</sub> / E(field<sub>i</sub>, year<sub>i</sub>, type<sub>i</sub>)</p>

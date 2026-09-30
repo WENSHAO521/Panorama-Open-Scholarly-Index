@@ -9,7 +9,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import {
-  getRankings, categoriesFrom, journalMeta, categoryName,
+  getRankings, categoriesFrom, journalMeta, coreJournalIds, categoryName,
   RANKING_SNAPSHOT, RANKING_VERSION, PNCI_VERSION, EVALUATION_EDITION_VERSION, RANKING_THRESHOLDS,
   type Category, type RankedJournal,
 } from './rankings'
@@ -103,12 +103,13 @@ export function getEdition(year: number): Edition | null {
     const ed = readJson<ArchivedEdition>(join(DIR, `${year}.json`))
     if (ed) {
       const meta = journalMeta()
+      const coreIds = coreJournalIds()
       const all: RankedJournal[] = ed.records.map(r => {
         const m = meta.get(r.journal_id)
         return {
           id: r.journal_id, code: m?.code ?? null, title: m?.title ?? r.title ?? r.journal_id, publisher: m?.publisher ?? r.publisher,
           issn: m?.issn.length ? m.issn : r.issn, cat: r.ranking_category_id, core: false,
-          pnci: r.pnci, pcs: r.pcs, pci: r.pci, items: r.eligible_citable_items, coverage: r.citation_coverage,
+          pnci: r.pnci, pcs: r.pcs, pci: coreIds.has(r.journal_id) ? r.pci : null, items: r.eligible_citable_items, coverage: r.citation_coverage,
           rank: r.citation_rank, n: r.citation_rank_total, pct: r.citation_percentile, q: r.citation_quartile,
           zone: r.posi_zone, zoneStatus: r.zone_status, status: r.citation_ranking_status, reason: r.ranking_status_reason,
           ajr: null, lifecycle: null,

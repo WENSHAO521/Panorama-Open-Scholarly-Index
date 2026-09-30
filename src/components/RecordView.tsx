@@ -112,7 +112,9 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
   const f = freshnessOf(j)
   const pqf = j.pqf ?? j.ojqf ?? null
   const autoPqf = !pqf ? j.auto_pqf ?? null : null
-  const { pcs, pci, citationStats, pscName } = metrics
+  const { pcs, citationStats, pscName } = metrics
+  // PCI is a Core Collection indicator: no other journal reports one.
+  const pci = k === 'core' ? metrics.pci : null
   const evaluation = metrics.evaluation ?? buildJournalEvaluation({ journal: j, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? null })
   const oa = citationStats?.stats
   const issn = j.issn_online ?? j.issn_print
