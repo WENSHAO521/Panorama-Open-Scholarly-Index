@@ -5,6 +5,11 @@ on:
     - cron: '0 2 * * *'   # 每天 UTC 02:00（北京时间 10:00）
   workflow_dispatch:        # 允许手动触发
 
+# 和 DOAJ Journal Sync 写同一个文件，排队执行，不并发
+concurrency:
+  group: discovered-journals
+  cancel-in-progress: false
+
 permissions:
   contents: write           # 写入权限（commit + push）
 

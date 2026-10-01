@@ -1,0 +1,63 @@
+name: DOAJ Journal Sync
+
+# 每半个月从 DOAJ 抓取一次完整期刊目录，更新 src/lib/discovered-journals.json：
+# 新收录的期刊加进来，已有记录刷新 DOAJ 字段（许可、语言、学科、主页、评审方式），
+# 被 DOAJ 移除的期刊标为 not_listed。细节和安全阈值见 scripts/sync-doaj.mjs 顶部注释。
+# 需要 Actions secret DOAJ_API_KEY（DOAJ 的公开数据包要 API key 才能下载）。
+
+on:
+  schedule:
+    - cron: '17 5 1,16 * *'   # 每月 1 日和 16 日 UTC 05:17（北京时间 13:17），避开 02:00 的每日同步
+  workflow_dispatch:            # 允许手动触发
+
+# 和 Daily Journal Sync 写同一个文件，排队执行，不并发
+concurrency:
+  group: discovered-journals
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 下载 DOAJ 全量期刊数据包并合并；数据包不完整（少于 15,000 本）时直接失败、不写入
+      - name: Sync with the DOAJ journal list
+        run: node scripts/sync-doaj.mjs --write
+        env:
+          DOAJ_API_KEY: ${{ secrets.DOAJ_API_KEY }}
+
+      - name: Normalize country codes
+        run: node scripts/normalize-countries.mjs --write
+
+      - name: Recalculate metadata quality scores
+        run: node scripts/calc-discovered-mqs.mjs
+
+      # 新期刊的 auto-PQF 站点验证由每日同步接着做（先评从未评过的）
+
+      # 有变化才 commit；push 会触发 Cloudflare Pages 自动部署
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "posi-sync-bot"
+          git config user.email "posi-sync-bot@users.noreply.github.com"
+          git add src/lib/discovered-journals.json
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+          else
+            JOURNAL_COUNT=$(node -e "console.log(require('./src/lib/discovered-journals.json').length)")
+            git commit -m "chore(data): DOAJ sync $(date -u +%Y-%m-%d) — ${JOURNAL_COUNT} records"
+            # Another data job may have pushed meanwhile; they touch different files.
+            git pull --rebase --autostash --quiet origin master
+            git push
+          fi
