@@ -6,6 +6,8 @@
  * (KR, IO, TU, CAU, XXK ...) as English country names. See lib/country-codes.mjs
  * for why: the site reads two-letter values as ISO, which misplaces MARC codes.
  * Codes that cannot be placed with confidence are left as they are and listed.
+ * Names in another common form ("Iran, Islamic Republic of", "Türkiye") are
+ * rewritten to the name the data uses ("Iran", "Turkey").
  *
  * Usage:
  *   node scripts/normalize-countries.mjs            # dry run
@@ -13,7 +15,7 @@
  */
 
 import { loadDiscovered, saveDiscovered, DISCOVERED_FILE } from './lib/discovered-store.mjs'
-import { normalizeCountryCode } from './lib/country-codes.mjs'
+import { normalizeCountryCode, canonicalCountryName } from './lib/country-codes.mjs'
 
 const WRITE = process.argv.includes('--write')
 
@@ -26,7 +28,8 @@ for (const r of records) {
   let changed = false
   for (const field of ['country', 'registration_country']) {
     const before = r[field]
-    const after = normalizeCountryCode(before)
+    const code = normalizeCountryCode(before)
+    const after = code == null ? null : canonicalCountryName(code)
     if (after === before) continue
     if (after == null) {
       unresolved.set(before, (unresolved.get(before) ?? 0) + 1)
