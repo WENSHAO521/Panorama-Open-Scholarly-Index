@@ -1,9 +1,9 @@
 name: DOAJ Journal Sync
 
-# 每半个月从 DOAJ 抓取一次完整期刊目录，更新 src/lib/discovered-journals.json：
+# 每半个月从 DOAJ 抓取一次完整期刊目录（期刊 CSV），更新 src/lib/discovered-journals.json：
 # 新收录的期刊加进来，已有记录刷新 DOAJ 字段（许可、语言、学科、主页、评审方式），
 # 被 DOAJ 移除的期刊标为 not_listed。细节和安全阈值见 scripts/sync-doaj.mjs 顶部注释。
-# 需要 Actions secret DOAJ_API_KEY（DOAJ 的公开数据包要 API key 才能下载）。
+# 有 Actions secret DOAJ_API_KEY 时用它取最新的 CSV（premium 一小时内更新）；key 不可用时退回公开版（30 天内更新）。
 
 on:
   schedule:
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '20'
 
-      # 下载 DOAJ 全量期刊数据包并合并；数据包不完整（少于 15,000 本）时直接失败、不写入
+      # 下载 DOAJ 期刊 CSV 并合并；CSV 不完整（少于 15,000 本）时直接失败、不写入
       - name: Sync with the DOAJ journal list
         run: node scripts/sync-doaj.mjs --write
         env:
