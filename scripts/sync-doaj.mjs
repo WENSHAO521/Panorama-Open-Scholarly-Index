@@ -41,7 +41,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { loadDiscovered, saveDiscovered, knownIssns } from './lib/discovered-store.mjs'
 import { buildFromDoaj, buildRecord, languageName, licenseLabel } from './lib/doaj-record.mjs'
-import { isoToCountry } from './lib/country-codes.mjs'
+import { isoToCountry, canonicalCountryName } from './lib/country-codes.mjs'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const CORE_FILE = join(__dir, '../src/lib/core-collection.json')
@@ -175,7 +175,7 @@ function readCsv(text) {
         pissn: get('pissn') || undefined,
         eissn: get('eissn') || undefined,
         ref: { journal: get('url') || undefined },
-        publisher: { name: get('publisher') || undefined, country: get('country') || undefined },
+        publisher: { name: get('publisher') || undefined, country: canonicalCountryName(get('country')) || undefined },
         license: list(get('license')).slice(0, 1).map(type => ({ type })),
         language: list(get('language')),
         subject: subjects.map(term => ({ term })),

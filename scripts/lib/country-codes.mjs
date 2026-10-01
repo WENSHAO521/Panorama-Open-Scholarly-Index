@@ -146,3 +146,44 @@ export function isoToCountry(code) {
   }
   return code
 }
+
+// ISO 3166 short names in the official long form, as the DOAJ journal CSV
+// gives them ("Iran, Islamic Republic of"), mapped to the code.
+const ISO_LONG_NAMES = {
+  'bolivia, plurinational state of': 'BO', 'brunei darussalam': 'BN', 'cabo verde': 'CV',
+  'congo, the democratic republic of the': 'CD', 'congo, democratic republic of the': 'CD',
+  "côte d'ivoire": 'CI', "cote d'ivoire": 'CI', 'czechia': 'CZ', 'holy see (vatican city state)': 'VA',
+  'iran, islamic republic of': 'IR', "korea, democratic people's republic of": 'KP', 'korea, republic of': 'KR',
+  "lao people's democratic republic": 'LA', 'micronesia, federated states of': 'FM', 'moldova, republic of': 'MD',
+  'palestine, state of': 'PS', 'russian federation': 'RU', 'syrian arab republic': 'SY',
+  'taiwan, province of china': 'TW', 'tanzania, united republic of': 'TZ', 'türkiye': 'TR', 'turkiye': 'TR',
+  'venezuela, bolivarian republic of': 'VE', 'viet nam': 'VN', 'virgin islands, british': 'VG',
+  'virgin islands, u.s.': 'VI', 'macedonia, the former yugoslav republic of': 'MK', 'swaziland': 'SZ',
+}
+
+let nameToIso = null
+/**
+ * A country name in any common English form -> the name the data uses
+ * ("Iran, Islamic Republic of", "Türkiye" -> "Iran", "Turkey"). Codes and
+ * names it does not recognise are returned unchanged.
+ */
+export function canonicalCountryName(name) {
+  if (typeof name !== 'string' || !name.trim()) return name
+  if (!nameToIso) {
+    nameToIso = new Map(Object.entries(ISO_LONG_NAMES))
+    const dn = new Intl.DisplayNames(['en'], { type: 'region' })
+    const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    for (const a of L) for (const b of L) {
+      const code = a + b
+      const stored = isoToCountry(code)
+      if (stored && stored !== code) nameToIso.set(stored.toLowerCase(), code)
+      try {
+        const n = dn.of(code)
+        if (n && n !== code && !nameToIso.has(n.toLowerCase())) nameToIso.set(n.toLowerCase(), code)
+      } catch { /* not a region */ }
+    }
+  }
+  const key = name.trim().replace(/’/g, "'").replace(/\s+/g, ' ').toLowerCase()
+  const code = nameToIso.get(key) ?? nameToIso.get(key.replace(/'/g, '’'))
+  return code ? isoToCountry(code) : name
+}
