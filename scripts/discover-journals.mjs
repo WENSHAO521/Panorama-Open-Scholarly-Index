@@ -28,8 +28,9 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
-import { loadDiscovered, saveDiscovered, knownIssns as knownIssnsOf, autoPqf, DISCOVERED_FILE } from './lib/discovered-store.mjs'
+import { loadDiscovered, saveDiscovered, knownIssns as knownIssnsOf, DISCOVERED_FILE } from './lib/discovered-store.mjs'
 import { isoToCountry } from './lib/country-codes.mjs'
+import { slugify, buildFromDoaj, buildRecord } from './lib/doaj-record.mjs'
 
 const UA = 'POSI/0.1 (mailto:posi@panoramagroup.org)'
 
@@ -87,9 +88,6 @@ function extractAll(xml, tag) {
   return [...xml.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi'))].map(m => m[1].trim())
 }
 
-function slugify(str) {
-  return (str ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24)
-}
 
 function parseIssns(issnArr) {
   const print = issnArr?.find(i => i.type === 'print')?.value ?? null
@@ -98,179 +96,6 @@ function parseIssns(issnArr) {
 }
 
 
-// ── Frequency from DOAJ publication_time_weeks ───────────────────────────────
-
-function weeksToFrequency(weeks) {
-  if (!weeks) return ''
-  if (weeks <= 1)  return 'Weekly'
-  if (weeks <= 2)  return 'Biweekly'
-  if (weeks <= 3)  return 'Three times a month'
-  if (weeks <= 5)  return 'Monthly'
-  if (weeks <= 7)  return 'Six times a year'
-  if (weeks <= 9)  return 'Bimonthly'
-  if (weeks <= 14) return 'Quarterly'
-  if (weeks <= 20) return 'Three times a year'
-  if (weeks <= 30) return 'Semiannual'
-  return 'Annual'
-}
-
-// ── Inline PQF scoring (mirrors auto-pqf.mjs logic) ────────────────────────
-
-function pqfGrade(total) {
-  if (total >= 90) return 'A+'
-  if (total >= 80) return 'A'
-  if (total >= 70) return 'B+'
-  if (total >= 60) return 'B'
-  if (total >= 50) return 'C'
-  if (total >= 40) return 'D'
-  return 'E'
-}
-
-function scoreDoaj(bib, admin) {
-  const lic = (bib.license?.[0]?.type ?? '').toLowerCase()
-  const has_seal = !!(admin?.ticked)
-  const has_apc = !!(bib.apc?.has_apc)
-  const apc_max = bib.apc?.max ?? []
-  const reviews = bib.editorial?.review_processes ?? bib.editorial?.review_process ?? []
-  const reviewArr = Array.isArray(reviews) ? reviews : [reviews]
-  const peer = reviewArr.some(r => String(r).toLowerCase().includes('peer'))
-
-  // JTF /25
-  let jtf = 8
-  if (lic.includes('cc by 4') || lic === 'cc by') jtf += 5
-  else if (lic.includes('cc by-sa') || lic.includes('cc by-nc 4')) jtf += 3
-  else if (lic.includes('cc by-nd') || lic.includes('cc by-nc-nd')) jtf += 2
-  if (has_apc && apc_max.length > 0) jtf += 4
-  else if (!has_apc) jtf += 5
-  if (has_seal) jtf += 3
-  jtf = Math.min(jtf, 25)
-
-  // MQF /25
-  let mqf = 8
-  if (bib.pissn && bib.eissn) mqf += 3
-  else if (bib.pissn || bib.eissn) mqf += 1
-  if (reviewArr.length > 0) mqf += 3
-  if (has_seal) mqf += 4
-  mqf = Math.min(mqf, 25)
-
-  // EGF /20
-  let egf = 6
-  if (peer) egf += 5
-  if (bib.editorial?.board_url) egf += 4
-  if (has_seal) egf += 4
-  egf = Math.min(egf, 20)
-
-  // TDF /15
-  let tdf = 5
-  tdf = Math.min(tdf, 15)  // no Crossref/OpenAlex data at this stage
-
-  // CVF /10
-  let cvf = 3
-  if (has_seal) cvf += 2
-  cvf = Math.min(cvf, 10)
-
-  // RIF /5
-  let rif = 2
-  if (peer) rif += 1
-  if (has_seal) rif += 2
-  rif = Math.min(rif, 5)
-
-  const total = jtf + mqf + egf + tdf + cvf + rif
-  return { jtf, mqf, egf, tdf, cvf, rif, total, grade: pqfGrade(total) }
-}
-
-// ── Build journal object from DOAJ bibjson ───────────────────────────────────
-
-function buildFromDoaj(bib, item) {
-  const issn_print  = bib.pissn ?? null
-  const issn_online = bib.eissn ?? null
-  const licenseLabel = bib.license?.[0]?.type ?? 'Open Access'
-  // v4: review_processes (plural); v3 compat: review_process
-  const reviewArr = bib.editorial?.review_processes ?? bib.editorial?.review_process ?? []
-  const peerType  = (Array.isArray(reviewArr) ? reviewArr[0] : reviewArr) ?? 'Peer review'
-  const langArr   = bib.language ?? []
-  const lang      = (Array.isArray(langArr) ? langArr[0] : langArr) ?? 'English'
-  const countryCode    = bib.publisher?.country ?? null
-  const countryName    = isoToCountry(countryCode)
-  const pubTimeWeeks   = bib.publication_time_weeks ?? null
-  const admin          = item.admin ?? {}
-  const subjects       = (bib.subject ?? [])
-    .map(s => s.term)
-    .filter(Boolean)
-    .filter((v, i, a) => a.indexOf(v) === i)  // deduplicate
-
-  // Use ISSN as code for uniqueness at scale; fall back to slugified title
-  const primaryIssn = issn_online ?? issn_print ?? null
-  const code = primaryIssn ? `issn-${primaryIssn}` : slugify(bib.title ?? '').slice(0, 24)
-
-  // Compute auto_pqf inline — avoids a separate scoring pass
-  const scores = scoreDoaj(bib, admin)
-
-  return {
-    code,
-    title: bib.title ?? 'Unknown',
-    short_title: (bib.title ?? 'Unknown').split(':')[0].trim(),
-    issn_print,
-    issn_online,
-    publisher: bib.publisher?.name ?? '',
-    country: countryName,
-    registration_country: countryName || null,
-    language: lang,
-    frequency: weeksToFrequency(pubTimeWeeks),
-    peer_review_type: peerType,
-    license: licenseLabel,
-    website_url: bib.ref?.journal ?? '',
-    oai_base_url: null,
-    doaj_status: 'listed',   // DOAJ search only returns listed journals
-    subjects: subjects.length ? subjects : null,
-    article_count: 0,
-    _scores: scores,         // used by buildRecord; not stored as-is
-  }
-}
-
-// ── Output formatter ────────────────────────────────────────────────────────
-
-const TODAY = new Date().toISOString().slice(0, 10)
-
-/**
- * Build a Discovered journal record (the shape stored in
- * src/lib/discovered-journals.json). All required Journal fields get safe
- * non-null defaults.
- */
-function buildRecord(j) {
-  const code = j.code ?? slugify(j.title)
-  const record = {
-    id: `j-disc-${code}`,
-    journal_code: code,
-    title: j.title ?? '',
-    short_title: j.short_title ?? j.title?.split(':')[0]?.trim() ?? '',
-    issn_print: j.issn_print ?? null,
-    issn_online: j.issn_online ?? null,
-    publisher: j.publisher ?? '',
-    country: j.country ?? '',
-    language: j.language ?? 'English',
-    frequency: j.frequency ?? '',
-    open_access: true,
-    license: j.license ?? 'Open Access',
-    peer_review_type: j.peer_review_type ?? 'Peer review',
-    website_url: j.website_url ?? '',
-    cover_image_url: null,
-    oai_base_url: j.oai_base_url ?? null,
-    registration_country: j.registration_country ?? null,
-    doaj_status: j.doaj_status ?? 'not_listed',
-    openalex_source_id: null,
-    metadata_quality_score: 30,
-    transparency_score: 30,
-    indexing_readiness: 'D',
-    pqf: null,
-  }
-  if (j._scores) record.auto_pqf = autoPqf(j._scores)
-  record.subjects = j.subjects?.length ? j.subjects : null
-  record.article_count = j.article_count ?? 0
-  record.created_at = `${TODAY}T00:00:00Z`
-  record.updated_at = `${TODAY}T00:00:00Z`
-  return record
-}
 
 // ── MODE 1: OJS sitewide OAI-PMH ───────────────────────────────────────────
 
