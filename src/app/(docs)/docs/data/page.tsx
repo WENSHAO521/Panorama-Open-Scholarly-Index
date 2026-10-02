@@ -10,6 +10,7 @@ export const metadata = {
 const SOURCES = [
   ['Crossref', 'Journal list, ISSNs, DOI counts, article metadata, item-level citation counts for PNCI and PCS, certificate checks', 'Daily'],
   ['OpenAlex', 'Journal profiles, topics, output and citations per year, h-index, open access and DOAJ status, publication search', 'Daily; search is live'],
+  ['Journal websites', 'AJR evidence: editorial governance, peer review, research integrity and transparency policies', 'Monthly, Core Collection'],
   ['POSI editorial', 'Core Collection records, PQF evaluations, verified classifications, certification decisions', 'On each decision'],
 ]
 

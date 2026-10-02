@@ -79,9 +79,9 @@ export default function CertificatesDoc() {
         <p>
           The <strong>certificate number</strong> (<code>PZ-XXXX-XXXX-XXXX</code>) is the first 12 hexadecimal digits
           of SHA-256 over <code>POSI-ZONE-CERT-2|zone rule|date of issue|POSI ID|edition year|category|zone</code>.
-          Verification recomputes it from the journal&apos;s current ranking record. Ranks are deliberately left out:
-          they move slightly with every refresh, so a certificate stays valid while its zone holds and stops verifying
-          when the zone changes or the edition year moves on. The code is in <code>src/lib/zone-certificate.ts</code>.
+          Verification recomputes it from the journal&apos;s current ranking record. Ranks are deliberately left out, so a
+          certificate stays valid while its zone holds and stops verifying when the zone changes or the edition year
+          moves on, with the next annual edition each December. The code is in <code>src/lib/zone-certificate.ts</code>.
         </p>
         <p>
           Certificates issued before 28 September 2026 stated zones of the retired PCS-based trial

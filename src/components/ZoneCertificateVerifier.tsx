@@ -53,7 +53,7 @@ export function ZoneCertificateVerifier() {
   const m = valid
     ? { Icon: CheckCircle, color: 'var(--verified)', bg: 'var(--verified-soft)', title: 'Valid certificate', body: 'The certificate number matches its date of issue and the journal’s zones in the current ranking edition.' }
     : { Icon: WarningCircle, color: 'var(--check)', bg: 'var(--check-soft)', title: 'Does not match the current ranking', body: j
-        ? 'The certificate number does not match the journal’s current zone. Either the zone has changed since the date of issue (rankings are refreshed monthly), the certificate was issued under the retired PCS-based zone trial (before 28 September 2026), or the certificate has been altered. The current zone is shown below; a new certificate can be issued from the journal’s profile.'
+        ? 'The certificate number does not match the journal’s current zone. Either the zone has changed since the date of issue (a new Citation Ranking edition is published each December), the certificate was issued under the retired PCS-based zone trial (before 28 September 2026), or the certificate has been altered. The current zone is shown below; a new certificate can be issued from the journal’s profile.'
         : 'No indexed journal matches the ISSN in this address.' }
 
   return (

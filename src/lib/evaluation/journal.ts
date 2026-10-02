@@ -61,6 +61,8 @@ export interface AjrEvaluation {
   version: string | null
   monthsSinceLaunch: number | null
   reason: string | null
+  /** Date of the rating run (YYYY-MM-DD); AJR is re-rated every month. */
+  ratedAt: string | null
 }
 
 export interface JournalEvaluation {
@@ -84,6 +86,7 @@ export function ajrOf(j: Pick<Journal, 'early_stage_rating'> | null | undefined)
   const empty = (lifecycle: LifecycleStage, status: string, reason: string | null = null): AjrEvaluation => ({
     model: lifecycle === 'observation' ? 'Observation' : lifecycle === 'early_stage' ? 'AJR-E' : lifecycle === 'mature' ? 'AJR-M' : null,
     lifecycle, score: null, rating: null, status, version: null, monthsSinceLaunch: r?.months_since_launch ?? null, reason,
+    ratedAt: r?.rated_at ?? null,
   })
   if (!r) return empty('unknown', 'not_rated')
   if (isEarlyStageV1_1(r)) {
@@ -95,6 +98,7 @@ export function ajrOf(j: Pick<Journal, 'early_stage_rating'> | null | undefined)
     return {
       model: 'AJR-E', lifecycle, score: r.total, rating: getAJRRating(r.total), status: r.rating_status,
       version: r.version, monthsSinceLaunch: r.months_since_launch, reason: r.rating_status === 'provisional' ? 'Evidence coverage below the official threshold' : null,
+      ratedAt: r.rated_at ?? null,
     }
   }
   // Legacy shape (AJR-E-1.0 and earlier).
@@ -102,7 +106,7 @@ export function ajrOf(j: Pick<Journal, 'early_stage_rating'> | null | undefined)
     ? r.eligibility : getLifecycleStage(r.months_since_launch)
   if (lifecycle === 'mature') return empty('mature', 'not_rated', 'AJR-M has not yet been run for this journal')
   if (r.eligibility === 'early_stage' && r.total != null) {
-    return { model: 'AJR-E', lifecycle, score: r.total, rating: getAJRRating(r.total), status: 'official', version: r.version, monthsSinceLaunch: r.months_since_launch, reason: null }
+    return { model: 'AJR-E', lifecycle, score: r.total, rating: getAJRRating(r.total), status: 'official', version: r.version, monthsSinceLaunch: r.months_since_launch, reason: null, ratedAt: r.rated_at ?? null }
   }
   return { ...empty(lifecycle, r.eligibility === 'not_yet_rateable' ? 'not_rateable' : 'not_applicable'), version: r.version }
 }
@@ -156,8 +160,8 @@ export function evaluationFromProfile(ev: import('../journal-profile').JournalPr
   return {
     pqf: { score: ev?.pqf ?? null, status: getPQFStatus(ev?.pqf), version: null, evaluatedAt: null },
     ajr: ajr
-      ? { model: ajr[1] as AjrModel, lifecycle: ajr[1] === 'AJR-M' ? 'mature' : 'early_stage', score: ajr[2], rating: getAJRRating(ajr[2]), status: ajr[3] ?? 'official', version: null, monthsSinceLaunch: null, reason: null }
-      : { model: null, lifecycle: 'unknown', score: null, rating: null, status: 'not_rated', version: null, monthsSinceLaunch: null, reason: null },
+      ? { model: ajr[1] as AjrModel, lifecycle: ajr[1] === 'AJR-M' ? 'mature' : 'early_stage', score: ajr[2], rating: getAJRRating(ajr[2]), status: ajr[3] ?? 'official', version: null, monthsSinceLaunch: null, reason: null, ratedAt: ajr[4] ?? null }
+      : { model: null, lifecycle: 'unknown', score: null, rating: null, status: 'not_rated', version: null, monthsSinceLaunch: null, reason: null, ratedAt: null },
     citations: {
       pci: ev?.pci ?? null, pnci: ev?.pnci ?? null, pnciModel: ev?.pm ?? null, pcs: ev?.pcs ?? null,
       eligibleItems: ev?.n ?? null, coverage: ev?.cov ?? null, publicationYears: [],

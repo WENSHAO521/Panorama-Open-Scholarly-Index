@@ -63,8 +63,9 @@ export default function AboutPage() {
             certification. The rules are set out in the <Link href="/editorial-policy/">editorial policy</Link>.
           </p>
           <p>
-            Metadata is taken from Crossref and OpenAlex and refreshed daily. Rankings are recomputed each
-            indexing cycle under a versioned methodology, described in <Link href="/methodology/">methodology</Link>.
+            Metadata is taken from Crossref and OpenAlex and refreshed daily. The Citation Ranking is published once a
+            year, each December, and AJR ratings of Core Collection journals are re-rated every month, both under a
+            versioned methodology described in <Link href="/methodology/">methodology</Link>.
           </p>
         </section>
 
