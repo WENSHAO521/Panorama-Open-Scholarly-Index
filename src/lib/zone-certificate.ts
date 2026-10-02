@@ -11,9 +11,9 @@
 // Like the certificate of indexing there is no signing key. The certificate
 // number is a SHA-256 digest of the date of issue, the journal and the zones
 // stated; verification recomputes it from the journal's current record. It
-// therefore matches for as long as the journal's zones are unchanged: ranks
-// move a little with every monthly refresh, zones rarely do, and a
-// certificate whose zones no longer hold stops verifying.
+// therefore matches for as long as the journal's zones are unchanged: the
+// Citation Ranking is published once a year (December), and a certificate
+// whose zones no longer hold stops verifying.
 
 import editions from './data-editions.json'
 import type { JournalProfile } from './journal-profile'

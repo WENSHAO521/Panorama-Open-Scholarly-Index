@@ -103,6 +103,12 @@ export function pqfStatusOf(score: number | null | undefined): string {
   return pqfStatusLabel(getPQFStatus(score))
 }
 
+/** "7 October 2026" from YYYY-MM-DD; null for anything else. */
+export function fmtDay(date: string | null | undefined): string | null {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
 /** "September 2026" from YYYY-MM-DD. */
 export function fmtSnapshot(date: string | null | undefined): string {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return 'Not yet generated'

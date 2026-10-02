@@ -109,7 +109,7 @@ function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
 
-// AJR Rating by posi_id for curated journals: [rating, model, score, rating status]. The
+// AJR Rating by posi_id for curated journals: [rating, model, score, rating status, rating date]. The
 // rating is the one stored with the record (AJR-RATING-1.0) or, for records
 // synced before it, derived from the score by the same table as
 // src/lib/evaluation/rules.ts getAJRRating(); the build's invariant check
@@ -121,7 +121,7 @@ function ajrRatings() {
     const r = j.early_stage_rating
     if (!r || r.version !== 'AJR-E-1.1' || !['official', 'provisional'].includes(r.rating_status) || r.lifecycle_stage === 'mature' || r.total == null) continue
     const rating = r.rating ?? AJR_SCALE.find(([, min]) => r.total >= min)?.[0]
-    out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status])
+    out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status, r.rated_at ?? null])
   }
   return out
 }

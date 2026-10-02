@@ -10,7 +10,7 @@ import {
   type CitationQuartile, type CitationRankingStatus, type PosiZone, type ZoneStatus,
 } from '@/lib/evaluation/rules'
 import {
-  NOT_AVAILABLE, NOT_YET_RANKED, RANKING_STATUS_LABEL, ZONE_SHARE, fmtCoverage, fmtPercentile, fmtPqf, fmtScore, fmtSnapshot,
+  NOT_AVAILABLE, NOT_YET_RANKED, RANKING_STATUS_LABEL, ZONE_SHARE, fmtCoverage, fmtDay, fmtPercentile, fmtPqf, fmtScore, fmtSnapshot,
   pqfStatusLabel, quartileLabel, rankingReason,
 } from '@/lib/evaluation/display'
 
@@ -119,6 +119,7 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
           ? <Row k={a.model ?? 'AJR'} v={<>{mono(`${fmtScore(a.score)} / 100`)} <span className="ml-1"><AjrRatingBadge rating={a.rating} /></span></>}
               note={a.status === 'provisional' ? 'Provisional score: evidence coverage below the official threshold' : undefined} />
           : <Row k="AJR" v={soft(a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? 'AJR-M: not yet rated' : 'Not rated')} note={a.reason ?? undefined} />}
+        {fmtDay(a.ratedAt) && <Row k="Rated" v={fmtDay(a.ratedAt)} note={core === 'core' ? 'Core Collection journals are re-rated every month' : undefined} />}
       </Block>
 
       <Block title="Citation Performance" id={`${idPrefix}-cit`} aside={<Link href="/methodology/#ranking" className="link text-[12px]">Method</Link>}>
@@ -208,6 +209,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
           <p>
             {a.model ? AJR_MODEL_NAME[a.model] : NOT_AVAILABLE}
             {a.monthsSinceLaunch != null && ` · ${a.monthsSinceLaunch} months since first publication`}
+            {fmtDay(a.ratedAt) && ` · rated ${fmtDay(a.ratedAt)}`}
           </p>
           {a.score != null && a.status === 'provisional' && <p>Provisional score: evidence coverage below the official threshold.</p>}
           {a.score == null && a.reason && <p>{a.reason}.</p>}

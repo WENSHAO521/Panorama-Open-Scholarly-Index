@@ -120,7 +120,7 @@ export interface EarlyStageStatusDisplay {
   title?: string
 }
 
-const PENDING_AJR_M_TITLE = 'AJR-M 1.0 methodology is implemented but has not been run against real evidence/citation data yet - no journal has a published AJR-M score.'
+const PENDING_AJR_M_TITLE = 'AJR-M 1.0 runs every month, but no journal yet has the evidence it needs (article sample, site evidence, yearly output) - no journal has a published AJR-M score.'
 const NOT_YET_RATEABLE_TITLE = 'Below the minimum evidence bar - often because POSI\'s crawl was blocked (HTTP 403) by the site, not necessarily missing governance.'
 const PROVISIONAL_TITLE = 'Real AJR-E score, shown, but evidence coverage is below the threshold for an official AJR rating (AJR-SPEC.md § 6).'
 

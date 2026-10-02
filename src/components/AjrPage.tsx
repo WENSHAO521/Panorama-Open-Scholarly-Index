@@ -35,6 +35,14 @@ export function AjrCommon() {
         A journal&rsquo;s lifecycle stage does not decide its Citation Ranking, which is computed from PNCI within its PSC
         category (<Link href="/methodology/#ranking">methodology</Link>).
       </p>
+      <h2 id="updates">Updates</h2>
+      <p>
+        Core Collection journals are re-rated every month, on the 7th. Each run collects the evidence again from the
+        journal&rsquo;s website, its Crossref records and OpenAlex, and computes the lifecycle stage from the rating date,
+        so a journal moves from Observation to AJR-E at 12 months and to AJR-M at 60 months without waiting for a
+        review. Evidence that could not be reached in a run is not counted against the journal: the previous evidence
+        is kept. Every rating states its date and model version.
+      </p>
     </>
   )
 }
