@@ -9,6 +9,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'ajr-1-2',
+    title: 'AJR-E-1.2 and AJR-M-1.2: publisher policies and Crossref records as evidence',
+    date: '2026-10-03',
+    summary:
+      'From the November 2026 monthly rerate, AJR ratings are computed as AJR-E-1.2 and AJR-M-1.2. The formulas are unchanged; evidence a journal’s website does not show can now come from a verified publisher-wide policy or, for licensing and corrections, from the journal’s own Crossref records.',
+    body: [
+      'From the monthly rerate of 7 November 2026, AJR ratings of Core Collection journals are computed as AJR-E-1.2 and AJR-M-1.2, with Evidence Coverage EC-1.1. The dimensions, weights, thresholds and rating scale are unchanged.',
+      'What changes is where the evidence may come from. The journal’s own website comes first. Where it does not show a policy, a publisher-wide policy that POSI has verified as covering all the publisher’s journals now counts for twelve policies (previously six): publication ethics, corrections, authorship, conflicts of interest, AI use, data, similarity checking, research ethics, complaints and appeals, copyright, ownership and advertising. Journal-specific items such as the editorial board, the peer-review process, the access model and fees never come from a publisher.',
+      'In addition, the journal’s own Crossref records now count for two items. Of its newest articles published in the last three years (up to 100, at least 20), when at least half carry a licence for the published article, that is evidence of its copyright and licensing terms; when at least half carry a Crossmark update policy, that is its corrections and retractions policy. Statements in individual articles, such as review dates or conflict-of-interest declarations, do not count as the journal’s policy.',
+      'A later source only fills what an earlier one could not resolve and never overrides what the journal’s website shows. Ratings published before November keep their AJR-E-1.1 stamp; every rating states its model version and date.',
+    ],
+  },
+  {
     slug: 'ajr-core-collection-only',
     title: 'AJR published for Core Collection journals only',
     date: '2026-10-03',

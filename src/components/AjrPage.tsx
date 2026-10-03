@@ -24,6 +24,32 @@ export function AjrCommon() {
         journals. Other journals, including those found through journal search and the directory, show no AJR: no
         score, rating or lifecycle stage. Their citation performance is shown by PNCI, PCS and the Citation Ranking.
       </p>
+      <h2 id="evidence">Where the evidence comes from</h2>
+      <p>
+        Editorial governance, research integrity and transparency are rated from published evidence, in this order:
+      </p>
+      <ul>
+        <li><strong>The journal&rsquo;s own website</strong>: its policy pages, collected in each monthly run.</li>
+        <li>
+          <strong>Publisher-wide policies</strong>: where a publisher states that a policy (publication ethics,
+          corrections, authorship, conflicts of interest, AI use, data, similarity checking, research ethics,
+          complaints, copyright, ownership, advertising) covers all its journals and POSI has verified that page,
+          the journal inherits it. Journal-specific items such as the editorial board, peer-review process, access
+          model and fees never do.
+        </li>
+        <li>
+          <strong>The journal&rsquo;s own Crossref records</strong>: of its newest articles published in the last three
+          years (up to 100, at least 20), when at least half carry a licence for the published article, that is evidence
+          of its copyright and licensing terms; when at least half carry a Crossmark update policy, that is its
+          corrections and retractions policy. Statements in individual articles (review dates, conflicts of interest,
+          data availability) do not count as the journal&rsquo;s policy.
+        </li>
+      </ul>
+      <p>
+        A later source only fills what an earlier one could not resolve; it never overrides what the journal&rsquo;s
+        website shows. Evidence that cannot be reached is not counted against the journal. This is Evidence Coverage
+        EC-1.1, used by AJR-E-1.2 and AJR-M-1.2 from the November 2026 rerate.
+      </p>
       <h2 id="scale">Rating scale</h2>
       <p>Every AJR Rating is read from the AJR Score by one table:</p>
       <AjrRatingScale />
