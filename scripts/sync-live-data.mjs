@@ -81,7 +81,7 @@ function slim(corpus) {
   return corpus.map(r => ({
     posi_id: r.posi_id, curated: !!r.curated, title: titlesOf(r.posi_id, r.title, r.alternate_titles).title, publisher: r.publisher,
     issns: r.issns ?? [], issn_l: r.issn_l ?? null, openalex_source_id: r.openalex_source_id ?? null,
-    country: r.country ?? null, open_access: r.open_access ?? null, in_doaj: r.in_doaj ?? null,
+    country: r.country ?? null, open_access: openAccessOf(r), in_doaj: r.in_doaj ?? null,
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
     psc_category: r.psc_category ?? null, psc_confidence: r.psc_confidence ?? null,
   }))
@@ -105,6 +105,12 @@ function titlesOf(posiId, registryTitle, more = []) {
     .filter(t => t && !seen.has(titleKey(t)) && seen.add(titleKey(t)))
   return { title, alt }
 }
+
+// Every Core Collection journal is open access (a condition of Core); the
+// corpus flag, from OpenAlex and DOAJ, can miss one. Other journals keep it.
+const isCore = id => { const c = CURATED.get(id); return !!c && (!c.collection_status || c.collection_status === 'core') }
+const openAccessOf = r => (isCore(r.posi_id) ? true : r.open_access ?? null)
+
 function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
@@ -300,7 +306,7 @@ if (!RANKINGS_ONLY) {
     // carries PCI only when its run was given it). PCI is a Core Collection
     // indicator: no other journal's profile reports one.
     const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
-    const coreIds = new Set([...CURATED.values()].filter(j => !j.collection_status || j.collection_status === 'core').map(j => j.posi_id))
+    const coreIds = new Set([...CURATED.keys()].filter(isCore))
     const ajr = ajrRatings()
     // Ranking history from the earlier editions: [year, category, rank,
     // category size, quartile, zone, zone status, ranking status].
@@ -332,7 +338,7 @@ if (!RANKINGS_ONLY) {
         pub: r.publisher ?? o?.pub, cc: r.country ?? o?.cc, is: r.issns ?? [key],
         hp: o?.hp, apc: va ? (va.currency === 'USD' ? va.amount : undefined) : r.apc_usd ?? o?.apc,
         apcx: va ? (va.amount === 0 ? 'None' : `${va.currency} ${va.amount.toLocaleString('en-US')}`) : undefined,
-        apcsrc: va?.source_url, oa: r.open_access ?? undefined, dj: r.in_doaj ?? undefined,
+        apcsrc: va?.source_url, oa: openAccessOf(r) ?? undefined, dj: r.in_doaj ?? undefined,
         w: o?.w ?? r.works_count ?? undefined, c: o?.c, h: o?.h, i10: o?.i10, y0: o?.y0, y1: o?.y1,
         cy: o?.cy, tp: o?.tp, soc: o?.soc,
         s: r.psc_category ?? undefined, sc: r.psc_confidence ?? undefined,
@@ -387,7 +393,7 @@ if (!RANKINGS_ONLY) {
       const key = r.issn_l ?? r.issns?.[0]
       if (!key || !r.title) continue
       const { title, alt } = titlesOf(r.posi_id, r.title, r.alternate_titles)
-      const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
+      const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, openAccessOf(r) ? 1 : 0]
       const rk = ranks.get(r.posi_id)
       const ev = rk || ajr.has(r.posi_id)
         ? [rk?.ranking_category_id ?? r.psc_category ?? null, rk?.citation_quartile ?? null, rk?.posi_zone ?? null, rk?.citation_ranking_status ?? null, ajr.get(r.posi_id)?.[0] ?? null, rk?.zone_status ?? null]
