@@ -176,7 +176,8 @@ export function getRankings() {
       items: r.eligible_citable_items, coverage: r.citation_coverage,
       rank: r.citation_rank, n: r.citation_rank_total, pct: r.citation_percentile, q: r.citation_quartile,
       zone: r.posi_zone, zoneStatus: r.zone_status, status: r.citation_ranking_status, reason: r.ranking_status_reason,
-      ajr: m.ajr, lifecycle: m.lifecycle ?? r.lifecycle_stage ?? null,
+      // AJR and its lifecycle stage are Core Collection only (also when the edition carries a stage).
+      ajr: m.ajr, lifecycle: coreIds.has(r.journal_id) ? m.lifecycle ?? r.lifecycle_stage ?? null : null,
     })
   }
   const ranked = all.filter(r => r.rank != null).sort((a, b) => (b.pnci ?? 0) - (a.pnci ?? 0) || (a.cat ?? '').localeCompare(b.cat ?? ''))
