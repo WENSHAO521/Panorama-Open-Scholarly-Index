@@ -120,7 +120,7 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
         {a.score != null
           ? <Row k={a.model ?? 'AJR'} v={<>{mono(`${fmtScore(a.score)} / 100`)} <span className="ml-1"><AjrRatingBadge rating={a.rating} /></span></>}
               note={a.status === 'provisional' ? 'Provisional score: evidence coverage below the official threshold' : undefined} />
-          : <Row k="AJR" v={soft(a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? 'AJR-M: not yet rated' : 'Not rated')} note={a.reason ?? undefined} />}
+          : <Row k="AJR" v={soft(a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? (a.status === 'not_rated' ? 'AJR-M: not yet rated' : 'AJR-M: not rated') : 'Not rated')} note={a.reason ?? undefined} />}
         {fmtDay(a.ratedAt) && <Row k="Rated" v={fmtDay(a.ratedAt)} note="Core Collection journals are re-rated every month" />}
       </Block>}
 
@@ -207,7 +207,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
           state={a.score != null ? (a.status === 'provisional' ? 'pending' : 'done') : a.model === 'AJR-M' || a.lifecycle === 'observation' ? 'pending' : 'none'}
           value={a.score != null
             ? <span className="inline-flex flex-wrap items-center gap-2">{mono(`${fmtScore(a.score)} / 100`)}<AjrRatingBadge rating={a.rating} /></span>
-            : a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? 'Not yet rated' : 'Not rated'}
+            : a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' && a.status === 'not_rated' ? 'Not yet rated' : 'Not rated'}
           action={<Link href="/ratings/" className="link">About AJR</Link>}>
           <p>
             {a.model ? AJR_MODEL_NAME[a.model] : NOT_AVAILABLE}

@@ -79,8 +79,9 @@ export interface JournalProfile {
     why?: string
     pcs?: number
     pci?: number
-    /** [AJR Rating, AJR model, AJR score, rating status, rating date, model version], Core Collection journals only */
-    ajr?: [string, string, number, string, (string | null)?, (string | null)?]
+    /** [AJR Rating, AJR model, AJR score, rating status, rating date, model version, reason], Core Collection journals only.
+     *  An unscored AJR-M result (not_rateable, not_officially_rankable) has a null rating and score. */
+    ajr?: [string | null, string, number | null, string, (string | null)?, (string | null)?, (string | null)?]
     /** PQF score, curated journals only */
     pqf?: number
   }

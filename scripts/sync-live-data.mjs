@@ -122,9 +122,15 @@ function ajrRatings() {
   for (const j of CURATED.values()) {
     if (j.collection_status && j.collection_status !== 'core') continue
     const m = j.mature_rating
-    if (m && /^AJR-M-/.test(m.methodology_version ?? '') && ['official', 'provisional'].includes(m.rating_status) && m.total_score != null) {
-      const rating = m.rating ?? AJR_SCALE.find(([, min]) => m.total_score >= min)?.[0]
-      out.set(j.posi_id, [rating, 'AJR-M', m.total_score, m.rating_status, m.rating_date ?? null, m.methodology_version])
+    // Published AJR-M versions only (src/lib/evaluation/journal.ts PUBLISHED_AJR_M_VERSIONS).
+    if (m && ['AJR-M-1.2'].includes(m.methodology_version)) {
+      if (['official', 'provisional'].includes(m.rating_status) && m.total_score != null) {
+        const rating = m.rating ?? AJR_SCALE.find(([, min]) => m.total_score >= min)?.[0]
+        out.set(j.posi_id, [rating, 'AJR-M', m.total_score, m.rating_status, m.rating_date ?? null, m.methodology_version])
+      } else {
+        // Unscored: keep the model, status, date and reason, not a generic "not rated".
+        out.set(j.posi_id, [null, 'AJR-M', null, m.rating_status, m.rating_date ?? null, m.methodology_version, m.suppression_reason ?? null])
+      }
       continue
     }
     const r = j.early_stage_rating

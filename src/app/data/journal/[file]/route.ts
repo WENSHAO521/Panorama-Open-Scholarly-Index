@@ -24,7 +24,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   // PCI and AJR are Core Collection indicators: no other journal reports them.
   const core = collectionOf(j) === 'core'
   const pci = core ? getPciEntry(j.posi_id) : null
-  const record = core ? j : { ...j, early_stage_rating: undefined }
+  const record = core ? j : { ...j, early_stage_rating: undefined, mature_rating: undefined }
   const ranking = getCitationRecord(j.posi_id)
   return Response.json({
     record,

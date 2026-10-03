@@ -84,12 +84,16 @@ export interface JournalEvaluation {
  *  published for Core Collection journals only. */
 export const NO_AJR: AjrEvaluation = { model: null, lifecycle: 'unknown', score: null, rating: null, status: 'not_rated', version: null, monthsSinceLaunch: null, reason: null, ratedAt: null }
 
+/** AJR-M versions published on the site (AJR-M-1.2 is the first). */
+export const PUBLISHED_AJR_M_VERSIONS = ['AJR-M-1.2'] as const
+const publishedAjrM = (v: string | null | undefined) => (PUBLISHED_AJR_M_VERSIONS as readonly string[]).includes(v ?? '')
+
 /** AJR for a journal record: its AJR-M rating when it has a scored one,
  *  else its AJR-E rating. A mature journal is never shown with an AJR-E score. */
 export function ajrOf(j: Pick<Journal, 'early_stage_rating' | 'mature_rating'> | null | undefined): AjrEvaluation {
-  const m = j?.mature_rating ?? null
+  const m = j?.mature_rating && publishedAjrM(j.mature_rating.methodology_version) ? j.mature_rating : null
   const r = j?.early_stage_rating ?? null
-  if (m && /^AJR-M-/.test(m.methodology_version) && (m.rating_status === 'official' || m.rating_status === 'provisional') && m.total_score != null) {
+  if (m && (m.rating_status === 'official' || m.rating_status === 'provisional') && m.total_score != null) {
     return {
       model: 'AJR-M', lifecycle: 'mature', score: m.total_score, rating: getAJRRating(m.total_score), status: m.rating_status,
       version: m.methodology_version, monthsSinceLaunch: r?.months_since_launch ?? null,
@@ -175,7 +179,7 @@ export function evaluationFromProfile(ev: import('../journal-profile').JournalPr
   return {
     pqf: { score: ev?.pqf ?? null, status: getPQFStatus(ev?.pqf), version: null, evaluatedAt: null },
     ajr: ajr
-      ? { model: ajr[1] as AjrModel, lifecycle: ajr[1] === 'AJR-M' ? 'mature' : 'early_stage', score: ajr[2], rating: getAJRRating(ajr[2]), status: ajr[3] ?? 'official', version: ajr[5] ?? null, monthsSinceLaunch: null, reason: null, ratedAt: ajr[4] ?? null }
+      ? { model: ajr[1] as AjrModel, lifecycle: ajr[1] === 'AJR-M' ? 'mature' : 'early_stage', score: ajr[2], rating: getAJRRating(ajr[2]), status: ajr[3] ?? 'official', version: ajr[5] ?? null, monthsSinceLaunch: null, reason: ajr[6] ?? null, ratedAt: ajr[4] ?? null }
       : NO_AJR,
     citations: {
       pci: ev?.pci ?? null, pnci: ev?.pnci ?? null, pnciModel: ev?.pm ?? null, pcs: ev?.pcs ?? null,
