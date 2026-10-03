@@ -54,6 +54,7 @@
 
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
+import { withoutWithdrawn } from './lib/withdrawn.mjs'
 
 // Duplicated in src/lib/publisher-catalog-client.ts (kept as a plain
 // literal in each rather than a shared cross-boundary import — this is a
@@ -80,7 +81,8 @@ async function main() {
   const manifest = await fetchJson(`${POSI_DATA_BASE}${current.manifest}`)
   const snapshotDir = current.manifest.replace(/\/manifest\.json$/, '')
 
-  const coreCollection = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/core-collection.json`)
+  // Journals withdrawn from the database (src/lib/withdrawn-journals.json) are dropped from every file.
+  const coreCollection = withoutWithdrawn(await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/core-collection.json`), 'core-collection')
   writeFileSync(resolve('src/lib/core-collection.json'), JSON.stringify(coreCollection, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/core-collection.json (${coreCollection.length} records)`)
 
@@ -93,7 +95,7 @@ async function main() {
   // the existing src/lib/pcs.json untouched so a partial/older delivery
   // snapshot can't silently wipe real PCS data already synced.
   try {
-    const pcs = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pcs.json`)
+    const pcs = withoutWithdrawn(await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pcs.json`), 'pcs')
     writeFileSync(resolve('src/lib/pcs.json'), JSON.stringify(pcs, null, 2) + '\n', 'utf-8')
     const computed = pcs.filter(r => r.pcs != null).length
     console.log(`  Wrote src/lib/pcs.json (${pcs.length} records, ${computed} with a computed pcs value)`)
@@ -104,7 +106,7 @@ async function main() {
   // Same tolerant pattern as pcs.json above — an older snapshot with no
   // collections/pci.json shouldn't wipe real PCI data already synced.
   try {
-    const pci = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pci.json`)
+    const pci = withoutWithdrawn(await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/pci.json`), 'pci')
     writeFileSync(resolve('src/lib/pci.json'), JSON.stringify(pci, null, 2) + '\n', 'utf-8')
     const computed = pci.filter(r => r.pci != null).length
     console.log(`  Wrote src/lib/pci.json (${pci.length} records, ${computed} with a computed pci value)`)
@@ -117,7 +119,7 @@ async function main() {
   // pooled into the ranking peer group never appear in this collection
   // themselves). Not every snapshot has this collection yet.
   try {
-    const rankings = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/citation-rankings.json`)
+    const rankings = withoutWithdrawn(await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/citation-rankings.json`), 'citation-rankings')
     writeFileSync(resolve('src/lib/citation-rankings.json'), JSON.stringify(rankings, null, 2) + '\n', 'utf-8')
     const ranked = rankings.filter(r => r.ranking_method !== 'unavailable').length
     console.log(`  Wrote src/lib/citation-rankings.json (${rankings.length} records, ${ranked} with a real Citation Q)`)

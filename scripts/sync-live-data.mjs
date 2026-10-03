@@ -40,6 +40,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
 import { titleWords, prefixOf, neverSplit, partOf } from '../src/lib/title-words.mjs'
+import { withoutWithdrawn } from './lib/withdrawn.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
@@ -81,7 +82,7 @@ function slim(corpus) {
   return corpus.map(r => ({
     posi_id: r.posi_id, curated: !!r.curated, title: titlesOf(r.posi_id, r.title, r.alternate_titles).title, publisher: r.publisher,
     issns: r.issns ?? [], issn_l: r.issn_l ?? null, openalex_source_id: r.openalex_source_id ?? null,
-    country: r.country ?? null, open_access: r.open_access ?? null, in_doaj: r.in_doaj ?? null,
+    country: r.country ?? null, open_access: openAccessOf(r), in_doaj: r.in_doaj ?? null,
     works_count: r.works_count ?? null, crossref_total_dois: r.crossref_total_dois ?? null,
     psc_category: r.psc_category ?? null, psc_confidence: r.psc_confidence ?? null,
   }))
@@ -105,6 +106,12 @@ function titlesOf(posiId, registryTitle, more = []) {
     .filter(t => t && !seen.has(titleKey(t)) && seen.add(titleKey(t)))
   return { title, alt }
 }
+
+// Every Core Collection journal is open access (a condition of Core); the
+// corpus flag, from OpenAlex and DOAJ, can miss one. Other journals keep it.
+const isCore = id => { const c = CURATED.get(id); return !!c && (!c.collection_status || c.collection_status === 'core') }
+const openAccessOf = r => (isCore(r.posi_id) ? true : r.open_access ?? null)
+
 function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
@@ -152,6 +159,7 @@ const snapshotDir = current ? current.manifest.replace(/manifest\.json$/, '') : 
     if (!snapshotDir) throw new Error('no current snapshot')
     const edition = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/citation-ranking.json.gz`, 'buffer')).toString('utf-8'))
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
+    edition.records = withoutWithdrawn(edition.records, 'citation ranking')
     for (const r of edition.records) if (CURATED.has(r.journal_id)) r.title = titlesOf(r.journal_id, r.title).title
     writeFileSync(out, JSON.stringify(edition))
     console.log(`sync-live-data: citation ranking ${edition.ranking_methodology_version} ${edition.pnci_model_version} snapshot ${edition.snapshot_date}, ${edition.records.length} journals`)
@@ -191,7 +199,7 @@ const EDITIONS = join(GEN, 'editions')
       list.push(entry)
       if (entry.current) continue
       const ed = JSON.parse(gunzipSync(await get(`${DATA}${e.edition_file}`, 'buffer')).toString('utf-8'))
-      ed.records = ed.records.filter(r => r.ranking_category_id != null).map(r => ({
+      ed.records = withoutWithdrawn(ed.records, `${e.year} edition`).filter(r => r.ranking_category_id != null).map(r => ({
         journal_id: r.journal_id, title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title ?? null,
         publisher: r.publisher ?? null, issn: r.issn ?? [], ranking_category_id: r.ranking_category_id,
         pnci: r.pnci, eligible_citable_items: r.eligible_citable_items, citation_coverage: r.citation_coverage,
@@ -227,7 +235,7 @@ const EDITIONS = join(GEN, 'editions')
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
     // Only what the site reads: PCS values and identity. The PCS-Q rank,
     // percentile and quartile fields are retired (POSI-EVAL-1.0).
-    edition.records = edition.records.map(r => ({
+    edition.records = withoutWithdrawn(edition.records, 'pcs').map(r => ({
       journal_id: r.journal_id, metric_year: r.metric_year, pcs: r.pcs, pcs_eligible_items: r.pcs_eligible_items,
       title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title, publisher: r.publisher ?? null, issn: r.issn ?? [],
     }))
@@ -266,6 +274,8 @@ if (!RANKINGS_ONLY) {
       }
       corpus = JSON.parse(gunzipSync(await get(`${assetBase}/global-corpus.json.gz`, 'buffer')).toString('utf-8'))
     }
+    // Withdrawn journals leave the directory, and so the profiles and the search index built from it.
+    corpus = withoutWithdrawn(corpus, 'journal directory')
     writeFileSync(out, JSON.stringify(slim(corpus)))
     console.log(`sync-live-data: journal directory, ${corpus.length} journals`)
   } catch (e) {
@@ -300,7 +310,7 @@ if (!RANKINGS_ONLY) {
     // carries PCI only when its run was given it). PCI is a Core Collection
     // indicator: no other journal's profile reports one.
     const pciValues = new Map(JSON.parse(readFileSync(join(ROOT, 'src/lib/pci.json'), 'utf-8')).map(r => [r.journal_id, r.pci]))
-    const coreIds = new Set([...CURATED.values()].filter(j => !j.collection_status || j.collection_status === 'core').map(j => j.posi_id))
+    const coreIds = new Set([...CURATED.keys()].filter(isCore))
     const ajr = ajrRatings()
     // Ranking history from the earlier editions: [year, category, rank,
     // category size, quartile, zone, zone status, ranking status].
@@ -332,7 +342,7 @@ if (!RANKINGS_ONLY) {
         pub: r.publisher ?? o?.pub, cc: r.country ?? o?.cc, is: r.issns ?? [key],
         hp: o?.hp, apc: va ? (va.currency === 'USD' ? va.amount : undefined) : r.apc_usd ?? o?.apc,
         apcx: va ? (va.amount === 0 ? 'None' : `${va.currency} ${va.amount.toLocaleString('en-US')}`) : undefined,
-        apcsrc: va?.source_url, oa: r.open_access ?? undefined, dj: r.in_doaj ?? undefined,
+        apcsrc: va?.source_url, oa: openAccessOf(r) ?? undefined, dj: r.in_doaj ?? undefined,
         w: o?.w ?? r.works_count ?? undefined, c: o?.c, h: o?.h, i10: o?.i10, y0: o?.y0, y1: o?.y1,
         cy: o?.cy, tp: o?.tp, soc: o?.soc,
         s: r.psc_category ?? undefined, sc: r.psc_confidence ?? undefined,
@@ -387,7 +397,7 @@ if (!RANKINGS_ONLY) {
       const key = r.issn_l ?? r.issns?.[0]
       if (!key || !r.title) continue
       const { title, alt } = titlesOf(r.posi_id, r.title, r.alternate_titles)
-      const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, r.open_access ? 1 : 0]
+      const entry = [key, title, r.publisher ?? null, r.works_count ?? r.crossref_total_dois ?? 0, openAccessOf(r) ? 1 : 0]
       const rk = ranks.get(r.posi_id)
       const ev = rk || ajr.has(r.posi_id)
         ? [rk?.ranking_category_id ?? r.psc_category ?? null, rk?.citation_quartile ?? null, rk?.posi_zone ?? null, rk?.citation_ranking_status ?? null, ajr.get(r.posi_id)?.[0] ?? null, rk?.zone_status ?? null]
