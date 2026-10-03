@@ -2,15 +2,15 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
-import { LISTED_PLACES, PARENT, listedPlaceOf } from './country-list.ts'
+import { LISTED_PLACES } from './country-list.ts'
 import { buildWorld } from './world-geometry.ts'
 import { countryDisplayName, isoCountry } from './country-codes.ts'
 
 const require = createRequire(import.meta.url)
 const { shapes, dots } = buildWorld(require('world-atlas/countries-110m.json'), require('world-atlas/countries-50m.json'))
 
-test('the list holds the editors\' 219 places plus North Korea and Comoros, one per code', () => {
-  assert.equal(LISTED_PLACES.size, 221)
+test('the list holds the editors\' 219 places plus 2 states and 22 territories, one per code', () => {
+  assert.equal(LISTED_PLACES.size, 243)
 })
 
 test('each listed name reads back as its own code', () => {
@@ -34,13 +34,7 @@ test('display names are the list names', () => {
   assert.equal(countryDisplayName('GP'), 'Guadeloupe')
 })
 
-test('every territory on the map is listed or folded into a listed country', () => {
-  for (const [code, parent] of Object.entries(PARENT)) {
-    assert.ok(!LISTED_PLACES.has(code), code)
-    assert.ok(LISTED_PLACES.has(parent), parent)
-  }
+test('every inhabited place on the map is listed in its own right', () => {
   const codes = [...shapes.map(s => s.code), ...dots.map(d => d.code)].filter(Boolean)
-  assert.deepEqual(codes.filter(c => !listedPlaceOf(c)), [])
-  assert.equal(listedPlaceOf('GP')?.name, 'France')
-  assert.equal(listedPlaceOf('CW')?.name, 'Netherlands')
+  assert.deepEqual(codes.filter(c => !LISTED_PLACES.has(c)), ['TF'])
 })

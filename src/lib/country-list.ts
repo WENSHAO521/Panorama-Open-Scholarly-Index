@@ -1,9 +1,9 @@
 // The countries and territories the site names and the home page map counts
-// ("Where journals are published"): the editors' list of 219 places, with
-// their English and Chinese names, kind and continent, plus two UN member
-// states it left out (North Korea, Comoros). The English names here are the
-// site's country names (countryDisplayName). A dependent territory off the
-// list is counted under the country that administers it (PARENT).
+// ("Where journals are published"), each in its own right: the editors' list
+// of 219 places, with their English and Chinese names, kind and continent,
+// plus the two UN member states (North Korea, Comoros) and the 22 inhabited
+// territories it left out. The English names here are the site's country
+// names (countryDisplayName).
 
 export type PlaceKind = 'state' | 'observer' | 'disputed' | 'territory' | 'associated'
 export type Continent = 'Asia' | 'Europe' | 'Africa' | 'North America' | 'South America' | 'Oceania'
@@ -113,6 +113,8 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['IM', 'Isle of Man', '马恩岛', 'territory', 'Europe'],
   ['JE', 'Jersey', '泽西岛', 'territory', 'Europe'],
   ['GG', 'Guernsey', '根西岛', 'territory', 'Europe'],
+  ['AX', 'Aland Islands', '奥兰群岛', 'territory', 'Europe'],
+  ['SJ', 'Svalbard and Jan Mayen', '斯瓦尔巴和扬马延', 'territory', 'Europe'],
   ['EG', 'Egypt', '埃及', 'state', 'Africa'],
   ['ZA', 'South Africa', '南非', 'state', 'Africa'],
   ['NG', 'Nigeria', '尼日利亚', 'state', 'Africa'],
@@ -169,6 +171,8 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['SZ', 'Eswatini', '斯威士兰', 'state', 'Africa'],
   ['EH', 'Western Sahara', '西撒哈拉', 'disputed', 'Africa'],
   ['RE', 'Reunion', '留尼汪', 'territory', 'Africa'],
+  ['YT', 'Mayotte', '马约特', 'territory', 'Africa'],
+  ['SH', 'Saint Helena', '圣赫勒拿', 'territory', 'Africa'],
   ['US', 'United States', '美国', 'state', 'North America'],
   ['CA', 'Canada', '加拿大', 'state', 'North America'],
   ['MX', 'Mexico', '墨西哥', 'state', 'North America'],
@@ -198,6 +202,17 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['KY', 'Cayman Islands', '开曼群岛', 'territory', 'North America'],
   ['BM', 'Bermuda', '百慕大', 'territory', 'North America'],
   ['AW', 'Aruba', '阿鲁巴', 'territory', 'North America'],
+  ['GP', 'Guadeloupe', '瓜德罗普', 'territory', 'North America'],
+  ['MQ', 'Martinique', '马提尼克', 'territory', 'North America'],
+  ['MF', 'Saint Martin', '法属圣马丁', 'territory', 'North America'],
+  ['BL', 'Saint Barthelemy', '圣巴泰勒米', 'territory', 'North America'],
+  ['PM', 'Saint Pierre and Miquelon', '圣皮埃尔和密克隆', 'territory', 'North America'],
+  ['AI', 'Anguilla', '安圭拉', 'territory', 'North America'],
+  ['MS', 'Montserrat', '蒙特塞拉特', 'territory', 'North America'],
+  ['TC', 'Turks and Caicos Islands', '特克斯和凯科斯群岛', 'territory', 'North America'],
+  ['CW', 'Curacao', '库拉索', 'territory', 'North America'],
+  ['SX', 'Sint Maarten', '荷属圣马丁', 'territory', 'North America'],
+  ['BQ', 'Caribbean Netherlands', '荷兰加勒比区', 'territory', 'North America'],
   ['BR', 'Brazil', '巴西', 'state', 'South America'],
   ['AR', 'Argentina', '阿根廷', 'state', 'South America'],
   ['CO', 'Colombia', '哥伦比亚', 'state', 'South America'],
@@ -232,31 +247,16 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['NC', 'New Caledonia', '新喀里多尼亚', 'territory', 'Oceania'],
   ['PF', 'French Polynesia', '法属波利尼西亚', 'territory', 'Oceania'],
   ['AS', 'American Samoa', '美属萨摩亚', 'territory', 'Oceania'],
+  ['MP', 'Northern Mariana Islands', '北马里亚纳群岛', 'territory', 'Oceania'],
+  ['WF', 'Wallis and Futuna', '瓦利斯和富图纳', 'territory', 'Oceania'],
+  ['PN', 'Pitcairn Islands', '皮特凯恩群岛', 'territory', 'Oceania'],
+  ['TK', 'Tokelau', '托克劳', 'territory', 'Oceania'],
+  ['NF', 'Norfolk Island', '诺福克岛', 'territory', 'Oceania'],
+  ['CX', 'Christmas Island', '圣诞岛', 'territory', 'Oceania'],
+  ['CC', 'Cocos (Keeling) Islands', '科科斯(基林)群岛', 'territory', 'Oceania'],
 ]
 
 /** Listed places by ISO 3166-1 alpha-2 code (XK for Kosovo). */
 export const LISTED_PLACES: ReadonlyMap<string, ListedPlace> = new Map(
   ROWS.map(([code, name, zh, kind, continent]) => [code, { code, name, zh, kind, continent }]),
 )
-
-/** Territories off the list, by the listed country that administers them. */
-export const PARENT: Readonly<Record<string, string>> = {
-  // France
-  GP: 'FR', MQ: 'FR', YT: 'FR', PM: 'FR', WF: 'FR', MF: 'FR', BL: 'FR', TF: 'FR',
-  // United Kingdom
-  AI: 'GB', MS: 'GB', TC: 'GB', SH: 'GB', PN: 'GB', IO: 'GB', GS: 'GB',
-  // Netherlands
-  CW: 'NL', SX: 'NL', BQ: 'NL',
-  // United States
-  MP: 'US', UM: 'US',
-  // Australia
-  NF: 'AU', CX: 'AU', CC: 'AU', HM: 'AU',
-  // others
-  AX: 'FI', SJ: 'NO', BV: 'NO', TK: 'NZ',
-}
-
-/** The listed place a country code is counted under: itself, its administering country, or null. */
-export function listedPlaceOf(code: string | null | undefined): ListedPlace | null {
-  if (!code) return null
-  return LISTED_PLACES.get(code) ?? LISTED_PLACES.get(PARENT[code] ?? '') ?? null
-}
