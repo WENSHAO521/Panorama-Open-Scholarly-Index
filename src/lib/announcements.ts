@@ -9,6 +9,20 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'ajr-core-collection-only',
+    title: 'AJR published for Core Collection journals only',
+    date: '2026-10-03',
+    pinned: true,
+    summary:
+      'From 3 October 2026, AJR, the Journal Development Rating, is published for Core Collection journals only. Other journals, including those found through journal search, no longer show an AJR section. No published AJR score or rating changes.',
+    body: [
+      'From 3 October 2026, AJR (AJR-E and AJR-M) is published for Core Collection journals only: journals that applied for certification and passed the PQF editorial evaluation.',
+      'An AJR rating rests on evidence from the journal’s own website: editorial governance, peer review, research integrity and transparency policies. POSI collects and checks this evidence every month for Core Collection journals. For other journals it cannot be collected reliably, since many publisher platforms refuse automated access, so a rating there would rest on too little evidence.',
+      'Journals outside the Core Collection no longer show an AJR section, lifecycle stage or rating on their journal pages, in journal search results or in the Citation Ranking tables. No journal outside the Core Collection had a published AJR score, so no score or rating is withdrawn.',
+      'Core Collection journals are re-rated every month, on the 7th. Citation Rankings, Citation Quartiles, POSI Zones, PNCI and PCS are unchanged. AJR is described on the AJR ratings page and in the methodology.',
+    ],
+  },
+  {
     slug: 'pci-core-collection-only',
     title: 'PCI reported for Core Collection journals only',
     date: '2026-09-30',

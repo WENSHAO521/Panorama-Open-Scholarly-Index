@@ -17,6 +17,13 @@ export function AjrCommon() {
   return (
     <>
       <p><strong>{AJR_DISCLAIMER}</strong></p>
+      <h2 id="scope">Which journals are rated</h2>
+      <p>
+        AJR is published for <Link href="/core-collection/">Core Collection</Link> journals only. A rating rests on
+        evidence from the journal&rsquo;s own website, which POSI collects and checks every month for Core Collection
+        journals. Other journals, including those found through journal search and the directory, show no AJR: no
+        score, rating or lifecycle stage. Their citation performance is shown by PNCI, PCS and the Citation Ranking.
+      </p>
       <h2 id="scale">Rating scale</h2>
       <p>Every AJR Rating is read from the AJR Score by one table:</p>
       <AjrRatingScale />

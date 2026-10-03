@@ -20,7 +20,7 @@ import { getCoreCollection, getCuratedNonCoreJournals } from './data'
 import { alternateTitleText } from './titles'
 import { BENCHMARK_JOURNALS } from './benchmark-journals'
 import { getAllPciEntries } from './pci'
-import { ajrOf, type CitationRankingRecord } from './evaluation/journal'
+import { ajrOf, NO_AJR, type CitationRankingRecord } from './evaluation/journal'
 import { validateCitationEdition, validateAjrRatings } from './evaluation/check'
 import {
   RANKING_THRESHOLDS, CITATION_RANK_VERSION, PNCI_MODEL_VERSION, ZONES_VERSION, EVALUATION_VERSION,
@@ -118,7 +118,8 @@ function metaIndex(): { meta: Map<string, Meta>; coreIds: Set<string> } {
   const coreIds = new Set(getCoreCollection().map(j => j.posi_id).filter((x): x is string => !!x))
   for (const j of [...getCoreCollection(), ...getCuratedNonCoreJournals(), ...BENCHMARK_JOURNALS]) {
     if (!j.posi_id) continue
-    const a = ajrOf(j)
+    // AJR is published for Core Collection journals only.
+    const a = coreIds.has(j.posi_id) ? ajrOf(j) : NO_AJR
     meta.set(j.posi_id, {
       code: j.journal_code, title: j.title, publisher: j.publisher || null,
       issn: [j.issn_online, j.issn_print].filter((x, n, arr): x is string => !!x && arr.indexOf(x) === n),

@@ -96,7 +96,10 @@ export default function MethodologyPage() {
 
         <section aria-labelledby="ajr">
           <h2 id="ajr">3. Journal Lifecycle Evaluation — AJR</h2>
-          <p>AJR evaluates a journal by lifecycle stage, counted in months since its first publication:</p>
+          <p>
+            AJR evaluates a journal by lifecycle stage, counted in months since its first publication. It is published for
+            Core Collection journals only; other journals show no AJR.
+          </p>
           <ul>
             <li><strong>Observation</strong>, 0–11 months: too early to rate; no score.</li>
             <li><strong>AJR-E</strong> (Early-stage Journal Rating), 12–59 months.</li>
