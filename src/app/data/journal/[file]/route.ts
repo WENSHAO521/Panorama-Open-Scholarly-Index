@@ -21,11 +21,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   const j = getStaticRecordJournals().find(x => x.journal_code === code)
   if (!j) return new Response('Not found', { status: 404 })
   const pcs = getPcsEntry(j.posi_id)
-  // PCI is a Core Collection indicator: no other journal reports one.
-  const pci = collectionOf(j) === 'core' ? getPciEntry(j.posi_id) : null
+  // PCI and AJR are Core Collection indicators: no other journal reports them.
+  const core = collectionOf(j) === 'core'
+  const pci = core ? getPciEntry(j.posi_id) : null
+  const record = core ? j : { ...j, early_stage_rating: undefined }
   const ranking = getCitationRecord(j.posi_id)
   return Response.json({
-    record: j,
+    record,
     status: { collection: collectionOf(j), verification: verificationOf(j), freshness: freshnessOf(j), data_cutoff: DATA_CUTOFF },
     // POSI-EVAL-1.0 evaluation (posi-data schema/evaluation.schema.json).
     evaluation: buildJournalEvaluation({ journal: j, ranking, pci: pci?.pci ?? null, pcs: pcs?.pcs ?? getPcsValue(j.posi_id), categoryName: categoryName(ranking?.ranking_category_id ?? null) }),
