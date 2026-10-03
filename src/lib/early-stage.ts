@@ -23,7 +23,7 @@ export const EARLY_STAGE_WINDOW_LABEL = '12-59 months'
 export const MATURE_WINDOW_LABEL = '60+ months'
 
 export function isEarlyStageV1_1(r: EarlyStageRating | null | undefined): r is EarlyStageRatingV1_1 {
-  return !!r && r.version === 'AJR-E-1.1'
+  return !!r && (r.version === 'AJR-E-1.1' || r.version === 'AJR-E-1.2')
 }
 
 // True only for the 60+ month "mature" lifecycle stage - used to withhold

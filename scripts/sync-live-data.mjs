@@ -121,7 +121,7 @@ function ajrRatings() {
   for (const j of CURATED.values()) {
     if (j.collection_status && j.collection_status !== 'core') continue
     const r = j.early_stage_rating
-    if (!r || r.version !== 'AJR-E-1.1' || !['official', 'provisional'].includes(r.rating_status) || r.lifecycle_stage === 'mature' || r.total == null) continue
+    if (!r || !['AJR-E-1.1', 'AJR-E-1.2'].includes(r.version) || !['official', 'provisional'].includes(r.rating_status) || r.lifecycle_stage === 'mature' || r.total == null) continue
     const rating = r.rating ?? AJR_SCALE.find(([, min]) => r.total >= min)?.[0]
     out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status, r.rated_at ?? null])
   }

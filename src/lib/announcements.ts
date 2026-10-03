@@ -9,6 +9,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'ajr-1-2',
+    title: 'AJR-E-1.2 and AJR-M-1.2: publisher policies and Crossref records as evidence',
+    date: '2026-10-03',
+    summary:
+      'From the November 2026 monthly rerate, AJR ratings are computed as AJR-E-1.2 and AJR-M-1.2. The formulas are unchanged; evidence a journal’s website does not show can now come from a verified publisher-wide policy or from the journal’s own Crossref records.',
+    body: [
+      'From the monthly rerate of 7 November 2026, AJR ratings of Core Collection journals are computed as AJR-E-1.2 and AJR-M-1.2, with Evidence Coverage EC-1.1. The dimensions, weights, thresholds and rating scale are unchanged.',
+      'What changes is where the evidence may come from. The journal’s own website comes first. Where it does not show a policy, a publisher-wide policy that POSI has verified as covering all the publisher’s journals now counts for thirteen policies (previously six): publication ethics, corrections, authorship, conflicts of interest, AI use, data, similarity checking, research ethics, complaints and appeals, fees, copyright, ownership and advertising. Journal-specific items such as the editorial board, the peer-review process and the access model never come from a publisher.',
+      'In addition, the journal’s own Crossref records now count: when at least half of its recent articles (at least 20, from the last three years) carry a license, a Crossmark correction policy, received and accepted dates or published reviews, or conflict-of-interest or data-availability statements, that is evidence of the matching practice.',
+      'A later source only fills what an earlier one could not resolve and never overrides what the journal’s website shows. Ratings published before November keep their AJR-E-1.1 stamp; every rating states its model version and date.',
+    ],
+  },
+  {
     slug: 'ajr-core-collection-only',
     title: 'AJR published for Core Collection journals only',
     date: '2026-10-03',

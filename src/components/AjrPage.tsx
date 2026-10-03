@@ -24,6 +24,30 @@ export function AjrCommon() {
         journals. Other journals, including those found through journal search and the directory, show no AJR: no
         score, rating or lifecycle stage. Their citation performance is shown by PNCI, PCS and the Citation Ranking.
       </p>
+      <h2 id="evidence">Where the evidence comes from</h2>
+      <p>
+        Editorial governance, research integrity and transparency are rated from published evidence, in this order:
+      </p>
+      <ul>
+        <li><strong>The journal&rsquo;s own website</strong>: its policy pages, collected in each monthly run.</li>
+        <li>
+          <strong>Publisher-wide policies</strong>: where a publisher states that a policy (publication ethics,
+          corrections, authorship, conflicts of interest, AI use, data, similarity checking, research ethics,
+          complaints, fees, copyright, ownership, advertising) covers all its journals and POSI has verified that page,
+          the journal inherits it. Journal-specific items such as the editorial board, peer-review process and access
+          model never do.
+        </li>
+        <li>
+          <strong>The journal&rsquo;s own Crossref records</strong>: when most of its recent articles carry a license, a
+          Crossmark correction policy, received and accepted dates, or conflict-of-interest and data-availability
+          statements, that counts as evidence of the matching practice.
+        </li>
+      </ul>
+      <p>
+        A later source only fills what an earlier one could not resolve; it never overrides what the journal&rsquo;s
+        website shows. Evidence that cannot be reached is not counted against the journal. This is Evidence Coverage
+        EC-1.1, used by AJR-E-1.2 and AJR-M-1.2 from the November 2026 rerate.
+      </p>
       <h2 id="scale">Rating scale</h2>
       <p>Every AJR Rating is read from the AJR Score by one table:</p>
       <AjrRatingScale />

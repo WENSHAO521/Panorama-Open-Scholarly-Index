@@ -272,7 +272,8 @@ export type OjqfScore = PqfScore
 //   real, currently-rendered data. A single `eligibility` field conflated
 //   "which lifecycle window" with "did scoring actually succeed" - the
 //   'not_yet_rateable' value covered both at once.
-// - `EarlyStageRatingV1_1` - version is always exactly "AJR-E-1.1". Only
+// - `EarlyStageRatingV1_1` - version is "AJR-E-1.1" or "AJR-E-1.2" (the same
+//   shape; 1.2, from the 2026-11 rerate, differs only in its evidence). Only
 //   the 31 src/lib/core-collection.json records ever carry this shape
 //   (as of the 2026-08-14 rerate). Splits that old single field into two
 //   orthogonal axes: `lifecycle_stage` (which window) and `rating_status`
@@ -335,15 +336,16 @@ export interface EarlyStageRatingLegacy {
   // (RANK-1.0, posi-engine's ranking.mjs).
   provisional_quartile: 'E-Q1' | 'E-Q2' | 'E-Q3' | 'E-Q4' | 'M-Q1' | 'M-Q2' | 'M-Q3' | 'M-Q4' | null
   rated_at: string    // ISO date
-  version: string     // e.g. "AJR-E-1.0", "EARLY-STAGE-AUTO-0.1" - anything but "AJR-E-1.1"
+  version: string     // e.g. "AJR-E-1.0", "EARLY-STAGE-AUTO-0.1" - anything but AJR-E-1.1 / AJR-E-1.2
 }
 
 // AJR-E-1.1 shape (posi-data's ajr-e-rerate.mjs, first run 2026-08-14 -
 // audits/ratings/ajr-e-1.1-rerate-core30-2026/README.md). Only ever present
-// on Core Collection records today. `version` is always the literal
-// "AJR-E-1.1" - use it as the discriminant (see isEarlyStageV1_1()).
+// on Core Collection records today. `version` is the literal "AJR-E-1.1" or
+// "AJR-E-1.2" (same shape; 1.2 computes the same formulas over Evidence
+// Coverage EC-1.1) - use it as the discriminant (see isEarlyStageV1_1()).
 export interface EarlyStageRatingV1_1 {
-  version: 'AJR-E-1.1'
+  version: 'AJR-E-1.1' | 'AJR-E-1.2'
   // Which lifecycle window the journal is in TODAY, recomputed at rating
   // time by exact-date arithmetic (LIFECYCLE-1.1) - never inherited from a
   // prior rating's stored stage. Orthogonal to `rating_status` below: a
