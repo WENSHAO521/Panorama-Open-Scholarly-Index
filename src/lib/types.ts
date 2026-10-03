@@ -276,7 +276,7 @@ export type OjqfScore = PqfScore
 //   "which lifecycle window" with "did scoring actually succeed" - the
 //   'not_yet_rateable' value covered both at once.
 // - `EarlyStageRatingV1_1` - version is "AJR-E-1.1" or "AJR-E-1.2" (the same
-//   shape; 1.2, from the 2026-11 rerate, differs only in its evidence). Only
+//   shape; 1.2, from the 2026-10 rerate, differs only in its evidence). Only
 //   the 31 src/lib/core-collection.json records ever carry this shape
 //   (as of the 2026-08-14 rerate). Splits that old single field into two
 //   orthogonal axes: `lifecycle_stage` (which window) and `rating_status`

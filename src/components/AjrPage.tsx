@@ -48,7 +48,7 @@ export function AjrCommon() {
       <p>
         A later source only fills what an earlier one could not resolve; it never overrides what the journal&rsquo;s
         website shows. Evidence that cannot be reached is not counted against the journal. This is Evidence Coverage
-        EC-1.1, used by AJR-E-1.2 and AJR-M-1.2 from the November 2026 rerate.
+        EC-1.1, used by AJR-E-1.2 and AJR-M-1.2 from the October 2026 rerate (7 October).
       </p>
       <h2 id="scale">Rating scale</h2>
       <p>Every AJR Rating is read from the AJR Score by one table:</p>
