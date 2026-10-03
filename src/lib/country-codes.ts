@@ -13,6 +13,8 @@
 // they put thousands of journals in the wrong country. isoCountry() maps
 // all three to ISO alpha-2.
 
+import { LISTED_PLACES } from './country-list.ts'
+
 /** Common abbreviations, checked first. */
 const ALIASES: Record<string, string> = { UK: 'GB', USA: 'US', UAE: 'AE' }
 
@@ -74,6 +76,8 @@ function codeForName(name: string): string | null {
       try { const n = regionNames.of(code); if (n && n !== code && !byName.has(n)) byName.set(n, code) } catch { /* not a region */ }
     }
     for (const [n, code] of Object.entries(EXTRA_NAMES)) byName.set(n, code)
+    // The site's own names ("DR Congo", "Ivory Coast"), so a displayed name reads back.
+    for (const p of LISTED_PLACES.values()) byName.set(p.name, p.code)
   }
   return byName.get(name) ?? null
 }
@@ -92,11 +96,16 @@ export function isoCountry(raw: string | null | undefined): string | null {
   return codeForName(v)
 }
 
-/** The English name for a country field, or the field itself when it names no known country. */
+/**
+ * The English name for a country field: the editors' list name (country-list.ts)
+ * when listed, else the Intl name, else the field itself.
+ */
 export function countryDisplayName(raw: string | null | undefined): string | null {
   if (!raw) return null
   const code = isoCountry(raw)
   if (code) {
+    const listed = LISTED_PLACES.get(code)
+    if (listed) return listed.name
     try { const n = regionNames.of(code); if (n && n !== code) return n } catch { /* not a region */ }
   }
   return raw.trim()

@@ -1,6 +1,7 @@
 // "The index at a glance": the home page's visual summary of the global
 // journal directory. A subject treemap (area = indexed journals), a world
-// map of where journals are published, the largest publishers and the
+// map of where journals are published (over the editors' list of countries
+// and territories, country-list.ts), the largest publishers and the
 // open-access share.
 // Server component; every figure is computed at build time.
 
@@ -8,7 +9,7 @@ import Link from 'next/link'
 import type { DirCategory, DirRecord } from '@/lib/global-journals'
 import type { PublisherRow } from '@/lib/publishers'
 import { publisherHref } from '@/lib/publishers'
-import { countryName } from '@/lib/records'
+import { LISTED_PLACES } from '@/lib/country-list'
 import { squarify, type Rect } from '@/lib/treemap'
 import { MAP_H, MAP_W, countryCode, getSmallPlaceDots, getWorldShapes } from '@/lib/world-map'
 import { MapHover } from './MapHover'
@@ -34,26 +35,26 @@ const binFill = (n: number) => {
 }
 
 function WorldMap({ counts }: { counts: Map<string, number> }) {
-  const dn = new Intl.DisplayNames(['en'], { type: 'region' })
   return (
     <MapHover>
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="block w-full h-auto" role="img" aria-label="World map of indexed journals by country">
         {getWorldShapes().map((s, i) => {
+          const place = LISTED_PLACES.get(s.code)
+          // Land off the list (the uninhabited French Southern Territories) is drawn for context only: no fill, no tooltip.
+          if (!place) return <path key={`${s.code}-${i}`} d={s.d} className="map-country-off" />
           const n = counts.get(s.code) ?? 0
-          let name = s.name
-          try { if (s.code) name = dn.of(s.code) ?? s.name } catch { /* keep the atlas name */ }
           return (
-            <path key={`${s.code}-${i}`} d={s.d} data-name={name} data-n={n} className="map-country"
+            <path key={`${s.code}-${i}`} d={s.d} data-name={place.name} data-n={n} className="map-country"
               style={{ fill: binFill(n) }} />
           )
         })}
-        {/* Every place too small to draw, as a dot: with journals on top, larger counts last. */}
+        {/* Every listed place too small to draw, as a dot: with journals on top, larger counts last. */}
         {getSmallPlaceDots()
+          .filter(d => LISTED_PLACES.has(d.code))
           .map(d => ({ ...d, n: counts.get(d.code) ?? 0 }))
           .sort((a, b) => a.n - b.n)
           .map(d => {
-            let name = d.code
-            try { name = dn.of(d.code) ?? d.code } catch { /* keep the code */ }
+            const name = LISTED_PLACES.get(d.code)?.name ?? d.code
             return (
               <g key={d.code} className={d.n ? 'map-dot' : 'map-dot map-dot-empty'}>
                 <circle cx={d.x} cy={d.y} r={d.n ? 3.6 : 2.4} data-name={name} data-n={d.n} style={{ fill: d.n ? binFill(d.n) : 'var(--hover)' }} />
@@ -146,18 +147,17 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
   const wide = layout(shown, 860, 380)
   const tall = layout(shown, 360, 540)
 
-  const countries = new Map<string, number>()
+  // Journals per listed country or territory, each territory in its own right.
   const byCode = new Map<string, number>()
   let oa = 0, doaj = 0
   for (const r of records) {
-    const c = countryName(r.co)
-    if (c) countries.set(c, (countries.get(c) ?? 0) + 1)
     const code = countryCode(r.co)
-    if (code) byCode.set(code, (byCode.get(code) ?? 0) + 1)
+    if (code && LISTED_PLACES.has(code)) byCode.set(code, (byCode.get(code) ?? 0) + 1)
     if (r.oa) oa++
     if (r.dj) doaj++
   }
-  const topCountries = [...countries].sort((a, b) => b[1] - a[1]).slice(0, 10)
+  const topCountries = [...byCode].sort((a, b) => b[1] - a[1]).slice(0, 10)
+    .map(([code, n]) => [LISTED_PLACES.get(code)!.name, n] as const)
   const topPublishers = publishers.slice(0, 8).map(p => ({ label: p.name, value: p.n, href: publisherHref(p) }))
   const total = records.length
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0)
@@ -189,7 +189,7 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
       <div className="mt-6 p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 mb-2">
           <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Where journals are published</h3>
-          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{fmt(countries.size)} countries and territories</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{fmt(byCode.size)} of {fmt(LISTED_PLACES.size)} countries and territories</span>
         </div>
         <WorldMap counts={byCode} />
         <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]" style={{ color: 'var(--muted)' }} aria-label="Journals per country">
