@@ -40,6 +40,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
 import { titleWords, prefixOf, neverSplit, partOf } from '../src/lib/title-words.mjs'
+import { withoutWithdrawn } from './lib/withdrawn.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
@@ -158,6 +159,7 @@ const snapshotDir = current ? current.manifest.replace(/manifest\.json$/, '') : 
     if (!snapshotDir) throw new Error('no current snapshot')
     const edition = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/citation-ranking.json.gz`, 'buffer')).toString('utf-8'))
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
+    edition.records = withoutWithdrawn(edition.records, 'citation ranking')
     for (const r of edition.records) if (CURATED.has(r.journal_id)) r.title = titlesOf(r.journal_id, r.title).title
     writeFileSync(out, JSON.stringify(edition))
     console.log(`sync-live-data: citation ranking ${edition.ranking_methodology_version} ${edition.pnci_model_version} snapshot ${edition.snapshot_date}, ${edition.records.length} journals`)
@@ -197,7 +199,7 @@ const EDITIONS = join(GEN, 'editions')
       list.push(entry)
       if (entry.current) continue
       const ed = JSON.parse(gunzipSync(await get(`${DATA}${e.edition_file}`, 'buffer')).toString('utf-8'))
-      ed.records = ed.records.filter(r => r.ranking_category_id != null).map(r => ({
+      ed.records = withoutWithdrawn(ed.records, `${e.year} edition`).filter(r => r.ranking_category_id != null).map(r => ({
         journal_id: r.journal_id, title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title ?? null,
         publisher: r.publisher ?? null, issn: r.issn ?? [], ranking_category_id: r.ranking_category_id,
         pnci: r.pnci, eligible_citable_items: r.eligible_citable_items, citation_coverage: r.citation_coverage,
@@ -233,7 +235,7 @@ const EDITIONS = join(GEN, 'editions')
     if (!Array.isArray(edition.records) || !edition.records.length) throw new Error('edition has no records')
     // Only what the site reads: PCS values and identity. The PCS-Q rank,
     // percentile and quartile fields are retired (POSI-EVAL-1.0).
-    edition.records = edition.records.map(r => ({
+    edition.records = withoutWithdrawn(edition.records, 'pcs').map(r => ({
       journal_id: r.journal_id, metric_year: r.metric_year, pcs: r.pcs, pcs_eligible_items: r.pcs_eligible_items,
       title: CURATED.has(r.journal_id) ? titlesOf(r.journal_id, r.title).title : r.title, publisher: r.publisher ?? null, issn: r.issn ?? [],
     }))
@@ -272,6 +274,8 @@ if (!RANKINGS_ONLY) {
       }
       corpus = JSON.parse(gunzipSync(await get(`${assetBase}/global-corpus.json.gz`, 'buffer')).toString('utf-8'))
     }
+    // Withdrawn journals leave the directory, and so the profiles and the search index built from it.
+    corpus = withoutWithdrawn(corpus, 'journal directory')
     writeFileSync(out, JSON.stringify(slim(corpus)))
     console.log(`sync-live-data: journal directory, ${corpus.length} journals`)
   } catch (e) {
