@@ -80,6 +80,10 @@ export interface JournalEvaluation {
   evaluationVersion: string
 }
 
+/** No AJR: what every journal outside the Core Collection carries. AJR is
+ *  published for Core Collection journals only. */
+export const NO_AJR: AjrEvaluation = { model: null, lifecycle: 'unknown', score: null, rating: null, status: 'not_rated', version: null, monthsSinceLaunch: null, reason: null, ratedAt: null }
+
 /** AJR for a journal record. A mature journal is never shown with an AJR-E score. */
 export function ajrOf(j: Pick<Journal, 'early_stage_rating'> | null | undefined): AjrEvaluation {
   const r = j?.early_stage_rating ?? null
@@ -120,11 +124,11 @@ export function buildJournalEvaluation(input: {
 }): JournalEvaluation {
   const { journal: j, ranking: r } = input
   const pqf = j?.pqf ?? j?.ojqf ?? null
-  // PCI is a Core Collection indicator: no other journal reports one.
+  // PCI and AJR are Core Collection indicators: no other journal reports them.
   const core = !!j && collectionOf(j) === 'core'
   return {
     pqf: { score: pqf?.total ?? null, status: getPQFStatus(pqf?.total), version: pqf?.version ?? null, evaluatedAt: pqf?.evaluated_at ?? null },
-    ajr: ajrOf(j),
+    ajr: core ? ajrOf(j) : NO_AJR,
     citations: {
       pci: core ? input.pci ?? r?.pci ?? null : null,
       pnci: r?.pnci ?? null,
@@ -153,15 +157,15 @@ export function buildJournalEvaluation(input: {
 }
 
 /** The evaluation carried by a journal profile shard (JournalProfile.ev), for
- *  the client-side journal page. The shard carries PCI for Core Collection
- *  journals only (scripts/sync-live-data.mjs). */
+ *  the client-side journal page. The shard carries PCI and AJR for Core
+ *  Collection journals only (scripts/sync-live-data.mjs). */
 export function evaluationFromProfile(ev: import('../journal-profile').JournalProfile['ev'], categoryName: string | null): JournalEvaluation {
   const ajr = ev?.ajr
   return {
     pqf: { score: ev?.pqf ?? null, status: getPQFStatus(ev?.pqf), version: null, evaluatedAt: null },
     ajr: ajr
       ? { model: ajr[1] as AjrModel, lifecycle: ajr[1] === 'AJR-M' ? 'mature' : 'early_stage', score: ajr[2], rating: getAJRRating(ajr[2]), status: ajr[3] ?? 'official', version: null, monthsSinceLaunch: null, reason: null, ratedAt: ajr[4] ?? null }
-      : { model: null, lifecycle: 'unknown', score: null, rating: null, status: 'not_rated', version: null, monthsSinceLaunch: null, reason: null, ratedAt: null },
+      : NO_AJR,
     citations: {
       pci: ev?.pci ?? null, pnci: ev?.pnci ?? null, pnciModel: ev?.pm ?? null, pcs: ev?.pcs ?? null,
       eligibleItems: ev?.n ?? null, coverage: ev?.cov ?? null, publicationYears: [],

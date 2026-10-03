@@ -88,6 +88,8 @@ const soft = (s: string) => <span style={{ color: 'var(--soft)' }}>{s}</span>
 /**
  * The fixed evaluation order: Core Collection status, PQF, AJR, Citation
  * Performance. `core` is null for journals outside the curated collections.
+ * AJR is published for Core Collection journals only: no other journal
+ * shows the AJR block.
  */
 export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
   ev: JournalEvaluation
@@ -112,15 +114,15 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
         </Block>
       )}
 
-      <Block title="Journal Development Rating" id={`${idPrefix}-ajr`} aside={a.version ? <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{a.version}</span> : null}>
+      {core === 'core' && <Block title="Journal Development Rating" id={`${idPrefix}-ajr`} aside={a.version ? <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{a.version}</span> : null}>
         <Row k="Lifecycle" v={a.model ? `${a.model === 'Observation' ? 'Observation' : a.model} · ${AJR_MODEL_NAME[a.model]}` : soft(NOT_AVAILABLE)}
           note={a.monthsSinceLaunch != null ? `${a.monthsSinceLaunch} months since first publication` : undefined} />
         {a.score != null
           ? <Row k={a.model ?? 'AJR'} v={<>{mono(`${fmtScore(a.score)} / 100`)} <span className="ml-1"><AjrRatingBadge rating={a.rating} /></span></>}
               note={a.status === 'provisional' ? 'Provisional score: evidence coverage below the official threshold' : undefined} />
           : <Row k="AJR" v={soft(a.lifecycle === 'observation' ? 'Observation period' : a.model === 'AJR-M' ? 'AJR-M: not yet rated' : 'Not rated')} note={a.reason ?? undefined} />}
-        {fmtDay(a.ratedAt) && <Row k="Rated" v={fmtDay(a.ratedAt)} note={core === 'core' ? 'Core Collection journals are re-rated every month' : undefined} />}
-      </Block>
+        {fmtDay(a.ratedAt) && <Row k="Rated" v={fmtDay(a.ratedAt)} note="Core Collection journals are re-rated every month" />}
+      </Block>}
 
       <Block title="Citation Performance" id={`${idPrefix}-cit`} aside={<Link href="/methodology/#ranking" className="link text-[12px]">Method</Link>}>
         <Row k="PNCI" v={ev.citations.pnci != null ? mono(fmtScore(ev.citations.pnci)) : soft(NOT_AVAILABLE)} note={ev.citations.pnciModel ?? undefined} />
@@ -146,12 +148,12 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true }: {
 type CardState = 'done' | 'pending' | 'none'
 const CARD_DOT: Record<CardState, string> = { done: 'var(--verified)', pending: 'var(--partial)', none: 'var(--soft)' }
 
-function Card({ step, title, version, state, value, children, action }: {
+function Card({ step, title, version, state, value, children, action, wide = false }: {
   step: number; title: string; version?: string | null; state: CardState
-  value: React.ReactNode; children?: React.ReactNode; action?: React.ReactNode
+  value: React.ReactNode; children?: React.ReactNode; action?: React.ReactNode; wide?: boolean
 }) {
   return (
-    <div className="p-4 flex flex-col gap-1.5 min-w-0" style={{ background: 'var(--surface)' }}>
+    <div className={`p-4 flex flex-col gap-1.5 min-w-0${wide ? ' sm:col-span-2' : ''}`} style={{ background: 'var(--surface)' }}>
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{step} · {title}</h3>
         {version && <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{version}</span>}
@@ -167,9 +169,10 @@ function Card({ step, title, version, state, value, children, action }: {
 }
 
 /**
- * The evaluation as four status cards in the fixed order (Core Collection,
- * PQF, AJR, Citation Ranking). Same values as EvaluationPanel, laid out so
- * the state of each stage reads at a glance on the journal record.
+ * The evaluation as status cards in the fixed order (Core Collection, PQF,
+ * AJR, Citation Ranking). Same values as EvaluationPanel, laid out so the
+ * state of each stage reads at a glance on the journal record. The AJR card
+ * is shown for Core Collection journals only.
  */
 export function EvaluationCards({ ev, core, autoPqf }: {
   ev: JournalEvaluation
@@ -200,7 +203,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
           <p>Eligibility framework; not a citation metric.</p>
         </Card>
 
-        <Card step={3} title="AJR lifecycle" version={a.version}
+        {core === 'core' && <Card step={3} title="AJR lifecycle" version={a.version}
           state={a.score != null ? (a.status === 'provisional' ? 'pending' : 'done') : a.model === 'AJR-M' || a.lifecycle === 'observation' ? 'pending' : 'none'}
           value={a.score != null
             ? <span className="inline-flex flex-wrap items-center gap-2">{mono(`${fmtScore(a.score)} / 100`)}<AjrRatingBadge rating={a.rating} /></span>
@@ -213,9 +216,9 @@ export function EvaluationCards({ ev, core, autoPqf }: {
           </p>
           {a.score != null && a.status === 'provisional' && <p>Provisional score: evidence coverage below the official threshold.</p>}
           {a.score == null && a.reason && <p>{a.reason}.</p>}
-        </Card>
+        </Card>}
 
-        <Card step={4} title="Citation ranking" version={r.methodology} state={ranked ? (provisional ? 'pending' : 'done') : 'none'}
+        <Card step={core === 'core' ? 4 : 3} wide={core !== 'core'} title="Citation ranking" version={r.methodology} state={ranked ? (provisional ? 'pending' : 'done') : 'none'}
           value={ranked
             ? <span className="inline-flex flex-wrap items-center gap-2">{mono(`${r.rank} / ${r.total}`)}<QuartileBadge q={r.quartile} provisional={provisional} /><ZoneBadge z={r.zone} status={r.zoneStatus} /></span>
             : RANKING_STATUS_LABEL[r.status]}

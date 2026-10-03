@@ -79,7 +79,7 @@ export interface JournalProfile {
     why?: string
     pcs?: number
     pci?: number
-    /** [AJR Rating, AJR model, AJR score, rating status, rating date], curated journals only */
+    /** [AJR Rating, AJR model, AJR score, rating status, rating date], Core Collection journals only */
     ajr?: [string, string, number, string, (string | null)?]
     /** PQF score, curated journals only */
     pqf?: number

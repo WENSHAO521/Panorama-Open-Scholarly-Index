@@ -32,7 +32,7 @@ export async function generateMetadata(props: { params: Promise<{ code: string }
   if (!j) return { title: 'Record not found' }
   return {
     title: j.title,
-    description: `POSI journal record for ${j.title}${j.issn_online ? ` (eISSN ${j.issn_online})` : ''}: identifiers, Core Collection status, PQF, AJR rating, PNCI citation ranking and provenance.`,
+    description: `POSI journal record for ${j.title}${j.issn_online ? ` (eISSN ${j.issn_online})` : ''}: identifiers, Core Collection status, PQF, AJR rating (Core Collection journals), PNCI citation ranking and provenance.`,
     alternates: { canonical: `/journal/${j.journal_code}/` },
   }
 }

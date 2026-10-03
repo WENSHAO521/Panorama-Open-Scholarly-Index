@@ -12,7 +12,7 @@ export const metadata = {
 
 const PARTS: [string, string, string, React.ReactNode][] = [
   ['Tier', 'Core · Indexed', 'Core journals applied for certification and passed PQF editorial evaluation. Every other journal registered with Crossref or OpenAlex is Indexed, including a formerly certified journal a PQF re-review found below the bar.', <Link key="t" href="/editorial-policy/#certification">Editorial policy</Link>],
-  ['AJR', AJR_RATING_SCALE.map(([r]) => r).join(' · '), 'An absolute lifecycle rating from published evidence. Not a quartile: many journals can share a rating.', <Link key="a" href="/ratings/">AJR ratings</Link>],
+  ['AJR', AJR_RATING_SCALE.map(([r]) => r).join(' · '), 'An absolute lifecycle rating from published evidence, for Core Collection journals only. Not a quartile: many journals can share a rating.', <Link key="a" href="/ratings/">AJR ratings</Link>],
   ['C-Q', 'C-Q1 · C-Q2 · C-Q3 · C-Q4', 'Citation Quartile: the journal’s PNCI percentile within its PSC subject category, in four equal bands.', <Link key="q" href="/methodology/#quartiles">Citation Quartiles</Link>],
   ['Zone', `${Object.entries(ZONE_SHARE).map(([z]) => z).join(' · ')}`, `POSI Zone: a tiered reading of the same percentile. ${Object.entries(ZONE_SHARE).map(([z, s]) => `Zone ${z} is ${s.toLowerCase()}`).join('; ')}.`, <Link key="z" href="/methodology/#zones">POSI Zones</Link>],
 ]
@@ -23,7 +23,7 @@ export default function GradesPage() {
       <PageHeader title="How to read POSI grades" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Methodology', href: '/methodology/' }, { label: 'POSI grades' }]}>
         <p className="max-w-[68ch]">
           Every journal in POSI carries one grades badge, the same on every page: its collection tier, then its AJR
-          rating, Citation Quartile and POSI Zone where they have been assigned.
+          rating (Core Collection journals only), Citation Quartile and POSI Zone where they have been assigned.
         </p>
       </PageHeader>
 

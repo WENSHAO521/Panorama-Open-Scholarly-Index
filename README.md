@@ -26,7 +26,7 @@ Five layers, each answering one question, never mixed
 | Layer | Question | Published as |
 |---|---|---|
 | **PQF** | Can the journal enter or remain in the Core Collection? | Score 0–100 + Eligible / Review Required / Insufficient Evidence / Not Eligible |
-| **AJR** | How strong is its lifecycle and publishing development? | Observation, AJR-E (12–59 months) or AJR-M (60+ months): AJR Score + AJR Rating A+ … D |
+| **AJR** | How strong is its lifecycle and publishing development? | Observation, AJR-E (12–59 months) or AJR-M (60+ months): AJR Score + AJR Rating A+ … D. Core Collection journals only |
 | **PCI / PNCI / PCS** | What does citation evidence show? | Citation indicators |
 | **Citation Ranking** | Where does it rank within its PSC category? | Rank, percentile and Citation Quartile C-Q1 … C-Q4, from **PNCI** only |
 | **POSI Zones** | POSI's selective grouping | Zone 1 (top 5%) … Zone 4, from the same percentile |
