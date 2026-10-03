@@ -370,3 +370,10 @@ pre.code {
 .map-dot-key { fill: color-mix(in srgb, var(--teal) 42%, var(--surface)); }
 .map-dot:hover circle:first-child { stroke: var(--ink); stroke-width: 1.4; }
 .map-dot-empty circle:first-child { stroke: var(--soft); stroke-width: 0.7; }
+.map-country, .map-country-off, .map-dot circle { vector-effect: non-scaling-stroke; }
+.map-zoom {
+  display: grid; place-items: center; width: 28px; height: 28px;
+  background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); border-radius: 2px;
+}
+.map-zoom:hover { background: var(--hover); color: var(--ink); }
+.map-zoom:disabled { opacity: .4; pointer-events: none; }
