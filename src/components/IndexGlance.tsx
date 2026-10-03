@@ -9,7 +9,7 @@ import Link from 'next/link'
 import type { DirCategory, DirRecord } from '@/lib/global-journals'
 import type { PublisherRow } from '@/lib/publishers'
 import { publisherHref } from '@/lib/publishers'
-import { LISTED_PLACES } from '@/lib/country-list'
+import { LISTED_PLACES, listedPlaceOf } from '@/lib/country-list'
 import { squarify, type Rect } from '@/lib/treemap'
 import { MAP_H, MAP_W, countryCode, getSmallPlaceDots, getWorldShapes } from '@/lib/world-map'
 import { MapHover } from './MapHover'
@@ -40,7 +40,7 @@ function WorldMap({ counts }: { counts: Map<string, number> }) {
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="block w-full h-auto" role="img" aria-label="World map of indexed journals by country">
         {getWorldShapes().map((s, i) => {
           const place = LISTED_PLACES.get(s.code)
-          // Land outside the list is drawn for context only: no fill, no tooltip.
+          // Land off the list (Antarctic territories) is drawn for context only: no fill, no tooltip.
           if (!place) return <path key={`${s.code}-${i}`} d={s.d} className="map-country-off" />
           const n = counts.get(s.code) ?? 0
           return (
@@ -147,17 +147,17 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
   const wide = layout(shown, 860, 380)
   const tall = layout(shown, 360, 540)
 
-  // Journals per listed country or territory; places off the list are not counted.
+  // Journals per listed country or territory; a territory off the list counts under its administering country.
   const byCode = new Map<string, number>()
   let oa = 0, doaj = 0
   for (const r of records) {
-    const code = countryCode(r.co)
-    if (code && LISTED_PLACES.has(code)) byCode.set(code, (byCode.get(code) ?? 0) + 1)
+    const place = listedPlaceOf(countryCode(r.co))
+    if (place) byCode.set(place.code, (byCode.get(place.code) ?? 0) + 1)
     if (r.oa) oa++
     if (r.dj) doaj++
   }
   const topCountries = [...byCode].sort((a, b) => b[1] - a[1]).slice(0, 10)
-    .map(([code, n]) => [LISTED_PLACES.get(code)!.name, n] as const)
+    .map(([code, n]) => [listedPlaceOf(code)!.name, n] as const)
   const topPublishers = publishers.slice(0, 8).map(p => ({ label: p.name, value: p.n, href: publisherHref(p) }))
   const total = records.length
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0)

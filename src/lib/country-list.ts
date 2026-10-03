@@ -1,7 +1,9 @@
-// The countries and territories the home page map counts ("Where journals
-// are published"): 219 places, with their English and Chinese names, kind
-// and continent, as supplied by the editors. Journals of a place not on this
-// list are left out of the map and its country count.
+// The countries and territories the site names and the home page map counts
+// ("Where journals are published"): the editors' list of 219 places, with
+// their English and Chinese names, kind and continent, plus two UN member
+// states it left out (North Korea, Comoros). The English names here are the
+// site's country names (countryDisplayName). A dependent territory off the
+// list is counted under the country that administers it (PARENT).
 
 export type PlaceKind = 'state' | 'observer' | 'disputed' | 'territory' | 'associated'
 export type Continent = 'Asia' | 'Europe' | 'Africa' | 'North America' | 'South America' | 'Oceania'
@@ -30,6 +32,7 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['LA', 'Laos', '老挝', 'state', 'Asia'],
   ['BN', 'Brunei', '文莱', 'state', 'Asia'],
   ['TL', 'Timor-Leste', '东帝汶', 'state', 'Asia'],
+  ['KP', 'North Korea', '朝鲜', 'state', 'Asia'],
   ['MN', 'Mongolia', '蒙古', 'state', 'Asia'],
   ['KZ', 'Kazakhstan', '哈萨克斯坦', 'state', 'Asia'],
   ['UZ', 'Uzbekistan', '乌兹别克斯坦', 'state', 'Asia'],
@@ -130,6 +133,7 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
   ['CM', 'Cameroon', '喀麦隆', 'state', 'Africa'],
   ['CI', 'Ivory Coast', '科特迪瓦', 'state', 'Africa'],
   ['SN', 'Senegal', '塞内加尔', 'state', 'Africa'],
+  ['KM', 'Comoros', '科摩罗', 'state', 'Africa'],
   ['MG', 'Madagascar', '马达加斯加', 'state', 'Africa'],
   ['MU', 'Mauritius', '毛里求斯', 'state', 'Africa'],
   ['SC', 'Seychelles', '塞舌尔', 'state', 'Africa'],
@@ -234,3 +238,25 @@ const ROWS: [code: string, name: string, zh: string, kind: PlaceKind, continent:
 export const LISTED_PLACES: ReadonlyMap<string, ListedPlace> = new Map(
   ROWS.map(([code, name, zh, kind, continent]) => [code, { code, name, zh, kind, continent }]),
 )
+
+/** Territories off the list, by the listed country that administers them. */
+export const PARENT: Readonly<Record<string, string>> = {
+  // France
+  GP: 'FR', MQ: 'FR', YT: 'FR', PM: 'FR', WF: 'FR', MF: 'FR', BL: 'FR', TF: 'FR',
+  // United Kingdom
+  AI: 'GB', MS: 'GB', TC: 'GB', SH: 'GB', PN: 'GB', IO: 'GB', GS: 'GB',
+  // Netherlands
+  CW: 'NL', SX: 'NL', BQ: 'NL',
+  // United States
+  MP: 'US', UM: 'US',
+  // Australia
+  NF: 'AU', CX: 'AU', CC: 'AU', HM: 'AU',
+  // others
+  AX: 'FI', SJ: 'NO', BV: 'NO', TK: 'NZ',
+}
+
+/** The listed place a country code is counted under: itself, its administering country, or null. */
+export function listedPlaceOf(code: string | null | undefined): ListedPlace | null {
+  if (!code) return null
+  return LISTED_PLACES.get(code) ?? LISTED_PLACES.get(PARENT[code] ?? '') ?? null
+}
