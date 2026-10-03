@@ -45,6 +45,9 @@ export interface Journal {
   /** @deprecated use pqf */
   ojqf?: PqfScore
   early_stage_rating?: EarlyStageRating | null
+  // AJR-M rating of a journal 60+ months old (posi-engine rate-mature.mjs,
+  // posi-data schema/rating.schema.json track 'mature').
+  mature_rating?: MatureRating | null
   // True only for BENCHMARK_JOURNALS - an external reference corpus used to
   // validate AJR against internationally established journals. Never part
   // of the Core Collection, never a POSI admission candidate, never counted
@@ -287,6 +290,17 @@ export type OjqfScore = PqfScore
 // there is no finite literal union to discriminate the legacy branch on the
 // other side.
 export type EarlyStageRating = EarlyStageRatingLegacy | EarlyStageRatingV1_1
+
+/** AJR-M rating as posi-engine's ajr-m-rerate.mjs writes it (the fields the site reads). */
+export interface MatureRating {
+  track: 'mature'
+  methodology_version: string   // e.g. "AJR-M-1.2"
+  rating_status: 'official' | 'provisional' | 'not_rateable' | 'not_officially_rankable' | string
+  total_score: number | null
+  rating: string | null
+  rating_date: string | null
+  suppression_reason?: string | null
+}
 
 export interface EarlyStageSubfactors {
   egf: number  // Editorial Governance & Peer Review              /15

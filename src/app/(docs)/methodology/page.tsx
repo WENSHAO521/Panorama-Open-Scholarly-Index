@@ -296,7 +296,7 @@ export default function MethodologyPage() {
                   ['Citation ranking', RANKING_VERSION],
                   ['PNCI', PNCI_VERSION],
                   ['POSI Zones', ZONES_EDITION_VERSION],
-                  ['AJR', 'AJR-E-1.2, AJR-M-1.2 (from the November 2026 rerate; 1.1 before), Evidence Coverage EC-1.1, rating scale AJR-RATING-1.0'],
+                  ['AJR', 'AJR-E-1.2, AJR-M-1.2 and Evidence Coverage EC-1.1 from the November 2026 rerate (earlier ratings: AJR-E-1.1; no AJR-M rating was published before), rating scale AJR-RATING-1.0'],
                   ['PQF', 'PQF v1.0'],
                   ['PCI, PCS', 'PCI-1.0, PCS-1.0'],
                   ['Subject crosswalk', 'PSC-CROSSWALK-0.3'],

@@ -33,14 +33,16 @@ export function AjrCommon() {
         <li>
           <strong>Publisher-wide policies</strong>: where a publisher states that a policy (publication ethics,
           corrections, authorship, conflicts of interest, AI use, data, similarity checking, research ethics,
-          complaints, fees, copyright, ownership, advertising) covers all its journals and POSI has verified that page,
-          the journal inherits it. Journal-specific items such as the editorial board, peer-review process and access
-          model never do.
+          complaints, copyright, ownership, advertising) covers all its journals and POSI has verified that page,
+          the journal inherits it. Journal-specific items such as the editorial board, peer-review process, access
+          model and fees never do.
         </li>
         <li>
-          <strong>The journal&rsquo;s own Crossref records</strong>: when most of its recent articles carry a license, a
-          Crossmark correction policy, received and accepted dates, or conflict-of-interest and data-availability
-          statements, that counts as evidence of the matching practice.
+          <strong>The journal&rsquo;s own Crossref records</strong>: of its newest articles published in the last three
+          years (up to 100, at least 20), when at least half carry a licence for the published article, that is evidence
+          of its copyright and licensing terms; when at least half carry a Crossmark update policy, that is its
+          corrections and retractions policy. Statements in individual articles (review dates, conflicts of interest,
+          data availability) do not count as the journal&rsquo;s policy.
         </li>
       </ul>
       <p>

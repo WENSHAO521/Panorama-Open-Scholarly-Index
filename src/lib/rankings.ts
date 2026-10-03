@@ -125,7 +125,7 @@ function metaIndex(): { meta: Map<string, Meta>; coreIds: Set<string> } {
       issn: [j.issn_online, j.issn_print].filter((x, n, arr): x is string => !!x && arr.indexOf(x) === n),
       ...(j.alternate_titles?.length ? { alt: j.alternate_titles.map(alternateTitleText) } : {}),
       ajr: a.rating, ajrScore: a.score, lifecycle: a.lifecycle === 'unknown' ? null : a.lifecycle,
-      storedRating: (j.early_stage_rating as { rating?: string | null } | null | undefined)?.rating ?? null,
+      storedRating: a.model === 'AJR-M' ? j.mature_rating?.rating ?? null : (j.early_stage_rating as { rating?: string | null } | null | undefined)?.rating ?? null,
     })
   }
   for (const t of (titles as { journals: { id: string; t: string; p: string | null; i: string[] }[] }).journals) {

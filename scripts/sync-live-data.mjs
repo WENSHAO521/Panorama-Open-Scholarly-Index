@@ -110,7 +110,8 @@ function titleKey(t) {
 }
 
 // AJR Rating by posi_id for Core Collection journals (AJR is published for
-// them only): [rating, model, score, rating status, rating date]. The
+// them only): [rating, model, score, rating status, rating date, model
+// version], from the AJR-M rating of a mature journal, else AJR-E. The
 // rating is the one stored with the record (AJR-RATING-1.0) or, for records
 // synced before it, derived from the score by the same table as
 // src/lib/evaluation/rules.ts getAJRRating(); the build's invariant check
@@ -120,10 +121,16 @@ function ajrRatings() {
   const out = new Map()
   for (const j of CURATED.values()) {
     if (j.collection_status && j.collection_status !== 'core') continue
+    const m = j.mature_rating
+    if (m && /^AJR-M-/.test(m.methodology_version ?? '') && ['official', 'provisional'].includes(m.rating_status) && m.total_score != null) {
+      const rating = m.rating ?? AJR_SCALE.find(([, min]) => m.total_score >= min)?.[0]
+      out.set(j.posi_id, [rating, 'AJR-M', m.total_score, m.rating_status, m.rating_date ?? null, m.methodology_version])
+      continue
+    }
     const r = j.early_stage_rating
     if (!r || !['AJR-E-1.1', 'AJR-E-1.2'].includes(r.version) || !['official', 'provisional'].includes(r.rating_status) || r.lifecycle_stage === 'mature' || r.total == null) continue
     const rating = r.rating ?? AJR_SCALE.find(([, min]) => r.total >= min)?.[0]
-    out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status, r.rated_at ?? null])
+    out.set(j.posi_id, [rating, 'AJR-E', r.total, r.rating_status, r.rated_at ?? null, r.version])
   }
   return out
 }
