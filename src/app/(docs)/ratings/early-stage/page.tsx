@@ -17,7 +17,7 @@ export default function EarlyStagePage() {
   return (
     <div className="pb-12">
       <PageHeader title="AJR-E: Early-stage Journal Rating" crumbs={[{ label: 'POSI', href: '/' }, { label: 'AJR', href: '/ratings/' }, { label: 'AJR-E' }]}>
-        <p className="max-w-[68ch]">For journals 12–59 months after their first publication (<code>AJR-E-1.2</code> from the November 2026 rerate; <code>AJR-E-1.1</code> before).</p>
+        <p className="max-w-[68ch]">For journals 12–59 months after their first publication (<code>AJR-E-1.2</code> from the October 2026 rerate; <code>AJR-E-1.1</code> before).</p>
       </PageHeader>
       <div className="doc">
         <h2 id="dimensions">Dimensions</h2>

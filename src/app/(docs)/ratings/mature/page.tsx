@@ -12,7 +12,7 @@ export default function MaturePage() {
   return (
     <div className="pb-12">
       <PageHeader title="AJR-M: Mature Journal Rating" crumbs={[{ label: 'POSI', href: '/' }, { label: 'AJR', href: '/ratings/' }, { label: 'AJR-M' }]}>
-        <p className="max-w-[68ch]">For journals 60 months or more after their first publication (<code>AJR-M-1.2</code> from the November 2026 rerate).</p>
+        <p className="max-w-[68ch]">For journals 60 months or more after their first publication (<code>AJR-M-1.2</code> from the October 2026 rerate).</p>
       </PageHeader>
       <div className="doc">
         <p>
