@@ -60,7 +60,7 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
 function norm(p: string) { return p.split('?')[0].replace(/\/?$/, '/') }
 
 function groupActive(g: NavGroup, pathname: string) {
-  const hrefs = g.href ? [g.href] : (g.links ?? []).map(l => l.href)
+  const hrefs = [...(g.href ? [g.href] : (g.links ?? []).map(l => l.href)), ...(g.match ?? [])]
   return hrefs.some(h => { const n = norm(h); return n !== '/' && pathname.startsWith(n) })
 }
 

@@ -212,14 +212,17 @@ export async function crossrefSearch(query: string): Promise<Article | null> {
 
 /** Top Crossref matches for a title / author / keyword query, for the user to pick from. */
 export async function crossrefSearchMany(query: string, rows = 6): Promise<Article[]> {
-  try {
-    const res = await fetchRetry(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=${rows}&mailto=${MAILTO}`, 20000)
-    if (!res.ok) return []
-    const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
-    return items.map(mapCrossrefWork).filter(a => a.title)
-  } catch {
-    return []
+  // Journal articles first; fall back to every work type when there are none.
+  for (const filter of ['&filter=type:journal-article', '']) {
+    try {
+      const res = await fetchRetry(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=${rows}${filter}&mailto=${MAILTO}`, 20000)
+      if (!res.ok) continue
+      const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
+      const found = items.map(mapCrossrefWork).filter(a => a.title)
+      if (found.length) return found
+    } catch { /* try the next filter */ }
   }
+  return []
 }
 
 interface OpenAlexWork {

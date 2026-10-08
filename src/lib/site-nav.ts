@@ -1,11 +1,13 @@
 // Primary navigation. One source for the header menu and the footer.
 
 export interface NavLink { label: string; href: string; description?: string }
-export interface NavGroup { label: string; href?: string; links?: NavLink[] }
+/** `match` lists extra path prefixes that belong to the group without being in its menu, so the header highlights it on those pages. */
+export interface NavGroup { label: string; href?: string; links?: NavLink[]; match?: string[] }
 
 export const PRIMARY_NAV: NavGroup[] = [
   {
     label: 'Journals',
+    match: ['/journal/', '/record/'],
     links: [
       { label: 'Browse journals', href: '/journals/', description: 'Every indexed journal, by subject category' },
       { label: 'Core Collection', href: '/core-collection/', description: 'Journals certified after editorial evaluation' },
@@ -16,13 +18,14 @@ export const PRIMARY_NAV: NavGroup[] = [
   },
   {
     label: 'Rankings',
+    match: ['/grades/', '/pqf/', '/pci/', '/ratings/'],
     links: [
       { label: 'Citation Rankings', href: '/rankings/', description: 'PNCI ranks, Citation Quartiles and POSI Zones by subject category' },
       { label: 'All categories', href: '/rankings/all/', description: 'Every ranked journal, with its category rank' },
       { label: 'Methodology', href: '/methodology/', description: 'PQF, AJR, citation indicators and the ranking method' },
     ],
   },
-  { label: 'Publications', href: '/publications/' },
+  { label: 'Publications', href: '/publications/', match: ['/work/'] },
   {
     label: 'Services',
     links: [
@@ -30,7 +33,7 @@ export const PRIMARY_NAV: NavGroup[] = [
       { label: 'Verify a certificate', href: '/certificate/verify/', description: 'Check a certificate number' },
       { label: 'Zone certificate', href: '/certificate/zone/', description: 'A journal’s official POSI Zone in its subject category' },
       { label: 'Journal certification', href: '/certification/', description: 'Apply for the Core Collection' },
-      { label: 'Citation generator', href: '/cite/', description: 'PSG, APA, MLA and Chicago citations from a DOI or ISBN' },
+      { label: 'Citation generator', href: '/cite/', description: 'Convert one or many DOIs, titles or references to PSG, APA, MLA and Chicago' },
       { label: 'PSG citation format', href: '/psg-format/', description: 'The PSG author-date citation standard' },
       { label: 'Logos and journal marks', href: '/logos/', description: 'POSI marks for indexed and Core Collection journals' },
     ],
@@ -38,10 +41,10 @@ export const PRIMARY_NAV: NavGroup[] = [
   { label: 'Data', href: '/datasets/' },
   {
     label: 'About',
+    match: ['/coi/', '/privacy/', '/terms/', '/responsible-use/'],
     links: [
       { label: 'About POSI', href: '/about/', description: 'Publisher, coverage and independence' },
       { label: 'Editorial policy', href: '/editorial-policy/', description: 'Indexing, certification and coverage changes' },
-      { label: 'Methodology', href: '/methodology/', description: 'The journal evaluation architecture' },
       { label: 'Documentation', href: '/docs/', description: 'Data sources, schema and provenance' },
       { label: 'News', href: '/announcements/', description: 'Updates and coverage changes' },
       { label: 'Contact', href: '/contact/', description: 'Corrections, certification and data enquiries' },
