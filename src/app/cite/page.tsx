@@ -8,7 +8,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
 import { BatchConverter } from '@/components/BatchConverter'
-import { crossrefGetWork, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
+import { crossrefGetWork, crossrefSearchMany, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
@@ -42,12 +42,13 @@ interface ManualWebsiteForm {
 interface CitPair { html: string; plain: string; intext: string }
 interface AllCitations { psg: CitPair; apa: CitPair; mla: CitPair; chicago: CitPair }
 
-type InputKind = 'doi' | 'isbn' | 'url-doi' | 'url-manual'
+type InputKind = 'doi' | 'isbn' | 'url-doi' | 'url-manual' | 'search'
 type Source = 'crossref' | 'openalex'
 
 type AutoResult =
   | { type: 'article'; article: Article; source: Source }
   | { type: 'book'; citations: AllCitations; book: BookInfo }
+  | { type: 'search'; query: string; results: Article[] }
   | { type: 'webpage-form'; url: string }
   | { type: 'webpage-result'; citations: AllCitations; title: string }
 
@@ -361,7 +362,7 @@ function detectInput(raw: string): { kind: InputKind; payload: string } | null {
   const digits = s.replace(/[-\s]/g, '')
   if (/^\d{9}[\dX]$/i.test(digits) || /^\d{13}$/.test(digits)) return { kind: 'isbn', payload: digits }
   if (/^10\./.test(s)) return { kind: 'doi', payload: s }
-  return null
+  return s.length >= 6 ? { kind: 'search', payload: s } : null
 }
 
 function domainFromUrl(url: string): string {
@@ -681,7 +682,7 @@ function CitePage() {
 
   async function doLookup(raw: string) {
     const detected = detectInput(raw)
-    if (!detected) { setError('Enter a DOI (10.xxx/…), ISBN (9780…), or a URL.'); return }
+    if (!detected) { setError('Enter a DOI (10.xxx/…), ISBN (9780…), a URL, or an article title.'); return }
     const myId = ++lookupCount.current
     setLoading(true); setError(null); setAutoResult(null)
     try {
@@ -706,6 +707,11 @@ function CitePage() {
         if (!article) { setError('No article metadata found for this DOI in Crossref or OpenAlex.'); return }
         setAutoResult({ type: 'article', article, source: src })
         router.replace(`/cite/?doi=${encodeURIComponent(doi)}`, { scroll: false })
+      } else if (detected.kind === 'search') {
+        const results = await crossrefSearchMany(detected.payload)
+        if (myId !== lookupCount.current) return
+        if (!results.length) { setError('No articles found for this title. Try more words from the title, or enter the details manually below ↓'); return }
+        setAutoResult({ type: 'search', query: detected.payload, results })
       } else if (detected.kind === 'isbn') {
         const book = await fetchBookByIsbn(detected.payload)
         if (myId !== lookupCount.current) return
@@ -792,11 +798,11 @@ function CitePage() {
       <form onSubmit={e => { e.preventDefault(); doLookup(input) }}
         className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--posi-text)' }}>
-          DOI, ISBN, or URL
+          DOI, ISBN, URL, or article title
         </label>
         <div className="flex gap-3">
           <input value={input} onChange={e => setInput(e.target.value)}
-            placeholder="e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  https://example.com"
+            placeholder="e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title"
             className="flex-1 px-4 py-2.5 focus:outline-none transition-colors"
             style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '14px' }}
             onFocus={onFocusBorder} onBlur={onBlurBorder} />
@@ -812,6 +818,7 @@ function CitePage() {
             ['DOI', 'any Crossref DOI, e.g. 10.63802/afs.2024.008'],
             ['ISBN', '10 or 13 digits, e.g. 9780374528379'],
             ['URL', 'any web address, e.g. https://example.com/page'],
+            ['Title', 'article title, with author or journal if you have it'],
           ].map(([k, v]) => (
             <p key={k} className="text-xs" style={{ color: 'var(--posi-muted)' }}>
               <span className="font-mono font-medium" style={{ color: 'var(--posi-text)' }}>{k}</span> - {v}
@@ -839,6 +846,29 @@ function CitePage() {
               <p className="text-xs leading-relaxed text-justify" style={{ color: '#7f1d1d' }}>{error}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Title search results */}
+      {!loading && autoResult?.type === 'search' && (
+        <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+          <p className="px-5 py-3 text-xs font-mono" style={{ borderBottom: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
+            Select the article to cite
+          </p>
+          <ul className="divide-y divide-[var(--line-soft)]">
+            {autoResult.results.map(a => (
+              <li key={a.doi}>
+                <button type="button" className="w-full text-left px-5 py-3 hover:bg-[var(--surface-2)]"
+                  onClick={() => { setAutoResult({ type: 'article', article: a, source: 'crossref' }); router.replace(`/cite/?doi=${encodeURIComponent(a.doi)}`, { scroll: false }) }}>
+                  <span className="block text-sm font-medium" style={{ color: 'var(--posi-text)' }}>{decodeHtml(a.title)}</span>
+                  <span className="block text-xs mt-0.5" style={{ color: 'var(--posi-muted)' }}>
+                    {a.authors.slice(0, 3).map(x => x.display_name).join('; ')}{a.authors.length > 3 ? ' et al.' : ''}
+                    {a.journal_title ? ` · ${decodeHtml(a.journal_title)}` : ''} · {a.publication_year}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

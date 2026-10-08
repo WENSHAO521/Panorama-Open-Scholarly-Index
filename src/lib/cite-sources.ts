@@ -195,6 +195,18 @@ export async function crossrefSearch(query: string): Promise<Article | null> {
   }
 }
 
+/** Top Crossref matches for a title / author / keyword query, for the user to pick from. */
+export async function crossrefSearchMany(query: string, rows = 6): Promise<Article[]> {
+  try {
+    const res = await fetch(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=${rows}&mailto=${MAILTO}`, { signal: AbortSignal.timeout(20000) })
+    if (!res.ok) return []
+    const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
+    return items.map(mapCrossrefWork).filter(a => a.title)
+  } catch {
+    return []
+  }
+}
+
 interface OpenAlexWork {
   id: string
   doi: string | null
