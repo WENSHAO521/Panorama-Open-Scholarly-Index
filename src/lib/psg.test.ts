@@ -11,7 +11,7 @@ test('journal article matches the specification example', () => {
       year: 2024, title: 'Artificial Intelligence and Administrative Reform in Local Government',
       journal: 'Journal of Public Governance and Society', volume: '12', issue: '2', pages: '45-63', doi: '10.1234/abc',
     }),
-    'Smith, John A., Helen K. Lee, and Ming Wang. 2024. “Artificial Intelligence and Administrative Reform in Local Government.” Journal of Public Governance and Society 12, no. 2: 45-63. https://doi.org/10.1234/abc',
+    'Smith, John A., Helen K. Lee, and Ming Wang. 2024. “Artificial Intelligence and Administrative Reform in Local Government.” Journal of Public Governance and Society 12, no. 2: 45–63. https://doi.org/10.1234/abc',
   )
 })
 
@@ -44,6 +44,15 @@ test('webpage matches the specification example', () => {
     psgWebpage({ author: 'Panorama Scholarly Group', year: '2026', title: 'Publication Ethics', accessDate: 'June 24, 2026', url: 'https://example.com/publication-ethics' }),
     'Panorama Scholarly Group. 2026. “Publication Ethics.” Accessed June 24, 2026. https://example.com/publication-ethics',
   )
+})
+
+test('page ranges get an en dash, other page values are untouched', () => {
+  const ref = (pages: string) => psgArticle({ authors: [], year: 2020, title: 'T', journal: 'J', pages })
+  assert.equal(ref('45-63'), '2020. “T.” J: 45–63.')
+  assert.equal(ref('45 — 63'), '2020. “T.” J: 45–63.')
+  assert.equal(ref('e123-e130'), '2020. “T.” J: e123–e130.')
+  assert.equal(ref('189'), '2020. “T.” J: 189.')
+  assert.equal(ref('Article 108'), '2020. “T.” J: Article 108.')
 })
 
 test('in-text citations', () => {
