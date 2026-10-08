@@ -264,9 +264,13 @@ export function parsePlainText(text: string): RefEntry[] {
     ? norm.split(/\n\s*\n/).map(b => b.replace(/\s*\n\s*/g, ' '))
     : norm.split('\n')
   return blocks
-    .map(b => b.replace(/^\s*(\[\d+\]|\(?\d+[.)])\s*/, '').trim())
+    .map(b => b.trim())
     .filter(Boolean)
-    .map(raw => ({ raw, source: 'text' as const, doi: extractDois(raw)[0], authors: [], ...parseReferenceText(raw) }))
+    .map(orig => {
+      // List numbering needs trailing whitespace, otherwise "10.1109/x" would lose its "10.".
+      const raw = orig.replace(/^(\[\d+\]|\(?\d+[.)])\s+/, '').trim()
+      return { raw, source: 'text' as const, doi: extractDois(raw)[0], authors: [], ...parseReferenceText(raw) }
+    })
 }
 
 export function parseInput(text: string): { format: InputFormat; entries: RefEntry[] } {
