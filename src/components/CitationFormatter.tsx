@@ -5,9 +5,9 @@ import { Copy, Check } from '@phosphor-icons/react/dist/ssr'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
 
-type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
+export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
 
-const FORMATS: { id: CitationFormat; label: string }[] = [
+export const FORMATS: { id: CitationFormat; label: string }[] = [
   { id: 'psg',     label: 'PSG Format' },
   { id: 'apa',     label: 'APA 7' },
   { id: 'mla',     label: 'MLA 9' },

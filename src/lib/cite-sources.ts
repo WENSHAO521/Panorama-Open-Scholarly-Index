@@ -150,6 +150,51 @@ export async function crossrefGetWork(doi: string): Promise<Article | null> {
   }
 }
 
+const DOI_CHUNK = 40
+
+/**
+ * Many DOIs at once: Crossref filters `doi:a,doi:b,...`, DOI_CHUNK per request, a few requests in
+ * parallel. Returns a map keyed by lower-case DOI; DOIs Crossref does not return are simply absent.
+ */
+export async function crossrefGetWorks(
+  dois: string[],
+  onChunk?: (found: number) => void,
+): Promise<Map<string, Article>> {
+  const out = new Map<string, Article>()
+  const usable = dois.filter(d => !d.includes(','))
+  const chunks: string[][] = []
+  for (let i = 0; i < usable.length; i += DOI_CHUNK) chunks.push(usable.slice(i, i + DOI_CHUNK))
+  let next = 0
+  async function worker() {
+    while (next < chunks.length) {
+      const chunk = chunks[next++]
+      try {
+        const filter = chunk.map(d => `doi:${encodeURIComponent(d)}`).join(',')
+        const res = await fetch(`${CROSSREF}/works?filter=${filter}&rows=${chunk.length}&mailto=${MAILTO}`, { signal: AbortSignal.timeout(30000) })
+        if (res.ok) {
+          const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
+          for (const it of items) out.set(it.DOI.toLowerCase(), mapCrossrefWork(it))
+        }
+      } catch { /* these DOIs are retried one by one by the caller */ }
+      onChunk?.(out.size)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(3, chunks.length) }, worker))
+  return out
+}
+
+/** Best Crossref match for a free-text reference (no DOI known). The caller must verify the hit. */
+export async function crossrefSearch(query: string): Promise<Article | null> {
+  try {
+    const res = await fetch(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=1&mailto=${MAILTO}`, { signal: AbortSignal.timeout(20000) })
+    if (!res.ok) return null
+    const item = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items?.[0]
+    return item ? mapCrossrefWork(item) : null
+  } catch {
+    return null
+  }
+}
+
 interface OpenAlexWork {
   id: string
   doi: string | null

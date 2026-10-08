@@ -246,8 +246,18 @@ export default function PsgFormatPage() {
         </table>
       </div>
 
+      {/* ── Section 4: Batch conversion ── */}
+      <SectionHead id="batch">IV. Batch Conversion</SectionHead>
+      <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--posi-muted)' }}>
+        The <Link href="/cite/" style={{ color: 'var(--posi-accent)' }} className="hover:underline">citation generator</Link>{' '}
+        has a batch mode that converts 100 or more references to PSG in one run (up to 1,000). Paste DOIs one per line,
+        paste a reference list in any style (APA, MLA, GB/T and so on), or open a BibTeX, RIS or CSL JSON export. DOIs are
+        looked up in Crossref in bulk, with OpenAlex as a fallback; references without a DOI are matched by title, and any
+        match not confirmed by its DOI is flagged for checking. Output can be sorted alphabetically, copied, or downloaded.
+      </p>
+
       {/* ── Section 4: Definition ── */}
-      <SectionHead id="definition">IV. Official Definition</SectionHead>
+      <SectionHead id="definition">V. Official Definition</SectionHead>
       <div
         className="px-5 py-4 text-sm leading-relaxed text-justify"
         style={{ background: 'var(--posi-bg)', border: '1px solid var(--posi-border)', borderLeft: '4px solid var(--teal)' }}

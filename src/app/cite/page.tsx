@@ -7,6 +7,7 @@ import {
   BookOpen, Globe, PencilSimple, Plus, Trash, Newspaper,
 } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
+import { BatchConverter } from '@/components/BatchConverter'
 import { crossrefGetWork, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
@@ -646,6 +647,7 @@ const DEFAULT_B_FORM: ManualBookForm = {
 
 function CitePage() {
   const router = useRouter()
+  const [mode, setMode] = useState<'single' | 'batch'>('single')
   const [input, setInput] = useState('')
   const [autoResult, setAutoResult] = useState<AutoResult | null>(null)
   const lookupCount = useRef(0)
@@ -768,8 +770,23 @@ function CitePage() {
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Services' }, { label: 'Citation generator' }]}
         actions={<Link href="/psg-format/" className="btn">PSG Format</Link>}
       >
-        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles.</p>
+        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Switch to batch mode to convert 100+ DOIs, or a BibTeX / RIS / reference list, to PSG at once.</p>
       </PageHeader>
+
+      <div className="flex" style={{ borderBottom: '1px solid var(--posi-border)' }}>
+        {([['single', 'Single'], ['batch', 'Batch (100+ DOIs, BibTeX, RIS)']] as const).map(([k, label]) => (
+          <button key={k} onClick={() => setMode(k)} className="px-4 py-2.5 text-xs font-medium"
+            style={{
+              borderBottom: mode === k ? '2px solid var(--teal)' : '2px solid transparent',
+              color: mode === k ? 'var(--teal)' : 'var(--posi-muted)', marginBottom: '-1px',
+            }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'batch' && <BatchConverter />}
+      {mode === 'single' && <>
 
       {/* Auto-lookup input */}
       <form onSubmit={e => { e.preventDefault(); doLookup(input) }}
@@ -1014,6 +1031,7 @@ function CitePage() {
       <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
         <Link href="/psg-format/" className="link">PSG Format specification</Link>
       </p>
+      </>}
      </div>
     </div>
   )
