@@ -86,3 +86,18 @@ test('a bare DOI list is not mistaken for numbered lines', () => {
   const { entries } = parseInput('10.1109/isqed.2011.5770700\n10.1007/978-3-030-71044-6_9\n3) 10.1234/numbered')
   assert.deepEqual(entries.map(e => e.doi), ['10.1109/isqed.2011.5770700', '10.1007/978-3-030-71044-6_9', '10.1234/numbered'])
 })
+
+test('IEEE, Harvard, MLA and Chicago references convert to the same fields', () => {
+  const want = (r: string) => {
+    const e = parseInput(r).entries[0]
+    return [e.title?.toLowerCase(), e.journal, e.year, e.volume, e.issue, e.pages?.replace(/[-–]/, '-').replace(/-44$/, '-444'), e.authors.map(a => a.family?.toLowerCase()).join('|')]
+  }
+  const expected = ['deep learning', 'Nature', '2015', '521', '7553', '436-444', 'lecun|bengio|hinton']
+  assert.deepEqual(want('[1] Y. LeCun, Y. Bengio, and G. Hinton, "Deep learning," Nature, vol. 521, no. 7553, pp. 436–444, 2015.'), expected)
+  assert.deepEqual(want("LeCun, Y., Bengio, Y. and Hinton, G. (2015) 'Deep learning', Nature, 521(7553), pp. 436–444."), expected)
+  assert.deepEqual(want('LeCun Y, Bengio Y, Hinton G. Deep learning. Nature. 2015 May 28;521(7553):436-444.'), expected)
+  assert.deepEqual(want('LECUN Y, BENGIO Y, HINTON G. Deep learning[J]. Nature, 2015, 521(7553): 436-444.'), expected)
+  assert.deepEqual(want('LeCun, Yann, Yoshua Bengio, and Geoffrey Hinton. 2015. “Deep Learning.” Nature 521 (7553): 436–444.'), expected)
+  // "et al." leaves no stray punctuation
+  assert.deepEqual(parseInput('LeCun, Yann, et al. "Deep Learning." Nature, vol. 521, no. 7553, 2015, pp. 436-44.').entries[0].authors, [{ family: 'LeCun', given: 'Yann' }])
+})
