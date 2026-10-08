@@ -223,7 +223,7 @@ export function CitationFormatter({ article }: Props) {
   }
 
   return (
-    <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+    <div className="panel">
       {/* Format tabs */}
       <div className="flex overflow-x-auto scroll-contain scrollbar-none" style={{ borderBottom: '1px solid var(--posi-border)' }}>
         {FORMATS.map(f => (
@@ -268,13 +268,8 @@ export function CitationFormatter({ article }: Props) {
 
         <button
           onClick={handleCopy}
-          className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.06em] transition-colors"
-          style={{
-            border: '1px solid var(--posi-border)',
-            color: copied ? 'var(--verified)' : 'var(--posi-muted)',
-            background: copied ? 'var(--verified-soft)' : '#ffffff',
-            fontFamily: 'var(--font-mono)',
-          }}
+          className="btn btn-sm absolute top-4 right-4"
+          style={copied ? { color: 'var(--verified)', background: 'var(--verified-soft)' } : undefined}
           title="Copy to clipboard"
         >
           {copied

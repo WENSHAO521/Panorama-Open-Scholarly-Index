@@ -384,12 +384,8 @@ function CopyBtn({ text }: { text: string }) {
         try { await navigator.clipboard.writeText(text) } catch { /* ignore */ }
         setCopied(true); setTimeout(() => setCopied(false), 2000)
       }}
-      className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-colors"
-      style={{
-        border: '1px solid var(--posi-border)', fontFamily: 'var(--font-mono)',
-        color: copied ? 'var(--verified)' : 'var(--posi-muted)',
-        background: copied ? 'var(--verified-soft)' : '#fff',
-      }}
+      className="btn btn-sm"
+      style={copied ? { color: 'var(--verified)', background: 'var(--verified-soft)' } : undefined}
     >
       {copied ? <Check className="h-3 w-3" weight="bold" /> : <Copy className="h-3 w-3" />}
       {copied ? 'Copied' : 'Copy'}
@@ -408,7 +404,7 @@ const FMT_COLORS: Record<string, [string, string]> = {
 function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
   const [bg, color] = FMT_COLORS[fmt] ?? ['var(--surface-2)', '#333']
   return (
-    <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+    <div className="panel">
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border)', background: bg }}>
         <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]" style={{ color }}>
           {FMT_LABELS[fmt] ?? fmt}
@@ -442,21 +438,14 @@ function MultiFormatCards({ citations }: { citations: AllCitations }) {
   )
 }
 
-const inputCls = "w-full px-3 py-2 text-xs focus:outline-none"
-const inputStyle = { border: '1px solid var(--posi-border)', color: 'var(--posi-text)' } as React.CSSProperties
-function onFocusBorder(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) {
-  e.currentTarget.style.borderColor = 'var(--posi-primary)'
-}
-function onBlurBorder(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) {
-  e.currentTarget.style.borderColor = 'var(--posi-border)'
-}
+const inputCls = "input"
 
 function FL({ children }: { children: React.ReactNode }) {
   return <label className="block text-[11px] font-medium mb-1" style={{ color: 'var(--posi-muted)' }}>{children}</label>
 }
 
 function FInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={inputCls} style={inputStyle} onFocus={onFocusBorder} onBlur={onBlurBorder} />
+  return <input {...props} className={inputCls} />
 }
 
 function AuthorList({ authors, onChange }: { authors: ManualAuthor[]; onChange: (a: ManualAuthor[]) => void }) {
@@ -493,8 +482,7 @@ function AuthorList({ authors, onChange }: { authors: ManualAuthor[]; onChange: 
 function GenBtn({ disabled }: { disabled?: boolean }) {
   return (
     <button type="submit" disabled={disabled}
-      className="w-full py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-colors"
-      style={{ background: 'var(--teal)' }}>
+      className="btn btn-primary w-full justify-center">
       Generate Citations
     </button>
   )
@@ -804,7 +792,7 @@ function CitePage() {
 
       {/* Auto-lookup input */}
       <form onSubmit={e => { e.preventDefault(); doLookup(input) }}
-        className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
+        className="panel p-6">
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--posi-text)' }}>
           DOI, ISBN, URL, or article title
         </label>
@@ -812,18 +800,14 @@ function CitePage() {
           <textarea value={input} onChange={e => setInput(e.target.value)} rows={input.includes('\n') ? 8 : 3}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doLookup(input) } }}
             placeholder={'A DOI, ISBN, web address or article title.\nPaste one per line to convert many at once.'}
-            className="flex-1 px-4 py-2.5 focus:outline-none transition-colors resize-y"
-            style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '14px' }}
-            onFocus={onFocusBorder as never} onBlur={onBlurBorder as never} />
+            className="input flex-1 h-auto py-2 resize-y" />
           <button type="submit" disabled={loading || !input.trim()}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50 sm:self-start"
-            style={{ background: 'var(--posi-accent)' }}>
+            className="btn btn-primary justify-center sm:self-start">
             <MagnifyingGlass className="h-4 w-4" />
             {loading ? 'Loading…' : 'Generate'}
           </button>
         </div>
-        <label className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1.5 text-[11px] cursor-pointer"
-          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+        <label className="btn btn-sm mt-2 cursor-pointer">
           <UploadSimple className="h-3 w-3" /> Open .bib / .ris / .txt / .json file
           <input type="file" accept=".bib,.bibtex,.ris,.txt,.json,text/plain" className="hidden" onChange={onFile} />
         </label>
@@ -844,7 +828,7 @@ function CitePage() {
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white p-6 animate-pulse" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="panel p-6 animate-pulse">
           <div className="h-4 rounded w-3/4 mb-3" style={{ background: 'var(--posi-bg)' }} />
           <div className="h-3 rounded w-1/2 mb-2" style={{ background: 'var(--posi-bg)' }} />
           <div className="h-3 rounded w-1/3" style={{ background: 'var(--posi-bg)' }} />
@@ -869,7 +853,7 @@ function CitePage() {
 
       {/* Title search results */}
       {!loading && autoResult?.type === 'search' && (
-        <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="panel">
           <p className="px-5 py-3 text-xs font-mono" style={{ borderBottom: '1px solid var(--posi-border)', color: 'var(--posi-muted)' }}>
             Select the article to cite
           </p>
@@ -895,7 +879,7 @@ function CitePage() {
           <div className="px-5 py-3 flex items-center gap-3" style={{ borderTop: '1px solid var(--posi-border)' }}>
             <button type="button" disabled={!picked.size}
               onClick={() => runBatch(autoResult.results.filter(a => picked.has(a.doi)).map(a => ({ raw: a.doi, source: 'text' as const, doi: a.doi, authors: [] })))}
-              className="px-4 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{ background: 'var(--teal)' }}>
+              className="btn btn-primary">
               Convert {picked.size || ''} selected
             </button>
             <span className="text-[11px]" style={{ color: 'var(--posi-muted)' }}>Tick several to convert them together, or click one title for all citation styles.</span>
@@ -906,7 +890,7 @@ function CitePage() {
       {/* Article result */}
       {!loading && autoResult?.type === 'article' && (
         <div className="space-y-4">
-          <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
+          <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
               <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Article Found</p>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
@@ -945,7 +929,7 @@ function CitePage() {
       {/* Book result (ISBN found) */}
       {!loading && autoResult?.type === 'book' && (
         <div className="space-y-4">
-          <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
+          <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="h-4 w-4" style={{ color: 'var(--posi-accent)' }} />
               <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Book Found</p>
@@ -969,7 +953,7 @@ function CitePage() {
 
       {/* Webpage form */}
       {!loading && autoResult?.type === 'webpage-form' && (
-        <div className="bg-white p-5" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="panel p-5">
           <div className="flex items-center gap-2 mb-4">
             <Globe className="h-4 w-4" style={{ color: 'var(--posi-accent)' }} />
             <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Webpage Citation</p>
@@ -978,7 +962,7 @@ function CitePage() {
           <form onSubmit={handleWpSubmit} className="space-y-3">
             <div>
               <FL>URL</FL>
-              <input value={wpForm.url} readOnly className={inputCls} style={{ ...inputStyle, background: 'var(--posi-bg)' }} />
+              <input value={wpForm.url} readOnly className={inputCls} style={{ background: 'var(--surface-2)' }} />
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
@@ -1007,8 +991,7 @@ function CitePage() {
               </div>
             </div>
             <button type="submit" disabled={!wpForm.author.trim() || !wpForm.title.trim()}
-              className="w-full py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: 'var(--teal)' }}>
+              className="btn btn-primary w-full justify-center">
               Generate Citations
             </button>
           </form>
@@ -1018,7 +1001,7 @@ function CitePage() {
       {/* Webpage result */}
       {!loading && autoResult?.type === 'webpage-result' && (
         <div className="space-y-4">
-          <div className="bg-white p-4" style={{ border: '1px solid var(--posi-border)' }}>
+          <div className="panel p-4">
             <div className="flex items-center gap-2 mb-1">
               <Globe className="h-3.5 w-3.5" style={{ color: 'var(--posi-muted)' }} />
               <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>Webpage</p>
@@ -1045,7 +1028,7 @@ function CitePage() {
         </button>
 
         {showManual && (
-          <div className="mt-4 bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+          <div className="mt-4 panel">
             {/* Source type tabs */}
             <div className="flex" style={{ borderBottom: '1px solid var(--posi-border)' }}>
               {TABS.map(tab => (

@@ -52,8 +52,6 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
     URL.revokeObjectURL(url)
   }
 
-  const btn = 'flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase tracking-[0.06em]'
-  const btnStyle = { border: '1px solid var(--posi-border)', color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)', background: '#fff' }
 
   return (
     <div className="space-y-4">
@@ -62,26 +60,26 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
         <p className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>Converting {progress[0]} / {progress[1]}…</p>
       )}
       {items && (
-        <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
+        <div className="panel">
           <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: '1px solid var(--posi-border)' }}>
             <p className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
               {rows.length} converted{failed.length > 0 && ` · ${failed.length} not found`}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <select value={fmt} onChange={e => setFmt(e.target.value as CitationFormat)} aria-label="Output format"
-                className="px-2 py-1.5 text-xs" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
+                className="input" style={{ width: 'auto', height: 28, fontSize: 12.5 }}>
                 {FORMATS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
               </select>
               <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--posi-muted)' }}>
                 <input type="checkbox" checked={sort} onChange={e => setSort(e.target.checked)} className="w-3 h-3" />
                 Sort A-Z
               </label>
-              <button onClick={copyAll} disabled={!rows.length} className={btn}
-                style={{ ...btnStyle, color: copied ? 'var(--verified)' : btnStyle.color }}>
+              <button onClick={copyAll} disabled={!rows.length} className="btn btn-sm"
+                style={copied ? { color: 'var(--verified)', background: 'var(--verified-soft)' } : undefined}>
                 {copied ? <Check className="h-3 w-3" weight="bold" /> : <Copy className="h-3 w-3" />}
                 {copied ? 'Copied' : 'Copy all'}
               </button>
-              <button onClick={download} disabled={!rows.length} className={btn} style={btnStyle}>
+              <button onClick={download} disabled={!rows.length} className="btn btn-sm">
                 <DownloadSimple className="h-3 w-3" /> Download
               </button>
             </div>
