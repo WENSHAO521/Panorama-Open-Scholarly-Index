@@ -475,7 +475,7 @@ function AuthorList({ authors, onChange }: { authors: ManualAuthor[]; onChange: 
       {authors.map((a, i) => (
         <div key={i} className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <FInput value={a.first} onChange={e => update(i, 'first', e.target.value)} placeholder="Given name(s)" className={inputCls} />
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center sm:flex-1">
             <FInput value={a.last} onChange={e => update(i, 'last', e.target.value)} placeholder="Family name" className={inputCls} />
             {authors.length > 1 && (
               <button type="button" onClick={() => onChange(authors.filter((_, idx) => idx !== i))}
@@ -798,7 +798,7 @@ function CitePage() {
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Services' }, { label: 'Citation generator' }]}
         actions={<Link href="/psg-format/" className="btn">PSG Format</Link>}
       >
-        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Paste several lines (100+ DOIs, titles, or references in AMA, APA, GB/T and other styles), or open a BibTeX / RIS file, to convert many at once.</p>
+        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Paste several lines to convert many at once: DOIs, titles, or references in APA, AMA, MLA, Chicago, IEEE, Harvard or GB/T style, or open a BibTeX / RIS file.</p>
       </PageHeader>
 
 
@@ -808,15 +808,15 @@ function CitePage() {
         <label className="block text-sm font-medium mb-2" style={{ color: 'var(--posi-text)' }}>
           DOI, ISBN, URL, or article title
         </label>
-        <div className="flex gap-3">
-          <textarea value={input} onChange={e => setInput(e.target.value)} rows={input.includes('\n') ? 8 : 2}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-start">
+          <textarea value={input} onChange={e => setInput(e.target.value)} rows={input.includes('\n') ? 8 : 3}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doLookup(input) } }}
-            placeholder={'e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title\nOne per line for many: 100+ DOIs, titles or references (APA, AMA, MLA, Chicago, IEEE, Harvard, GB/T…)'}
+            placeholder={'A DOI, ISBN, web address or article title.\nPaste one per line to convert many at once.'}
             className="flex-1 px-4 py-2.5 focus:outline-none transition-colors resize-y"
             style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '14px' }}
             onFocus={onFocusBorder as never} onBlur={onBlurBorder as never} />
           <button type="submit" disabled={loading || !input.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50 sm:self-start"
             style={{ background: 'var(--posi-accent)' }}>
             <MagnifyingGlass className="h-4 w-4" />
             {loading ? 'Loading…' : 'Generate'}
