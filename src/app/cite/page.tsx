@@ -10,6 +10,8 @@ import { CitationFormatter } from '@/components/CitationFormatter'
 import { BatchRun } from '@/components/BatchConverter'
 import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
 import type { RefEntry } from '@/lib/cite-parse'
+import { psgArticle, psgBook, psgWebpage, psgInText, PLAIN } from '@/lib/psg'
+import type { PsgFmt } from '@/lib/psg'
 import { crossrefGetWork, crossrefSearchMany, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
@@ -153,44 +155,40 @@ function parseAuthorStr(s: string): ManualAuthor {
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] }
 }
 
-// ── PSG builders ──────────────────────────────────────────────────────────────
+// ── PSG builders (layout rules live in @/lib/psg) ─────────────────────────────
+
+const escHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+const HTML_FMT: PsgFmt = { em: t => `<em>${t}</em>`, esc: escHtml }
+
+const psgPeople = (authors: ManualAuthor[]) =>
+  authors.filter(a => a.first || a.last).map(a => ({ given: a.first.trim() || null, family: a.last.trim() || null }))
+
+/** The same PSG builder rendered twice: HTML for display, plain text for copying. */
+function psgPair(build: (f: PsgFmt) => string, intext: string): CitPair {
+  return { html: build(HTML_FMT), plain: build(PLAIN), intext }
+}
 
 function buildPsgArticle(f: ManualArticleForm): CitPair {
-  const auth = chicagoAuthors(f.authors)
-  const y = f.year || 'n.d.'
-  const pg = f.pages ? fmtPages(f.pages) : ''
-  let h = auth ? `${endStop(auth)} ` : ''
-  h += `${y}. "${f.title || 'Untitled'}." `
-  h += `<em>${f.journal || 'Journal'}</em>`
-  if (f.volume) h += ` ${f.volume}`
-  if (f.issue) h += `(${f.issue})`
-  if (pg) h += `: ${pg}`
-  h += '.'
-  if (f.doi) h += ` doi:${f.doi.replace(/^https?:\/\/doi\.org\//i, '')}`
-  return cp(h, chicagoIntext(f.authors, f.year))
+  const people = psgPeople(f.authors)
+  return psgPair(fmt => psgArticle({
+    authors: people, year: f.year, title: f.title, journal: f.journal,
+    volume: f.volume, issue: f.issue, pages: f.pages ? fmtPages(f.pages) : '', doi: f.doi,
+  }, fmt), psgInText(people, f.year))
 }
 
 function buildPsgBook(f: ManualBookForm): CitPair {
-  const auth = chicagoAuthors(f.authors)
-  const y = f.year || 'n.d.'
-  const ft = f.subtitle ? `${f.title}: ${f.subtitle}` : f.title
-  let h = auth ? `${endStop(auth)} ` : ''
-  h += `${y}. <em>${ft || 'Untitled'}</em>.`
-  if (f.edition) h += ` ${f.edition} ed.`
-  if (f.place && f.publisher) h += ` ${f.place}: ${f.publisher}.`
-  else if (f.publisher) h += ` ${f.publisher}.`
-  return cp(h, chicagoIntext(f.authors, f.year))
+  const people = psgPeople(f.authors)
+  return psgPair(fmt => psgBook({ ...f, authors: people }, fmt), psgInText(people, f.year))
 }
 
 function buildPsgWebsite(f: ManualWebsiteForm): CitPair {
-  const auth = f.authorName || 'Author'
-  const y = f.year || 'n.d.'
-  let h = `${auth}. ${y}. "${f.title || 'Untitled'}."`
-  if (f.siteName) h += ` ${f.siteName}.`
-  if (f.accessDate) h += ` Accessed ${f.accessDate}.`
-  if (f.url) h += ` ${f.url}`
-  const nm = f.isOrg ? auth : auth.split(',')[0].trim()
-  return cp(h, `(${nm} ${y})`)
+  const name = f.authorName.trim()
+  // A person is entered as "Smith, John" and cited by surname; an organisation is cited by its full name.
+  const cited = f.isOrg ? name : parseAuthorStr(name).last
+  return psgPair(
+    fmt => psgWebpage({ author: name, year: f.year, title: f.title, accessDate: f.accessDate, url: f.url }, fmt),
+    `(${cited || 'Author'} ${f.year || 'n.d.'})`,
+  )
 }
 
 // ── APA 7th builders ──────────────────────────────────────────────────────────

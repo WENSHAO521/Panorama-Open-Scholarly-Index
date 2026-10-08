@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Copy, Check } from '@phosphor-icons/react/dist/ssr'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
+import { psgArticle, psgInText } from '@/lib/psg'
 
 export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
 
@@ -36,25 +37,10 @@ function apaAuthor(a: Article['authors'][0]): string {
   return a.display_name
 }
 
-// PSG Format helpers
-function psgRefFirst(a: Article['authors'][0]): string {
-  return a.family_name && a.given_name ? `${a.family_name}, ${a.given_name}` : a.display_name
-}
-function psgRefOther(a: Article['authors'][0]): string {
-  return a.given_name && a.family_name ? `${a.given_name} ${a.family_name}` : a.display_name
-}
-function psgSurname(a: Article['authors'][0]): string {
-  return a.family_name ?? a.display_name.split(/\s+/).pop() ?? a.display_name
-}
+const personOf = (a: Article['authors'][0]) => ({ family: a.family_name, given: a.given_name, name: a.display_name })
 
 export function generatePsgInText(authors: Article['authors'], year: number | null): string {
-  const surnames = authors.map(psgSurname)
-  const yr = year ?? 'n.d.'
-  if (surnames.length === 0)  return `(${yr})`
-  if (surnames.length === 1)  return `(${surnames[0]} ${yr})`
-  if (surnames.length === 2)  return `(${surnames[0]} and ${surnames[1]} ${yr})`
-  if (surnames.length === 3)  return `(${surnames[0]}, ${surnames[1]}, and ${surnames[2]} ${yr})`
-  return `(${surnames[0]} et al. ${yr})`
+  return psgInText(authors.map(personOf), year)
 }
 
 export function generateCitationText(article: Article, format: CitationFormat): string {
@@ -72,29 +58,8 @@ export function generateCitationText(article: Article, format: CitationFormat): 
 
   switch (format) {
 
-    case 'psg': {
-      // Reference list entry - all authors named regardless of count
-      let refAuthorStr = ''
-      if (authors.length === 1) {
-        refAuthorStr = psgRefFirst(authors[0])
-      } else if (authors.length === 2) {
-        refAuthorStr = `${psgRefFirst(authors[0])}, and ${psgRefOther(authors[1])}`
-      } else if (authors.length > 2) {
-        const rest = authors.slice(1, -1).map(psgRefOther)
-        refAuthorStr = [psgRefFirst(authors[0]), ...rest].join(', ') + ', and ' + psgRefOther(authors[authors.length - 1])
-      }
-
-      let ref = refAuthorStr ? `${refAuthorStr}. ` : ''
-      ref += `${year ?? 'n.d.'}. `
-      ref += `“${title}.”`  // "Title." with curly quotes, period inside
-      if (journal) ref += ` ${journal}`
-      if (vol)     ref += ` ${vol}`
-      if (iss)     ref += `, no. ${iss}`
-      if (pages)   ref += `: ${pages}`
-      if (!ref.endsWith('.”')) ref += '.'  // title-only entries already end with the period inside the quote
-      if (doiUrl)  ref += ` ${doiUrl}`  // No trailing period after DOI
-      return ref
-    }
+    case 'psg':
+      return psgArticle({ authors: authors.map(personOf), year, title, journal, volume: vol, issue: iss, pages, doi })
 
     case 'apa': {
       const names = authors.map(apaAuthor)
