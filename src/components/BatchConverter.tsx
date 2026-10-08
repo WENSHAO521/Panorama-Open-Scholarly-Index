@@ -1,17 +1,12 @@
 'use client'
 
-import { useMemo, useRef, useState, ChangeEvent } from 'react'
-import { Copy, Check, DownloadSimple, UploadSimple } from '@phosphor-icons/react/dist/ssr'
+import { useEffect, useMemo, useState } from 'react'
+import { Copy, Check, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
 import { FORMATS, generateCitationText } from '@/components/CitationFormatter'
 import type { CitationFormat } from '@/components/CitationFormatter'
-import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
-import type { InputFormat } from '@/lib/cite-parse'
+import type { RefEntry } from '@/lib/cite-parse'
 import { resolveEntries } from '@/lib/cite-batch'
 import type { BatchItem } from '@/lib/cite-batch'
-
-const FORMAT_NAMES: Record<InputFormat, string> = {
-  text: 'DOI / reference list', bibtex: 'BibTeX', ris: 'RIS', csl: 'CSL JSON',
-}
 
 const SOURCE_NOTE: Record<BatchItem['source'], string> = {
   doi: '', none: '',
@@ -19,40 +14,22 @@ const SOURCE_NOTE: Record<BatchItem['source'], string> = {
   input: 'Built from your input, not verified against Crossref',
 }
 
-export function BatchConverter() {
-  const [text, setText] = useState('')
+/** Resolves the entries on mount and lists the converted references. Remount (new `key`) to run again. */
+export function BatchRun({ entries }: { entries: RefEntry[] }) {
   const [fmt, setFmt] = useState<CitationFormat>('psg')
   const [sort, setSort] = useState(true)
   const [items, setItems] = useState<BatchItem[] | null>(null)
-  const [progress, setProgress] = useState<[number, number] | null>(null)
+  const [progress, setProgress] = useState<[number, number]>([0, entries.length])
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const run = useRef(0)
 
-  const parsed = useMemo(() => (text.trim() ? parseInput(text) : null), [text])
-  const count = parsed?.entries.length ?? 0
-
-  async function convert() {
-    if (!parsed || !count) return
-    if (count > MAX_BATCH) { setError(`At most ${MAX_BATCH} entries at a time (found ${count}).`); return }
-    const id = ++run.current
-    setError(null); setItems(null); setProgress([0, count])
-    try {
-      const res = await resolveEntries(parsed.entries, (d, t) => { if (id === run.current) setProgress([d, t]) })
-      if (id === run.current) setItems(res)
-    } catch {
-      if (id === run.current) setError('Conversion failed. Check your connection and try again.')
-    } finally {
-      if (id === run.current) setProgress(null)
-    }
-  }
-
-  async function onFile(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setText(await f.text()); setItems(null); setError(null)
-    e.target.value = ''
-  }
+  useEffect(() => {
+    let live = true
+    resolveEntries(entries, (d, t) => { if (live) setProgress([d, t]) })
+      .then(res => { if (live) setItems(res) })
+      .catch(() => { if (live) setError('Conversion failed. Check your connection and try again.') })
+    return () => { live = false }
+  }, [entries])
 
   const { rows, failed, output } = useMemo(() => {
     const ok = (items ?? []).filter(it => it.article)
@@ -79,56 +56,26 @@ export function BatchConverter() {
   const btnStyle = { border: '1px solid var(--posi-border)', color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)', background: '#fff' }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-6" style={{ border: '1px solid var(--posi-border)' }}>
-        <div className="flex items-center justify-between mb-2">
-          <label htmlFor="batch-input" className="block text-sm font-medium" style={{ color: 'var(--posi-text)' }}>
-            DOIs or references - one per line, or a whole BibTeX / RIS / CSL JSON file
-          </label>
-          <label className={`${btn} cursor-pointer`} style={btnStyle}>
-            <UploadSimple className="h-3 w-3" /> Open file
-            <input type="file" accept=".bib,.bibtex,.ris,.txt,.json,.csv,text/plain" className="hidden" onChange={onFile} />
-          </label>
-        </div>
-        <textarea
-          id="batch-input" value={text} onChange={e => { setText(e.target.value); setItems(null) }} rows={10}
-          placeholder={'10.63802/afs.2024.008\nhttps://doi.org/10.1038/s41586-020-2649-2\nSmith, J. (2020). Deep learning for protein folding. Nature, 5(2), 1-10.\n\n... or paste a .bib / .ris export'}
-          className="w-full px-3 py-2 text-xs font-mono focus:outline-none"
-          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}
-        />
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
-          <button
-            onClick={convert} disabled={!count || !!progress}
-            className="px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50" style={{ background: 'var(--posi-accent)' }}>
-            {progress ? `Converting ${progress[0]} / ${progress[1]}…` : `Convert${count ? ` ${count}` : ''}`}
-          </button>
-          <label className="flex items-center gap-2 text-xs" style={{ color: 'var(--posi-muted)' }}>
-            Output
-            <select value={fmt} onChange={e => setFmt(e.target.value as CitationFormat)}
-              className="px-2 py-1.5 text-xs" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
-              {FORMATS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-            </select>
-          </label>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--posi-muted)' }}>
-            <input type="checkbox" checked={sort} onChange={e => setSort(e.target.checked)} className="w-3 h-3" />
-            Sort alphabetically
-          </label>
-          {parsed && (
-            <span className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
-              {FORMAT_NAMES[parsed.format]} · {count} {count === 1 ? 'entry' : 'entries'}
-            </span>
-          )}
-        </div>
-        {error && <p className="text-xs mt-3" style={{ color: 'var(--rejected)' }}>{error}</p>}
-      </div>
-
+    <div className="space-y-4">
+      {error && <p className="text-xs" style={{ color: 'var(--rejected)' }}>{error}</p>}
+      {!items && !error && (
+        <p className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>Converting {progress[0]} / {progress[1]}…</p>
+      )}
       {items && (
         <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
           <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-2" style={{ borderBottom: '1px solid var(--posi-border)' }}>
             <p className="text-xs font-mono" style={{ color: 'var(--posi-muted)' }}>
               {rows.length} converted{failed.length > 0 && ` · ${failed.length} not found`}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <select value={fmt} onChange={e => setFmt(e.target.value as CitationFormat)} aria-label="Output format"
+                className="px-2 py-1.5 text-xs" style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)' }}>
+                {FORMATS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+              </select>
+              <label className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'var(--posi-muted)' }}>
+                <input type="checkbox" checked={sort} onChange={e => setSort(e.target.checked)} className="w-3 h-3" />
+                Sort A-Z
+              </label>
               <button onClick={copyAll} disabled={!rows.length} className={btn}
                 style={{ ...btnStyle, color: copied ? 'var(--verified)' : btnStyle.color }}>
                 {copied ? <Check className="h-3 w-3" weight="bold" /> : <Copy className="h-3 w-3" />}

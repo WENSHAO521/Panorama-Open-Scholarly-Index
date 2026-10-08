@@ -4,10 +4,12 @@ import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   MagnifyingGlass, XCircle, ArrowSquareOut, Copy, Check,
-  BookOpen, Globe, PencilSimple, Plus, Trash, Newspaper,
+  BookOpen, Globe, PencilSimple, Plus, Trash, Newspaper, UploadSimple,
 } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
-import { BatchConverter } from '@/components/BatchConverter'
+import { BatchRun } from '@/components/BatchConverter'
+import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
+import type { RefEntry } from '@/lib/cite-parse'
 import { crossrefGetWork, crossrefSearchMany, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
@@ -648,7 +650,8 @@ const DEFAULT_B_FORM: ManualBookForm = {
 
 function CitePage() {
   const router = useRouter()
-  const [mode, setMode] = useState<'single' | 'batch'>('single')
+  const [batch, setBatch] = useState<{ id: number; entries: RefEntry[] } | null>(null)
+  const [picked, setPicked] = useState<Set<string>>(new Set())
   const [input, setInput] = useState('')
   const [autoResult, setAutoResult] = useState<AutoResult | null>(null)
   const lookupCount = useRef(0)
@@ -680,7 +683,28 @@ function CitePage() {
     return () => clearTimeout(t)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  function runBatch(entries: RefEntry[]) {
+    ++lookupCount.current
+    setLoading(false); setAutoResult(null)
+    if (!entries.length) { setBatch(null); setError('Nothing to convert - no entries found.'); return }
+    if (entries.length > MAX_BATCH) { setBatch(null); setError(`At most ${MAX_BATCH} entries at a time (found ${entries.length}).`); return }
+    setError(null)
+    setBatch({ id: Date.now(), entries })
+  }
+
+  async function onFile(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    e.target.value = ''
+    if (!f) return
+    const text = await f.text()
+    setInput(text)
+    doLookup(text)
+  }
+
   async function doLookup(raw: string) {
+    const parsed = parseInput(raw)
+    if (parsed.format !== 'text' || parsed.entries.length > 1) { runBatch(parsed.entries); return }
+    setBatch(null)
     const detected = detectInput(raw)
     if (!detected) { setError('Enter a DOI (10.xxx/…), ISBN (9780…), a URL, or an article title.'); return }
     const myId = ++lookupCount.current
@@ -711,7 +735,7 @@ function CitePage() {
         const results = await crossrefSearchMany(detected.payload)
         if (myId !== lookupCount.current) return
         if (!results.length) { setError('No articles found for this title. Try more words from the title, or enter the details manually below ↓'); return }
-        setAutoResult({ type: 'search', query: detected.payload, results })
+        setPicked(new Set()); setAutoResult({ type: 'search', query: detected.payload, results })
       } else if (detected.kind === 'isbn') {
         const book = await fetchBookByIsbn(detected.payload)
         if (myId !== lookupCount.current) return
@@ -776,23 +800,9 @@ function CitePage() {
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Services' }, { label: 'Citation generator' }]}
         actions={<Link href="/psg-format/" className="btn">PSG Format</Link>}
       >
-        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Switch to batch mode to convert 100+ DOIs, or a BibTeX / RIS / reference list, to PSG at once.</p>
+        <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Paste several lines (100+ DOIs, titles, or references in AMA, APA, GB/T and other styles), or open a BibTeX / RIS file, to convert many at once.</p>
       </PageHeader>
 
-      <div className="flex" style={{ borderBottom: '1px solid var(--posi-border)' }}>
-        {([['single', 'Single'], ['batch', 'Batch (100+ DOIs, BibTeX, RIS)']] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setMode(k)} className="px-4 py-2.5 text-xs font-medium"
-            style={{
-              borderBottom: mode === k ? '2px solid var(--teal)' : '2px solid transparent',
-              color: mode === k ? 'var(--teal)' : 'var(--posi-muted)', marginBottom: '-1px',
-            }}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {mode === 'batch' && <BatchConverter />}
-      {mode === 'single' && <>
 
       {/* Auto-lookup input */}
       <form onSubmit={e => { e.preventDefault(); doLookup(input) }}
@@ -801,11 +811,12 @@ function CitePage() {
           DOI, ISBN, URL, or article title
         </label>
         <div className="flex gap-3">
-          <input value={input} onChange={e => setInput(e.target.value)}
-            placeholder="e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title"
-            className="flex-1 px-4 py-2.5 focus:outline-none transition-colors"
+          <textarea value={input} onChange={e => setInput(e.target.value)} rows={input.includes('\n') ? 8 : 2}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doLookup(input) } }}
+            placeholder={'e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title\nOne per line for many: 100+ DOIs, titles or references (AMA, APA, GB/T…)'}
+            className="flex-1 px-4 py-2.5 focus:outline-none transition-colors resize-y"
             style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '14px' }}
-            onFocus={onFocusBorder} onBlur={onBlurBorder} />
+            onFocus={onFocusBorder as never} onBlur={onBlurBorder as never} />
           <button type="submit" disabled={loading || !input.trim()}
             className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold disabled:opacity-50"
             style={{ background: 'var(--posi-accent)' }}>
@@ -813,12 +824,18 @@ function CitePage() {
             {loading ? 'Loading…' : 'Generate'}
           </button>
         </div>
+        <label className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1.5 text-[11px] cursor-pointer"
+          style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+          <UploadSimple className="h-3 w-3" /> Open .bib / .ris / .txt / .json file
+          <input type="file" accept=".bib,.bibtex,.ris,.txt,.json,text/plain" className="hidden" onChange={onFile} />
+        </label>
         <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2">
           {[
             ['DOI', 'any Crossref DOI, e.g. 10.63802/afs.2024.008'],
             ['ISBN', '10 or 13 digits, e.g. 9780374528379'],
             ['URL', 'any web address, e.g. https://example.com/page'],
             ['Title', 'article title, with author or journal if you have it'],
+            ['Many', 'one per line, any mix of the above, or a BibTeX / RIS / CSL JSON file (up to 1,000)'],
           ].map(([k, v]) => (
             <p key={k} className="text-xs" style={{ color: 'var(--posi-muted)' }}>
               <span className="font-mono font-medium" style={{ color: 'var(--posi-text)' }}>{k}</span> - {v}
@@ -849,6 +866,9 @@ function CitePage() {
         </div>
       )}
 
+      {/* Many entries */}
+      {batch && <BatchRun key={batch.id} entries={batch.entries} />}
+
       {/* Title search results */}
       {!loading && autoResult?.type === 'search' && (
         <div className="bg-white" style={{ border: '1px solid var(--posi-border)' }}>
@@ -858,7 +878,11 @@ function CitePage() {
           <ul className="divide-y divide-[var(--line-soft)]">
             {autoResult.results.map(a => (
               <li key={a.doi}>
-                <button type="button" className="w-full text-left px-5 py-3 hover:bg-[var(--surface-2)]"
+                <div className="flex items-start gap-3 px-5 py-3 hover:bg-[var(--surface-2)]">
+                <input type="checkbox" className="mt-1.5 w-3.5 h-3.5 shrink-0" aria-label="Select for batch conversion"
+                  checked={picked.has(a.doi)}
+                  onChange={e => setPicked(p => { const n = new Set(p); if (e.target.checked) n.add(a.doi); else n.delete(a.doi); return n })} />
+                <button type="button" className="flex-1 text-left"
                   onClick={() => { setAutoResult({ type: 'article', article: a, source: 'crossref' }); router.replace(`/cite/?doi=${encodeURIComponent(a.doi)}`, { scroll: false }) }}>
                   <span className="block text-sm font-medium" style={{ color: 'var(--posi-text)' }}>{decodeHtml(a.title)}</span>
                   <span className="block text-xs mt-0.5" style={{ color: 'var(--posi-muted)' }}>
@@ -866,9 +890,18 @@ function CitePage() {
                     {a.journal_title ? ` · ${decodeHtml(a.journal_title)}` : ''} · {a.publication_year}
                   </span>
                 </button>
+                </div>
               </li>
             ))}
           </ul>
+          <div className="px-5 py-3 flex items-center gap-3" style={{ borderTop: '1px solid var(--posi-border)' }}>
+            <button type="button" disabled={!picked.size}
+              onClick={() => runBatch(autoResult.results.filter(a => picked.has(a.doi)).map(a => ({ raw: a.doi, source: 'text' as const, doi: a.doi, authors: [] })))}
+              className="px-4 py-2 text-xs font-semibold text-white disabled:opacity-50" style={{ background: 'var(--teal)' }}>
+              Convert {picked.size || ''} selected
+            </button>
+            <span className="text-[11px]" style={{ color: 'var(--posi-muted)' }}>Tick several to convert them together, or click one title for all citation styles.</span>
+          </div>
         </div>
       )}
 
@@ -1061,7 +1094,6 @@ function CitePage() {
       <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
         <Link href="/psg-format/" className="link">PSG Format specification</Link>
       </p>
-      </>}
      </div>
     </div>
   )
