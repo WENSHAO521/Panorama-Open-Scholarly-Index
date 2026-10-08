@@ -86,7 +86,7 @@ export async function resolveEntries(
   await pool(noDoi, 4, async it => {
     const e = it.entry
     const hit = await crossrefSearch(searchQuery(e))
-    if (hit && titleMatches(e.title ?? e.raw, hit.title)) {
+    if (hit && titleMatches(e.source === 'text' ? e.raw : e.title ?? e.raw, hit.title)) {
       it.article = hit; it.source = 'search'
     } else {
       const own = entryToArticle(e)

@@ -212,6 +212,51 @@ export function parseCslJson(text: string): RefEntry[] {
 
 // ── Plain text ─────────────────────────────────────────────────────────────
 
+const PG = String.raw`([A-Za-z]?\d+(?:\s*[-–—]\s*[A-Za-z]?\d+)?)`
+
+function splitAuthors(s: string, style: 'apa' | 'initials' | 'plain'): RefPerson[] {
+  const clean = s.replace(/\bet al\.?/i, '').replace(/等\.?$/, '').trim()
+  let parts: string[]
+  if (style === 'apa') parts = clean.split(/(?<=\.),\s*(?:&\s*)?|\s*&\s*/)
+  else if (style === 'initials') parts = clean.split(/\s*,\s*/)          // AMA / Vancouver: "Smith J, Lee HK"
+  else parts = clean.split(/\s*(?:;|,\s*and\s+|\s+and\s+|,\s+(?=[A-Z]\w+ [A-Z]))\s*/)
+  return parts.map(p => p.trim()).filter(Boolean).map(p => {
+    const m = style === 'initials' ? /^(.+?)\s+([A-Z]{1,4})$/.exec(p) : null
+    return m ? { family: m[1], given: m[2].split('').join('. ') + '.' } : parsePerson(p)
+  })
+}
+
+/**
+ * Best-effort field extraction from a formatted reference (APA, AMA/Vancouver, GB/T 7714,
+ * MLA/Chicago). Used only as a fallback when the reference cannot be found online, so the
+ * result is always shown as unverified.
+ */
+export function parseReferenceText(raw: string): Partial<RefEntry> | null {
+  const t = raw.replace(DOI_RE, ' ').replace(/\b(doi|https?:\/\/\S*)\s*:?/gi, ' ').replace(/\s+/g, ' ').trim()
+  let m: RegExpExecArray | null
+  const out = (authors: RefPerson[], title: string, journal: string, year: string, volume?: string, issue?: string, pages?: string) =>
+    ({ authors, title: title.trim(), journal: journal.trim(), year, volume, issue, pages: pages?.replace(/\s+/g, '') })
+
+  // GB/T 7714: Authors. Title[J]. Journal, 2020, 12(3): 45-63.
+  if ((m = new RegExp(String.raw`^(.+?)\.\s*(.+?)\[J\]\.\s*(.+?),\s*((?:19|20)\d{2}),\s*(\d+)?(?:\((\d+)\))?\s*:\s*${PG}`).exec(t)))
+    return out(splitAuthors(m[1], 'plain'), m[2], m[3], m[4], m[5], m[6], m[7])
+  // APA: Smith, J. A., & Lee, H. (2020). Title. Journal, 12(3), 45-63.
+  if ((m = new RegExp(String.raw`^(.+?)\s*\(((?:19|20)\d{2})[a-z]?\)\.\s*(.+?)\.\s+(.+?),\s*(\d+)(?:\((\d+)\))?(?:,\s*${PG})?`).exec(t)))
+    return out(splitAuthors(m[1], 'apa'), m[3], m[4], m[2], m[5], m[6], m[7])
+  // AMA / Vancouver: Smith J, Lee HK. Title. Journal. 2020;12(3):45-63.
+  if ((m = new RegExp(String.raw`^(.+?)\.\s+(.+?)\.\s+(.+?)\.?\s*((?:19|20)\d{2})[^;:]*;\s*(\d+)?\s*(?:\((\d+)\))?\s*:\s*${PG}`).exec(t)))
+    return out(splitAuthors(m[1], 'initials'), m[2], m[3], m[4], m[5], m[6], m[7])
+  // Chicago author-date / PSG: Last, First, and First Last. 2020. "Title." Journal 12, no. 3: 45-63.
+  if ((m = new RegExp(String.raw`^(.+?)\.\s*((?:19|20)\d{2})[a-z]?\.\s*["“](.+?)[.,]?["”]\s*(.+?)\s+(\d+)(?:,\s*no\.\s*(\d+))?\s*(?:\(\d{4}\))?\s*:\s*${PG}`).exec(t)))
+    return out(splitAuthors(m[1], 'plain'), m[3], m[4], m[2], m[5], m[6], m[7])
+  // MLA: Last, First. "Title." Journal 12, no. 3 (2020): 45-63.  or  ... vol. 12, no. 3, 2020, pp. 45-63.
+  if ((m = /^(.+?)\.\s*["“](.+?)[.,]?["”]\s*(.+?)(?:,?\s*vol\.\s*(\d+))?(?:,\s*|\s+)(?:(\d+),\s*)?(?:no\. (\d+))?[^\d]*?((?:19|20)\d{2})/.exec(t))) {
+    const pages = /(?:pp?\.\s*|:\s*)([A-Za-z]?\d+(?:\s*[-–—]\s*[A-Za-z]?\d+)?)/.exec(t)?.[1]
+    return out(splitAuthors(m[1], 'plain'), m[2], m[3].replace(/[\s,]+\d*$/, ''), m[7], m[4] ?? m[5], m[6], pages)
+  }
+  return null
+}
+
 /** One entry per paragraph if the text has blank lines, otherwise one per line. */
 export function parsePlainText(text: string): RefEntry[] {
   const norm = text.replace(/\r\n?/g, '\n').trim()
@@ -221,7 +266,7 @@ export function parsePlainText(text: string): RefEntry[] {
   return blocks
     .map(b => b.replace(/^\s*(\[\d+\]|\(?\d+[.)])\s*/, '').trim())
     .filter(Boolean)
-    .map(raw => ({ raw, source: 'text' as const, doi: extractDois(raw)[0], authors: [] }))
+    .map(raw => ({ raw, source: 'text' as const, doi: extractDois(raw)[0], authors: [], ...parseReferenceText(raw) }))
 }
 
 export function parseInput(text: string): { format: InputFormat; entries: RefEntry[] } {
@@ -259,7 +304,7 @@ export function titleMatches(text: string, title: string): boolean {
 
 /** The text sent to the Crossref bibliographic search for an entry without a DOI. */
 export function searchQuery(e: RefEntry): string {
-  if (e.title) {
+  if (e.title && e.source !== 'text') {
     return [e.title, e.authors[0]?.family ?? e.authors[0]?.name, e.journal, e.year].filter(Boolean).join(' ')
   }
   return e.raw.replace(DOI_RE, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/\s+/g, ' ').trim()
