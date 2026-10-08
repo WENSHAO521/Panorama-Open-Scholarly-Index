@@ -38,6 +38,16 @@ interface CrossrefWork {
   deposited?: { 'date-time': string }
 }
 
+/** fetch that waits and retries on 429/503 (Crossref rate limits), up to 3 times. */
+async function fetchRetry(url: string, timeoutMs: number): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) })
+    if ((res.status !== 429 && res.status !== 503) || attempt >= 3) return res
+    const wait = Number(res.headers.get('retry-after')) || 0
+    await new Promise(r => setTimeout(r, Math.min(Math.max(wait * 1000, 1000 * 2 ** attempt), 8000)))
+  }
+}
+
 function stripJats(html: string): string {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 }
@@ -93,7 +103,7 @@ function mapCrossrefWork(item: CrossrefWork): Article {
   const pageStr = item.page ?? ''
   const dash = pageStr.indexOf('-')
   const firstPage = dash > -1 ? pageStr.slice(0, dash) : pageStr || null
-  const lastPage = dash > -1 ? pageStr.slice(dash + 1) : pageStr || null
+  const lastPage = dash > -1 ? pageStr.slice(dash + 1) : null
 
   return {
     id: item.DOI,
@@ -141,7 +151,7 @@ function mapCrossrefWork(item: CrossrefWork): Article {
 
 export async function crossrefGetWork(doi: string): Promise<Article | null> {
   try {
-    const res = await fetch(`${CROSSREF}/works/${encodeURIComponent(doi)}?mailto=${MAILTO}`, { signal: AbortSignal.timeout(15000) })
+    const res = await fetchRetry(`${CROSSREF}/works/${encodeURIComponent(doi)}?mailto=${MAILTO}`, 15000)
     if (!res.ok) return null
     const data = await res.json()
     return mapCrossrefWork(data.message)
@@ -170,7 +180,7 @@ export async function crossrefGetWorks(
       const chunk = chunks[next++]
       try {
         const filter = chunk.map(d => `doi:${encodeURIComponent(d)}`).join(',')
-        const res = await fetch(`${CROSSREF}/works?filter=${filter}&rows=${chunk.length}&mailto=${MAILTO}`, { signal: AbortSignal.timeout(30000) })
+        const res = await fetchRetry(`${CROSSREF}/works?filter=${filter}&rows=${chunk.length}&mailto=${MAILTO}`, 30000)
         if (res.ok) {
           const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
           for (const it of items) out.set(it.DOI.toLowerCase(), mapCrossrefWork(it))
@@ -186,7 +196,7 @@ export async function crossrefGetWorks(
 /** Best Crossref match for a free-text reference (no DOI known). The caller must verify the hit. */
 export async function crossrefSearch(query: string): Promise<Article | null> {
   try {
-    const res = await fetch(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=1&mailto=${MAILTO}`, { signal: AbortSignal.timeout(20000) })
+    const res = await fetchRetry(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=1&mailto=${MAILTO}`, 20000)
     if (!res.ok) return null
     const item = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items?.[0]
     return item ? mapCrossrefWork(item) : null
@@ -198,7 +208,7 @@ export async function crossrefSearch(query: string): Promise<Article | null> {
 /** Top Crossref matches for a title / author / keyword query, for the user to pick from. */
 export async function crossrefSearchMany(query: string, rows = 6): Promise<Article[]> {
   try {
-    const res = await fetch(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=${rows}&mailto=${MAILTO}`, { signal: AbortSignal.timeout(20000) })
+    const res = await fetchRetry(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(query.slice(0, 500))}&rows=${rows}&mailto=${MAILTO}`, 20000)
     if (!res.ok) return []
     const items = ((await res.json()) as { message?: { items?: CrossrefWork[] } }).message?.items ?? []
     return items.map(mapCrossrefWork).filter(a => a.title)

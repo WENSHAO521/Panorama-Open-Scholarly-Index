@@ -81,3 +81,8 @@ test('reference styles are split into fields', () => {
   assert.equal(chi?.title, 'AI and Reform')
   assert.equal(chi?.year, '2024')
 })
+
+test('a bare DOI list is not mistaken for numbered lines', () => {
+  const { entries } = parseInput('10.1109/isqed.2011.5770700\n10.1007/978-3-030-71044-6_9\n3) 10.1234/numbered')
+  assert.deepEqual(entries.map(e => e.doi), ['10.1109/isqed.2011.5770700', '10.1007/978-3-030-71044-6_9', '10.1234/numbered'])
+})

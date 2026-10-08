@@ -67,7 +67,7 @@ export function generateCitationText(article: Article, format: CitationFormat): 
   const lp          = article.last_page
   const doi         = article.doi
   const authors     = article.authors
-  const pages       = fp ? (lp ? `${fp}-${lp}` : fp) : null
+  const pages       = fp ? (lp && lp !== fp ? `${fp}-${lp}` : fp) : null
   const doiUrl      = doi ? `https://doi.org/${doi}` : null
 
   switch (format) {
@@ -91,7 +91,7 @@ export function generateCitationText(article: Article, format: CitationFormat): 
       if (vol)     ref += ` ${vol}`
       if (iss)     ref += `, no. ${iss}`
       if (pages)   ref += `: ${pages}`
-      ref += '.'
+      if (!ref.endsWith('.”')) ref += '.'  // title-only entries already end with the period inside the quote
       if (doiUrl)  ref += ` ${doiUrl}`  // No trailing period after DOI
       return ref
     }
