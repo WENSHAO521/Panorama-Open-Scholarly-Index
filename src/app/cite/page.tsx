@@ -811,7 +811,7 @@ function CitePage() {
         <div className="flex gap-3">
           <textarea value={input} onChange={e => setInput(e.target.value)} rows={input.includes('\n') ? 8 : 2}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doLookup(input) } }}
-            placeholder={'e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title\nOne per line for many: 100+ DOIs, titles or references (AMA, APA, GB/T…)'}
+            placeholder={'e.g.  10.63802/afs.2024.008  ·  9780374528379  ·  article title\nOne per line for many: 100+ DOIs, titles or references (APA, AMA, MLA, Chicago, IEEE, Harvard, GB/T…)'}
             className="flex-1 px-4 py-2.5 focus:outline-none transition-colors resize-y"
             style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-text)', fontSize: '14px' }}
             onFocus={onFocusBorder as never} onBlur={onBlurBorder as never} />

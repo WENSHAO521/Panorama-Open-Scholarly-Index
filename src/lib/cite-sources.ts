@@ -38,12 +38,17 @@ interface CrossrefWork {
   deposited?: { 'date-time': string }
 }
 
-/** fetch that waits and retries on 429/503 (Crossref rate limits), up to 3 times. */
+/** fetch that waits and retries on 429/503 (Crossref rate limits) and on network errors, up to 3 times. */
 async function fetchRetry(url: string, timeoutMs: number): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) })
-    if ((res.status !== 429 && res.status !== 503) || attempt >= 3) return res
-    const wait = Number(res.headers.get('retry-after')) || 0
+    let res: Response | null = null
+    try {
+      res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) })
+    } catch (e) {
+      if (attempt >= 3) throw e
+    }
+    if (res && ((res.status !== 429 && res.status !== 503) || attempt >= 3)) return res
+    const wait = Number(res?.headers.get('retry-after')) || 0
     await new Promise(r => setTimeout(r, Math.min(Math.max(wait * 1000, 1000 * 2 ** attempt), 8000)))
   }
 }

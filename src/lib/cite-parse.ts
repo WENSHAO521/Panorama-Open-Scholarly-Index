@@ -214,15 +214,25 @@ export function parseCslJson(text: string): RefEntry[] {
 
 const PG = String.raw`([A-Za-z]?\d+(?:\s*[-–—]\s*[A-Za-z]?\d+)?)`
 
-function splitAuthors(s: string, style: 'apa' | 'initials' | 'plain'): RefPerson[] {
-  const clean = s.replace(/\bet al\.?/i, '').replace(/等\.?$/, '').trim()
+const INITIALS_NAME = /^(.+?)\s+([A-Z]{1,4})$/
+/** "LECUN" -> "Lecun"; names with lower-case letters are left alone. */
+const unshout = (n: string) => (n.length > 1 && n === n.toUpperCase() ? n.charAt(0) + n.slice(1).toLowerCase() : n)
+
+function splitAuthors(s: string, style: 'apa' | 'initials' | 'ieee' | 'plain'): RefPerson[] {
+  const clean = s.replace(/,?\s*\bet al\.?/i, '').replace(/等\.?$/, '').replace(/[,;\s]+$/, '').trim()
   let parts: string[]
-  if (style === 'apa') parts = clean.split(/(?<=\.),\s*(?:&\s*)?|\s*&\s*/)
-  else if (style === 'initials') parts = clean.split(/\s*,\s*/)          // AMA / Vancouver: "Smith J, Lee HK"
+  if (style === 'apa') parts = clean.split(/(?<=\.),\s*(?:(?:&|and)\s+)?|\s*&\s*|\s+and\s+/)   // APA / Harvard: "Smith, J. A., & Lee, H."
+  else if (style === 'initials') parts = clean.split(/\s*,\s*/)                                // AMA / Vancouver: "Smith J, Lee HK"
+  else if (style === 'ieee') parts = clean.split(/\s*,\s*(?:and\s+)?|\s+and\s+/)               // IEEE: "J. Smith, H. Lee, and M. Wang"
   else parts = clean.split(/\s*(?:;|,\s*and\s+|\s+and\s+|,\s+(?=[A-Z]\w+ [A-Z]))\s*/)
-  return parts.map(p => p.trim()).filter(Boolean).map(p => {
-    const m = style === 'initials' ? /^(.+?)\s+([A-Z]{1,4})$/.exec(p) : null
-    return m ? { family: m[1], given: m[2].split('').join('. ') + '.' } : parsePerson(p)
+  const people = parts.map(p => p.trim()).filter(Boolean)
+  // GB/T lists English names as "LECUN Y, BENGIO Y" just like AMA.
+  const asInitials = style === 'initials' || (style === 'plain' && people.length > 0 && people.every(p => INITIALS_NAME.test(p)))
+  return people.map(p => {
+    const m = asInitials ? INITIALS_NAME.exec(p) : null
+    if (m) return { family: unshout(m[1]), given: m[2].split('').join('. ') + '.' }
+    const person = parsePerson(p)
+    return person.family && !person.name ? { ...person, family: unshout(person.family) } : person
   })
 }
 
@@ -243,12 +253,18 @@ export function parseReferenceText(raw: string): Partial<RefEntry> | null {
   // APA: Smith, J. A., & Lee, H. (2020). Title. Journal, 12(3), 45-63.
   if ((m = new RegExp(String.raw`^(.+?)\s*\(((?:19|20)\d{2})[a-z]?\)\.\s*(.+?)\.\s+(.+?),\s*(\d+)(?:\((\d+)\))?(?:,\s*${PG})?`).exec(t)))
     return out(splitAuthors(m[1], 'apa'), m[3], m[4], m[2], m[5], m[6], m[7])
+  // Harvard: Smith, J. and Lee, H. (2020) 'Title', Journal, 12(3), pp. 45-63.
+  if ((m = new RegExp(String.raw`^(.+?)\s*\(((?:19|20)\d{2})[a-z]?\)\s*['\u2018\u201C"](.+?)[,.]?['\u2019\u201D"],?\s*(.+?),\s*(\d+)(?:\((\d+)\))?(?:,\s*(?:pp?\.\s*)?${PG})?`).exec(t)))
+    return out(splitAuthors(m[1], 'apa'), m[3], m[4], m[2], m[5], m[6], m[7])
+  // IEEE: J. Smith, H. Lee, and M. Wang, "Title," Journal, vol. 12, no. 3, pp. 45-63, 2020.
+  if ((m = new RegExp(String.raw`^(.+?),\s*["\u201C](.+?),?["\u201D]\s*,?\s*(.+?),\s*vol\.\s*(\d+)(?:,\s*no\.\s*(\d+))?(?:,\s*(?:pp?\.\s*)?${PG})?(?:,\s*(?:[A-Za-z]{3,9}\.?\s*)?((?:19|20)\d{2}))?`).exec(t)) && m[7])
+    return out(splitAuthors(m[1], 'ieee'), m[2], m[3], m[7], m[4], m[5], m[6])
   // AMA / Vancouver: Smith J, Lee HK. Title. Journal. 2020;12(3):45-63.
   if ((m = new RegExp(String.raw`^(.+?)\.\s+(.+?)\.\s+(.+?)\.?\s*((?:19|20)\d{2})[^;:]*;\s*(\d+)?\s*(?:\((\d+)\))?\s*:\s*${PG}`).exec(t)))
     return out(splitAuthors(m[1], 'initials'), m[2], m[3], m[4], m[5], m[6], m[7])
   // Chicago author-date / PSG: Last, First, and First Last. 2020. "Title." Journal 12, no. 3: 45-63.
-  if ((m = new RegExp(String.raw`^(.+?)\.\s*((?:19|20)\d{2})[a-z]?\.\s*["“](.+?)[.,]?["”]\s*(.+?)\s+(\d+)(?:,\s*no\.\s*(\d+))?\s*(?:\(\d{4}\))?\s*:\s*${PG}`).exec(t)))
-    return out(splitAuthors(m[1], 'plain'), m[3], m[4], m[2], m[5], m[6], m[7])
+  if ((m = new RegExp(String.raw`^(.+?)\.\s*((?:19|20)\d{2})[a-z]?\.\s*["“](.+?)[.,]?["”]\s*(.+?)\s+(\d+)(?:,\s*no\.\s*(\d+)|\s*\((\d{1,5})\))?\s*(?:\((?:19|20)\d{2}\))?\s*:\s*${PG}`).exec(t)))
+    return out(splitAuthors(m[1], 'plain'), m[3], m[4], m[2], m[5], m[6] ?? m[7], m[8])
   // MLA: Last, First. "Title." Journal 12, no. 3 (2020): 45-63.  or  ... vol. 12, no. 3, 2020, pp. 45-63.
   if ((m = /^(.+?)\.\s*["“](.+?)[.,]?["”]\s*(.+?)(?:,?\s*vol\.\s*(\d+))?(?:,\s*|\s+)(?:(\d+),\s*)?(?:no\. (\d+))?[^\d]*?((?:19|20)\d{2})/.exec(t))) {
     const pages = /(?:pp?\.\s*|:\s*)([A-Za-z]?\d+(?:\s*[-–—]\s*[A-Za-z]?\d+)?)/.exec(t)?.[1]
