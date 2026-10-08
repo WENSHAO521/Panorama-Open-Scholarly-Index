@@ -52,6 +52,13 @@ function quoted(title: string, f: PsgFmt): string {
   return `“${f.esc(endStop(text(title) || 'Untitled'))}”`
 }
 
+/** Page ranges take an en dash (45–63), never a hyphen; a single page or "Article 108" is left as written. */
+function pageRange(p: string | null | undefined): string {
+  const t = text(p)
+  const m = /^([A-Za-z]?\d+)\s*[-–—]+\s*([A-Za-z]?\d+)$/.exec(t)
+  return m ? `${m[1]}–${m[2]}` : t
+}
+
 function doiUrl(doi: string | null | undefined): string {
   const d = text(doi).replace(/^https?:\/\/(dx\.)?doi\.org\//i, '')
   return d ? `https://doi.org/${d}` : ''
@@ -64,7 +71,7 @@ export interface PsgArticleInput {
   journal?: string | null
   volume?: string | null
   issue?: string | null
-  /** "45-63" or a single page / article number */
+  /** "45-63" (written out with an en dash) or a single page / article number */
   pages?: string | null
   doi?: string | null
 }
@@ -74,7 +81,7 @@ export function psgArticle(a: PsgArticleInput, f: PsgFmt = PLAIN): string {
   const auth = psgAuthors(a.authors)
   let ref = auth ? `${f.esc(endStop(auth))} ` : ''
   ref += `${a.year || 'n.d.'}. ${quoted(a.title, f)}`
-  const journal = text(a.journal), vol = text(a.volume), iss = text(a.issue), pages = text(a.pages)
+  const journal = text(a.journal), vol = text(a.volume), iss = text(a.issue), pages = pageRange(a.pages)
   if (journal) ref += ` ${f.em(f.esc(journal))}`
   if (vol)     ref += ` ${f.esc(vol)}`
   if (iss)     ref += `, no. ${f.esc(iss)}`

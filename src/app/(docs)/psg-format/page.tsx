@@ -92,7 +92,7 @@ export default function PsgFormatPage() {
               ['3 authors',             '(Smith, Lee, and Wang 2024)'],
               ['4 or more authors',     '(Smith et al. 2024)'],
               ['With page number',      '(Smith 2024, 25)'],
-              ['Page range',            '(Smith 2024, 25-27)'],
+              ['Page range',            '(Smith 2024, 25–27)'],
               ['Multiple sources',      '(Chen 2021; Kim 2022; Smith 2024)'],
               ['No date',               '(Smith n.d.)'],
               ['Same author, same year','(Smith 2024a, 2024b)'],
@@ -116,7 +116,7 @@ export default function PsgFormatPage() {
       </p>
       <Example>
         Smith, John A., Helen K. Lee, and Ming Wang. 2024. &ldquo;Artificial Intelligence and Administrative
-        Reform in Local Government.&rdquo; <em>Journal of Public Governance and Society</em> 12, no. 2: 45-63.
+        Reform in Local Government.&rdquo; <em>Journal of Public Governance and Society</em> 12, no. 2: 45–63.
         https://doi.org/10.xxxx/xxxxx
       </Example>
       <p className="text-[11px] mt-1" style={{ color: 'var(--posi-muted)' }}>In-text: <span className="font-mono">(Smith, Lee, and Wang 2024)</span></p>
@@ -144,7 +144,7 @@ export default function PsgFormatPage() {
       <SubHead>4. Book Chapter</SubHead>
       <Example>
         Lee, Hyun K. 2022. &ldquo;Artificial Intelligence in Public Administration.&rdquo; In <em>Digital
-        Governance in Asia</em>, edited by John Smith and Robert Brown, 55-78. Singapore: Springer.
+        Governance in Asia</em>, edited by John Smith and Robert Brown, 55–78. Singapore: Springer.
         https://doi.org/10.xxxx/xxxxx
       </Example>
       <p className="text-[11px] mt-1" style={{ color: 'var(--posi-muted)' }}>In-text: <span className="font-mono">(Lee 2022, 60)</span></p>
@@ -173,7 +173,7 @@ export default function PsgFormatPage() {
       <Example>
         Wang, Ming, and Hua Li. 2023. &ldquo;数字治理背景下的公共服务改革 [Public Service Reform in the
         Context of Digital Governance].&rdquo; <em>公共行政研究 [Public Administration Research]</em> 15,
-        no. 2: 45-58. https://doi.org/10.xxxx/xxxxx
+        no. 2: 45–58. https://doi.org/10.xxxx/xxxxx
       </Example>
       <p className="text-[11px] mt-1" style={{ color: 'var(--posi-muted)' }}>In-text: <span className="font-mono">(Wang and Li 2023)</span></p>
 
@@ -182,7 +182,7 @@ export default function PsgFormatPage() {
       <Example>
         Kim, Minsoo. 2024. &ldquo;공공기관의 디지털 전환과 조직성과 [Digital Transformation and
         Organizational Performance in Public Institutions].&rdquo; <em>한국행정학보 [Korean Public
-        Administration Review]</em> 58, no. 1: 101-125. https://doi.org/10.xxxx/xxxxx
+        Administration Review]</em> 58, no. 1: 101–125. https://doi.org/10.xxxx/xxxxx
       </Example>
       <p className="text-[11px] mt-1" style={{ color: 'var(--posi-muted)' }}>In-text: <span className="font-mono">(Kim 2024)</span></p>
 
@@ -226,7 +226,7 @@ export default function PsgFormatPage() {
               ['Article title',          'English curly/typographic quotes “ ”; period inside closing quote'],
               ['Journal name',           'Italic (plain text: no special markup)'],
               ['Volume & issue',         '12, no. 2'],
-              ['Page range',             '45-63 (en-dash, not hyphen)'],
+              ['Page range',             '45–63 (en dash, not hyphen)'],
               ['Article number',         'Article 108'],
               ['DOI format',             'Must be https://doi.org/…'],
               ['After DOI',              'No trailing period after DOI or URL'],
