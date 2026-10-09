@@ -47,7 +47,6 @@ export default function PsgFormatPage() {
       <PageHeader
         title="PSG Author-Date Citation Format"
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Docs', href: '/docs/' }, { label: 'PSG Format' }]}
-        actions={<Link href="/cite/" className="btn btn-primary">Citation generator</Link>}
       >
         <p>
           PSG Format is the author-date citation format of Panorama Scholarly Group. It follows a Chicago-style
