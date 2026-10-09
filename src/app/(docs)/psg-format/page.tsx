@@ -1,18 +1,26 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { PageHeader } from '@/components/db'
+import { PageHeader, OnThisPage } from '@/components/db'
 
 export const metadata: Metadata = {
-  title: 'PSG Citation Format',
+  title: 'PSG Author-Date Citation Format',
   description:
     'PSG Author-Date Citation Format - the official citation standard of Panorama Scholarly Group. Covers in-text citations, reference list rules, and examples for journals, books, datasets, software, AI tools, and multilingual sources.',
   alternates: { canonical: '/psg-format/' },
 }
 
+const CONTENTS: [string, string][] = [
+  ['in-text', 'In-text citations'],
+  ['reference-list', 'Reference list formats'],
+  ['rules', 'Fixed rules'],
+  ['batch', 'Batch conversion'],
+  ['definition', 'Official definition'],
+]
+
 function Example({ children, intext }: { children: React.ReactNode; intext?: string }) {
   return (
     <>
-      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowX: 'visible' }}>{children}</div>
+      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere', marginTop: '0.75rem' }}>{children}</div>
       {intext && <p className="text-[13px]">In-text: <code>{intext}</code></p>}
     </>
   )
@@ -25,7 +33,7 @@ function Table({ head, rows }: { head: [string, string]; rows: [string, string][
         <thead><tr><th>{head[0]}</th><th>{head[1]}</th></tr></thead>
         <tbody>
           {rows.map(([a, b]) => (
-            <tr key={a}><td className="font-medium whitespace-nowrap">{a}</td><td>{b}</td></tr>
+            <tr key={a}><td className="font-medium" style={{ width: '34%', minWidth: 120 }}>{a}</td><td>{b}</td></tr>
           ))}
         </tbody>
       </table>
@@ -48,10 +56,12 @@ export default function PsgFormatPage() {
         </p>
       </PageHeader>
 
+      <OnThisPage items={CONTENTS} />
+
       <div className="doc">
         <div className="panel" style={{ padding: '0.75rem 1rem' }}>
           <div className="eyebrow">Core pattern</div>
-          <p style={{ marginTop: 4 }} className="font-mono text-[13px]">
+          <p style={{ marginTop: 4, overflowWrap: 'anywhere' }} className="font-mono text-[13px]">
             Author. Year. &ldquo;Article Title.&rdquo; <em>Journal Name</em> Volume, no. Issue: Pages. https://doi.org/…
           </p>
         </div>
@@ -79,7 +89,7 @@ export default function PsgFormatPage() {
           <h2 id="reference-list">2. Reference list formats</h2>
 
           <h3>Journal article</h3>
-          <p><code>Last, First, and First Last. Year. &ldquo;Title.&rdquo; Journal Vol, no. Issue: Pages. https://doi.org/…</code></p>
+          <p style={{ overflowWrap: 'anywhere' }}><code>Last, First, and First Last. Year. &ldquo;Title.&rdquo; Journal Vol, no. Issue: Pages. https://doi.org/…</code></p>
           <Example intext="(Smith, Lee, and Wang 2024)">
             Smith, John A., Helen K. Lee, and Ming Wang. 2024. &ldquo;Artificial Intelligence and Administrative
             Reform in Local Government.&rdquo; <em>Journal of Public Governance and Society</em> 12, no. 2: 45–63.
@@ -93,7 +103,7 @@ export default function PsgFormatPage() {
           </Example>
 
           <h3>Book</h3>
-          <p><code>Last, First. Year. Book Title: Subtitle. Place: Publisher.</code></p>
+          <p style={{ overflowWrap: 'anywhere' }}><code>Last, First. Year. Book Title: Subtitle. Place: Publisher.</code></p>
           <Example intext="(Giddens 1991)">
             Giddens, Anthony. 1991. <em>Modernity and Self-Identity: Self and Society in the Late Modern Age.</em>{' '}
             Stanford: Stanford University Press.
@@ -158,17 +168,19 @@ export default function PsgFormatPage() {
             rows={[
               ['In-text style', 'Author-year parenthetical; no comma between author and year'],
               ['Year position', 'After author in reference list; no brackets'],
-              ['Article title', 'English curly/typographic quotes “ ”; period inside closing quote'],
-              ['Journal name', 'Italic (plain text: no special markup)'],
+              ['Same author, same year', 'Add a, b, c to the year in both the reference list and the in-text citation (2024a, 2024b), ordered by title'],
+              ['No date', 'Write n.d. in place of the year'],
+              ['Article title', 'Curly (typographic) quotes “ ”; period inside the closing quote'],
+              ['Book, report, dataset, software titles', 'Italic, no quotes; sentence ends with a period'],
+              ['Journal name', 'Italic; in plain-text copies it is left unmarked'],
               ['Volume & issue', '12, no. 2'],
               ['Page range', '45–63 (en dash, not hyphen)'],
-              ['Article number', 'Article 108'],
+              ['Article number', 'Article 108 (in place of a page range)'],
               ['DOI format', 'Must be https://doi.org/…'],
-              ['After DOI', 'No trailing period after DOI or URL'],
-              ['After URL (no DOI)', 'No trailing period'],
+              ['After DOI or URL', 'No trailing period'],
               ['Multilingual title', 'Original title + [English translation] in square brackets'],
               ['Author connector', 'and (not &)'],
-              ['4+ authors in-text', 'et al.'],
+              ['4+ authors in-text', 'First surname + et al. (no comma before et al.)'],
               ['Author format (1st)', 'Last, First (inverted)'],
               ['Author format (others)', 'First Last (natural order)'],
             ]}
