@@ -6,7 +6,7 @@ import { FORMATS, generateCitationText, generatePsgInText } from '@/components/C
 import type { CitationFormat } from '@/components/CitationFormatter'
 import type { RefEntry } from '@/lib/cite-parse'
 import { decodeHtml } from '@/lib/utils'
-import { psgYearLabels } from '@/lib/psg'
+import { psgAuthors, psgYearLabels } from '@/lib/psg'
 import { resolveEntries } from '@/lib/cite-batch'
 import type { BatchItem } from '@/lib/cite-batch'
 
@@ -35,18 +35,25 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
 
   const { rows, failed, output } = useMemo(() => {
     const ok = (items ?? []).filter(it => it.article)
+    const people = ok.map(it => it.article!.authors.map(au => ({ family: au.family_name, given: au.given_name, name: au.display_name })))
     const labels = fmt === 'psg'
-      ? psgYearLabels(ok.map(it => ({
-          authors: it.article!.authors.map(au => ({ family: au.family_name, given: au.given_name, name: au.display_name })),
-          year: it.article!.publication_year, title: decodeHtml(it.article!.title),
-        })))
+      ? psgYearLabels(ok.map((it, i) => ({ authors: people[i], year: it.article!.publication_year, title: decodeHtml(it.article!.title) })))
       : []
     const rows = ok.map((it, i) => ({
       it,
       text: generateCitationText(it.article!, fmt, labels[i]),
       intext: fmt === 'psg' ? generatePsgInText(it.article!.authors, labels[i]) : null,
+      // Sort keys: the reference without its year suffix, and the author+year group the suffix belongs to.
+      base: fmt === 'psg' ? generateCitationText(it.article!, fmt) : '',
+      group: fmt === 'psg' && labels[i].length > String(it.article!.publication_year).length
+        ? `${psgAuthors(people[i])}#${it.article!.publication_year}` : '',
+      label: labels[i] ?? '',
     }))
-    if (sort) rows.sort((a, b) => a.text.localeCompare(b.text))
+    // 2024z comes before 2024aa, so within a suffixed group compare the suffix by length first;
+    // plain text order would put 2024aa straight after 2024a.
+    if (sort) rows.sort((a, b) => a.group && a.group === b.group
+      ? a.label.length - b.label.length || a.label.localeCompare(b.label)
+      : (fmt === 'psg' ? a.base.localeCompare(b.base) : a.text.localeCompare(b.text)))
     const sep = fmt === 'bibtex' || fmt === 'ris' ? '\n\n' : '\n'
     return { rows, failed: (items ?? []).filter(it => !it.article), output: rows.map(r => r.text).join(sep) }
   }, [items, fmt, sort])

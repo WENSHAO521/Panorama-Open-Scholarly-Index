@@ -58,7 +58,7 @@ export default function PsgFormatPage() {
       <OnThisPage items={CONTENTS} />
 
       <div className="doc">
-        <div className="panel" style={{ padding: '0.75rem 1rem' }}>
+        <div className="panel" style={{ padding: '0.75rem 1rem', marginBottom: '2.75rem' }}>
           <div className="eyebrow">Core pattern</div>
           <p style={{ marginTop: 4, overflowWrap: 'anywhere' }} className="font-mono text-[13px]">
             Author. Year. &ldquo;Article Title.&rdquo; <em>Journal Name</em> Volume, no. Issue: Pages. https://doi.org/…
