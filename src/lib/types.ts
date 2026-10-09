@@ -31,7 +31,6 @@ export interface Journal {
   license: string
   peer_review_type: string
   website_url: string
-  cover_image_url: string | null
   oai_base_url: string | null
   registration_country: string | null
   doaj_status: 'listed' | 'application_submitted' | 'not_listed' | null

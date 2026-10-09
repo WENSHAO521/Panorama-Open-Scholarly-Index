@@ -178,7 +178,6 @@ export function buildRecord(j) {
     license: j.license ?? 'Open Access',
     peer_review_type: j.peer_review_type ?? 'Peer review',
     website_url: j.website_url ?? '',
-    cover_image_url: null,
     oai_base_url: j.oai_base_url ?? null,
     registration_country: j.registration_country ?? null,
     doaj_status: j.doaj_status ?? 'not_listed',
