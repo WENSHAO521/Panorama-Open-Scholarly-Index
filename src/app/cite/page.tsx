@@ -780,7 +780,7 @@ function CitePage() {
 
   return (
     <div className="wrap pb-12">
-     <div className="max-w-[860px] space-y-6">
+     <div className="max-w-[860px]">
       <PageHeader
         title="Citation generator"
         crumbs={[{ label: 'POSI', href: '/' }, { label: 'Services' }, { label: 'Citation generator' }]}
@@ -789,7 +789,7 @@ function CitePage() {
         <p>Enter a DOI, ISBN or web address, or fill in the details by hand. Citations are produced in PSG, APA, MLA and Chicago styles. Paste several lines to convert many at once: DOIs, titles, or references in APA, AMA, MLA, Chicago, IEEE, Harvard or GB/T style, or open a BibTeX / RIS file.</p>
       </PageHeader>
 
-
+      <div className="space-y-6">
       {/* Auto-lookup input */}
       <form onSubmit={e => { e.preventDefault(); doLookup(input) }}
         className="panel p-6">
@@ -1075,6 +1075,7 @@ function CitePage() {
       <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
         <Link href="/psg-format/" className="link">PSG Format specification</Link>
       </p>
+      </div>
      </div>
     </div>
   )
