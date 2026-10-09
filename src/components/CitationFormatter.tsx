@@ -39,7 +39,7 @@ function apaAuthor(a: Article['authors'][0]): string {
 
 const personOf = (a: Article['authors'][0]) => ({ family: a.family_name, given: a.given_name, name: a.display_name })
 
-export function generatePsgInText(authors: Article['authors'], year: number | null): string {
+export function generatePsgInText(authors: Article['authors'], year: number | string | null): string {
   return psgInText(authors.map(personOf), year)
 }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Check, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
-import { FORMATS, generateCitationText } from '@/components/CitationFormatter'
+import { FORMATS, generateCitationText, generatePsgInText } from '@/components/CitationFormatter'
 import type { CitationFormat } from '@/components/CitationFormatter'
 import type { RefEntry } from '@/lib/cite-parse'
 import { decodeHtml } from '@/lib/utils'
@@ -41,7 +41,11 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
           year: it.article!.publication_year, title: decodeHtml(it.article!.title),
         })))
       : []
-    const rows = ok.map((it, i) => ({ it, text: generateCitationText(it.article!, fmt, labels[i]) }))
+    const rows = ok.map((it, i) => ({
+      it,
+      text: generateCitationText(it.article!, fmt, labels[i]),
+      intext: fmt === 'psg' ? generatePsgInText(it.article!.authors, labels[i]) : null,
+    }))
     if (sort) rows.sort((a, b) => a.text.localeCompare(b.text))
     const sep = fmt === 'bibtex' || fmt === 'ris' ? '\n\n' : '\n'
     return { rows, failed: (items ?? []).filter(it => !it.article), output: rows.map(r => r.text).join(sep) }
@@ -93,12 +97,17 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
             </div>
           </div>
           <ol className="divide-y divide-[var(--line-soft)]">
-            {rows.map(({ it, text }, i) => (
+            {rows.map(({ it, text, intext }, i) => (
               <li key={i} className="px-5 py-3">
                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words"
                   style={{ fontFamily: fmt === 'bibtex' || fmt === 'ris' ? 'var(--font-mono)' : 'var(--font-body)', color: 'var(--posi-text)' }}>
                   {text}
                 </p>
+                {intext && (
+                  <p className="text-[11.5px] mt-1" style={{ color: 'var(--posi-muted)' }}>
+                    In-text: <span className="font-mono">{intext}</span>
+                  </p>
+                )}
                 {SOURCE_NOTE[it.source] && (
                   <p className="text-[11px] mt-1" style={{ color: 'var(--check, #b45309)' }}>{SOURCE_NOTE[it.source]}</p>
                 )}
