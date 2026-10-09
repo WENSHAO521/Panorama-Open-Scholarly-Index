@@ -20,7 +20,7 @@ const CONTENTS: [string, string][] = [
 function Example({ children, intext }: { children: React.ReactNode; intext?: string }) {
   return (
     <>
-      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' }}>{children}</div>
+      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere', marginTop: '0.75rem' }}>{children}</div>
       {intext && <p className="text-[13px]">In-text: <code>{intext}</code></p>}
     </>
   )
