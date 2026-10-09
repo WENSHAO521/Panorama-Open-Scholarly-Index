@@ -58,7 +58,7 @@ export default function PsgFormatPage() {
       <OnThisPage items={CONTENTS} />
 
       <div className="doc">
-        <div className="panel" style={{ padding: '0.75rem 1rem' }}>
+        <div className="panel" style={{ padding: '0.75rem 1rem', marginBottom: '2.75rem' }}>
           <div className="eyebrow">Core pattern</div>
           <p style={{ marginTop: 4, overflowWrap: 'anywhere' }} className="font-mono text-[13px]">
             Author. Year. &ldquo;Article Title.&rdquo; <em>Journal Name</em> Volume, no. Issue: Pages. https://doi.org/…
@@ -193,7 +193,7 @@ export default function PsgFormatPage() {
             1,000). Paste DOIs one per line, paste a reference list in APA, AMA, MLA, Chicago, IEEE, Harvard or GB/T
             style, or open a BibTeX, RIS or CSL JSON export. DOIs are looked up in Crossref in bulk, with OpenAlex as a
             fallback; references without a DOI are matched by title, and any match not confirmed by its DOI is flagged for
-            checking. Works by the same authors in the same year within one run get the a, b, c year suffixes, ordered by title. Output can be sorted alphabetically, copied, or downloaded.
+            checking. Works by the same authors in the same year within one run get the a, b, c year suffixes, ordered by title, in both the reference and its in-text citation. Output can be sorted alphabetically, copied, or downloaded.
           </p>
         </section>
 
