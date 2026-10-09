@@ -5,6 +5,8 @@ import { Copy, Check, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
 import { FORMATS, generateCitationText } from '@/components/CitationFormatter'
 import type { CitationFormat } from '@/components/CitationFormatter'
 import type { RefEntry } from '@/lib/cite-parse'
+import { decodeHtml } from '@/lib/utils'
+import { psgYearLabels } from '@/lib/psg'
 import { resolveEntries } from '@/lib/cite-batch'
 import type { BatchItem } from '@/lib/cite-batch'
 
@@ -33,7 +35,13 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
 
   const { rows, failed, output } = useMemo(() => {
     const ok = (items ?? []).filter(it => it.article)
-    const rows = ok.map(it => ({ it, text: generateCitationText(it.article!, fmt) }))
+    const labels = fmt === 'psg'
+      ? psgYearLabels(ok.map(it => ({
+          authors: it.article!.authors.map(au => ({ family: au.family_name, given: au.given_name, name: au.display_name })),
+          year: it.article!.publication_year, title: decodeHtml(it.article!.title),
+        })))
+      : []
+    const rows = ok.map((it, i) => ({ it, text: generateCitationText(it.article!, fmt, labels[i]) }))
     if (sort) rows.sort((a, b) => a.text.localeCompare(b.text))
     const sep = fmt === 'bibtex' || fmt === 'ris' ? '\n\n' : '\n'
     return { rows, failed: (items ?? []).filter(it => !it.article), output: rows.map(r => r.text).join(sep) }

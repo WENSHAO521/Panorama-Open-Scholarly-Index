@@ -129,3 +129,32 @@ export function psgWebpage(w: PsgWebInput, f: PsgFmt = PLAIN): string {
   if (text(w.url)) ref += ` ${text(w.url)}`
   return ref
 }
+
+/** a, b, … z, aa, ab, … */
+function letters(n: number): string {
+  let out = ''
+  for (n += 1; n > 0; n = Math.floor((n - 1) / 26)) out = String.fromCharCode(97 + ((n - 1) % 26)) + out
+  return out
+}
+
+/**
+ * Year labels for a reference list: works by the same authors in the same year
+ * become 2024a, 2024b, … ordered by title. Everything else keeps its plain year.
+ * Returns one label per input, in input order.
+ */
+export function psgYearLabels(items: { authors: PsgPerson[]; year?: string | number | null; title: string }[]): string[] {
+  const labels = items.map(it => String(it.year || 'n.d.'))
+  const groups = new Map<string, number[]>()
+  items.forEach((it, i) => {
+    const names = it.authors.map(inverted).filter(Boolean)
+    if (!names.length) return
+    const key = `${names.join('|').toLowerCase()}#${labels[i]}`
+    groups.set(key, [...(groups.get(key) ?? []), i])
+  })
+  for (const idx of groups.values()) {
+    if (idx.length < 2) continue
+    idx.sort((a, b) => text(items[a].title).localeCompare(text(items[b].title)) || a - b)
+    idx.forEach((i, n) => { labels[i] += letters(n) })
+  }
+  return labels
+}

@@ -43,7 +43,8 @@ export function generatePsgInText(authors: Article['authors'], year: number | nu
   return psgInText(authors.map(personOf), year)
 }
 
-export function generateCitationText(article: Article, format: CitationFormat): string {
+/** `yearLabel` replaces the year in PSG output, e.g. "2024a" when a batch holds two works by one author in 2024. */
+export function generateCitationText(article: Article, format: CitationFormat, yearLabel?: string): string {
   const title       = decodeHtml(article.title)
   const journal     = decodeHtml(article.journal_title ?? '')
   const year        = article.publication_year
@@ -59,7 +60,7 @@ export function generateCitationText(article: Article, format: CitationFormat): 
   switch (format) {
 
     case 'psg':
-      return psgArticle({ authors: authors.map(personOf), year, title, journal, volume: vol, issue: iss, pages, doi })
+      return psgArticle({ authors: authors.map(personOf), year: yearLabel ?? year, title, journal, volume: vol, issue: iss, pages, doi })
 
     case 'apa': {
       const names = authors.map(apaAuthor)
