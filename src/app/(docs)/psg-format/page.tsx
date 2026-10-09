@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { PageHeader } from '@/components/db'
+import { PageHeader, OnThisPage } from '@/components/db'
 
 export const metadata: Metadata = {
   title: 'PSG Author-Date Citation Format',
@@ -9,10 +9,18 @@ export const metadata: Metadata = {
   alternates: { canonical: '/psg-format/' },
 }
 
+const CONTENTS: [string, string][] = [
+  ['in-text', 'In-text citations'],
+  ['reference-list', 'Reference list formats'],
+  ['rules', 'Fixed rules'],
+  ['batch', 'Batch conversion'],
+  ['definition', 'Official definition'],
+]
+
 function Example({ children, intext }: { children: React.ReactNode; intext?: string }) {
   return (
     <>
-      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowX: 'visible' }}>{children}</div>
+      <div className="formula" style={{ fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' }}>{children}</div>
       {intext && <p className="text-[13px]">In-text: <code>{intext}</code></p>}
     </>
   )
@@ -25,7 +33,7 @@ function Table({ head, rows }: { head: [string, string]; rows: [string, string][
         <thead><tr><th>{head[0]}</th><th>{head[1]}</th></tr></thead>
         <tbody>
           {rows.map(([a, b]) => (
-            <tr key={a}><td className="font-medium whitespace-nowrap">{a}</td><td>{b}</td></tr>
+            <tr key={a}><td className="font-medium" style={{ width: '34%', minWidth: 120 }}>{a}</td><td>{b}</td></tr>
           ))}
         </tbody>
       </table>
@@ -48,10 +56,12 @@ export default function PsgFormatPage() {
         </p>
       </PageHeader>
 
+      <OnThisPage items={CONTENTS} />
+
       <div className="doc">
         <div className="panel" style={{ padding: '0.75rem 1rem' }}>
           <div className="eyebrow">Core pattern</div>
-          <p style={{ marginTop: 4 }} className="font-mono text-[13px]">
+          <p style={{ marginTop: 4, overflowWrap: 'anywhere' }} className="font-mono text-[13px]">
             Author. Year. &ldquo;Article Title.&rdquo; <em>Journal Name</em> Volume, no. Issue: Pages. https://doi.org/…
           </p>
         </div>
@@ -79,7 +89,7 @@ export default function PsgFormatPage() {
           <h2 id="reference-list">2. Reference list formats</h2>
 
           <h3>Journal article</h3>
-          <p><code>Last, First, and First Last. Year. &ldquo;Title.&rdquo; Journal Vol, no. Issue: Pages. https://doi.org/…</code></p>
+          <p style={{ overflowWrap: 'anywhere' }}><code>Last, First, and First Last. Year. &ldquo;Title.&rdquo; Journal Vol, no. Issue: Pages. https://doi.org/…</code></p>
           <Example intext="(Smith, Lee, and Wang 2024)">
             Smith, John A., Helen K. Lee, and Ming Wang. 2024. &ldquo;Artificial Intelligence and Administrative
             Reform in Local Government.&rdquo; <em>Journal of Public Governance and Society</em> 12, no. 2: 45–63.
@@ -93,7 +103,7 @@ export default function PsgFormatPage() {
           </Example>
 
           <h3>Book</h3>
-          <p><code>Last, First. Year. Book Title: Subtitle. Place: Publisher.</code></p>
+          <p style={{ overflowWrap: 'anywhere' }}><code>Last, First. Year. Book Title: Subtitle. Place: Publisher.</code></p>
           <Example intext="(Giddens 1991)">
             Giddens, Anthony. 1991. <em>Modernity and Self-Identity: Self and Society in the Late Modern Age.</em>{' '}
             Stanford: Stanford University Press.
