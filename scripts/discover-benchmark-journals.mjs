@@ -116,7 +116,6 @@ function toJournal(source, index) {
     license: '',
     peer_review_type: '',
     website_url: source.homepage_url ?? '',
-    cover_image_url: null,
     oai_base_url: null,
     registration_country: null,
     doaj_status: null,
