@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { psgArticle, psgBook, psgWebpage, psgInText, psgAuthors } from './psg.ts'
+import { psgArticle, psgBook, psgWebpage, psgInText, psgAuthors, psgYearLabels } from './psg.ts'
 
 // Examples are the ones on the /psg-format/ page.
 
@@ -68,4 +68,20 @@ test('in-text citations', () => {
 test('authors without split names fall back to the display name', () => {
   assert.equal(psgAuthors([{ name: 'Panorama Group' }]), 'Panorama Group')
   assert.equal(psgAuthors([{ name: 'A B' }, { name: 'C D' }]), 'A B, and C D')
+})
+
+test('same authors and year get a, b suffixes ordered by title; others keep their year', () => {
+  const smith = [{ family: 'Smith', given: 'John' }]
+  const lee = [{ family: 'Lee', given: 'Helen' }]
+  assert.deepEqual(
+    psgYearLabels([
+      { authors: smith, year: 2024, title: 'Zebras' },
+      { authors: lee, year: 2024, title: 'Solo' },
+      { authors: smith, year: 2024, title: 'Apples' },
+      { authors: smith, year: 2023, title: 'Other year' },
+      { authors: [], year: 2024, title: 'No author' },
+      { authors: [], year: 2024, title: 'No author either' },
+    ]),
+    ['2024b', '2024', '2024a', '2023', '2024', '2024'],
+  )
 })
