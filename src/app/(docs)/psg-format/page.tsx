@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { PageHeader } from '@/components/db'
 
 export const metadata: Metadata = {
-  title: 'PSG Citation Format',
+  title: 'PSG Author-Date Citation Format',
   description:
     'PSG Author-Date Citation Format - the official citation standard of Panorama Scholarly Group. Covers in-text citations, reference list rules, and examples for journals, books, datasets, software, AI tools, and multilingual sources.',
   alternates: { canonical: '/psg-format/' },
@@ -158,17 +158,19 @@ export default function PsgFormatPage() {
             rows={[
               ['In-text style', 'Author-year parenthetical; no comma between author and year'],
               ['Year position', 'After author in reference list; no brackets'],
-              ['Article title', 'English curly/typographic quotes “ ”; period inside closing quote'],
-              ['Journal name', 'Italic (plain text: no special markup)'],
+              ['Same author, same year', 'Add a, b, c to the year in both the reference list and the in-text citation (2024a, 2024b), ordered by title'],
+              ['No date', 'Write n.d. in place of the year'],
+              ['Article title', 'Curly (typographic) quotes “ ”; period inside the closing quote'],
+              ['Book, report, dataset, software titles', 'Italic, no quotes; sentence ends with a period'],
+              ['Journal name', 'Italic; in plain-text copies it is left unmarked'],
               ['Volume & issue', '12, no. 2'],
               ['Page range', '45–63 (en dash, not hyphen)'],
-              ['Article number', 'Article 108'],
+              ['Article number', 'Article 108 (in place of a page range)'],
               ['DOI format', 'Must be https://doi.org/…'],
-              ['After DOI', 'No trailing period after DOI or URL'],
-              ['After URL (no DOI)', 'No trailing period'],
+              ['After DOI or URL', 'No trailing period'],
               ['Multilingual title', 'Original title + [English translation] in square brackets'],
               ['Author connector', 'and (not &)'],
-              ['4+ authors in-text', 'et al.'],
+              ['4+ authors in-text', 'First surname + et al. (no comma before et al.)'],
               ['Author format (1st)', 'Last, First (inverted)'],
               ['Author format (others)', 'First Last (natural order)'],
             ]}
