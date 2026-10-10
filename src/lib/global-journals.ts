@@ -114,7 +114,9 @@ export function getDirectory() {
         p: g.publisher ?? c?.publisher ?? null,
         i: g.issns,
         co: g.country ?? null,
-        oa: g.open_access,
+        // Core journals are open access (sync-live-data.mjs does the same by
+        // posi_id, which an ISSN match would miss).
+        oa: k === 'core' ? true : g.open_access,
         dj: g.in_doaj,
         w: g.works_count ?? g.crossref_total_dois ?? null,
         s: g.psc_confidence === 'multidisciplinary' ? MULTIDISCIPLINARY : g.psc_category ?? c?.psc_category ?? null,
