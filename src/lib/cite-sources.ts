@@ -364,7 +364,7 @@ function recordToArticle(r: RegistryRecord): Article {
     last_page: r.container.lastPage,
     publication_year: r.year ?? new Date().getFullYear(),
     publication_date: r.date,
-    article_type: r.kind === 'article' ? 'Research Article' : (r.kindLabel || r.kind || 'Dataset'),
+    article_type: r.kind === 'article' ? 'Research Article' : r.kind === 'dataset' ? 'Dataset' : r.kind === 'software' ? 'Software' : (r.kindLabel || r.kind || 'Article'),
     language: r.language ?? 'English',
     abstract: r.abstract,
     keywords: r.keywords,

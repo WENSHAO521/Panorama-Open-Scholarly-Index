@@ -63,8 +63,24 @@ export interface RecordPage { count: number; records: RegistryRecord[] }
 
 // ---- helpers ----
 
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ldquo: '\u201c', rdquo: '\u201d', lsquo: '\u2018',
+  rsquo: '\u2019', hellip: '\u2026', ndash: '\u2013', mdash: '\u2014', deg: '\u00b0', plusmn: '\u00b1', times: '\u00d7',
+}
+
+/** Strip tags, decode HTML entities (named and numeric) and collapse whitespace. */
 export function plainText(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
+      if (e[0] === '#') {
+        const code = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)
+        try { return String.fromCodePoint(code) } catch { return m }
+      }
+      return NAMED_ENTITIES[e.toLowerCase()] ?? m
+    })
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 /** word -> positions, the shape OpenAlex uses for abstracts. */
@@ -81,10 +97,10 @@ function licenseLabel(url: string | null | undefined, rights: string | null | un
   const m = (url ?? '').match(/creativecommons\.org\/licenses\/([a-z-]+)\/([\d.]+)/i)
   if (m) return `CC ${m[1].toUpperCase()} ${m[2]}`
   if (/creativecommons\.org\/publicdomain\/zero/i.test(url ?? '')) return 'CC0 1.0'
-  if (id && /^cc-/i.test(id)) {
-    const parts = id.toUpperCase().split('-') // CC-BY-4.0
-    return `CC ${parts.slice(1, -1).join('-')} ${parts[parts.length - 1]}`
-  }
+  if (id && /^(cc-zero|cc0(-1\.0)?)$/i.test(id)) return 'CC0 1.0'
+  // cc-by-4.0, cc-by-nc-sa-4.0, and the unversioned cc-by / cc-by-sa that Zenodo also uses
+  const cc = id?.match(/^cc-([a-z]+(?:-[a-z]+)*?)(?:-(\d+(?:\.\d+)?))?$/i)
+  if (cc) return ['CC', cc[1].toUpperCase(), cc[2]].filter(Boolean).join(' ')
   return rights || id || url || null
 }
 
@@ -190,7 +206,10 @@ export async function dataciteSearch(qy: RecordQuery, getJson: GetJson, signal?:
     const general = Object.entries(DC_KIND).filter(([, v]) => qy.type!.includes(v)).map(([k]) => k)
     if (general.length) clauses.push(`types.resourceTypeGeneral:(${general.join(' OR ')})`)
   }
-  const sort = qy.sort === 'cited' ? '-citation' : qy.sort === 'newest' || !qy.q ? '-created' : undefined
+  // DataCite's `citation` sort key is silently ignored; `citation-count` works. It has no working publication-date sort
+  // (`published` does not order results either), so "newest" is by DOI creation date, which for repositories is
+  // normally the deposit date.
+  const sort = qy.sort === 'cited' ? '-citation-count' : qy.sort === 'newest' || !qy.q ? '-created' : undefined
   const j = await getJson(dcUrl('/dois', {
     query: clauses.join(' AND ') || undefined,
     sort,

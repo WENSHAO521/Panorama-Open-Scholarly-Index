@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { psgArticle, psgBook, psgWebpage, psgInText, psgAuthors, psgYearLabels } from './psg.ts'
+import { psgArticle, psgBook, psgDataset, psgWebpage, psgInText, psgAuthors, psgYearLabels } from './psg.ts'
 
 // Examples are the ones on the /psg-format/ page.
 
@@ -83,5 +83,12 @@ test('same authors and year get a, b suffixes ordered by title; others keep thei
       { authors: [], year: 2024, title: 'No author either' },
     ]),
     ['2024b', '2024', '2024a', '2023', '2024', '2024'],
+  )
+})
+
+test('dataset is cited as a data set with its repository, not as a journal article', () => {
+  assert.equal(
+    psgDataset({ authors: [{ family: 'Lee', given: 'Sungho' }], year: 2024, title: 'Survey Data on Digital Public Service Satisfaction in South Korea', kind: 'Data set', publisher: 'Zenodo', doi: '10.5281/zenodo.1' }),
+    'Lee, Sungho. 2024. Survey Data on Digital Public Service Satisfaction in South Korea. Data set. Zenodo. https://doi.org/10.5281/zenodo.1',
   )
 })

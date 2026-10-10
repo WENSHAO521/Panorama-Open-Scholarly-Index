@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           <p>
             Publication search, publication pages and certificate checks send your query directly from your
             browser to OpenAlex (api.openalex.org) and Crossref (api.crossref.org), and, when those cannot answer or do not
-            hold a DOI, to DataCite (api.datacite.org) and Zenodo (zenodo.org). These services receive your
+            hold a DOI, to DataCite (api.datacite.org) and Zenodo (zenodo.org). To choose the right registry, DOI lookups also first ask doi.org (doi.org/doiRA) which agency registered the DOI. These services receive your
             query and your IP address as part of the request, under their own privacy policies. Journal search and
             journal profiles are served by POSI and do not contact these services.
           </p>
