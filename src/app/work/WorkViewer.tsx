@@ -178,7 +178,9 @@ export function WorkViewer() {
           <div className="panel p-4">
             <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Published in</p>
             {src ? (
-              <Link href={posi ? recordHref(posi) : `/journal/?id=${src.id.replace('https://openalex.org/', '')}`} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
+              (posi || src.id)
+              ? <Link href={posi ? recordHref(posi) : `/journal/?id=${src.id.replace('https://openalex.org/', '')}`} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
+              : <span className="mt-1 block font-medium" style={{ color: 'var(--ink)' }}>{src.display_name}</span>
             ) : <p className="mt-1 font-medium">No source recorded</p>}
             {src?.host_organization_name && <p style={{ color: 'var(--muted)' }}>{src.host_organization_name}</p>}
             <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">

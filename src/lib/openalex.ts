@@ -306,7 +306,10 @@ export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<
     return await openalexSearch(qy, signal)
   } catch (e) {
     if (e instanceof RegistryError && e.busy) {
-      return firstAnswer([() => crossrefSearch(qy, signal), () => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)], e)
+      // Repositories have no journal ISSN, so an ISSN-scoped search can only fall back to Crossref.
+      const attempts = [() => crossrefSearch(qy, signal)]
+      if (!qy.issn) attempts.push(() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal))
+      return firstAnswer(attempts, e)
     }
     throw e
   }

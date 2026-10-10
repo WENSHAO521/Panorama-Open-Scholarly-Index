@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Copy, Check } from '@phosphor-icons/react/dist/ssr'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
-import { psgArticle, psgInText } from '@/lib/psg'
+import { psgArticle, psgDataset, psgInText } from '@/lib/psg'
 
 export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
 
@@ -44,6 +44,13 @@ export function generatePsgInText(authors: Article['authors'], year: number | st
 }
 
 /** `yearLabel` replaces the year in PSG output, e.g. "2024a" when a batch holds two works by one author in 2024. */
+/** Data sets and software come from DataCite / Zenodo; they are cited by what they are, not as journal articles. */
+function resourceKind(a: Article): { psg: string; apa: string; gbt: string; bibtex: string; ris: string } | null {
+  if (/data ?set/i.test(a.article_type)) return { psg: 'Data set', apa: 'Data set', gbt: 'DS', bibtex: 'misc', ris: 'DATA' }
+  if (/software|source code/i.test(a.article_type)) return { psg: 'Source code', apa: 'Computer software', gbt: 'CP', bibtex: 'misc', ris: 'COMP' }
+  return null
+}
+
 export function generateCitationText(article: Article, format: CitationFormat, yearLabel?: string): string {
   const title       = decodeHtml(article.title)
   const journal     = decodeHtml(article.journal_title ?? '')
@@ -57,9 +64,12 @@ export function generateCitationText(article: Article, format: CitationFormat, y
   const pages       = fp ? (lp && lp !== fp ? `${fp}-${lp}` : fp) : null
   const doiUrl      = doi ? `https://doi.org/${doi}` : null
 
+  const res = resourceKind(article)
+
   switch (format) {
 
     case 'psg':
+      if (res) return psgDataset({ authors: authors.map(personOf), year: yearLabel ?? year, title, kind: res.psg, publisher: journal, doi })
       return psgArticle({ authors: authors.map(personOf), year: yearLabel ?? year, title, journal, volume: vol, issue: iss, pages, doi })
 
     case 'apa': {
@@ -73,7 +83,7 @@ export function generateCitationText(article: Article, format: CitationFormat, y
         authorStr = names.slice(0, 19).join(', ') + ', ... ' + names[names.length - 1]
       }
       let out = authorStr ? `${authorStr} ` : ''
-      out += `(${year}). ${title}. `
+      out += `(${year}). ${title}${res ? ` [${res.apa}]` : ''}. `
       if (journal) out += journal
       if (vol)     out += `, ${vol}`
       if (iss)     out += `(${iss})`
@@ -137,7 +147,7 @@ export function generateCitationText(article: Article, format: CitationFormat, y
       )
       const authorStr = nameList.join(', ') + (authors.length > 3 ? ', 等' : '')
       let out = authorStr ? `${authorStr}. ` : ''
-      out += `${title}[J]. `
+      out += `${title}[${res ? res.gbt : 'J'}]. `
       if (journal) out += journal
       out += `, ${year}`
       if (vol)     out += `, ${vol}`
@@ -158,10 +168,10 @@ export function generateCitationText(article: Article, format: CitationFormat, y
         .join(' and ')
       const bibPages = fp ? (lp ? `${fp}--${lp}` : fp) : null
       const lines = [
-        `@article{${bibKey},`,
+        `@${res ? res.bibtex : 'article'}{${bibKey},`,
         `  author    = {${bibAuthors || 'Unknown'}},`,
         `  title     = {${title}},`,
-        `  journal   = {${journal}},`,
+        res ? `  publisher = {${journal}},` : `  journal   = {${journal}},`,
         `  year      = {${year}},`,
       ]
       if (vol)      lines.push(`  volume    = {${vol}},`)
@@ -174,14 +184,14 @@ export function generateCitationText(article: Article, format: CitationFormat, y
     }
 
     case 'ris': {
-      const lines = ['TY  - JOUR', `T1  - ${title}`]
+      const lines = [`TY  - ${res ? res.ris : 'JOUR'}`, `T1  - ${title}`]
       authors.forEach(a => {
         const name = a.family_name && a.given_name
           ? `${a.family_name}, ${a.given_name}`
           : a.display_name
         lines.push(`AU  - ${name}`)
       })
-      if (journal) lines.push(`JO  - ${journal}`)
+      if (journal) lines.push(`${res ? 'PB' : 'JO'}  - ${journal}`)
       lines.push(`PY  - ${year}`)
       if (vol)  lines.push(`VL  - ${vol}`)
       if (iss)  lines.push(`IS  - ${iss}`)

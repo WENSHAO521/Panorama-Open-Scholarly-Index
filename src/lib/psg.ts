@@ -92,6 +92,28 @@ export function psgArticle(a: PsgArticleInput, f: PsgFmt = PLAIN): string {
   return ref
 }
 
+export interface PsgDatasetInput {
+  authors: PsgPerson[]
+  year?: string | number | null
+  title: string
+  /** "Data set" or "Source code" */
+  kind: string
+  publisher?: string | null
+  doi?: string | null
+}
+
+/** Last, First. Year. Title. Data set. Repository. https://doi.org/… (data sets and software; the repository is the publisher). */
+export function psgDataset(d: PsgDatasetInput, f: PsgFmt = PLAIN): string {
+  const auth = psgAuthors(d.authors)
+  let ref = auth ? `${f.esc(endStop(auth))} ` : ''
+  ref += `${d.year || 'n.d.'}. ${f.em(f.esc(endStop(d.title)))} ${f.esc(d.kind)}.`
+  const pub = text(d.publisher)
+  if (pub) ref += ` ${f.esc(endStop(pub))}`
+  const url = doiUrl(d.doi)
+  if (url) ref += ` ${url}`
+  return ref
+}
+
 export interface PsgBookInput {
   authors: PsgPerson[]
   year?: string | null
