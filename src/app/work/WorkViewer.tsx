@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ArrowSquareOut, LockOpen, Warning } from '@phosphor-icons/react/dist/ssr'
-import { getWork, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work } from '@/lib/openalex'
+import { getWork, resourceOf, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work } from '@/lib/openalex'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { recordHref } from '@/lib/records'
 import { CollectionTag, SectionTitle } from '@/components/db'
@@ -19,7 +19,7 @@ function apaOf(w: Work): string {
   const who = names.slice(0, 20).join(', ') + (names.length > 20 ? ', et al.' : '')
   const vol = (w.biblio?.volume ? `, ${w.biblio.volume}` : '') + (w.biblio?.issue ? `(${w.biblio.issue})` : '')
   const pg = pages(w) ? `, ${pages(w)}` : ''
-  return `${who} (${w.publication_year ?? 'n.d.'}). ${w.title ?? ''}. ${src?.display_name ?? ''}${vol}${pg}.${doi ? ` https://doi.org/${doi}` : ''}`
+  return `${who} (${w.publication_year ?? 'n.d.'}). ${w.title ?? ''}${resourceOf(w) ? ` [${resourceOf(w)!.apa}]` : ''}. ${src?.display_name ?? ''}${vol}${pg}.${doi ? ` https://doi.org/${doi}` : ''}`
 }
 
 function Skeleton() {
