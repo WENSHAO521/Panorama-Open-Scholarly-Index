@@ -63,15 +63,31 @@ export interface RecordPage { count: number; records: RegistryRecord[] }
 
 // ---- helpers ----
 
+// ISO 8859-1 named entities, codes 160..255 in order (&nbsp; ... &yuml;)
+const LATIN1 = ('nbsp iexcl cent pound curren yen brvbar sect uml copy ordf laquo not shy reg macr deg plusmn sup2 sup3 acute micro para ' +
+  'middot cedil sup1 ordm raquo frac14 frac12 frac34 iquest Agrave Aacute Acirc Atilde Auml Aring AElig Ccedil Egrave Eacute Ecirc Euml ' +
+  'Igrave Iacute Icirc Iuml ETH Ntilde Ograve Oacute Ocirc Otilde Ouml times Oslash Ugrave Uacute Ucirc Uuml Yacute THORN szlig agrave ' +
+  'aacute acirc atilde auml aring aelig ccedil egrave eacute ecirc euml igrave iacute icirc iuml eth ntilde ograve oacute ocirc otilde ouml ' +
+  'divide oslash ugrave uacute ucirc uuml yacute thorn yuml').split(' ')
+
 const NAMED_ENTITIES: Record<string, string> = {
-  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ldquo: '\u201c', rdquo: '\u201d', lsquo: '\u2018',
-  rsquo: '\u2019', hellip: '\u2026', ndash: '\u2013', mdash: '\u2014', deg: '\u00b0', plusmn: '\u00b1', times: '\u00d7',
+  ...Object.fromEntries(LATIN1.map((name, i) => [name, String.fromCharCode(160 + i)])),
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ldquo: '\u201c', rdquo: '\u201d', lsquo: '\u2018',
+  rsquo: '\u2019', hellip: '\u2026', ndash: '\u2013', mdash: '\u2014', bull: '\u2022', trade: '\u2122', euro: '\u20ac',
+  alpha: '\u03b1', beta: '\u03b2', gamma: '\u03b3', delta: '\u03b4', mu: '\u03bc', pi: '\u03c0', sigma: '\u03c3',
+  le: '\u2264', ge: '\u2265', ne: '\u2260', minus: '\u2212', infin: '\u221e', rarr: '\u2192', larr: '\u2190',
 }
 
 /** Strip tags, decode HTML entities (named and numeric) and collapse whitespace. */
 export function plainText(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
+  const stripped = html.replace(/<[^>]+>/g, ' ')
+  // In the browser the parser knows every HTML entity; DOMParser does not run scripts or load resources.
+  let decoded: string | null = null
+  if (typeof DOMParser !== 'undefined') {
+    try { decoded = new DOMParser().parseFromString(stripped, 'text/html').documentElement.textContent } catch { /* use the table */ }
+  }
+  if (decoded !== null) return decoded.replace(/\s+/g, ' ').trim()
+  return stripped
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
       if (e[0] === '#') {
         const code = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)
@@ -294,6 +310,15 @@ function fromZenodo(r: ZenRecord): RegistryRecord {
     citations: 0,
     references: 0,
   }
+}
+
+/**
+ * Where the work is held: for a data set or software that is the publisher (the repository), not the title of a
+ * containing publication; for everything else the container (journal, series) comes first.
+ */
+export function holderOf(r: RegistryRecord): string | null {
+  const resource = r.kind === 'dataset' || r.kind === 'software'
+  return (resource ? r.publisher || r.container.title : r.container.title || r.publisher) || null
 }
 
 export function isZenodoDoi(doi: string): boolean {

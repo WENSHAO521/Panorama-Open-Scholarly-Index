@@ -4,7 +4,7 @@
 
 import type { Article } from './types'
 import {
-  RegistryError, dataciteRecord, zenodoRecord, registrationAgencies, registriesFor,
+  RegistryError, dataciteRecord, zenodoRecord, registrationAgencies, registriesFor, holderOf,
   type Agency, type GetJson, type RegistryName, type RegistryRecord,
 } from './registries'
 
@@ -356,7 +356,7 @@ function recordToArticle(r: RegistryRecord): Article {
     title: r.title ?? '',
     subtitle: null,
     journal_id: '',
-    journal_title: r.container.title ?? r.publisher ?? '',
+    journal_title: holderOf(r) ?? '',
     journal_code: '',
     volume: r.container.volume,
     issue: r.container.issue,

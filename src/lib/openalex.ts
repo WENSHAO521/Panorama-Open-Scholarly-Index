@@ -6,7 +6,7 @@
 // the browser session so back/forward and repeat queries cost nothing.
 
 import {
-  RegistryError, dataciteSearch, zenodoSearch, recordByDoi, registrationAgency, registriesFor, invertedIndex,
+  RegistryError, dataciteSearch, zenodoSearch, recordByDoi, registrationAgency, registriesFor, invertedIndex, holderOf,
   type GetJson, type RegistryRecord, type RecordQuery,
 } from './registries'
 
@@ -246,7 +246,7 @@ async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
 const getJson: GetJson = (u, service, signal) => fetchJson<unknown>(u, service, signal)
 
 function recordToWork(r: RegistryRecord): Work {
-  const src = r.container.title || r.publisher || (r.source === 'zenodo' ? 'Zenodo' : 'DataCite')
+  const src = holderOf(r) || (r.source === 'zenodo' ? 'Zenodo' : 'DataCite')
   return {
     id: r.doi,
     doi: r.doi ? `https://doi.org/${r.doi}` : null,
@@ -396,22 +396,29 @@ export const TYPE_LABEL: Record<string, string> = {
 
 function authorsList(w: Work) { return w.authorships.map(a => a.author.display_name) }
 
+/** Data sets and software (mostly from DataCite / Zenodo) are exported as such, not as journal articles. */
+export function resourceOf(w: Work): { bibtex: string; ris: string; apa: string } | null {
+  if (w.type === 'dataset') return { bibtex: 'misc', ris: 'DATA', apa: 'Data set' }
+  if (w.type === 'software') return { bibtex: 'misc', ris: 'COMP', apa: 'Computer software' }
+  return null
+}
+
 export function toBibtex(w: Work): string {
   const first = authorsList(w)[0]?.split(' ').pop()?.replace(/[^A-Za-z]/g, '') || 'anon'
   const key = `${first}${w.publication_year ?? ''}${shortId(w).slice(-4)}`
   const f: [string, string | null | undefined][] = [
-    ['title', w.title], ['author', authorsList(w).join(' and ')], ['journal', w.primary_location?.source?.display_name],
+    ['title', w.title], ['author', authorsList(w).join(' and ')], [resourceOf(w) ? 'publisher' : 'journal', w.primary_location?.source?.display_name],
     ['year', w.publication_year?.toString()], ['volume', w.biblio?.volume], ['number', w.biblio?.issue],
     ['pages', pages(w)?.replace('-', '--')], ['doi', doiOf(w)], ['url', w.doi ?? w.id],
   ]
-  return `@article{${key},\n${f.filter(([, v]) => v).map(([k, v]) => `  ${k} = {${v}}`).join(',\n')}\n}`
+  return `@${resourceOf(w)?.bibtex ?? 'article'}{${key},\n${f.filter(([, v]) => v).map(([k, v]) => `  ${k} = {${v}}`).join(',\n')}\n}`
 }
 
 export function toRis(w: Work): string {
-  const lines = ['TY  - JOUR']
+  const lines = [`TY  - ${resourceOf(w)?.ris ?? 'JOUR'}`]
   if (w.title) lines.push(`TI  - ${w.title}`)
   for (const a of authorsList(w)) lines.push(`AU  - ${a}`)
-  if (w.primary_location?.source?.display_name) lines.push(`JO  - ${w.primary_location.source.display_name}`)
+  if (w.primary_location?.source?.display_name) lines.push(`${resourceOf(w) ? 'PB' : 'JO'}  - ${w.primary_location.source.display_name}`)
   if (w.publication_year) lines.push(`PY  - ${w.publication_year}`)
   if (w.biblio?.volume) lines.push(`VL  - ${w.biblio.volume}`)
   if (w.biblio?.issue) lines.push(`IS  - ${w.biblio.issue}`)
