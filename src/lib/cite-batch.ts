@@ -1,9 +1,9 @@
 // Batch conversion for /cite/: turns parsed reference entries (DOIs, BibTeX, RIS,
 // CSL JSON or plain reference lines) into Article records, verified against
-// Crossref and OpenAlex where possible.
+// Crossref, DataCite/Zenodo and OpenAlex where possible.
 
 import type { Article } from './types'
-import { crossrefGetWork, crossrefGetWorks, crossrefSearch, openAlexGetArticle } from './cite-sources'
+import { crossrefGetWork, crossrefGetWorks, crossrefSearch, dataciteFamilyGetWork, openAlexGetArticle } from './cite-sources'
 import { titleMatches, searchQuery, parsePerson, type RefEntry } from './cite-parse'
 
 /**
@@ -69,10 +69,10 @@ export async function resolveEntries(
     if (hit) { it.article = hit; it.source = 'doi'; finish() } else rest.push(it)
   }
 
-  // 2. DOIs Crossref did not return (other registries, odd characters): one by one, OpenAlex as a fallback.
+  // 2. DOIs Crossref did not return (other registries, odd characters): one by one, then Zenodo/DataCite, then OpenAlex.
   await pool(rest, 4, async it => {
     const doi = it.entry.doi!
-    const a = (await crossrefGetWork(doi)) ?? (await openAlexGetArticle(doi))
+    const a = (await crossrefGetWork(doi)) ?? (await dataciteFamilyGetWork(doi)) ?? (await openAlexGetArticle(doi))
     if (a) { it.article = a; it.source = 'doi' }
     else {
       const own = entryToArticle(it.entry)
