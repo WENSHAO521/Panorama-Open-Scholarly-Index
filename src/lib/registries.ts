@@ -88,12 +88,13 @@ export function plainText(html: string): string {
   }
   if (decoded !== null) return decoded.replace(/\s+/g, ' ').trim()
   return stripped
-    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e: string) => {
+    .replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e: string) => {
       if (e[0] === '#') {
         const code = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)
         try { return String.fromCodePoint(code) } catch { return m }
       }
-      return NAMED_ENTITIES[e.toLowerCase()] ?? m
+      // Entity names are case-sensitive (&Agrave; vs &agrave;); only the core ones are also accepted in upper case.
+      return NAMED_ENTITIES[e] ?? (/^(amp|lt|gt|quot)$/i.test(e) ? NAMED_ENTITIES[e.toLowerCase()] : m)
     })
     .replace(/\s+/g, ' ')
     .trim()
