@@ -80,6 +80,20 @@ export function getDirectory() {
   const curated = new Map(getAllRecords().map(j => [j.posi_id ?? j.id, j]))
   const global = loadGlobal()
 
+  const fromCurated = (c: ReturnType<typeof getAllRecords>[number]): DirRecord => ({
+    id: c.posi_id ?? c.id,
+    t: c.title,
+    p: c.publisher || null,
+    i: [c.issn_online, c.issn_print].filter((x): x is string => !!x),
+    co: c.registration_country || c.country || null,
+    oa: c.open_access,
+    dj: c.doaj_status === 'listed',
+    w: c.article_count ?? null,
+    s: c.psc_category ?? null,
+    core: collectionOf(c) === 'core',
+    h: recordHref({ c: c.journal_code, k: collectionOf(c) }),
+  })
+
   let records: DirRecord[]
   if (global) {
     records = global.map(g => {
@@ -102,20 +116,18 @@ export function getDirectory() {
         h: href,
       }
     })
+    // A curated journal certified after the corpus release was cut is not in
+    // the corpus yet; keep it in the directory so counts match the
+    // Core Collection.
+    const seenIds = new Set(global.map(g => g.posi_id))
+    const seenIssns = new Set(global.flatMap(g => g.issns))
+    for (const c of curated.values()) {
+      const r = fromCurated(c)
+      if (seenIds.has(r.id) || r.i.some(x => seenIssns.has(x))) continue
+      records.push(r)
+    }
   } else {
-    records = [...curated.values()].map(c => ({
-      id: c.posi_id ?? c.id,
-      t: c.title,
-      p: c.publisher || null,
-      i: [c.issn_online, c.issn_print].filter((x): x is string => !!x),
-      co: c.registration_country || c.country || null,
-      oa: c.open_access,
-      dj: c.doaj_status === 'listed',
-      w: c.article_count ?? null,
-      s: c.psc_category ?? null,
-      core: collectionOf(c) === 'core',
-      h: recordHref({ c: c.journal_code, k: collectionOf(c) }),
-    }))
+    records = [...curated.values()].map(fromCurated)
   }
   records.sort((a, b) => a.t.localeCompare(b.t, 'en', { sensitivity: 'base' }))
   cache = { records, source: global ? 'global' : 'curated' }
