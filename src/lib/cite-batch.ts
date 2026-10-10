@@ -1,9 +1,9 @@
 // Batch conversion for /cite/: turns parsed reference entries (DOIs, BibTeX, RIS,
 // CSL JSON or plain reference lines) into Article records, verified against
-// Crossref, DataCite/Zenodo and OpenAlex where possible.
+// the registry that holds each DOI (Crossref, DataCite, Zenodo) and OpenAlex where possible.
 
 import type { Article } from './types'
-import { crossrefGetWork, crossrefGetWorks, crossrefSearch, dataciteFamilyGetWork, openAlexGetArticle } from './cite-sources'
+import { crossrefGetWorks, crossrefSearch, doiAgencies, openAlexGetArticle, registryGetWork } from './cite-sources'
 import { titleMatches, searchQuery, parsePerson, type RefEntry } from './cite-parse'
 
 /**
@@ -60,19 +60,24 @@ export async function resolveEntries(
   let done = 0
   const finish = () => onProgress(++done, items.length)
 
-  // 1. Every DOI in a few big Crossref requests.
+  // 1. Which registry holds each DOI (doi.org, 50 DOIs per request). Crossref DOIs, and DOIs whose agency is
+  //    unknown, go to Crossref in a few big requests; the rest are asked below, one by one, in their own registry.
   const withDoi = items.filter(it => it.entry.doi)
-  const found = await crossrefGetWorks(withDoi.map(it => it.entry.doi!))
-  const rest: BatchItem[] = []
-  for (const it of withDoi) {
+  const agencies = await doiAgencies(withDoi.map(it => it.entry.doi!))
+  const agencyOf = (it: BatchItem) => agencies.get(it.entry.doi!.toLowerCase())
+  const viaCrossref = withDoi.filter(it => { const ag = agencyOf(it); return ag === undefined || ag === 'Crossref' })
+  const found = await crossrefGetWorks(viaCrossref.map(it => it.entry.doi!))
+  const rest: BatchItem[] = withDoi.filter(it => !viaCrossref.includes(it))
+  for (const it of viaCrossref) {
     const hit = found.get(it.entry.doi!.toLowerCase())
     if (hit) { it.article = hit; it.source = 'doi'; finish() } else rest.push(it)
   }
 
-  // 2. DOIs Crossref did not return (other registries, odd characters): one by one, then Zenodo/DataCite, then OpenAlex.
+  // 2. The remaining DOIs, one by one: their own registry (Crossref again for odd characters, DataCite or
+  //    Zenodo for repository DOIs), then OpenAlex as a fallback.
   await pool(rest, 4, async it => {
     const doi = it.entry.doi!
-    const a = (await crossrefGetWork(doi)) ?? (await dataciteFamilyGetWork(doi)) ?? (await openAlexGetArticle(doi))
+    const a = (await registryGetWork(doi, agencyOf(it)))?.article ?? (await openAlexGetArticle(doi))
     if (a) { it.article = a; it.source = 'doi' }
     else {
       const own = entryToArticle(it.entry)

@@ -3,6 +3,10 @@
 // Open Library, Crossref and Google Books. All of these allow cross-origin requests.
 
 import type { Article } from './types'
+import {
+  RegistryError, dataciteRecord, zenodoRecord, registrationAgencies, registriesFor,
+  type Agency, type GetJson, type RegistryName, type RegistryRecord,
+} from './registries'
 
 const CROSSREF = 'https://api.crossref.org'
 const OPENALEX = 'https://api.openalex.org'
@@ -328,223 +332,95 @@ export async function openAlexGetArticle(doi: string): Promise<Article | null> {
   }
 }
 
-// ---- DataCite (research data, software, preprints, many repositories) ----
+// ---- DataCite and Zenodo (adapters in registries.ts) ----
 
-const DATACITE = 'https://api.datacite.org'
-const ZENODO = 'https://zenodo.org/api'
-
-interface DataCiteAttributes {
-  doi: string
-  titles?: { title: string }[]
-  creators?: {
-    name?: string
-    givenName?: string
-    familyName?: string
-    affiliation?: (string | { name?: string })[]
-    nameIdentifiers?: { nameIdentifier?: string; nameIdentifierScheme?: string }[]
-  }[]
-  publisher?: string | { name?: string }
-  publicationYear?: number | null
-  descriptions?: { description?: string; descriptionType?: string }[]
-  subjects?: { subject?: string }[]
-  rightsList?: { rights?: string; rightsUri?: string }[]
-  types?: { resourceTypeGeneral?: string; resourceType?: string }
-  container?: { title?: string; volume?: string; issue?: string; firstPage?: string; lastPage?: string }
-  language?: string | null
-  url?: string | null
-  citationCount?: number
-  referenceCount?: number
-  created?: string
-  updated?: string
-  registered?: string
+const getJson: GetJson = async (url, service) => {
+  let res: Response
+  try { res = await fetchRetry(url, 15000) } catch { throw new RegistryError(service, 0) }
+  if (!res.ok) throw new RegistryError(service, res.status)
+  return res.json()
 }
 
-function parseDataCiteLicense(list: DataCiteAttributes['rightsList']): string | null {
-  const r = list?.[0]
-  if (!r) return null
-  const url = r.rightsUri ?? ''
-  const m = url.match(/creativecommons\.org\/licenses\/([a-z-]+)\/([\d.]+)/i)
-  if (m) return `CC ${m[1].toUpperCase()} ${m[2]}`
-  if (/creativecommons\.org\/publicdomain\/zero/i.test(url)) return 'CC0 1.0'
-  return r.rights ?? (url || null)
-}
-
-function mapDataCiteWork(a: DataCiteAttributes): Article {
-  const doi = a.doi
-  const description = a.descriptions?.find(d => d.descriptionType === 'Abstract') ?? a.descriptions?.[0]
-  const abstract = description?.description ? stripJats(description.description) : null
-  const year = a.publicationYear ?? new Date().getFullYear()
-  const creators = a.creators ?? []
-  const publisher = typeof a.publisher === 'string' ? a.publisher : a.publisher?.name ?? ''
-  const orcidOf = (c: (typeof creators)[number]) =>
-    c.nameIdentifiers?.find(n => /orcid/i.test(n.nameIdentifierScheme ?? '') || /orcid\.org/i.test(n.nameIdentifier ?? ''))
-      ?.nameIdentifier?.replace(/^https?:\/\/orcid\.org\//, '') ?? null
-  const affiliationOf = (c: (typeof creators)[number]) => {
-    const af = c.affiliation?.[0]
-    return (typeof af === 'string' ? af : af?.name) || null
-  }
-
+function recordToArticle(r: RegistryRecord): Article {
+  const doi = r.doi
   let mqs = 20
   if (doi) mqs += 20
-  if (abstract) mqs += 20
-  if (creators.some(c => orcidOf(c))) mqs += 15
-  if (creators.some(c => affiliationOf(c))) mqs += 10
-  if (a.rightsList?.length) mqs += 10
-  if ((a.referenceCount ?? 0) > 0) mqs += 5
-
+  if (r.abstract) mqs += 20
+  if (r.creators.some(c => c.orcid)) mqs += 15
+  if (r.creators.some(c => c.affiliations.length)) mqs += 10
+  if (r.license) mqs += 10
+  if (r.references > 0) mqs += 5
   return {
     id: doi,
     doi,
-    title: a.titles?.[0]?.title ?? '',
+    title: r.title ?? '',
     subtitle: null,
     journal_id: '',
-    journal_title: a.container?.title ?? publisher,
+    journal_title: r.container.title ?? r.publisher ?? '',
     journal_code: '',
-    volume: a.container?.volume ?? null,
-    issue: a.container?.issue ?? null,
-    first_page: a.container?.firstPage ?? null,
-    last_page: a.container?.lastPage ?? null,
-    publication_year: year,
-    publication_date: String(year),
-    article_type: a.types?.resourceTypeGeneral === 'JournalArticle' ? 'Research Article'
-      : (a.types?.resourceType || a.types?.resourceTypeGeneral || 'Dataset'),
-    language: a.language ?? 'English',
-    abstract,
-    keywords: (a.subjects ?? []).map(s => s.subject ?? '').filter(Boolean),
-    license: parseDataCiteLicense(a.rightsList),
-    pdf_url: null,
-    html_url: a.url ?? null,
+    volume: r.container.volume,
+    issue: r.container.issue,
+    first_page: r.container.firstPage,
+    last_page: r.container.lastPage,
+    publication_year: r.year ?? new Date().getFullYear(),
+    publication_date: r.date,
+    article_type: r.kind === 'article' ? 'Research Article' : (r.kindLabel || r.kind || 'Dataset'),
+    language: r.language ?? 'English',
+    abstract: r.abstract,
+    keywords: r.keywords,
+    license: r.license,
+    pdf_url: r.pdfUrl,
+    html_url: r.url,
     openalex_work_id: null,
-    crossref_status: 'datacite',
-    cited_by_count: a.citationCount ?? 0,
-    reference_count: a.referenceCount ?? 0,
+    crossref_status: 'registered',
+    cited_by_count: r.citations,
+    reference_count: r.references,
     is_retracted: false,
     metadata_quality_score: Math.min(mqs, 100),
-    authors: creators.map((c, i) => ({
-      id: orcidOf(c) ?? `${doi}-au-${i}`,
-      display_name: c.name ?? [c.givenName, c.familyName].filter(Boolean).join(' '),
-      given_name: c.givenName ?? null,
-      family_name: c.familyName ?? null,
-      orcid: orcidOf(c),
+    authors: r.creators.map((c, i) => ({
+      id: c.orcid ?? `${doi}-au-${i}`,
+      display_name: c.name,
+      given_name: c.given,
+      family_name: c.family,
+      orcid: c.orcid,
       openalex_author_id: null,
       country: null,
-      institution: affiliationOf(c),
+      institution: c.affiliations[0] ?? null,
       is_corresponding: i === 0,
       author_order: i + 1,
     })),
-    created_at: a.created ?? '',
-    updated_at: a.updated ?? a.registered ?? '',
+    created_at: '',
+    updated_at: '',
   }
 }
 
 /** Full Article from DataCite, which registers Zenodo, figshare, Dryad, arXiv and many other repositories' DOIs. */
 export async function dataciteGetWork(doi: string): Promise<Article | null> {
-  try {
-    const res = await fetchRetry(`${DATACITE}/dois/${encodeURIComponent(doi)}`, 15000)
-    if (!res.ok) return null
-    const attrs = ((await res.json()) as { data?: { attributes?: DataCiteAttributes } }).data?.attributes
-    return attrs?.doi ? mapDataCiteWork(attrs) : null
-  } catch {
-    return null
-  }
-}
-
-interface ZenodoRecord {
-  doi?: string
-  created?: string
-  updated?: string
-  stats?: { views?: number }
-  links?: { self_html?: string; html?: string }
-  files?: { key?: string; links?: { self?: string } }[]
-  metadata: {
-    title?: string
-    description?: string
-    publication_date?: string
-    resource_type?: { type?: string; subtype?: string; title?: string }
-    creators?: { name?: string; orcid?: string; affiliation?: string }[]
-    keywords?: string[]
-    license?: { id?: string }
-    language?: string
-    journal?: { title?: string; volume?: string; issue?: string; pages?: string }
-  }
+  try { return recordToArticle(await dataciteRecord(doi, getJson)) } catch { return null }
 }
 
 /** Zenodo's own record for a 10.5281/zenodo.<id> DOI; richer file and licence data than DataCite. */
 export async function zenodoGetWork(doi: string): Promise<Article | null> {
-  const id = doi.match(/^10\.\d+\/zenodo\.(\d+)$/i)?.[1]
-  if (!id) return null
-  try {
-    const res = await fetchRetry(`${ZENODO}/records/${id}`, 15000)
-    if (!res.ok) return null
-    const rec = (await res.json()) as ZenodoRecord
-    const m = rec.metadata
-    const abstract = m.description ? stripJats(m.description) : null
-    const date = m.publication_date ?? ''
-    const [first, last] = (m.journal?.pages ?? '').split(/\s*[-–—]+\s*/)
-    const pdf = rec.files?.find(f => /\.pdf$/i.test(f.key ?? ''))?.links?.self ?? null
-    const license = m.license?.id
-      ? (/^cc-/i.test(m.license.id) ? m.license.id.toUpperCase().replace(/-/g, ' ').replace(/ (\d)/, ' $1') : m.license.id)
-      : null
-    const creators = m.creators ?? []
-
-    let mqs = 20 + 20 // DOI is known
-    if (abstract) mqs += 20
-    if (creators.some(c => c.orcid)) mqs += 15
-    if (creators.some(c => c.affiliation)) mqs += 10
-    if (license) mqs += 10
-
-    return {
-      id: rec.doi ?? doi,
-      doi: rec.doi ?? doi,
-      title: m.title ?? '',
-      subtitle: null,
-      journal_id: '',
-      journal_title: m.journal?.title ?? 'Zenodo',
-      journal_code: '',
-      volume: m.journal?.volume ?? null,
-      issue: m.journal?.issue ?? null,
-      first_page: first || null,
-      last_page: last || null,
-      publication_year: Number(date.slice(0, 4)) || new Date().getFullYear(),
-      publication_date: date || null,
-      article_type: m.resource_type?.type === 'publication' && m.resource_type.subtype === 'article'
-        ? 'Research Article'
-        : (m.resource_type?.title ?? m.resource_type?.type ?? 'Dataset'),
-      language: m.language ?? 'English',
-      abstract,
-      keywords: m.keywords ?? [],
-      license,
-      pdf_url: pdf,
-      html_url: rec.links?.self_html ?? rec.links?.html ?? `https://zenodo.org/records/${id}`,
-      openalex_work_id: null,
-      crossref_status: 'zenodo',
-      cited_by_count: 0,
-      reference_count: 0,
-      is_retracted: false,
-      metadata_quality_score: Math.min(mqs, 100),
-      authors: creators.map((c, i) => ({
-        id: c.orcid ?? `${doi}-au-${i}`,
-        display_name: (c.name ?? '').includes(',') ? c.name!.split(',').reverse().map(s => s.trim()).join(' ') : c.name ?? '',
-        given_name: c.name?.includes(',') ? c.name.split(',').slice(1).join(',').trim() || null : null,
-        family_name: c.name?.includes(',') ? c.name.split(',')[0].trim() : null,
-        orcid: c.orcid ?? null,
-        openalex_author_id: null,
-        country: null,
-        institution: c.affiliation ?? null,
-        is_corresponding: i === 0,
-        author_order: i + 1,
-      })),
-      created_at: rec.created ?? '',
-      updated_at: rec.updated ?? '',
-    }
-  } catch {
-    return null
-  }
+  try { return recordToArticle(await zenodoRecord(doi, getJson)) } catch { return null }
 }
 
-/** DOIs from DataCite-registered repositories: Zenodo's own API first (Zenodo DOIs only), then DataCite. */
-export async function dataciteFamilyGetWork(doi: string): Promise<Article | null> {
-  return (await zenodoGetWork(doi)) ?? (await dataciteGetWork(doi))
+/** Registration agency per DOI (lower-case key); DOIs doi.org could not answer for are absent. */
+export function doiAgencies(dois: string[]): Promise<Map<string, Agency>> {
+  return registrationAgencies(dois, getJson)
+}
+
+/**
+ * Metadata for a DOI from the registry that holds it, given its agency from doiAgencies()
+ * (undefined = unknown, try every registry). OpenAlex is not included; callers add it.
+ */
+export async function registryGetWork(doi: string, agency: Agency | undefined): Promise<{ article: Article; registry: RegistryName } | null> {
+  for (const registry of registriesFor(doi, agency)) {
+    const article = registry === 'Crossref' ? await crossrefGetWork(doi)
+      : registry === 'Zenodo' ? await zenodoGetWork(doi)
+      : await dataciteGetWork(doi)
+    if (article) return { article, registry }
+  }
+  return null
 }
 
 export interface BookInfo {

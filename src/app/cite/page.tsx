@@ -12,7 +12,7 @@ import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
 import type { RefEntry } from '@/lib/cite-parse'
 import { psgArticle, psgBook, psgWebpage, psgInText, PLAIN } from '@/lib/psg'
 import type { PsgFmt } from '@/lib/psg'
-import { crossrefGetWork, crossrefSearchMany, dataciteGetWork, openAlexGetArticle, zenodoGetWork, fetchBookByIsbn } from '@/lib/cite-sources'
+import { crossrefSearchMany, doiAgencies, openAlexGetArticle, registryGetWork, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
@@ -698,35 +698,21 @@ function CitePage() {
     try {
       if (detected.kind === 'doi' || detected.kind === 'url-doi') {
         const doi = detected.payload
-        const [cr, oa, zn, dc] = await Promise.all([
-          crossrefGetWork(doi).catch(() => null),
+        // OpenAlex and the registry that holds the DOI (asked after doi.org names it) run side by side.
+        const [oa, hit] = await Promise.all([
           openAlexGetArticle(doi).catch(() => null),
-          zenodoGetWork(doi).catch(() => null),
-          dataciteGetWork(doi).catch(() => null),
+          doiAgencies([doi]).then(ag => registryGetWork(doi, ag.get(doi.toLowerCase()))).catch(() => null),
         ])
         if (myId !== lookupCount.current) return
         let article: Article | null = null
         let src: Source = 'crossref'
-        if (cr) {
-          article = { ...cr }
+        if (hit) {
+          // The registry's record is authoritative; OpenAlex fills what it lacks.
+          article = { ...hit.article }
+          src = hit.registry === 'Crossref' ? 'crossref' : hit.registry === 'Zenodo' ? 'zenodo' : 'datacite'
           if (oa) {
             if (!article.abstract && oa.abstract) article = { ...article, abstract: oa.abstract }
             if (!article.keywords.length && oa.keywords.length) article = { ...article, keywords: oa.keywords }
-            if (oa.cited_by_count > article.cited_by_count) article = { ...article, cited_by_count: oa.cited_by_count }
-            if (oa.openalex_work_id) article = { ...article, openalex_work_id: oa.openalex_work_id }
-          }
-        } else if (zn || dc) {
-          // DataCite-registered DOI (Zenodo, figshare, Dryad, ...): repository metadata first, OpenAlex fills gaps.
-          article = { ...(zn ?? dc)! }
-          src = zn ? 'zenodo' : 'datacite'
-          if (dc) {
-            if (!article.abstract && dc.abstract) article = { ...article, abstract: dc.abstract }
-            if (!article.keywords.length && dc.keywords.length) article = { ...article, keywords: dc.keywords }
-            if (dc.cited_by_count > article.cited_by_count) article = { ...article, cited_by_count: dc.cited_by_count }
-            if (dc.reference_count > article.reference_count) article = { ...article, reference_count: dc.reference_count }
-          }
-          if (oa) {
-            if (!article.abstract && oa.abstract) article = { ...article, abstract: oa.abstract }
             if (oa.cited_by_count > article.cited_by_count) article = { ...article, cited_by_count: oa.cited_by_count }
             if (oa.openalex_work_id) article = { ...article, openalex_work_id: oa.openalex_work_id }
           }
