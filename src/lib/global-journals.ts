@@ -114,7 +114,9 @@ export function getDirectory() {
         p: g.publisher ?? c?.publisher ?? null,
         i: g.issns,
         co: g.country ?? null,
-        oa: g.open_access,
+        // Core journals are open access (sync-live-data.mjs does the same by
+        // posi_id, which an ISSN match would miss).
+        oa: k === 'core' ? true : g.open_access,
         dj: g.in_doaj,
         w: g.works_count ?? g.crossref_total_dois ?? null,
         s: g.psc_confidence === 'multidisciplinary' ? MULTIDISCIPLINARY : g.psc_category ?? c?.psc_category ?? null,
@@ -122,12 +124,14 @@ export function getDirectory() {
         h: href,
       }
     })
-    // A curated journal certified after the corpus release was cut is not in
-    // the corpus yet; keep it in the directory so counts match the
-    // Core Collection.
+    // A Core journal certified after the corpus release was cut is not in
+    // the corpus yet; keep it in the directory so counts match the Core
+    // Collection. Only Core records are backfilled: benchmark and discovered
+    // records missing from a corpus release must not change directory totals.
     const seenIds = new Set(global.map(g => g.posi_id))
     const seenIssns = new Set(global.flatMap(g => g.issns))
     for (const c of curated.values()) {
+      if (collectionOf(c) !== 'core') continue
       const r = fromCurated(c)
       if (seenIds.has(r.id) || r.i.some(x => seenIssns.has(x))) continue
       records.push(r)
