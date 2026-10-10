@@ -191,13 +191,14 @@ function crToWork(m: CrItem): Work {
   const inv: Record<string, number[]> = {}
   abstract.split(' ').forEach((w, i) => { if (w) (inv[w] ??= []).push(i) })
   const issn = m.ISSN ?? []
+  const type = CR_TYPE[m.type ?? ''] ?? m.type ?? null
   return {
     id: m.DOI,
     doi: `https://doi.org/${m.DOI}`,
     title: m.title?.[0] ?? null,
     publication_date: date,
     publication_year: y ?? null,
-    type: CR_TYPE[m.type ?? ''] ?? m.type ?? null,
+    type,
     language: m.language ?? null,
     open_access: { is_oa: false, oa_status: 'unknown', oa_url: null },
     cited_by_count: m['is-referenced-by-count'] ?? 0,
@@ -207,9 +208,12 @@ function crToWork(m: CrItem): Work {
       institutions: (a.affiliation ?? []).map(x => ({ id: '', display_name: x.name, country_code: null })),
     })),
     primary_location: {
-      source: m['container-title']?.[0]
-        ? { id: issn[0] ?? '', display_name: m['container-title'][0], issn_l: issn[0] ?? null, issn, host_organization_name: m.publisher ?? null, type: 'journal' }
-        : null,
+      // A data set or software is held by its publisher (the repository); a containing title is not its publisher.
+      source: (type === 'dataset' || type === 'software') && m.publisher
+        ? { id: '', display_name: m.publisher, issn_l: null, issn: null, host_organization_name: m.publisher, type: 'repository' }
+        : m['container-title']?.[0]
+          ? { id: issn[0] ?? '', display_name: m['container-title'][0], issn_l: issn[0] ?? null, issn, host_organization_name: m.publisher ?? null, type: 'journal' }
+          : null,
       landing_page_url: m.URL ?? null, pdf_url: null, license: m.license?.[0]?.URL ?? null,
     },
     biblio: { volume: m.volume ?? null, issue: m.issue ?? null, first_page: first || null, last_page: last || null },
