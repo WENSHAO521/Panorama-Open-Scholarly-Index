@@ -79,6 +79,12 @@ export function getDirectory() {
   // Curated records decide tier and link targets.
   const curated = new Map(getAllRecords().map(j => [j.posi_id ?? j.id, j]))
   const global = loadGlobal()
+  // A curated record whose posi_id differs from the corpus id for the same
+  // journal is still matched by ISSN, so its tier is not lost.
+  const curatedByIssn = new Map<string, ReturnType<typeof getAllRecords>[number]>()
+  for (const c of curated.values()) {
+    for (const x of [c.issn_online, c.issn_print]) if (x && !curatedByIssn.has(x)) curatedByIssn.set(x, c)
+  }
 
   const fromCurated = (c: ReturnType<typeof getAllRecords>[number]): DirRecord => ({
     id: c.posi_id ?? c.id,
@@ -97,7 +103,7 @@ export function getDirectory() {
   let records: DirRecord[]
   if (global) {
     records = global.map(g => {
-      const c = curated.get(g.posi_id)
+      const c = curated.get(g.posi_id) ?? g.issns.map(x => curatedByIssn.get(x)).find(Boolean)
       const k = c ? collectionOf(c) : null
       const href = c
         ? recordHref({ c: c.journal_code, k: k! })
