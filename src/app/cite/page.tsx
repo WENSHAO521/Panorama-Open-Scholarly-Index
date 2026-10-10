@@ -12,7 +12,7 @@ import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
 import type { RefEntry } from '@/lib/cite-parse'
 import { psgArticle, psgBook, psgWebpage, psgInText, PLAIN } from '@/lib/psg'
 import type { PsgFmt } from '@/lib/psg'
-import { crossrefGetWork, crossrefSearchMany, openAlexGetArticle, fetchBookByIsbn } from '@/lib/cite-sources'
+import { crossrefSearchMany, doiAgencies, openAlexGetArticle, registryGetWork, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
@@ -47,7 +47,7 @@ interface CitPair { html: string; plain: string; intext: string }
 interface AllCitations { psg: CitPair; apa: CitPair; mla: CitPair; chicago: CitPair }
 
 type InputKind = 'doi' | 'isbn' | 'url-doi' | 'url-manual' | 'search'
-type Source = 'crossref' | 'openalex'
+type Source = 'crossref' | 'openalex' | 'zenodo' | 'datacite'
 
 type AutoResult =
   | { type: 'article'; article: Article; source: Source }
@@ -698,15 +698,18 @@ function CitePage() {
     try {
       if (detected.kind === 'doi' || detected.kind === 'url-doi') {
         const doi = detected.payload
-        const [cr, oa] = await Promise.all([
-          crossrefGetWork(doi).catch(() => null),
+        // OpenAlex and the registry that holds the DOI (asked after doi.org names it) run side by side.
+        const [oa, hit] = await Promise.all([
           openAlexGetArticle(doi).catch(() => null),
+          doiAgencies([doi]).then(ag => registryGetWork(doi, ag.get(doi.toLowerCase()))).catch(() => null),
         ])
         if (myId !== lookupCount.current) return
         let article: Article | null = null
         let src: Source = 'crossref'
-        if (cr) {
-          article = { ...cr }
+        if (hit) {
+          // The registry's record is authoritative; OpenAlex fills what it lacks.
+          article = { ...hit.article }
+          src = hit.registry === 'Crossref' ? 'crossref' : hit.registry === 'Zenodo' ? 'zenodo' : 'datacite'
           if (oa) {
             if (!article.abstract && oa.abstract) article = { ...article, abstract: oa.abstract }
             if (!article.keywords.length && oa.keywords.length) article = { ...article, keywords: oa.keywords }
@@ -714,7 +717,7 @@ function CitePage() {
             if (oa.openalex_work_id) article = { ...article, openalex_work_id: oa.openalex_work_id }
           }
         } else if (oa) { article = oa; src = 'openalex' }
-        if (!article) { setError('No article metadata found for this DOI in Crossref or OpenAlex.'); return }
+        if (!article) { setError('No article metadata found for this DOI in Crossref, Zenodo, DataCite or OpenAlex.'); return }
         setAutoResult({ type: 'article', article, source: src })
         router.replace(`/cite/?doi=${encodeURIComponent(doi)}`, { scroll: false })
       } else if (detected.kind === 'search') {
@@ -895,7 +898,7 @@ function CitePage() {
               <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Article Found</p>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
                 style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? 'var(--verified-soft)' : 'var(--surface-2)', color: autoResult.source === 'openalex' ? 'var(--verified)' : 'var(--muted)', border: `1px solid ${autoResult.source === 'openalex' ? '#bbdece' : '#ddd'}` }}>
-                via {autoResult.source === 'openalex' ? 'OpenAlex' : 'Crossref'}
+                via {{ openalex: 'OpenAlex', zenodo: 'Zenodo', datacite: 'DataCite', crossref: 'Crossref' }[autoResult.source]}
               </span>
             </div>
             <h2 className="text-sm font-semibold leading-snug mb-2" style={{ color: 'var(--posi-text)' }}>

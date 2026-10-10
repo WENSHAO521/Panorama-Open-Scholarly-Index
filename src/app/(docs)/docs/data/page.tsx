@@ -10,6 +10,8 @@ export const metadata = {
 const SOURCES = [
   ['Crossref', 'Journal list, ISSNs, DOI counts, article metadata, item-level citation counts for PNCI and PCS, certificate checks', 'Daily'],
   ['OpenAlex', 'Journal profiles, topics, output and citations per year, h-index, open access and DOAJ status, publication search', 'Daily; search is live'],
+  ['DataCite', 'Fallback for publication search and publication pages: DOIs registered by repositories (datasets, software, preprints)', 'Live, only when OpenAlex and Crossref cannot answer'],
+  ['Zenodo', 'Second fallback for the same pages: Zenodo records, with files and licences', 'Live, only when the sources above cannot answer'],
   ['Journal websites', 'AJR evidence: editorial governance, peer review, research integrity and transparency policies', 'Monthly, Core Collection'],
   ['POSI editorial', 'Core Collection records, PQF evaluations, verified classifications, certification decisions', 'On each decision'],
 ]

@@ -2,8 +2,13 @@
 // Publication search and publication pages call OpenAlex from the visitor's
 // browser. Busy responses (429, 5xx) are retried once or twice, honouring
 // Retry-After; if OpenAlex still does not answer, search and publication
-// pages fall back to Crossref (see crossref* below). Answers are cached for
+// pages fall back to Crossref, then DataCite, then Zenodo (see below). Answers are cached for
 // the browser session so back/forward and repeat queries cost nothing.
+
+import {
+  RegistryError, dataciteSearch, zenodoSearch, recordByDoi, registrationAgency, registriesFor, invertedIndex,
+  type GetJson, type RegistryRecord, type RecordQuery,
+} from './registries'
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -63,9 +68,11 @@ export interface WorkQuery {
 export interface WorkPage {
   count: number
   results: Work[]
-  /** set when OpenAlex was unavailable and Crossref answered instead */
-  via?: 'crossref'
+  /** set when OpenAlex was unavailable and another registry answered instead */
+  via?: Fallback
 }
+
+export type Fallback = 'crossref' | 'datacite' | 'zenodo'
 
 export interface Facet { key: string; label: string; count: number }
 
@@ -86,12 +93,7 @@ function url(path: string, params: Record<string, string | number | undefined>) 
   return `${API}${path}?${sp}`
 }
 
-export class RegistryError extends Error {
-  constructor(readonly service: string, readonly status: number) {
-    super(`${service} ${status || 'unreachable'}`)
-  }
-  get busy() { return this.status === 0 || this.status === 429 || this.status >= 500 }
-}
+export { RegistryError }
 
 const CACHE_TTL = 10 * 60 * 1000
 function cacheGet<T>(u: string): T | null {
@@ -239,11 +241,73 @@ async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
   return { count: j.message['total-results'], results: j.message.items.map(crToWork), via: 'crossref' }
 }
 
+// ---- DataCite and Zenodo fallbacks (adapters in registries.ts) ----
+
+const getJson: GetJson = (u, service, signal) => fetchJson<unknown>(u, service, signal)
+
+function recordToWork(r: RegistryRecord): Work {
+  const src = r.container.title || r.publisher || (r.source === 'zenodo' ? 'Zenodo' : 'DataCite')
+  return {
+    id: r.doi,
+    doi: r.doi ? `https://doi.org/${r.doi}` : null,
+    title: r.title,
+    publication_date: r.date,
+    publication_year: r.year,
+    type: r.kind,
+    language: r.language,
+    open_access: { is_oa: r.openAccess, oa_status: r.openAccess ? (r.source === 'zenodo' ? 'green' : 'unknown') : 'unknown', oa_url: r.openAccess ? r.url : null },
+    cited_by_count: r.citations,
+    referenced_works_count: r.references || undefined,
+    authorships: r.creators.map(c => ({
+      author: { id: '', display_name: c.name, orcid: c.orcid ? `https://orcid.org/${c.orcid}` : null },
+      institutions: c.affiliations.map(display_name => ({ id: '', display_name, country_code: null })),
+    })),
+    primary_location: {
+      source: { id: '', display_name: src, issn_l: null, issn: null, host_organization_name: r.publisher, type: r.container.title ? 'journal' : 'repository' },
+      landing_page_url: r.url, pdf_url: r.pdfUrl, license: r.licenseUrl ?? r.license,
+    },
+    biblio: { volume: r.container.volume, issue: r.container.issue, first_page: r.container.firstPage, last_page: r.container.lastPage },
+    abstract_inverted_index: invertedIndex(r.abstract),
+    keywords: r.keywords.map(display_name => ({ display_name })),
+  }
+}
+
+const toRecordQuery = (qy: WorkQuery): RecordQuery => ({ ...qy })
+
+async function dataciteWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  const p = await dataciteSearch(toRecordQuery(qy), getJson, signal)
+  return { count: p.count, results: p.records.map(recordToWork), via: 'datacite' }
+}
+
+async function zenodoWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  const p = await zenodoSearch(toRecordQuery(qy), getJson, signal)
+  return { count: p.count, results: p.records.map(recordToWork), via: 'zenodo' }
+}
+
+
+/**
+ * Registries tried in turn when OpenAlex cannot answer. A busy or unreachable registry moves on to the
+ * next; if every one fails, the first error is thrown so the page reports the real cause.
+ */
+async function firstAnswer<T>(attempts: (() => Promise<T>)[], first: unknown): Promise<T> {
+  let err = first
+  for (const run of attempts) {
+    try { return await run() } catch (e) {
+      if ((e as Error).name === 'AbortError') throw e
+      if (!(e instanceof RegistryError)) throw e
+      if (!(err instanceof RegistryError) || err.busy === false) err = e
+    }
+  }
+  throw err
+}
+
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
   try {
     return await openalexSearch(qy, signal)
   } catch (e) {
-    if (e instanceof RegistryError && e.busy) return crossrefSearch(qy, signal)
+    if (e instanceof RegistryError && e.busy) {
+      return firstAnswer([() => crossrefSearch(qy, signal), () => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)], e)
+    }
     throw e
   }
 }
@@ -278,10 +342,16 @@ export async function getWork(id: string, signal?: AbortSignal): Promise<Work> {
   try {
     return await get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
   } catch (e) {
-    // A DOI can still be resolved through Crossref while OpenAlex is busy.
-    if (!doi || !(e instanceof RegistryError) || !e.busy) throw e
-    const j = await fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(id)}`, {}), 'Crossref', signal)
-    return crToWork(j.message)
+    // A DOI can still be resolved through its registry while OpenAlex is busy, or when OpenAlex has not
+    // indexed it yet (new Zenodo and other repository DOIs often are not). Other IDs have no fallback.
+    if (!doi || !(e instanceof RegistryError) || !(e.busy || e.status === 404)) throw e
+    // Ask doi.org which agency registered the DOI and query only that registry; if doi.org does not
+    // answer, try every registry in turn.
+    const agency = await registrationAgency(id, getJson, signal)
+    const attempts = registriesFor(id, agency).map(reg => () => reg === 'Crossref'
+      ? fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(id)}`, {}), 'Crossref', signal).then(j => crToWork(j.message))
+      : recordByDoi(reg, id, getJson, signal).then(recordToWork))
+    return firstAnswer(attempts, e)
   }
 }
 

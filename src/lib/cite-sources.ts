@@ -1,8 +1,12 @@
 // Metadata lookups for the citation generator (/cite/), in the visitor's
-// browser: DOIs via Crossref (OpenAlex as a fallback), books by ISBN via
+// browser: DOIs via Crossref (then Zenodo / DataCite, then OpenAlex as fallbacks), books by ISBN via
 // Open Library, Crossref and Google Books. All of these allow cross-origin requests.
 
 import type { Article } from './types'
+import {
+  RegistryError, dataciteRecord, zenodoRecord, registrationAgencies, registriesFor,
+  type Agency, type GetJson, type RegistryName, type RegistryRecord,
+} from './registries'
 
 const CROSSREF = 'https://api.crossref.org'
 const OPENALEX = 'https://api.openalex.org'
@@ -326,6 +330,97 @@ export async function openAlexGetArticle(doi: string): Promise<Article | null> {
   } catch {
     return null
   }
+}
+
+// ---- DataCite and Zenodo (adapters in registries.ts) ----
+
+const getJson: GetJson = async (url, service) => {
+  let res: Response
+  try { res = await fetchRetry(url, 15000) } catch { throw new RegistryError(service, 0) }
+  if (!res.ok) throw new RegistryError(service, res.status)
+  return res.json()
+}
+
+function recordToArticle(r: RegistryRecord): Article {
+  const doi = r.doi
+  let mqs = 20
+  if (doi) mqs += 20
+  if (r.abstract) mqs += 20
+  if (r.creators.some(c => c.orcid)) mqs += 15
+  if (r.creators.some(c => c.affiliations.length)) mqs += 10
+  if (r.license) mqs += 10
+  if (r.references > 0) mqs += 5
+  return {
+    id: doi,
+    doi,
+    title: r.title ?? '',
+    subtitle: null,
+    journal_id: '',
+    journal_title: r.container.title ?? r.publisher ?? '',
+    journal_code: '',
+    volume: r.container.volume,
+    issue: r.container.issue,
+    first_page: r.container.firstPage,
+    last_page: r.container.lastPage,
+    publication_year: r.year ?? new Date().getFullYear(),
+    publication_date: r.date,
+    article_type: r.kind === 'article' ? 'Research Article' : (r.kindLabel || r.kind || 'Dataset'),
+    language: r.language ?? 'English',
+    abstract: r.abstract,
+    keywords: r.keywords,
+    license: r.license,
+    pdf_url: r.pdfUrl,
+    html_url: r.url,
+    openalex_work_id: null,
+    crossref_status: 'registered',
+    cited_by_count: r.citations,
+    reference_count: r.references,
+    is_retracted: false,
+    metadata_quality_score: Math.min(mqs, 100),
+    authors: r.creators.map((c, i) => ({
+      id: c.orcid ?? `${doi}-au-${i}`,
+      display_name: c.name,
+      given_name: c.given,
+      family_name: c.family,
+      orcid: c.orcid,
+      openalex_author_id: null,
+      country: null,
+      institution: c.affiliations[0] ?? null,
+      is_corresponding: i === 0,
+      author_order: i + 1,
+    })),
+    created_at: '',
+    updated_at: '',
+  }
+}
+
+/** Full Article from DataCite, which registers Zenodo, figshare, Dryad, arXiv and many other repositories' DOIs. */
+export async function dataciteGetWork(doi: string): Promise<Article | null> {
+  try { return recordToArticle(await dataciteRecord(doi, getJson)) } catch { return null }
+}
+
+/** Zenodo's own record for a 10.5281/zenodo.<id> DOI; richer file and licence data than DataCite. */
+export async function zenodoGetWork(doi: string): Promise<Article | null> {
+  try { return recordToArticle(await zenodoRecord(doi, getJson)) } catch { return null }
+}
+
+/** Registration agency per DOI (lower-case key); DOIs doi.org could not answer for are absent. */
+export function doiAgencies(dois: string[]): Promise<Map<string, Agency>> {
+  return registrationAgencies(dois, getJson)
+}
+
+/**
+ * Metadata for a DOI from the registry that holds it, given its agency from doiAgencies()
+ * (undefined = unknown, try every registry). OpenAlex is not included; callers add it.
+ */
+export async function registryGetWork(doi: string, agency: Agency | undefined): Promise<{ article: Article; registry: RegistryName } | null> {
+  for (const registry of registriesFor(doi, agency)) {
+    const article = registry === 'Crossref' ? await crossrefGetWork(doi)
+      : registry === 'Zenodo' ? await zenodoGetWork(doi)
+      : await dataciteGetWork(doi)
+    if (article) return { article, registry }
+  }
+  return null
 }
 
 export interface BookInfo {
