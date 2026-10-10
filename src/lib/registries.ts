@@ -93,8 +93,8 @@ export function plainText(html: string): string {
         const code = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)
         try { return String.fromCodePoint(code) } catch { return m }
       }
-      // Entity names are case-sensitive (&Agrave; vs &agrave;); only the core ones are also accepted in upper case.
-      return NAMED_ENTITIES[e] ?? (/^(amp|lt|gt|quot)$/i.test(e) ? NAMED_ENTITIES[e.toLowerCase()] : m)
+      // Entity names are case-sensitive (&Agrave; vs &agrave;); HTML also defines upper-case aliases for a few (AMP, LT, GT, QUOT, COPY, REG, TRADE).
+      return NAMED_ENTITIES[e] ?? (/^(amp|lt|gt|quot|copy|reg|trade)$/i.test(e) ? NAMED_ENTITIES[e.toLowerCase()] : m)
     })
     .replace(/\s+/g, ' ')
     .trim()
