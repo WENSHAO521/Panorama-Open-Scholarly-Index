@@ -2,7 +2,7 @@
 // Publication search and publication pages call OpenAlex from the visitor's
 // browser. Busy responses (429, 5xx) are retried once or twice, honouring
 // Retry-After; if OpenAlex still does not answer, search and publication
-// pages fall back to Crossref (see crossref* below). Answers are cached for
+// pages fall back to Crossref, then DataCite, then Zenodo (see below). Answers are cached for
 // the browser session so back/forward and repeat queries cost nothing.
 
 const API = 'https://api.openalex.org'
@@ -63,9 +63,11 @@ export interface WorkQuery {
 export interface WorkPage {
   count: number
   results: Work[]
-  /** set when OpenAlex was unavailable and Crossref answered instead */
-  via?: 'crossref'
+  /** set when OpenAlex was unavailable and another registry answered instead */
+  via?: Fallback
 }
+
+export type Fallback = 'crossref' | 'datacite' | 'zenodo'
 
 export interface Facet { key: string; label: string; count: number }
 
@@ -239,11 +241,219 @@ async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
   return { count: j.message['total-results'], results: j.message.items.map(crToWork), via: 'crossref' }
 }
 
+// ---- DataCite fallback: Zenodo, figshare, Dryad, arXiv, OSF, institutional repositories ----
+
+const DATACITE = 'https://api.datacite.org'
+
+interface DcAttrs {
+  doi: string
+  titles?: { title?: string }[]
+  creators?: { name?: string; givenName?: string; familyName?: string
+    affiliation?: (string | { name?: string })[]
+    nameIdentifiers?: { nameIdentifier?: string; nameIdentifierScheme?: string }[] }[]
+  publisher?: string | { name?: string } | null
+  publicationYear?: number | null
+  descriptions?: { description?: string; descriptionType?: string }[]
+  subjects?: { subject?: string }[]
+  rightsList?: { rights?: string; rightsUri?: string; rightsIdentifier?: string }[]
+  types?: { resourceTypeGeneral?: string }
+  container?: { title?: string; volume?: string; issue?: string; firstPage?: string; lastPage?: string }
+  relatedIdentifiers?: { relatedIdentifierType?: string; relatedIdentifier?: string; relationType?: string }[]
+  language?: string | null
+  url?: string | null
+  citationCount?: number
+  referenceCount?: number
+  published?: string
+}
+
+const DC_TYPE: Record<string, string> = {
+  JournalArticle: 'article', ConferencePaper: 'article', Preprint: 'preprint', Dataset: 'dataset', Book: 'book',
+  BookChapter: 'book-chapter', Dissertation: 'dissertation', Report: 'report', Software: 'software',
+  PeerReview: 'peer-review', Standard: 'standard',
+}
+
+const plain = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+
+function invertedIndex(text: string): Record<string, number[]> | null {
+  const inv: Record<string, number[]> = {}
+  text.split(' ').forEach((w, i) => { if (w) (inv[w] ??= []).push(i) })
+  return text ? inv : null
+}
+
+function dcToWork(a: DcAttrs): Work {
+  const abs = a.descriptions?.find(d => d.descriptionType === 'Abstract') ?? a.descriptions?.[0]
+  const license = a.rightsList?.[0]
+  const year = a.publicationYear ?? null
+  const pdfLike = /\.pdf($|\?)/i.test(a.url ?? '')
+  const free = !!license && /creativecommons|cc0|cc-|open/i.test(`${license.rightsUri ?? ''} ${license.rightsIdentifier ?? ''} ${license.rights ?? ''}`)
+  const publisher = typeof a.publisher === 'string' ? a.publisher : a.publisher?.name ?? null
+  return {
+    id: a.doi,
+    doi: `https://doi.org/${a.doi}`,
+    title: a.titles?.[0]?.title ?? null,
+    publication_date: a.published ?? (year ? String(year) : null),
+    publication_year: year,
+    type: DC_TYPE[a.types?.resourceTypeGeneral ?? ''] ?? (a.types?.resourceTypeGeneral ? a.types.resourceTypeGeneral.toLowerCase() : null),
+    language: a.language ?? null,
+    open_access: { is_oa: free, oa_status: 'unknown', oa_url: free ? a.url ?? null : null },
+    cited_by_count: a.citationCount ?? 0,
+    referenced_works_count: a.referenceCount,
+    authorships: (a.creators ?? []).map(c => {
+      const orcid = c.nameIdentifiers?.find(n => /orcid/i.test(`${n.nameIdentifierScheme} ${n.nameIdentifier}`))?.nameIdentifier
+      return {
+        author: {
+          id: '',
+          display_name: c.name ?? [c.givenName, c.familyName].filter(Boolean).join(' '),
+          orcid: orcid ? (orcid.startsWith('http') ? orcid : `https://orcid.org/${orcid}`) : null,
+        },
+        institutions: (c.affiliation ?? []).map(x => (typeof x === 'string' ? x : x.name ?? '')).filter(Boolean)
+          .map(name => ({ id: '', display_name: name, country_code: null })),
+      }
+    }),
+    primary_location: {
+      source: { id: '', display_name: a.container?.title || publisher || 'DataCite', issn_l: null, issn: null, host_organization_name: publisher, type: a.container?.title ? 'journal' : 'repository' },
+      landing_page_url: a.url ?? null, pdf_url: pdfLike ? a.url ?? null : null, license: license?.rightsUri ?? license?.rights ?? null,
+    },
+    biblio: { volume: a.container?.volume ?? null, issue: a.container?.issue ?? null, first_page: a.container?.firstPage ?? null, last_page: a.container?.lastPage ?? null },
+    abstract_inverted_index: abs?.description ? invertedIndex(plain(abs.description)) : null,
+    keywords: (a.subjects ?? []).map(x => x.subject ?? '').filter(Boolean).map(display_name => ({ display_name })),
+  }
+}
+
+function dcUrl(path: string, params: Record<string, string | number | undefined>) {
+  const sp = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== '') sp.set(k, String(v))
+  return `${DATACITE}${path}?${sp}`
+}
+
+async function dataciteSearch(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  const clauses: string[] = []
+  if (qy.q) clauses.push(`(${qy.q.replace(/[\\\[\]{}()^~:"/!]/g, ' ').trim() || '*'})`)
+  if (qy.from || qy.to) clauses.push(`publicationYear:[${qy.from?.slice(0, 4) || '*'} TO ${qy.to?.slice(0, 4) || '*'}]`)
+  if (qy.type?.length) {
+    const general = Object.entries(DC_TYPE).filter(([, v]) => qy.type!.includes(v)).map(([k]) => k)
+    if (general.length) clauses.push(`types.resourceTypeGeneral:(${general.join(' OR ')})`)
+  }
+  const sort = qy.sort === 'cited' ? '-citation' : qy.sort === 'newest' || !qy.q ? '-created' : undefined
+  const j = await fetchJson<{ meta: { total: number }; data: { attributes: DcAttrs }[] }>(dcUrl('/dois', {
+    query: clauses.join(' AND ') || undefined,
+    sort,
+    'page[size]': qy.perPage,
+    'page[number]': qy.page,
+    // Records without a title (placeholders, versions without metadata) are of no use in a result list.
+    'has-title': 'true',
+  }), 'DataCite', signal)
+  return { count: j.meta.total, results: j.data.map(d => dcToWork(d.attributes)), via: 'datacite' }
+}
+
+async function dataciteGet(doi: string, signal?: AbortSignal): Promise<Work> {
+  const j = await fetchJson<{ data: { attributes: DcAttrs } }>(dcUrl(`/dois/${encodeURIComponent(doi)}`, {}), 'DataCite', signal)
+  return dcToWork(j.data.attributes)
+}
+
+// ---- Zenodo fallback: Zenodo's own records (anonymous page size is capped at 25) ----
+
+const ZENODO = 'https://zenodo.org/api'
+
+interface ZenRecord {
+  id: number | string
+  doi?: string
+  stats?: { views?: number }
+  links?: { self_html?: string }
+  files?: { key?: string; links?: { self?: string } }[]
+  metadata: {
+    title?: string
+    description?: string
+    publication_date?: string
+    resource_type?: { type?: string; subtype?: string }
+    creators?: { name?: string; orcid?: string; affiliation?: string }[]
+    keywords?: string[]
+    license?: { id?: string }
+    access_right?: string
+    language?: string
+    journal?: { title?: string; volume?: string; issue?: string; pages?: string }
+  }
+}
+
+function zenToWork(r: ZenRecord): Work {
+  const m = r.metadata
+  const doi = r.doi ?? ''
+  const date = m.publication_date ?? null
+  const [first, last] = (m.journal?.pages ?? '').split(/[-–]/)
+  const open = m.access_right === 'open'
+  const rt = m.resource_type
+  const landing = r.links?.self_html ?? `https://zenodo.org/records/${r.id}`
+  return {
+    id: doi || String(r.id),
+    doi: doi ? `https://doi.org/${doi}` : null,
+    title: m.title ?? null,
+    publication_date: date,
+    publication_year: date ? Number(date.slice(0, 4)) || null : null,
+    type: rt?.type === 'publication' ? (rt.subtype === 'article' ? 'article' : rt.subtype === 'preprint' ? 'preprint' : rt.subtype === 'book' ? 'book' : rt.subtype === 'section' ? 'book-chapter' : rt.subtype === 'report' ? 'report' : rt.subtype === 'thesis' ? 'dissertation' : 'other')
+      : rt?.type === 'dataset' ? 'dataset' : rt?.type === 'software' ? 'software' : rt?.type ?? null,
+    language: m.language ?? null,
+    open_access: { is_oa: open, oa_status: open ? 'green' : 'closed', oa_url: open ? landing : null },
+    cited_by_count: 0,
+    authorships: (m.creators ?? []).map(c => ({
+      author: {
+        id: '',
+        display_name: c.name?.includes(',') ? c.name.split(',').reverse().map(x => x.trim()).join(' ') : c.name ?? '',
+        orcid: c.orcid ? `https://orcid.org/${c.orcid}` : null,
+      },
+      institutions: (c.affiliation ? c.affiliation.split('|') : []).map(x => x.trim()).filter(Boolean)
+        .map(display_name => ({ id: '', display_name, country_code: null })),
+    })),
+    primary_location: {
+      source: { id: '', display_name: m.journal?.title ?? 'Zenodo', issn_l: null, issn: null, host_organization_name: 'Zenodo', type: m.journal?.title ? 'journal' : 'repository' },
+      landing_page_url: landing,
+      pdf_url: open ? r.files?.find(f => /\.pdf$/i.test(f.key ?? ''))?.links?.self ?? null : null,
+      license: m.license?.id ?? null,
+    },
+    biblio: { volume: m.journal?.volume ?? null, issue: m.journal?.issue ?? null, first_page: first || null, last_page: last || null },
+    abstract_inverted_index: m.description ? invertedIndex(plain(m.description)) : null,
+    keywords: (m.keywords ?? []).map(display_name => ({ display_name })),
+  }
+}
+
+async function zenodoSearch(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  const q = [qy.q, ...(qy.from || qy.to ? [`publication_date:[${qy.from || '*'} TO ${qy.to || '*'}]`] : [])].filter(Boolean).join(' AND ')
+  const size = Math.min(qy.perPage, 25)
+  const sp = new URLSearchParams({ size: String(size), page: String(qy.page), sort: qy.sort === 'relevance' && qy.q ? 'bestmatch' : 'mostrecent' })
+  if (q) sp.set('q', q)
+  if (qy.oa) sp.set('access_right', 'open')
+  const j = await fetchJson<{ hits: { total: number; hits: ZenRecord[] } }>(`${ZENODO}/records?${sp}`, 'Zenodo', signal)
+  return { count: j.hits.total, results: j.hits.hits.map(zenToWork), via: 'zenodo' }
+}
+
+async function zenodoGet(doi: string, signal?: AbortSignal): Promise<Work> {
+  const id = doi.match(/^10\.\d+\/zenodo\.(\d+)$/i)?.[1]
+  if (!id) throw new RegistryError('Zenodo', 404)
+  return zenToWork(await fetchJson<ZenRecord>(`${ZENODO}/records/${id}`, 'Zenodo', signal))
+}
+
+/**
+ * Registries tried in turn when OpenAlex cannot answer. A busy or unreachable registry moves on to the
+ * next; if every one fails, the first error is thrown so the page reports the real cause.
+ */
+async function firstAnswer<T>(attempts: (() => Promise<T>)[], first: unknown): Promise<T> {
+  let err = first
+  for (const run of attempts) {
+    try { return await run() } catch (e) {
+      if ((e as Error).name === 'AbortError') throw e
+      if (!(e instanceof RegistryError)) throw e
+      if (!(err instanceof RegistryError) || err.busy === false) err = e
+    }
+  }
+  throw err
+}
+
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
   try {
     return await openalexSearch(qy, signal)
   } catch (e) {
-    if (e instanceof RegistryError && e.busy) return crossrefSearch(qy, signal)
+    if (e instanceof RegistryError && e.busy) {
+      return firstAnswer([() => crossrefSearch(qy, signal), () => dataciteSearch(qy, signal), () => zenodoSearch(qy, signal)], e)
+    }
     throw e
   }
 }
@@ -278,10 +488,14 @@ export async function getWork(id: string, signal?: AbortSignal): Promise<Work> {
   try {
     return await get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
   } catch (e) {
-    // A DOI can still be resolved through Crossref while OpenAlex is busy.
-    if (!doi || !(e instanceof RegistryError) || !e.busy) throw e
-    const j = await fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(id)}`, {}), 'Crossref', signal)
-    return crToWork(j.message)
+    // A DOI can still be resolved through the registries while OpenAlex is busy, or when OpenAlex has
+    // not indexed it yet (new Zenodo and other repository DOIs often are not). Other IDs have no fallback.
+    if (!doi || !(e instanceof RegistryError) || !(e.busy || e.status === 404)) throw e
+    return firstAnswer([
+      async () => crToWork((await fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(id)}`, {}), 'Crossref', signal)).message),
+      () => dataciteGet(id, signal),
+      () => zenodoGet(id, signal),
+    ], e)
   }
 }
 

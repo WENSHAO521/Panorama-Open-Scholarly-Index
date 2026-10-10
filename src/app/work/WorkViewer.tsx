@@ -57,8 +57,8 @@ export function WorkViewer() {
         <h1 className="text-[24px] font-semibold">{state.notFound ? 'Publication not found' : 'Could not load this publication'}</h1>
         <p className="mt-2" style={{ color: 'var(--muted)' }}>
           {state.notFound
-            ? `OpenAlex has no work for "${id}".`
-            : 'Neither OpenAlex nor Crossref answered. This usually clears within a minute; reload the page to try again.'}
+            ? `No work found for "${id}" in OpenAlex, Crossref, DataCite or Zenodo.`
+            : 'None of OpenAlex, Crossref, DataCite or Zenodo answered. This usually clears within a minute; reload the page to try again.'}
         </p>
         <Link href={`/publications/?q=${encodeURIComponent(id)}`} className="btn btn-primary mt-6">Search publications</Link>
       </div>
