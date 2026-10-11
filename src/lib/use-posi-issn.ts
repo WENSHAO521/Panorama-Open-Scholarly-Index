@@ -7,19 +7,18 @@
 import { useEffect, useState } from 'react'
 import type { IndexRecord } from './records'
 import { dataUrl } from '@/lib/data-base'
+import { buildIssnIndex, resolveJournal } from '@/lib/scholarly-api/issn'
 
-export type IssnMap = Map<string, IndexRecord>
+// Every ISSN of every record, normalised ("1234-567X"). An ISSN held by two records maps to both, so a match
+// is only made when the work's ISSNs point to exactly one record.
+export type IssnMap = Map<string, IndexRecord[]>
 
 let cache: Promise<IssnMap> | null = null
 
 function load(): Promise<IssnMap> {
   if (!cache) {
     cache = Promise.all(['core', 'benchmark'].map(g => fetch(dataUrl(`index/${g}.json`)).then(r => (r.ok ? r.json() : []))))
-      .then((groups: IndexRecord[][]) => {
-        const m: IssnMap = new Map()
-        for (const r of groups.flat()) for (const i of r.i) m.set(i.toUpperCase(), r)
-        return m
-      })
+      .then((groups: IndexRecord[][]) => buildIssnIndex(groups.flat(), r => r.i))
       .catch(() => new Map())
   }
   return cache
@@ -33,6 +32,5 @@ export function usePosiIssnMap(): IssnMap | null {
 
 export function matchIssn(map: IssnMap | null, issns: (string | null | undefined)[] | null | undefined): IndexRecord | null {
   if (!map || !issns) return null
-  for (const i of issns) if (i && map.has(i.toUpperCase())) return map.get(i.toUpperCase())!
-  return null
+  return resolveJournal(map, issns)
 }

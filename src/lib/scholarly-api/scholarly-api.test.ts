@@ -82,3 +82,21 @@ test('static data and the public client never embed a private key', async () => 
   const out = execSync("grep -rniE \"(api[_-]?key|secret|bearer )\\s*[:=]\\s*['\\\"][A-Za-z0-9_-]{16,}\" src --include=*.ts --include=*.tsx || true", { encoding: 'utf8' })
   assert.equal(out.trim(), '')
 })
+
+test('every host the browser code calls is in the CSP connect-src allow-list', async () => {
+  const { readFileSync, readdirSync, statSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const csp = /Content-Security-Policy: connect-src ([^;\n]+)/.exec(readFileSync('public/_headers', 'utf8'))![1].split(/\s+/)
+  const allowed = new Set(csp.filter(s => s.startsWith('https://')).map(s => new URL(s).host))
+  // Server-only: imported by the static PDF route handler and run at build time, never in the browser.
+  const BUILD_ONLY = new Set(['src/lib/certificate-pdf.ts'])
+  const files: string[] = []
+  const walk = (d: string) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else if (/\.tsx?$/.test(p) && !p.endsWith('.test.ts') && !BUILD_ONLY.has(p)) files.push(p) } }
+  walk('src')
+  // fetch() on a literal URL, and the API base constants the registry adapters build URLs from
+  const re = /fetch\(\s*[`'"]https:\/\/([^/'"`$]+)|const (?:API|OPENALEX|CROSSREF|DATACITE|ZENODO|DOI_RA)\b[^=]*=\s*[`'"]https:\/\/([^/'"`]+)|[`'"]https:\/\/(doi\.org)\/doiRA/g
+  const used = new Map<string, string>()
+  for (const f of files) for (const m of readFileSync(f, 'utf8').matchAll(re)) used.set(m[1] ?? m[2] ?? m[3], f)
+  assert.ok(used.size >= 6, `scan found too few hosts (${[...used.keys()]})`)
+  for (const [host, file] of used) assert.ok(allowed.has(host), `${host} (used in ${file}) is not in connect-src in public/_headers`)
+})
