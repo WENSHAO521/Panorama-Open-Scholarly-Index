@@ -147,6 +147,16 @@ function issnOf(raw: string | null | undefined): string | null {
   return `${d.slice(0, 4)}-${d.slice(4)}`
 }
 
+/** A registry date without stray whitespace (Zenodo and DataCite sometimes send " 2026-08-30"); null when it is not a date. */
+function cleanDate(raw: string | null | undefined): string | null {
+  const v = (raw ?? '').trim()
+  return /^\d{4}(-\d{2}(-\d{2})?)?/.test(v) ? v : null
+}
+
+function yearOf(date: string | null): number | null {
+  return date ? Number(date.slice(0, 4)) || null : null
+}
+
 function pdfLike(url: string | null | undefined): boolean {
   return /\.pdf($|\?)/i.test(url ?? '')
 }
@@ -187,7 +197,8 @@ const DC_KIND: Record<string, string> = {
 function fromDataCite(a: DcAttrs): RegistryRecord {
   const abs = a.descriptions?.find(d => d.descriptionType === 'Abstract') ?? a.descriptions?.[0]
   const rights = a.rightsList?.[0]
-  const year = a.publicationYear ?? null
+  const date = cleanDate(a.published)
+  const year = a.publicationYear ?? yearOf(date)
   const publisher = typeof a.publisher === 'string' ? a.publisher : a.publisher?.name ?? null
   const general = a.types?.resourceTypeGeneral ?? null
   const open = !!rights && OPEN_LICENSE.test(`${rights.rightsUri ?? ''} ${rights.rightsIdentifier ?? ''} ${rights.rights ?? ''}`)
@@ -207,7 +218,7 @@ function fromDataCite(a: DcAttrs): RegistryRecord {
     }),
     publisher,
     year,
-    date: a.published ?? (year ? String(year) : null),
+    date: date ?? (year ? String(year) : null),
     kind: general ? DC_KIND[general] ?? general.toLowerCase() : null,
     kindLabel: a.types?.resourceType || general,
     abstract: abs?.description ? plainText(abs.description) : null,
@@ -312,7 +323,7 @@ function zenodoName(raw: string | undefined): { name: string; given: string | nu
 
 function fromZenodo(r: ZenRecord): RegistryRecord {
   const m = r.metadata
-  const date = m.publication_date ?? null
+  const date = cleanDate(m.publication_date)
   const [first, last] = (m.journal?.pages ?? '').split(/\s*[-–—]+\s*/)
   const open = m.access_right === 'open'
   const landing = r.links?.self_html ?? `https://zenodo.org/records/${r.id}`
@@ -326,7 +337,7 @@ function fromZenodo(r: ZenRecord): RegistryRecord {
       affiliations: (c.affiliation ? c.affiliation.split('|') : []).map(x => x.trim()).filter(Boolean),
     })),
     publisher: 'Zenodo',
-    year: date ? Number(date.slice(0, 4)) || null : null,
+    year: yearOf(date),
     date,
     kind: zenodoKind(m.resource_type),
     kindLabel: m.resource_type?.title ?? null,
