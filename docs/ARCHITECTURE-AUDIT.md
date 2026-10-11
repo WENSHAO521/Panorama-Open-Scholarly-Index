@@ -49,10 +49,26 @@ sandbox, so the page showed its "OpenAlex is busy, results from Crossref" fallba
 direct browser-to-provider calls and the fallback path. It does not show the sandbox's egress IP behaviour, CORS
 for DataCite/Zenodo, or the production CSP (`next dev` does not apply `_headers`).
 
+## Production-build observation (Chromium via Playwright, static `out/`, CSP applied)
+
+`POSI_ALLOW_PARTIAL_DATA=1 npm run build` completed (exit 0; two existing data-size budget warnings). `out/` was
+served by a small local server that adds the `_headers` CSP. Hosts contacted, with zero CSP violations:
+
+| Page | External hosts |
+|---|---|
+| `/publications/?q=graphene` | api.openalex.org, api.crossref.org, data.posi.panorama-sg.com |
+| `/work/?id=10.5281/zenodo.3233821` | api.openalex.org, doi.org, zenodo.org, data.posi.panorama-sg.com |
+| `/cite/?doi=10.1038/nature12373` | api.openalex.org, doi.org, api.crossref.org |
+| `/journals/` | data.posi.panorama-sg.com only (no third-party registry) |
+
+The CSP therefore does not block any tested flow. Not exercised: ISBN lookups (Open Library, Google Books),
+batch citation, certificate checks, and Cloudflare's own `_headers` handling (the local server only emulates it).
+Note for anyone repeating this: a static server must send `.txt` payloads as `text/x-component`, otherwise Next
+falls back to full-page navigations and the page reloads in a loop; this was a test-server error, not a site bug.
+
 ## Not done / not verified
 
-- Real-browser check covered only the search page against OpenAlex and Crossref (see above); DataCite, Zenodo and
-  work/DOI pages were not exercised.
+- DataCite was not reached in any browser run (no DataCite-registered DOI was tested); the other providers were.
 - **No static build** (`next build`) was run: `prebuild` downloads large live datasets.
 - The CSP was not exercised in a browser. If a page uses a host missing from `connect-src` it will fail;
   the host list came from a grep of `src/`.
@@ -64,6 +80,6 @@ for DataCite/Zenodo, or the production CSP (`next dev` does not apply `_headers`
 
 ## Suggested next steps
 
-1. Repeat the Playwright request log against the production build to check the CSP and the work/DOI pages.
+1. Add the Playwright request-log check to CI so a new third-party host fails the build.
 3. Add ISSN-conflict regression cases from the real history in `posi-data` (needs a read of its audits).
 4. Audit the three data repositories and the release/rollback path.
