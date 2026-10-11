@@ -6,7 +6,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
-import { searchWorks, typeFacets, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet } from '@/lib/openalex'
+import { searchWorks, typeFacets, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
+import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { WorkItem } from './WorkItem'
@@ -26,7 +27,7 @@ const PRESETS = [
   { key: '5y', label: 'Last 5 years', from: () => `${new Date().getFullYear() - 5}-01-01` },
 ]
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback }
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback }
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -77,7 +78,7 @@ export function PublicationSearch() {
     const ctrl = new AbortController()
     searchWorks(query, ctrl.signal)
       .then(r => setRes({ key: queryKey, status: { kind: 'ok', ...r } }))
-      .catch(e => { if (e.name !== 'AbortError') setRes({ key: queryKey, status: { kind: 'error', message: String(e.message || e) } }) })
+      .catch(e => { if (e.name !== 'AbortError') setRes({ key: queryKey, status: { kind: 'error', message: String(e.message || e), why: e instanceof RegistryError ? e.kind : undefined } }) })
     typeFacets(query, ctrl.signal).then(f => setFac({ key: queryKey, facets: f })).catch(e => { if (e.name !== 'AbortError') setFac({ key: queryKey, facets: [] }) })
     return () => ctrl.abort()
   }, [query, queryKey, attempt])
@@ -255,7 +256,13 @@ export function PublicationSearch() {
             <div className="panel p-6 mt-2">
               <p className="font-medium">Search is temporarily unavailable</p>
               <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>
-                None of OpenAlex, Crossref, DataCite or Zenodo answered ({status.message}). This usually clears within a minute.
+                {status.why === 'rate-limited'
+                  ? 'The request limit for your connection has been reached on every registry. Wait a few minutes before searching again.'
+                  : status.why === 'timeout'
+                    ? 'The registries did not answer in time. Check your connection and try again.'
+                    : status.why === 'unreachable'
+                      ? 'The registries could not be reached directly from your browser. A network filter, VPN or extension may be blocking them.'
+                      : <>None of OpenAlex, Crossref, DataCite or Zenodo answered ({status.message}). This usually clears within a minute.</>}
               </p>
               <button type="button" className="btn btn-sm mt-4" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Search again</button>
             </div>

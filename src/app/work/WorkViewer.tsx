@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ArrowSquareOut, LockOpen, Warning } from '@phosphor-icons/react/dist/ssr'
-import { getWork, resourceOf, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work } from '@/lib/openalex'
+import { getWork, resourceOf, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work, RegistryError } from '@/lib/openalex'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { recordHref } from '@/lib/records'
 import { CollectionTag, SectionTitle } from '@/components/db'
@@ -45,7 +45,7 @@ export function WorkViewer() {
     const ctrl = new AbortController()
     getWork(id, ctrl.signal)
       .then(w => setResult({ id, state: { kind: 'ok', w } }))
-      .catch(e => { if (e.name !== 'AbortError') setResult({ id, state: { kind: 'error', notFound: /404/.test(String(e.message)) } }) })
+      .catch(e => { if (e.name !== 'AbortError') setResult({ id, state: { kind: 'error', notFound: e instanceof RegistryError ? e.kind === 'not-found' : /404/.test(String(e.message)) } }) })
     return () => ctrl.abort()
   }, [id])
 

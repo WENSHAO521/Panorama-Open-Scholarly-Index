@@ -37,13 +37,22 @@ inspected at top level (layout, workflows, `current.json`); anything about them 
 - `public/_headers`: CSP `connect-src` allow-list, `object-src 'none'`, `base-uri 'self'`, Referrer-Policy.
 - `src/lib/scholarly-api/scholarly-api.test.ts`: 8 unit tests.
 
-Not wired into the UI yet: `issn.ts` and `dedupe.ts` are tested modules awaiting integration; the
-`RegistryError.kind` classes are not yet used by `PublicationSearch.tsx`, which still shows one generic message.
+`PublicationSearch.tsx` now shows distinct messages for rate-limited, timeout and unreachable failures, and
+`WorkViewer.tsx` only says "not found" for a real 404. `issn.ts` and `dedupe.ts` are tested modules not yet wired
+into the UI.
+
+## Browser observation (Chromium via Playwright, `next dev`, sandbox network)
+
+Loading `/publications/?q=graphene` produced requests to `localhost` (27), `api.openalex.org` (2) and
+`api.crossref.org` (1), and no other host; no failed requests. OpenAlex did not give usable results from this
+sandbox, so the page showed its "OpenAlex is busy, results from Crossref" fallback notice. This confirms
+direct browser-to-provider calls and the fallback path. It does not show the sandbox's egress IP behaviour, CORS
+for DataCite/Zenodo, or the production CSP (`next dev` does not apply `_headers`).
 
 ## Not done / not verified
 
-- **No real-browser or Network-panel check** was run, so "requests go straight to the provider" rests on code
-  reading, not observation. CORS behaviour of each provider was not tested live.
+- Real-browser check covered only the search page against OpenAlex and Crossref (see above); DataCite, Zenodo and
+  work/DOI pages were not exercised.
 - **No static build** (`next build`) was run: `prebuild` downloads large live datasets.
 - The CSP was not exercised in a browser. If a page uses a host missing from `connect-src` it will fail;
   the host list came from a grep of `src/`.
@@ -55,7 +64,6 @@ Not wired into the UI yet: `issn.ts` and `dedupe.ts` are tested modules awaiting
 
 ## Suggested next steps
 
-1. Use `RegistryError.kind` in `PublicationSearch.tsx` / `WorkViewer.tsx` for distinct messages.
-2. Run Playwright against the built site with request logging to confirm only allow-listed hosts are contacted.
+1. Repeat the Playwright request log against the production build to check the CSP and the work/DOI pages.
 3. Add ISSN-conflict regression cases from the real history in `posi-data` (needs a read of its audits).
 4. Audit the three data repositories and the release/rollback path.
