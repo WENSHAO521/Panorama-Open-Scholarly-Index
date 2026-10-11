@@ -1,0 +1,212 @@
+/*
+ * POSI design tokens — Japanese Editorial Academic Design System.
+ *
+ * One file owns every colour. Components read the semantic tokens below
+ * (--posi-*); they never hold raw hex. The older short names used across the
+ * code base (--paper, --ink, --teal, --line, --verified ...) are kept at the
+ * bottom as aliases of the semantic tokens, so every existing page follows
+ * the palette and the colour scheme without being rewritten.
+ *
+ * Palette: 深緑 (brand), 卯の花 (canvas), 利休鼠 (muted greens), 墨 (text),
+ * 枯茶 (accent). Restrained, low-saturation; no gradients, no glass.
+ *
+ * Schemes: light by default; dark when the visitor chose Dark
+ * (html[data-theme="dark"]) or chose nothing / System and the OS prefers
+ * dark. html[data-theme="light"] pins light. See ThemeToggle + THEME_SCRIPT.
+ *
+ * Contrast (WCAG 2.x, checked with scripts in docs/DESIGN-SYSTEM.md):
+ * every text/background pair below is >= 4.5:1; control borders
+ * (--posi-border-strong) are >= 3:1 on their surface.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ── Surfaces ───────────────────────────────────────────── */
+  --posi-canvas: #f8f6f0;          /* 卯の花: page */
+  --posi-surface: #ffffff;         /* cards, tables, inputs */
+  --posi-surface-soft: #f0f2ec;    /* table headers, chips, hero band */
+  --posi-surface-sunken: #e5e8e0;  /* tracks, unfilled bars */
+  --posi-hover: #f0f2ec;           /* row / item hover */
+
+  /* ── Lines ──────────────────────────────────────────────── */
+  --posi-border: #dedfd6;          /* hairlines, dividers */
+  --posi-border-soft: #e9eae2;     /* row separators */
+  --posi-border-strong: #7e8c82;   /* input / control edges, >= 3:1 */
+
+  /* ── Text ───────────────────────────────────────────────── */
+  --posi-text: #2c3430;            /* 墨 */
+  --posi-text-2: #3e4a43;
+  --posi-muted: #566659;           /* 利休鼠 */
+  --posi-faint: #627065;           /* placeholders, tertiary; still AA */
+
+  /* ── Brand 深緑 ─────────────────────────────────────────── */
+  --posi-brand: #244d40;
+  --posi-brand-hover: #1b3f35;
+  --posi-brand-soft: #e2eae3;
+  --posi-brand-line: #aebfb4;
+  --posi-on-brand: #ffffff;
+
+  /* ── Accent 枯茶 (sparing: rules, markers, key figures) ───── */
+  --posi-accent: #ab8760;          /* fills, rules (non-text) */
+  --posi-accent-text: #81603a;     /* text and icons */
+  --posi-accent-soft: #f1ebe0;
+
+  /* ── Status (always paired with a word or icon, never colour alone) ── */
+  --posi-success: #2b6b4a;  --posi-success-bg: #e4efe7;  --posi-success-border: #b7d3c1;
+  --posi-warning: #76591c;  --posi-warning-bg: #f1ecd9;  --posi-warning-border: #d9cfa6;
+  --posi-caution: #93502b;  --posi-caution-bg: #f5e8de;  --posi-caution-border: #e0c3ae;
+  --posi-danger: #9b3b3b;   --posi-danger-bg: #f4e3e1;   --posi-danger-border: #e0b9b5;
+  --posi-info: #3d5f73;     --posi-info-bg: #e3ebef;     --posi-info-border: #b7c8d2;
+
+  /* ── Dark band: utility bar, footer, code blocks ─────────── */
+  --posi-band: #1e2b26;
+  --posi-band-ink: #eae7dd;
+  --posi-band-muted: #b3c0b6;
+  --posi-band-line: rgba(234, 231, 221, 0.14);
+  --posi-code-bg: #1e2b26;
+  --posi-code-ink: #dfe5dc;
+
+  /* ── Charts ────────────────────────────────────────────────
+     Categorical: one hue per category, same lightness band, low chroma.
+     Sequential: --posi-brand mixed into --posi-surface (see IndexGlance);
+     a single hue, darker/more saturated = more.                        */
+  --posi-cat-1: #3f6b8c;  /* 藍 indigo */
+  --posi-cat-2: #b0623a;  /* 柿 persimmon */
+  --posi-cat-3: #4d8a68;  /* 常磐 evergreen */
+  --posi-cat-4: #a8832a;  /* 黄土 ochre */
+  --posi-cat-5: #a9677f;  /* 桃鼠 dusty rose */
+  --posi-cat-6: #6c5f99;  /* 菖蒲 iris */
+  --posi-cat-neutral: #7f8a83; /* 鼠 multidisciplinary / other */
+
+  /* ── External index buttons (text only, no logos) ──────────── */
+  --posi-wos: #4f3f86;     --posi-on-wos: #ffffff;
+  --posi-scopus: #b4571a;  --posi-on-scopus: #ffffff;
+  --posi-pubmed: #2f5a7d;  --posi-on-pubmed: #ffffff;
+
+  /* ── Fixed marks: never re-coloured by the scheme ──────────── */
+  --posi-brand-red: #e30613;   /* the red block of the Panorama mark */
+
+  /* ── Shape, type ───────────────────────────────────────────── */
+  --posi-radius: 2px;
+  --posi-shadow-pop: 0 2px 8px rgba(30, 43, 38, 0.10);  /* menus only */
+  --posi-focus: #244d40;
+  --posi-focus-ring: 2px solid var(--posi-focus);
+}
+
+/* Dark. Declared twice by necessity (CSS has no selector-list for media +
+   attribute): keep the two blocks identical. System follows the OS unless the
+   visitor pinned Light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --posi-canvas: #17231f;
+    --posi-surface: #24332c;
+    --posi-surface-soft: #2c3d33;
+    --posi-surface-sunken: #1d2b25;
+    --posi-hover: #2c3d33;
+
+    --posi-border: #425249;
+    --posi-border-soft: #35443c;
+    --posi-border-strong: #6f8277;
+
+    --posi-text: #eae7dd;
+    --posi-text-2: #d4d6cb;
+    --posi-muted: #bac5b9;
+    --posi-faint: #a3b1a6;
+
+    --posi-brand: #bfd2c3;
+    --posi-brand-hover: #d6e4d9;
+    --posi-brand-soft: #30463b;
+    --posi-brand-line: #567063;
+    --posi-on-brand: #17231f;
+
+    --posi-accent: #d1b58a;
+    --posi-accent-text: #d1b58a;
+    --posi-accent-soft: #3a3427;
+
+    --posi-success: #9acbae;  --posi-success-bg: #274236;  --posi-success-border: #3f6552;
+    --posi-warning: #d9be7c;  --posi-warning-bg: #3f3a24;  --posi-warning-border: #665c35;
+    --posi-caution: #e3a585;  --posi-caution-bg: #46302a;  --posi-caution-border: #6d4a3e;
+    --posi-danger: #e8a3a0;   --posi-danger-bg: #472b2d;   --posi-danger-border: #724346;
+    --posi-info: #9cbfd3;     --posi-info-bg: #2a3e49;     --posi-info-border: #46606f;
+
+    --posi-band: #101a17;
+    --posi-band-ink: #eae7dd;
+    --posi-band-muted: #a9b8ae;
+    --posi-band-line: rgba(234, 231, 221, 0.14);
+    --posi-code-bg: #101a17;
+    --posi-code-ink: #dfe5dc;
+
+    --posi-cat-1: #7ea6c4;
+    --posi-cat-2: #d68e66;
+    --posi-cat-3: #7fb596;
+    --posi-cat-4: #d2ae5a;
+    --posi-cat-5: #d198ae;
+    --posi-cat-6: #a497cc;
+    --posi-cat-neutral: #98a39c;
+
+    --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
+    --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
+    --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #17231f;
+
+    --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --posi-focus: #d1b58a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --posi-canvas: #17231f;
+  --posi-surface: #24332c;
+  --posi-surface-soft: #2c3d33;
+  --posi-surface-sunken: #1d2b25;
+  --posi-hover: #2c3d33;
+
+  --posi-border: #425249;
+  --posi-border-soft: #35443c;
+  --posi-border-strong: #6f8277;
+
+  --posi-text: #eae7dd;
+  --posi-text-2: #d4d6cb;
+  --posi-muted: #bac5b9;
+  --posi-faint: #a3b1a6;
+
+  --posi-brand: #bfd2c3;
+  --posi-brand-hover: #d6e4d9;
+  --posi-brand-soft: #30463b;
+  --posi-brand-line: #567063;
+  --posi-on-brand: #17231f;
+
+  --posi-accent: #d1b58a;
+  --posi-accent-text: #d1b58a;
+  --posi-accent-soft: #3a3427;
+
+  --posi-success: #9acbae;  --posi-success-bg: #274236;  --posi-success-border: #3f6552;
+  --posi-warning: #d9be7c;  --posi-warning-bg: #3f3a24;  --posi-warning-border: #665c35;
+  --posi-caution: #e3a585;  --posi-caution-bg: #46302a;  --posi-caution-border: #6d4a3e;
+  --posi-danger: #e8a3a0;   --posi-danger-bg: #472b2d;   --posi-danger-border: #724346;
+  --posi-info: #9cbfd3;     --posi-info-bg: #2a3e49;     --posi-info-border: #46606f;
+
+  --posi-band: #101a17;
+  --posi-band-ink: #eae7dd;
+  --posi-band-muted: #a9b8ae;
+  --posi-band-line: rgba(234, 231, 221, 0.14);
+  --posi-code-bg: #101a17;
+  --posi-code-ink: #dfe5dc;
+
+  --posi-cat-1: #7ea6c4;
+  --posi-cat-2: #d68e66;
+  --posi-cat-3: #7fb596;
+  --posi-cat-4: #d2ae5a;
+  --posi-cat-5: #d198ae;
+  --posi-cat-6: #a497cc;
+  --posi-cat-neutral: #98a39c;
+
+  --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
+  --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
+  --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #17231f;
+
+  --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --posi-focus: #d1b58a;
+}
+:root[data-theme="light"] { color-scheme: light; }

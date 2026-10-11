@@ -15,13 +15,15 @@ import { MAP_H, MAP_W, countryCode, getSmallPlaceDots, getWorldShapes } from '@/
 import { MapHover } from './MapHover'
 import { fmt } from './db'
 
-// One fixed hue per domain (validated categorical order; identity is also
+// One fixed hue per domain (low-chroma, scheme-aware tokens in posi-tokens.css; identity is also
 // carried by the legend and direct labels). Multidisciplinary is neutral.
 const DOMAIN_COLOR: Record<string, string> = {
-  P1: '#2a78d6', P2: '#eb6834', P3: '#1baf7a', P4: '#eda100', P5: '#e87ba4', P6: '#008300', P0: '#8a939d',
+  P1: 'var(--posi-cat-1)', P2: 'var(--posi-cat-2)', P3: 'var(--posi-cat-3)', P4: 'var(--posi-cat-4)',
+  P5: 'var(--posi-cat-5)', P6: 'var(--posi-cat-6)', P0: 'var(--posi-cat-neutral)',
 }
 
-// World map: one hue, darker = more journals, on a log scale.
+// World map: one hue (the brand green), stronger = more journals, on a log scale.
+// A sequential scale for a continuous measure; the legend lists every bin.
 const MAP_BINS = [
   { min: 1, label: '1-9', mix: 24 },
   { min: 10, label: '10-99', mix: 42 },

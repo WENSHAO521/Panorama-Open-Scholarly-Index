@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TRANSLATION_GUARD_SCRIPT } from "@/lib/translation-guard";
+import { THEME_SCRIPT } from "@/lib/theme";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -53,21 +54,29 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION },
 };
 
-// Light only: keeps browser controls and scrollbars light on dark systems too.
-export const viewport = { colorScheme: 'light', themeColor: '#ffffff' }
+// Light and dark: the page follows the visitor's choice or, by default, the OS (see styles/posi-tokens.css).
+export const viewport = {
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8f6f0' },
+    { media: '(prefers-color-scheme: dark)', color: '#17231f' },
+  ],
+}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
       <head>
         {/* Before React loads: survive browser page translation (see lib/translation-guard). */}
         <script dangerouslySetInnerHTML={{ __html: TRANSLATION_GUARD_SCRIPT }} />
+        {/* Applies a pinned Light/Dark choice before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
-          style={{ background: 'var(--teal)', color: '#fff' }}
+          style={{ background: 'var(--posi-brand)', color: 'var(--posi-on-brand)' }}
         >
           Skip to content
         </a>

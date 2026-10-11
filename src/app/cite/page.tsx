@@ -395,14 +395,14 @@ function CopyBtn({ text }: { text: string }) {
 
 const FMT_LABELS: Record<string, string> = { psg: 'PSG Format', apa: 'APA 7th', mla: 'MLA 9th', chicago: 'Chicago 17th' }
 const FMT_COLORS: Record<string, [string, string]> = {
-  psg: ['#fef2f4', 'var(--teal)'],
+  psg: ['var(--teal-soft)', 'var(--teal)'],
   apa: ['var(--info-soft)', 'var(--info)'],
   mla: ['var(--verified-soft)', 'var(--verified)'],
   chicago: ['var(--check-soft)', 'var(--check)'],
 }
 
 function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
-  const [bg, color] = FMT_COLORS[fmt] ?? ['var(--surface-2)', '#333']
+  const [bg, color] = FMT_COLORS[fmt] ?? ['var(--surface-2)', 'var(--ink-2)']
   return (
     <div className="panel">
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border)', background: bg }}>
@@ -840,12 +840,12 @@ function CitePage() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="p-5" style={{ background: 'var(--rejected-soft)', border: '1px solid #F5C2CB' }}>
+        <div className="p-5" style={{ background: 'var(--rejected-soft)', border: '1px solid var(--posi-danger-border)' }}>
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--rejected)' }} />
             <div>
               <p className="text-sm font-semibold mb-1" style={{ color: 'var(--rejected)' }}>Not Found</p>
-              <p className="text-xs leading-relaxed text-justify" style={{ color: '#7f1d1d' }}>{error}</p>
+              <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--rejected)' }}>{error}</p>
             </div>
           </div>
         </div>
@@ -895,9 +895,9 @@ function CitePage() {
         <div className="space-y-4">
           <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Article Found</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>Article Found</p>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
-                style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? 'var(--verified-soft)' : 'var(--surface-2)', color: autoResult.source === 'openalex' ? 'var(--verified)' : 'var(--muted)', border: `1px solid ${autoResult.source === 'openalex' ? '#bbdece' : '#ddd'}` }}>
+                style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? 'var(--verified-soft)' : 'var(--surface-2)', color: autoResult.source === 'openalex' ? 'var(--verified)' : 'var(--muted)', border: `1px solid ${autoResult.source === 'openalex' ? 'var(--posi-success-border)' : 'var(--line)'}` }}>
                 via {{ openalex: 'OpenAlex', zenodo: 'Zenodo', datacite: 'DataCite', crossref: 'Crossref' }[autoResult.source]}
               </span>
             </div>
@@ -919,7 +919,7 @@ function CitePage() {
             {autoResult.article.doi && (
               <div className="mt-3">
                 <a href={`https://doi.org/${autoResult.article.doi}`} target="_blank" rel="noopener noreferrer"
-                  className="text-xs flex items-center gap-1 hover:underline" style={{ color: 'var(--posi-accent)' }}>
+                  className="text-xs flex items-center gap-1 hover:underline" style={{ color: 'var(--posi-brand)' }}>
                   {autoResult.article.doi} <ArrowSquareOut className="h-3 w-3" />
                 </a>
               </div>
@@ -934,8 +934,8 @@ function CitePage() {
         <div className="space-y-4">
           <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="h-4 w-4" style={{ color: 'var(--posi-accent)' }} />
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Book Found</p>
+              <BookOpen className="h-4 w-4" style={{ color: 'var(--posi-brand)' }} />
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>Book Found</p>
             </div>
             <h2 className="text-sm font-semibold leading-snug mb-1" style={{ color: 'var(--posi-text)' }}>
               {autoResult.book.title}{autoResult.book.subtitle && <span style={{ color: 'var(--posi-muted)' }}>: {autoResult.book.subtitle}</span>}
@@ -958,8 +958,8 @@ function CitePage() {
       {!loading && autoResult?.type === 'webpage-form' && (
         <div className="panel p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="h-4 w-4" style={{ color: 'var(--posi-accent)' }} />
-            <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-accent)', fontFamily: 'var(--font-mono)' }}>Webpage Citation</p>
+            <Globe className="h-4 w-4" style={{ color: 'var(--posi-brand)' }} />
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>Webpage Citation</p>
           </div>
           <p className="text-xs mb-4" style={{ color: 'var(--posi-muted)' }}>No DOI found. Fill in details to generate citations in all formats.</p>
           <form onSubmit={handleWpSubmit} className="space-y-3">
@@ -1013,7 +1013,7 @@ function CitePage() {
           </div>
           <MultiFormatCards citations={autoResult.citations} />
           <button onClick={() => setAutoResult({ type: 'webpage-form', url: autoResult.citations.psg.plain.match(/https?:\/\/\S+/)?.[0] ?? '' })}
-            className="text-xs hover:underline" style={{ color: 'var(--posi-accent)' }}>
+            className="text-xs hover:underline" style={{ color: 'var(--posi-brand)' }}>
             ← Edit details
           </button>
         </div>
@@ -1024,7 +1024,7 @@ function CitePage() {
         <button
           onClick={() => setShowManual(v => !v)}
           className="flex items-center gap-2 text-sm font-medium transition-colors"
-          style={{ color: showManual ? 'var(--posi-accent)' : 'var(--posi-muted)' }}
+          style={{ color: showManual ? 'var(--posi-brand)' : 'var(--posi-muted)' }}
         >
           <PencilSimple className="h-4 w-4" />
           {showManual ? 'Hide manual entry' : 'Or enter details manually →'}
