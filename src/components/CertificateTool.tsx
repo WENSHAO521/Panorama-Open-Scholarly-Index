@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { CheckCircle, XCircle, DownloadSimple, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import {
-  MAX_DOIS, SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, parseDoiList, todayIso, verifyPath, type CertItem,
+  MAX_DOIS, SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, parseDoiList, scholarUrl, todayIso, verifyPath, type CertItem,
 } from '@/lib/certificate'
 import { CertificateDocument, type CertificateData } from './CertificateDocument'
 import { downloadCertificatePdf } from '@/lib/certificate-download'
@@ -111,7 +111,7 @@ export function CertificateTool() {
           <button type="submit" className="btn btn-primary" disabled={phase === 'checking'}>
             {phase === 'checking' ? 'Checking' : 'Check and issue'}
           </button>
-          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Each DOI is checked against Crossref, OpenAlex and the POSI index.</span>
+          <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>Each DOI is checked against Crossref, DataCite, Zenodo, OpenAlex and the POSI index. Google Scholar has no API; each result links to a Google Scholar search to check by hand.</span>
         </div>
       </form>
 
@@ -143,9 +143,10 @@ export function CertificateTool() {
                         {st && (
                           <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
                             {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
-                            <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'}</span></>}</span>
+                            <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
                           </span>
                         )}
+                        {it && it.status !== 'invalid' && <><br /><a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a></>}
                       </td>
                     </tr>
                   )
@@ -157,7 +158,7 @@ export function CertificateTool() {
             <div className="mt-4">
               <Note tone="warn">
                 None of these DOIs is an indexed journal publication, so no certificate can be issued. POSI indexes
-                journal publications registered with Crossref or OpenAlex.
+                journal publications registered with Crossref or DataCite, or recorded in OpenAlex.
               </Note>
             </div>
           )}

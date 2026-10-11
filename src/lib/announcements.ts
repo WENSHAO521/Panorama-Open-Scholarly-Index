@@ -9,6 +9,20 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'october-2026-updates',
+    title: 'October 2026 updates: certificates for DataCite and Zenodo DOIs, PSG citation tools, new journals',
+    date: '2026-10-11',
+    summary:
+      'Indexing certificates now check DOIs registered with DataCite and Zenodo as well as Crossref and OpenAlex, and link each publication to Google Scholar. Publication search and pages draw on DataCite and Zenodo too, the citation generator converts reference lists to PSG in batch, AI Med joins the Core Collection, and 1,654 Wiley journals join the index.',
+    body: [
+      'Indexing certificates. Each DOI is now checked at the agency that registered it, as named by doi.org. Besides Crossref and OpenAlex, a publication is indexed when DataCite, or Zenodo for a Zenodo DOI, holds it as a journal article that is part of a journal with an ISSN. The check results and the verification page say which source indexed each publication. A journal article whose record names no journal ISSN is now reported as such, not as “not a journal publication”. Google Scholar has no public API and does not allow automated queries, so it cannot be part of the check; each result links to a Google Scholar search so the listing can be confirmed by hand. Certificates issued earlier verify as before.',
+      'Publication search and publication pages. DataCite and Zenodo are now sources alongside OpenAlex and Crossref, so DOIs from repositories such as Zenodo, figshare and Dryad resolve, and search keeps working when OpenAlex is busy. DOI lookups go straight to the registry that holds the DOI. When a source cannot be reached, the page now says whether it timed out, was rate limited or was unavailable, and reports “not found” only when a registry actually says so.',
+      'Citation generator. References can be converted to the PSG format in batch: lists of DOIs (over 100 at a time), BibTeX, RIS and CSL JSON, and reference text in APA, AMA, Chicago, MLA, GB/T, IEEE and Harvard styles. Articles can also be found by title. Batch output includes PSG in-text citations and a/b year suffixes, as the PSG format page describes.',
+      'Journals. AI Med (E-ISSN 3079-4757) has joined the Core Collection. 1,654 Wiley journals with Crossref articles from 2018 onwards that were missing from the index have been added. Those DOAJ does not list are classed as open access, not in DOAJ. Publisher names, titles and print/online ISSNs have been corrected on a number of Wiley records.',
+      'Corrections to any record can be requested through the contact page.',
+    ],
+  },
+  {
     slug: 'ajr-1-2',
     title: 'AJR-E-1.2 and AJR-M-1.2: publisher policies and Crossref records as evidence',
     date: '2026-10-03',

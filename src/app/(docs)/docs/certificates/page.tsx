@@ -23,10 +23,16 @@ export default function CertificatesDoc() {
       <div className="prose-doc">
         <h2 style={{ marginTop: 0 }}>What POSI indexes</h2>
         <p>
-          POSI indexes every journal with DOIs registered at Crossref or a source record in OpenAlex. A publication is
-          indexed when Crossref holds its DOI as a journal article under a journal ISSN or, for DOIs Crossref does not
-          hold, when OpenAlex records it with a journal as its source. Books, chapters, datasets and preprints are not
-          journal publications and are not certified.
+          POSI indexes every journal with DOIs registered at Crossref or DataCite, or a source record in OpenAlex. Each
+          DOI is checked at the agency that registered it, as named by doi.org. A publication is indexed when Crossref
+          holds its DOI as a journal article under a journal ISSN; when DataCite, or Zenodo for a Zenodo DOI, holds it as
+          a journal article that is part of a journal with an ISSN; or, failing those, when OpenAlex records it with a
+          journal as its source. Books, chapters, datasets and preprints are not journal publications and are not
+          certified, and neither is a journal article whose record names no journal ISSN.
+        </p>
+        <p>
+          Google Scholar has no public API and does not allow automated queries, so it cannot be part of the check. The
+          check results link each publication to a Google Scholar search, so you can confirm it is listed there by hand.
         </p>
         <p>
           Within the index, journals that applied for certification and passed the PQF editorial evaluation form the{' '}
@@ -56,7 +62,7 @@ export default function CertificatesDoc() {
         <p>Verification does not depend on a register of issued certificates. It re-derives each certificate from its contents:</p>
         <ul>
           <li>The certificate number is recomputed from the date, snapshot and DOI list in the link. A mismatch means the certificate was altered.</li>
-          <li>Every DOI is re-checked against Crossref, OpenAlex and the current POSI index. Changes since issue, such as a journal leaving the Core Collection, are reported.</li>
+          <li>Every DOI is re-checked against Crossref, DataCite, Zenodo, OpenAlex and the current POSI index. Changes since issue, such as a journal leaving the Core Collection, are reported.</li>
         </ul>
         <p>
           Because the facts are checked again every time, a certificate claiming a publication is indexed when it is not
