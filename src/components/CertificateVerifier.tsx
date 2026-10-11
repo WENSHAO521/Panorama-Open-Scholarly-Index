@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CheckCircle, XCircle, WarningCircle } from '@phosphor-icons/react/dist/ssr'
-import { SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, type CertItem } from '@/lib/certificate'
+import { CheckCircle, XCircle, WarningCircle, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
+import { SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, scholarUrl, type CertItem } from '@/lib/certificate'
 
 type Verdict = 'valid' | 'changed' | 'tampered'
 
@@ -129,9 +129,10 @@ export function CertificateVerifier() {
                     {st ? (
                       <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
                         {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
-                        <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'}</span></>}</span>
+                        <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
                       </span>
                     ) : <span className="inline-block h-3.5 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
+                    {it && it.status !== 'invalid' && <><br /><a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a></>}
                   </td>
                 </tr>
               )
@@ -142,7 +143,7 @@ export function CertificateVerifier() {
 
       <p className="text-[13px] leading-relaxed max-w-[75ch]" style={{ color: 'var(--muted)' }}>
         Verification recomputes the certificate number from its contents and re-checks each publication against
-        Crossref, OpenAlex and the current POSI index. The requester&apos;s name is not part of the link and is not
+        Crossref, DataCite, Zenodo, OpenAlex and the current POSI index. The requester&apos;s name is not part of the link and is not
         verified. <Link href="/docs/certificates/" className="link">How certificates work</Link>.
       </p>
     </div>

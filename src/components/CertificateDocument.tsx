@@ -182,7 +182,7 @@ export function CertificateDocument({ data }: { data: CertificateData }) {
               <p style={{ margin: '4px 0 0' }}>
                 Scan the QR code or select the link to open the verification record for certificate{' '}
                 <span style={{ fontFamily: MONO, color: INK, whiteSpace: 'nowrap' }}>{data.code}</span>. Verification recomputes the certificate number and checks every listed publication again against
-                Crossref, OpenAlex and the POSI index. This certificate states indexing status only.
+                Crossref, DataCite, Zenodo, OpenAlex and the POSI index. This certificate states indexing status only.
               </p>
             </div>
             <Signature sub="VERIFIED" />

@@ -1,22 +1,30 @@
 // Indexing certificates, issued and verified entirely in the browser.
 //
 // What "indexed" means here: POSI indexes every journal with DOIs registered
-// at Crossref or a source record in OpenAlex. A publication is indexed when
-// Crossref holds its DOI as a journal article with a journal ISSN, or, failing
-// that, OpenAlex holds it with a journal as its primary source. The
-// certificate also states the journal's POSI tier (Core Collection or
+// at Crossref or DataCite, or a source record in OpenAlex. doi.org names the
+// agency that registered a DOI, and the DOI is checked at that registry:
+//  - Crossref holds it as a journal article with a journal ISSN, or
+//  - DataCite (or Zenodo, for a Zenodo DOI) holds it as a journal article
+//    that is part of a journal ISSN, or, failing both,
+//  - OpenAlex holds it with a journal as its primary source.
+// The certificate also states the journal's POSI tier (Core Collection or
 // Indexed).
+//
+// Google Scholar has no public API and does not permit automated queries, so
+// it is not part of the check; checkers get a Google Scholar search link to
+// look a publication up by hand (scholarUrl).
 //
 // There is no server and no signing key, so a certificate does not carry
 // authority by itself. Its number is a SHA-256 digest of the issue date, data
 // snapshot and DOI list: it shows that the content has not been altered.
-// Verification re-checks every fact against Crossref, OpenAlex and the live
+// Verification re-checks every fact against the same registries and the live
 // index, so a certificate for a publication that is not indexed cannot pass,
 // whoever produced it.
 
 import { DATA_CUTOFF } from './release'
 import type { IndexRecord } from './records'
 import { dataUrl } from './data-base'
+import { RegistryError, recordByDoi, registrationAgency, registriesFor, type GetJson, type RegistryRecord } from './registries'
 
 export const MAX_DOIS = 20
 export const SNAPSHOT = DATA_CUTOFF
@@ -37,9 +45,9 @@ export interface CrossrefWork {
   citations: number
 }
 
-export type ItemStatus = 'indexed' | 'not_journal' | 'not_found' | 'invalid' | 'error'
+export type ItemStatus = 'indexed' | 'not_journal' | 'no_issn' | 'not_found' | 'invalid' | 'error'
 
-export type IndexedVia = 'Crossref' | 'OpenAlex'
+export type IndexedVia = 'Crossref' | 'DataCite' | 'Zenodo' | 'OpenAlex'
 
 export interface CertItem {
   input: string
@@ -57,7 +65,8 @@ export interface CertItem {
 export const STATUS_TEXT: Record<ItemStatus, { text: string; ok: boolean }> = {
   indexed: { text: 'Indexed in POSI', ok: true },
   not_journal: { text: 'Not a journal publication (book, dataset, preprint or similar)', ok: false },
-  not_found: { text: 'DOI not found in Crossref or OpenAlex', ok: false },
+  no_issn: { text: 'Journal article, but the registry record names no journal ISSN', ok: false },
+  not_found: { text: 'DOI not found in Crossref, DataCite, Zenodo or OpenAlex', ok: false },
   invalid: { text: 'Not a valid DOI', ok: false },
   error: { text: 'The registries did not answer. Try again.', ok: false },
 }
@@ -106,7 +115,13 @@ function loadCurated(): Promise<IndexRecord[]> {
   return curated
 }
 
-/** OpenAlex fallback for DOIs Crossref does not hold (e.g. other registration agencies). */
+/** Google Scholar search for a publication: by exact title when known, else by DOI. A link for people, never fetched. */
+export function scholarUrl(item: Pick<CertItem, 'doi' | 'input' | 'work'>): string {
+  const title = item.work?.title?.trim()
+  return `https://scholar.google.com/scholar?q=${encodeURIComponent(title ? `"${title}"` : item.doi ?? item.input)}`
+}
+
+/** OpenAlex fallback for DOIs no registry holds as a journal article (e.g. other registration agencies). */
 async function openAlexWork(doi: string, signal?: AbortSignal): Promise<CrossrefWork | 'not_found' | 'not_journal'> {
   const r = await fetch(`https://api.openalex.org/works/doi:${encodeURIComponent(doi)}?mailto=posi@panorama-sg.com`, { signal })
   if (r.status === 404) return 'not_found'
@@ -149,21 +164,92 @@ async function crossrefWork(doi: string, signal?: AbortSignal): Promise<Crossref
   }
 }
 
+const getJson: GetJson = async (url, service, signal) => {
+  let r: Response
+  try { r = await fetch(url, { signal }) } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+    throw new RegistryError(service, 0)
+  }
+  if (!r.ok) throw new RegistryError(service, r.status)
+  return r.json()
+}
+
+/**
+ * The DataCite-side record for a DOI: Zenodo's own record first for a Zenodo DOI, then DataCite's. Both are
+ * asked, because Zenodo names the journal while DataCite carries its ISSN (Zenodo's API drops it); the first
+ * record is the one shown, the others fill its gaps. null when neither holds the DOI.
+ */
+async function repositoryWork(doi: string, registries: ('DataCite' | 'Zenodo')[], signal?: AbortSignal):
+  Promise<{ work: CrossrefWork; via: IndexedVia; journalArticle: boolean } | null> {
+  const got = await Promise.allSettled(registries.map(r => recordByDoi(r, doi, getJson, signal)))
+  const recs: [RegistryRecord, 'DataCite' | 'Zenodo'][] = []
+  got.forEach((g, i) => { if (g.status === 'fulfilled') recs.push([g.value, registries[i]]) })
+  if (!recs.length) {
+    // every registry failed: "not found" only when each said so; a busy registry is an error, not an absence
+    const failed = got.map(g => (g as PromiseRejectedResult).reason)
+    const abort = failed.find(e => (e as Error)?.name === 'AbortError')
+    if (abort) throw abort
+    if (failed.every(e => e instanceof RegistryError && e.status === 404)) return null
+    throw failed.find(e => !(e instanceof RegistryError && e.status === 404))
+  }
+  const [[r, via]] = recs
+  const all = recs.map(([x]) => x)
+  const c = r.container
+  const page = c.firstPage ? (c.lastPage && c.lastPage !== c.firstPage ? `${c.firstPage}-${c.lastPage}` : c.firstPage) : null
+  const journalArticle = all.some(x => x.journalArticle)
+  return {
+    via,
+    journalArticle,
+    work: {
+      doi,
+      title: r.title ?? all.find(x => x.title)?.title ?? '',
+      authors: r.creators.map(a => a.name).filter(Boolean),
+      container: all.find(x => x.container.title)?.container.title ?? null,
+      issn: [...new Set(all.flatMap(x => x.issn))],
+      volume: c.volume ?? all.find(x => x.container.volume)?.container.volume ?? null,
+      issue: c.issue ?? all.find(x => x.container.issue)?.container.issue ?? null,
+      page,
+      year: r.year,
+      published: r.date,
+      type: journalArticle ? 'journal-article' : r.kind,
+      publisher: r.publisher,
+      citations: Math.max(...all.map(x => x.citations)),
+    },
+  }
+}
+
 export async function checkItem(input: string, signal?: AbortSignal): Promise<CertItem> {
   const doi = normalizeDoi(input)
   const base: CertItem = { input, doi, status: 'invalid', work: null, via: null, journal: null, tier: null, accession: null }
   if (!doi) return base
   try {
-    const [records, cr] = await Promise.all([loadCurated(), crossrefWork(doi, signal)])
+    // undefined agency: doi.org did not answer, so every registry is asked in turn
+    const [records, agency] = await Promise.all([loadCurated(), registrationAgency(doi, getJson, signal)])
+    const order = registriesFor(doi, agency)
     let work: CrossrefWork | null = null
     let via: IndexedVia | null = null
-    if (cr !== 'not_found') {
-      if (!JOURNAL_TYPES.has(cr.type ?? '') || !cr.issn.length) return { ...base, status: 'not_journal', work: cr, via: 'Crossref' }
-      work = cr; via = 'Crossref'
-    } else {
+    if (order.includes('Crossref')) {
+      const cr = await crossrefWork(doi, signal)
+      if (cr !== 'not_found') {
+        if (!JOURNAL_TYPES.has(cr.type ?? '') || !cr.issn.length) return { ...base, status: 'not_journal', work: cr, via: 'Crossref' }
+        work = cr; via = 'Crossref'
+      }
+    }
+    // a journal article whose record has no ISSN: OpenAlex may still know its journal
+    let noIssn: { work: CrossrefWork; via: IndexedVia } | null = null
+    const repos = order.filter((r): r is 'DataCite' | 'Zenodo' => r !== 'Crossref')
+    if (!work && repos.length) {
+      const rw = await repositoryWork(doi, repos, signal)
+      if (rw && !rw.journalArticle) return { ...base, status: 'not_journal', work: rw.work, via: rw.via }
+      if (rw?.work.issn.length) { work = rw.work; via = rw.via }
+      else if (rw) noIssn = rw
+    }
+    if (!work) {
       const oa = await openAlexWork(doi, signal)
-      if (oa === 'not_found') return { ...base, status: 'not_found' }
-      if (oa === 'not_journal') return { ...base, status: 'not_journal' }
+      if (oa === 'not_found' || oa === 'not_journal') {
+        if (noIssn) return { ...base, status: 'no_issn', ...noIssn }
+        return { ...base, status: oa }
+      }
       work = oa; via = 'OpenAlex'
     }
     const issns = new Set(work.issn.map(i => i.toUpperCase()))
@@ -179,7 +265,7 @@ export async function checkItem(input: string, signal?: AbortSignal): Promise<Ce
   }
 }
 
-/** Checks DOIs a few at a time to stay polite to Crossref. */
+/** Checks DOIs a few at a time to stay polite to the registries. */
 export async function checkAll(inputs: string[], onItem: (i: number, item: CertItem) => void, signal?: AbortSignal) {
   const queue = inputs.map((v, i) => [i, v] as const)
   const worker = async () => {

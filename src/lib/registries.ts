@@ -52,6 +52,10 @@ export interface RegistryRecord {
   url: string | null
   pdfUrl: string | null
   container: { title: string | null; volume: string | null; issue: string | null; firstPage: string | null; lastPage: string | null }
+  /** ISSNs of the containing journal, when the record names them */
+  issn: string[]
+  /** The registry types the record as a journal article (not a conference paper, preprint or data set). */
+  journalArticle: boolean
   language: string | null
   citations: number
   references: number
@@ -133,6 +137,16 @@ function licenseLabel(url: string | null | undefined, rights: string | null | un
 
 const OPEN_LICENSE = /creativecommons|cc0|\bcc-|open ?access|public ?domain/i
 
+const ISSN = /^\d{4}-?\d{3}[\dX]$/i
+
+/** Canonical NNNN-NNNC form, or null when the value is not an ISSN. */
+function issnOf(raw: string | null | undefined): string | null {
+  const v = (raw ?? '').trim().replace(/^(urn:)?issn:?\s*/i, '')
+  if (!ISSN.test(v)) return null
+  const d = v.replace('-', '').toUpperCase()
+  return `${d.slice(0, 4)}-${d.slice(4)}`
+}
+
 function pdfLike(url: string | null | undefined): boolean {
   return /\.pdf($|\?)/i.test(url ?? '')
 }
@@ -155,7 +169,8 @@ interface DcAttrs {
   subjects?: { subject?: string }[]
   rightsList?: { rights?: string; rightsUri?: string; rightsIdentifier?: string }[]
   types?: { resourceTypeGeneral?: string; resourceType?: string }
-  container?: { title?: string; volume?: string; issue?: string; firstPage?: string; lastPage?: string }
+  container?: { title?: string; volume?: string; issue?: string; firstPage?: string; lastPage?: string; identifier?: string; identifierType?: string }
+  relatedIdentifiers?: { relatedIdentifier?: string; relatedIdentifierType?: string; relationType?: string }[]
   language?: string | null
   url?: string | null
   citationCount?: number
@@ -206,6 +221,11 @@ function fromDataCite(a: DcAttrs): RegistryRecord {
       title: a.container?.title || null, volume: a.container?.volume ?? null, issue: a.container?.issue ?? null,
       firstPage: a.container?.firstPage ?? null, lastPage: a.container?.lastPage ?? null,
     },
+    issn: [...new Set([
+      ...(/^issn$/i.test(a.container?.identifierType ?? '') ? [a.container?.identifier] : []),
+      ...(a.relatedIdentifiers ?? []).filter(r => /^issn$/i.test(r.relatedIdentifierType ?? '') && /^IsPartOf$/i.test(r.relationType ?? '')).map(r => r.relatedIdentifier),
+    ].map(issnOf).filter((v): v is string => !!v))],
+    journalArticle: general === 'JournalArticle',
     language: a.language ?? null,
     citations: a.citationCount ?? 0,
     references: a.referenceCount ?? 0,
@@ -269,6 +289,7 @@ interface ZenRecord {
     access_right?: string
     language?: string
     journal?: { title?: string; volume?: string; issue?: string; pages?: string }
+    related_identifiers?: { identifier?: string; scheme?: string; relation?: string }[]
   }
 }
 
@@ -317,6 +338,8 @@ function fromZenodo(r: ZenRecord): RegistryRecord {
     url: landing,
     pdfUrl: open ? r.files?.find(f => /\.pdf$/i.test(f.key ?? ''))?.links?.self ?? null : null,
     container: { title: m.journal?.title ?? null, volume: m.journal?.volume ?? null, issue: m.journal?.issue ?? null, firstPage: first || null, lastPage: last || null },
+    issn: [...new Set((m.related_identifiers ?? []).filter(r => r.scheme === 'issn' && /^isPartOf$/i.test(r.relation ?? '')).map(r => issnOf(r.identifier)).filter((v): v is string => !!v))],
+    journalArticle: m.resource_type?.type === 'publication' && m.resource_type.subtype === 'article',
     language: m.language ?? null,
     citations: 0,
     references: 0,
