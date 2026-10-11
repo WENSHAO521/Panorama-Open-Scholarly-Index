@@ -51,19 +51,27 @@ keep `journal_code` stable so public URLs and certificates keep working.
 - Secrets `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine (step 5).
 - A decision, per difference list in step 2, on which side is correct.
 
-## Status (2026-10-11, evening)
+## Status (2026-10-11, end of day)
 
 | Step | State |
 |---|---|
 | 1 Unique ids | done |
-| 2 Reconcile | done; posi-data #59 (repairs) merged |
-| 2b Missing journals | posi-data #60 merged: 234 minted; 5 more minted and 55 duplicates marked superseded in #62 |
-| 3 Publish from posi-data | posi-data #61 merged: screening collection and `collections/discovered-journals.json.gz` in the snapshot; posi-engine #52 validates it. #62 completes the coverage |
-| 4 Read it at build time | built, **off by default**: `POSI_DISCOVERED_FROM_DATA_LAYER=1` makes `sync-live-data.mjs` use the collection (refused if it covers under 99% of the committed journals, repeats an id or lacks a title; any failure keeps the committed file); `append-alias-redirects.mjs` redirects the codes of journals that had two. The weekly `discovered-parity` workflow reports the comparison |
-| 5 Move the jobs to posi-engine | not started: needs `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine, and can only be proven by a real run |
-| 6 Cut over | after 5; turn the flag on, then stop committing the file |
+| 2 Reconcile | done; posi-data #59 (repairs), #60 and #62 (234 + 5 journals minted, 55 duplicates marked superseded) merged |
+| 3 Publish from posi-data | done: screening collection (posi-data #61), `collections/discovered-journals.json.gz` published in snapshot 2026-10-11, validated by posi-engine |
+| 4 Read it at build time | built, **off**: `POSI_DISCOVERED_FROM_DATA_LAYER=1`. `next build` passes with the flag off. The parity gate on the published collection: all 25,676 journals covered, 195 regressions, 7,995 differences where both sides have a value |
+| 5 Move the jobs to posi-engine | built and run once by hand end to end (posi-engine #53, #55; it opened posi-data #63, merged): **manual only**, no schedule. Needs the `DOAJ_API_KEY` secret for fresher DOAJ data (optional) |
+| 6 Cut over | not done. Left for a decision, see below |
 
-Parity with #62: every one of the 25,676 site journals is covered (470 codes are redirected to a journal
-that had two), 13,231 records identical, 3,783 cosmetic, 7,995 where both sides have a value and differ (the
-data layer wins), 195 where the data layer is empty and the site is not (166 are ISSN roles on
-`journals/core` records, which are left to a change that also updates `corpus/`).
+### What is left before the website holds no records
+
+1. **Decide which side wins where both have a value.** 7,995 journals differ: publisher spelling (1,458,
+   e.g. "MDPI AG" here, "Multidisciplinary Digital Publishing Institute" in posi-data), home page URL (6,071),
+   title (549), country (287), ISSN roles (76 / 135), open access (122). With the flag on, the data layer's
+   value is shown. Look at `node scripts/check-discovered-parity.mjs <collection>` before turning it on.
+2. **Enable the schedule** of the posi-engine `directory-sync` workflow (uncomment the cron). Each run opens one
+   pull request on posi-data (branch `directory-sync`) that a person merges.
+3. **Turn the flag on** in the build (Cloudflare Pages variable, and `publish-site-data.yml`), then delete the
+   committed `discovered-journals.json`, `Daily Journal Sync`, `DOAJ Journal Sync` and the scripts they use.
+   The committed file is the fallback until then, and gets stale once its workflows stop.
+4. `citation-stats` (weekly) still writes `citation-stats.json` here; it is derived from OpenAlex and Crossref and
+   can move to posi-engine the same way.
