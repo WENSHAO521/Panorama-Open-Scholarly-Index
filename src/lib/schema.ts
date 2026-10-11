@@ -40,7 +40,7 @@ export const JOURNAL_FIELDS: FieldDef[] = [
   { key: 'country', label: 'Declared country', type: 'string', basis: 'declared', source: 'Publisher', description: 'Country the publisher states it operates from.' },
   { key: 'language', label: 'Language', type: 'string', basis: 'declared', source: 'Publisher / DOAJ', description: 'Primary publication language.' },
   { key: 'frequency', label: 'Frequency', type: 'string', basis: 'declared', source: 'Publisher', description: 'Declared publication frequency. Observed cadence may differ.' },
-  { key: 'open_access', label: 'Open access', type: 'boolean', basis: 'registry', source: 'DOAJ / OpenAlex', description: 'Whether the journal is recorded as fully open access.' },
+  { key: 'open_access', label: 'Open access', type: 'boolean | null', basis: 'registry', source: 'DOAJ / OpenAlex', description: 'Whether the journal is recorded as fully open access. null when it is not known, for example a journal DOAJ does not list and no other source describes.' },
   { key: 'license', label: 'License', type: 'string', basis: 'declared', source: 'Publisher / DOAJ', description: 'Default article license.' },
   { key: 'peer_review_type', label: 'Peer review', type: 'string', basis: 'declared', source: 'Publisher', description: 'Declared peer-review model. POSI does not observe review directly.' },
   { key: 'doaj_status', label: 'DOAJ status', type: 'enum', basis: 'registry', source: 'DOAJ', description: 'listed · application_submitted · not_listed · null (not checked).' },
