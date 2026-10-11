@@ -92,7 +92,7 @@ export function getDirectory() {
     p: c.publisher || null,
     i: [c.issn_online, c.issn_print].filter((x): x is string => !!x),
     co: c.registration_country || c.country || null,
-    oa: c.open_access,
+    oa: c.open_access === true,
     dj: c.doaj_status === 'listed',
     w: c.article_count ?? null,
     s: c.psc_category ?? null,
