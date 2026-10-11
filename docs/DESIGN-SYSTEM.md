@@ -57,3 +57,8 @@ Buttons (`.btn`, `.btn-primary`, `.btn-sm`: hover, focus ring, disabled = faded 
 ## Fixed marks (not themed)
 Panorama block mark: ink blocks follow text colour (as before), the red block is fixed `#e30613`; files in
 `public/logos` and certificate documents/PDF/seal are untouched.
+
+## Verification log
+- Text/background pairs: all >= 4.5:1 in Light and Dark (scripted); runtime audit of 20 pages x Light/Dark x desktop/mobile found no failing text.
+- Categorical chart colours: minimum pairwise CIELAB distance >= 9 under protanopia, deuteranopia and tritanopia simulation (Machado 2009), >= 20 for normal vision.
+- Not yet covered: pixel-level visual regression baselines, `next build` static export, certificate artefact recolouring (deliberately untouched).

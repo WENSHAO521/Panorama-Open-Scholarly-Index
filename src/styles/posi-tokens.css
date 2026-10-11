@@ -76,8 +76,8 @@
   --posi-cat-3: #4d8a68;  /* 常磐 evergreen */
   --posi-cat-4: #a8832a;  /* 黄土 ochre */
   --posi-cat-5: #a9677f;  /* 桃鼠 dusty rose */
-  --posi-cat-6: #6c5f99;  /* 菖蒲 iris */
-  --posi-cat-neutral: #7f8a83; /* 鼠 multidisciplinary / other */
+  --posi-cat-6: #4f4388;  /* 菖蒲 iris */
+  --posi-cat-neutral: #a7afaa; /* 鼠 multidisciplinary / other */
 
   /* ── External index buttons (text only, no logos) ──────────── */
   --posi-wos: #4f3f86;     --posi-on-wos: #ffffff;
@@ -138,13 +138,13 @@
     --posi-code-bg: #101a17;
     --posi-code-ink: #dfe5dc;
 
-    --posi-cat-1: #7ea6c4;
+    --posi-cat-1: #9cc6e0;
     --posi-cat-2: #d68e66;
     --posi-cat-3: #7fb596;
     --posi-cat-4: #d2ae5a;
     --posi-cat-5: #d198ae;
-    --posi-cat-6: #a497cc;
-    --posi-cat-neutral: #98a39c;
+    --posi-cat-6: #8274bd;
+    --posi-cat-neutral: #7d8982;
 
     --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
     --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
@@ -194,13 +194,13 @@
   --posi-code-bg: #101a17;
   --posi-code-ink: #dfe5dc;
 
-  --posi-cat-1: #7ea6c4;
+  --posi-cat-1: #9cc6e0;
   --posi-cat-2: #d68e66;
   --posi-cat-3: #7fb596;
   --posi-cat-4: #d2ae5a;
   --posi-cat-5: #d198ae;
-  --posi-cat-6: #a497cc;
-  --posi-cat-neutral: #98a39c;
+  --posi-cat-6: #8274bd;
+  --posi-cat-neutral: #7d8982;
 
   --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
   --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
