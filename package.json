@@ -13,7 +13,8 @@
     "citation-stats": "node scripts/fetch-citation-stats.mjs",
     "prebuild": "node --max-old-space-size=6144 scripts/sync-live-data.mjs",
     "postbuild": "node scripts/check-output-sizes.mjs && node scripts/drop-served-data.mjs",
-    "sync-live-data": "node scripts/sync-live-data.mjs"
+    "sync-live-data": "node scripts/sync-live-data.mjs",
+    "status": "node scripts/update-status.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

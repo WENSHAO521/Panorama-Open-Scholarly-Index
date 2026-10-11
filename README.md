@@ -82,6 +82,12 @@ This project uses a recent Next.js release; read the guides in
 `node_modules/next/dist/docs/` before changing framework code (see
 `AGENTS.md`).
 
+## Keeping the data current
+
+[docs/UPDATING.md](docs/UPDATING.md) maps the four repositories, who owns each
+data file, the update calendar and the routine for corrections. `npm run status`
+checks the site's data against the data layer.
+
 ## Data API
 
 | Path | Contents |
