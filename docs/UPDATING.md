@@ -22,20 +22,33 @@ overwritten by the next sync.
 
 ## 2. Who owns each file in `src/lib/`
 
+The target is a front end that holds no records of its own. Today (see `docs/MIGRATION-PLAN.md` for the
+steps and their state):
+
 | File | Owner | Refreshed by | Cadence |
 |---|---|---|---|
-| `discovered-journals.json` (~25,700 records) | **this repo** | `daily-sync` (discover, Crossref publishers, quality score, auto-PQF); `doaj-sync` (full DOAJ list) | daily; 1st and 16th |
-| `withdrawn-journals.json` | **this repo** | by hand; an entry removes a journal from indexing | on demand |
-| `citation-stats.json` | **this repo** | `citation-stats` (OpenAlex, Crossref) | weekly, Monday |
-| `scopus-sources.json`, `pubmed-journals.json` | **this repo** | `scripts/import-*` by hand | on demand |
+| `discovered-journals.json` (~25,700 records) | **moving to posi-data** (identity in `journals/discovered`, screening in `screening/`); until the site is switched this committed copy is what the site shows | `daily-sync` / `doaj-sync` here today; `directory-sync` in posi-engine once enabled | daily; 1st and 16th |
+| `withdrawn-journals.json` | this repo | by hand; an entry removes a journal from indexing | on demand |
+| `citation-stats.json` | this repo, for now | `citation-stats` (OpenAlex, Crossref) | weekly, Monday |
+| `scopus-sources.json`, `pubmed-journals.json` | this repo | `scripts/import-*` by hand | on demand |
 | `core-collection.json`, `global-benchmark.json`, `pcs.json`, `pci.json`, `citation-rankings.json` | posi-data, via posi-data-delivery | `data-sync` | every 20 min; Core ratings change monthly (AJR rerate, 7th) |
 | `ranking-titles.json`, `data-editions.json` | derived | `data-sync` | every 20 min |
 | `citation-ranking.json`, `pcs-q.json` | fallbacks only | the build downloads the real editions | yearly (December) |
 | `psc-v1.0.snapshot.json` | posi-data taxonomy | by hand when PSC changes | rare |
 
-The build (`prebuild`: `sync-live-data.mjs`) downloads the global corpus and
-the ranking edition itself. `publish-site-data` rebuilds the site's data files
-and publishes them to `data.posi.panorama-sg.com/site/v1/` whenever master moves.
+The build (`prebuild`: `sync-live-data.mjs`) downloads the global corpus and the ranking edition itself, and,
+with `POSI_DISCOVERED_FROM_DATA_LAYER=1`, the discovered journals from the data layer. `publish-site-data`
+rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/site/v1/` whenever master moves.
+
+### Discovered journals: where a change goes
+
+| Change | Where |
+|---|---|
+| A wrong publisher, country, website, open access, ISSN role, or a duplicate record | posi-data `journals/discovered` (script it, as `scripts/fill-from-site.mjs` does), PR, validator |
+| A journal that is missing | posi-engine `directory-sync` finds it; or ingest it into posi-data with `scripts/ingest-crossref-publisher.mjs` |
+| Two ids for one journal | `registry/superseded-ids.csv` in posi-data (append only) |
+| A score (auto-PQF, quality) | posi-engine `scripts/directory/`; the result is `screening/discovered-screening.jsonl` in posi-data |
+| A journal URL that must keep working after a merge | `journal_code_aliases` in the screening record; the build writes the redirect |
 
 ## 3. Calendar
 
