@@ -161,7 +161,9 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
     .map(([code, n]) => [LISTED_PLACES.get(code)!.name, n] as const)
   const topPublishers = publishers.slice(0, 8).map(p => ({ label: p.name, value: p.n, href: publisherHref(p) }))
   const total = records.length
-  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0)
+  // The open access panel counts journals whose access status is known; journals with no status (oaUnknown) are left out.
+  const known = total - oaUnknown
+  const pctOa = (n: number) => (known ? Math.round((n / known) * 100) : 0)
 
   return (
     <section aria-labelledby="glance">
@@ -229,18 +231,17 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
             <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Open access</h3>
             <Link href="/journals/open-access/" className="link text-[12.5px]">Browse</Link>
           </div>
-          <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pct(oa)}%</p>
-          <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>of indexed journals are open access; {pct(doaj)}% are listed in DOAJ.</p>
-          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pct(doaj)}% in DOAJ, ${Math.max(0, pct(oa) - pct(doaj))}% other open access, ${pct(total - oa - oaUnknown)}% not open access, ${pct(oaUnknown)}% unknown`}>
-            <span style={{ width: `${pct(doaj)}%`, background: 'var(--teal)' }} />
-            <span style={{ width: `${Math.max(0, pct(oa) - pct(doaj))}%`, background: 'var(--teal-line)' }} />
+          <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pctOa(oa)}%</p>
+          <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>of indexed journals are open access; {pctOa(doaj)}% are listed in DOAJ.</p>
+          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pctOa(doaj)}% in DOAJ, ${Math.max(0, pctOa(oa) - pctOa(doaj))}% other open access, ${pctOa(known - oa)}% not open access`}>
+            <span style={{ width: `${pctOa(doaj)}%`, background: 'var(--teal)' }} />
+            <span style={{ width: `${Math.max(0, pctOa(oa) - pctOa(doaj))}%`, background: 'var(--teal-line)' }} />
             <span className="flex-1" style={{ background: 'var(--surface-3)' }} />
           </div>
           <ul className="mt-2.5 space-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>
             <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(doaj)}</span></li>
             <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(Math.max(0, oa - doaj))}</span></li>
-            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(total - oa - oaUnknown)}</span></li>
-            {oaUnknown > 0 && <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--line)' }} />Unknown <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(oaUnknown)}</span></li>}
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(known - oa)}</span></li>
           </ul>
         </div>
       </div>
