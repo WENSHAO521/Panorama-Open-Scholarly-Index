@@ -140,13 +140,15 @@ export function CertificateTool() {
                           : <span className="inline-block h-3.5 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
                       </td>
                       <td className="text-[13px]">
-                        {st && (
-                          <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
-                            {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
-                            <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
-                          </span>
-                        )}
-                        {it && it.status !== 'invalid' && <><br /><a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a></>}
+                        <div className="flex items-start justify-between gap-3">
+                          {st && (
+                            <span className="inline-flex items-start gap-1.5" style={{ color: st.ok ? 'var(--verified)' : 'var(--check)' }}>
+                              {st.ok ? <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" /> : <XCircle className="h-4 w-4 shrink-0 mt-0.5" />}
+                              <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
+                            </span>
+                          )}
+                          {it && it.status !== 'invalid' && <a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link shrink-0 whitespace-nowrap text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a>}
+                        </div>
                       </td>
                     </tr>
                   )
