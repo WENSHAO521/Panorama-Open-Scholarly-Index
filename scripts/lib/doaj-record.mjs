@@ -24,6 +24,22 @@ export function slugify(str) {
   return (str ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24)
 }
 
+/**
+ * The journal_code (and so the id and page path) of a record: its primary ISSN
+ * when it has one, otherwise a slug of the title. A slug is empty for titles
+ * without Latin letters and is cut to 24 characters, so two long titles can
+ * share one; a record without an ISSN and without a usable slug is refused
+ * instead of being given a code another journal may already hold.
+ */
+export function recordCode(j) {
+  if (j.code) return j.code
+  const issn = j.issn_online ?? j.issn_print ?? null
+  if (issn) return `issn-${issn}`
+  const slug = slugify(j.title)
+  if (!slug) throw new Error(`Cannot derive a journal code for "${j.title}": no ISSN and no Latin letters in the title`)
+  return slug
+}
+
 // ── Frequency from DOAJ publication_time_weeks ───────────────────────────────
 
 export function weeksToFrequency(weeks) {
@@ -162,7 +178,7 @@ const TODAY = new Date().toISOString().slice(0, 10)
  * non-null defaults.
  */
 export function buildRecord(j) {
-  const code = j.code ?? slugify(j.title)
+  const code = recordCode(j)
   const record = {
     id: `j-disc-${code}`,
     journal_code: code,
