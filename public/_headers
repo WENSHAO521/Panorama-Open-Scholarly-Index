@@ -39,4 +39,3 @@
 # Add a host to connect-src only after reading its terms and checking CORS.
 /*
   Content-Security-Policy: connect-src 'self' https://api.openalex.org https://api.crossref.org https://api.datacite.org https://zenodo.org https://doi.org https://openlibrary.org https://www.googleapis.com https://data.posi.panorama-sg.com; object-src 'none'; base-uri 'self'
-  Referrer-Policy: strict-origin-when-cross-origin

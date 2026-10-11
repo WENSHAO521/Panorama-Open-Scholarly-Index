@@ -61,7 +61,7 @@ means pointing `current.json` back at the previous snapshot id; ranking archives
 | No request time limit | 12 s per attempt; caller abort still wins | frontend `openalex.ts` |
 | Identical requests not shared | One in-flight request per URL | frontend `openalex.ts` |
 | Every failure shown alike | `RegistryError.kind`: unreachable (network or CORS, which browsers cannot tell apart), timeout, rate-limited, key-missing, not-found, unavailable, bad-response; search page has distinct messages; publication page says "not found" only on a real 404 | frontend |
-| No browser network allow-list | CSP `connect-src`, `object-src 'none'`, `base-uri 'self'`, Referrer-Policy | frontend `public/_headers` |
+| No browser network allow-list | CSP `connect-src`, `object-src 'none'`, `base-uri 'self'` (Referrer-Policy is already sent by Cloudflare) | frontend `public/_headers` |
 | ISSN match took the first or last record on a shared ISSN; no normalisation | `matchIssn` now normalises and returns no match when ISSNs point to two records. Same result as before for all 1,037 Core/Benchmark ISSNs; unhyphenated ISSNs now match | frontend `use-posi-issn.ts` |
 | No DOI merge rule | `dedupe.ts`: merge by normalised DOI; strict title+year otherwise; per-source citation counts, never summed; conflicts flagged. Tested, not yet used by a page (search shows one provider at a time, so there is nothing to merge yet) | frontend |
 | No ISSN integrity gate on canonical data | Validator check: wrong check digit, or ISSN on two live POSI-J ids. Known findings come from a review queue; new ones fail CI | posi-engine, posi-data |
@@ -97,6 +97,9 @@ Static `out/` from `POSI_ALLOW_PARTIAL_DATA=1 npm run build` (exit 0), served lo
 | `/work/?id=10.5281/zenodo.3233821` | api.openalex.org, doi.org, zenodo.org, data.posi.panorama-sg.com | 0 |
 | `/cite/?doi=10.1038/nature12373` | api.openalex.org, doi.org, api.crossref.org | 0 |
 | `/journals/` | data.posi.panorama-sg.com only | 0 |
+| `/work/?id=10.5061/dryad.2rbnzs7jp` (DataCite DOI) | api.openalex.org (429), doi.org, api.datacite.org (200) | 0 |
+| `/cite/?doi=10.5061/dryad.2rbnzs7jp` | api.openalex.org (429), doi.org, api.datacite.org (200) | 0 |
+| `/cite/` with ISBN 9780262033848 typed in | openlibrary.org, api.crossref.org; book found | 0 |
 
 From the sandbox, OpenAlex answered 429 and the search page showed its Crossref fallback notice. So the
 fallback works in a real browser, and journal pages do not depend on any third-party registry.
@@ -109,10 +112,11 @@ falls back to full-page navigations and pages reload in a loop. That was a fault
 
 ## 6. Not verified / known limits
 
-- DataCite was not reached in any browser run; ISBN lookup (Open Library, Google Books), batch citation and
-  certificate checks were not exercised.
-- Cloudflare's own handling of `_headers` was not tested; the CSP was applied by a local server.
-- Live CORS behaviour per provider was only observed for OpenAlex, Crossref, doi.org and Zenodo.
+- Google Books (the ISBN fallback), batch citation and certificate checks were not exercised.
+- Cloudflare's own handling of `_headers` was not tested: branch previews are behind Cloudflare Access, so their
+  headers cannot be read without logging in. Production (checked 2026-10-11) sends no CSP today, so this one will
+  not stack with another; it already sends `Referrer-Policy: strict-origin-when-cross-origin`, so `_headers` does
+  not repeat it. After merge, check `curl -sI https://posi.panorama-sg.com/ | grep -i content-security`.
 - PNCI / AJR / PQF formulas were not reviewed or changed (out of scope by design).
 - Not built, by decision: IndexedDB cache, per-type TTLs, BYOK, a query router across providers, a separate SDK
   repository. The session cache and fallback chain cover current needs.
