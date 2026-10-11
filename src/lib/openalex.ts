@@ -123,27 +123,59 @@ function block(service: string, seconds: number) {
   try { sessionStorage.setItem(BLOCK_KEY(service), String(Date.now() + seconds * 1000)) } catch { /* disabled */ }
 }
 
-/** GET with session cache and up to two short retries on busy responses. */
-async function fetchJson<T>(u: string, service: string, signal?: AbortSignal): Promise<T> {
+const TIMEOUT_MS = 12000
+const inflight = new Map<string, Promise<unknown>>()
+
+/** One attempt with a time limit. A caller's abort wins over the timeout and is rethrown as AbortError. */
+async function fetchOnce(u: string, signal?: AbortSignal): Promise<Response> {
+  const ctrl = new AbortController()
+  let timedOut = false
+  const timer = setTimeout(() => { timedOut = true; ctrl.abort() }, TIMEOUT_MS)
+  const onAbort = () => ctrl.abort()
+  signal?.addEventListener('abort', onAbort, { once: true })
+  try { return await fetch(u, { signal: ctrl.signal }) } catch (e) {
+    if (timedOut && !signal?.aborted) throw new RegistryError('', 0, true)
+    throw e
+  } finally { clearTimeout(timer); signal?.removeEventListener('abort', onAbort) }
+}
+
+/** GET with session cache, one shared request per URL, a time limit, and up to two short retries on busy responses. */
+function fetchJson<T>(u: string, service: string, signal?: AbortSignal): Promise<T> {
   const hit = cacheGet<T>(u)
-  if (hit) return hit
+  if (hit) return Promise.resolve(hit)
+  // Identical requests in flight share one network call; a caller that aborts only abandons its own wait.
+  let p = inflight.get(u) as Promise<T> | undefined
+  if (!p) {
+    p = fetchJsonUncached<T>(u, service).finally(() => inflight.delete(u))
+    inflight.set(u, p)
+  }
+  if (!signal) return p
+  return new Promise<T>((res, rej) => {
+    if (signal.aborted) return rej(new DOMException('Aborted', 'AbortError'))
+    signal.addEventListener('abort', () => rej(new DOMException('Aborted', 'AbortError')), { once: true })
+    p.then(res, rej)
+  })
+}
+
+async function fetchJsonUncached<T>(u: string, service: string): Promise<T> {
   if (blockedUntil(service) > Date.now()) throw new RegistryError(service, 429)
   for (let attempt = 0; ; attempt++) {
     let status = 0
     let retryAfter = 0
+    let timedOut = false
     try {
-      const r = await fetch(u, { signal })
+      const r = await fetchOnce(u)
       if (r.ok) { const v = await r.json(); cacheSet(u, v); return v }
       status = r.status
       retryAfter = Number(r.headers.get('Retry-After')) || 0
     } catch (e) {
-      if ((e as Error).name === 'AbortError') throw e
+      timedOut = e instanceof RegistryError && e.timedOut
     }
-    const err = new RegistryError(service, status)
+    const err = new RegistryError(service, status, timedOut)
     if (status === 429 && retryAfter > 30) { block(service, retryAfter); throw err }
     if (!err.busy || attempt >= 2) throw err
     const ms = retryAfter ? Math.min(retryAfter * 1000, 8000) : 800 * 2 ** attempt + Math.random() * 400
-    await wait(ms, signal)
+    await wait(ms)
   }
 }
 

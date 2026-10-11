@@ -9,12 +9,22 @@
 // registrationAgency() asks doi.org which agency registered a DOI, so a lookup goes straight to the right
 // registry instead of trying them in turn and collecting 404s.
 
+import { classifyStatus, type ProviderErrorKind } from './scholarly-api/errors.ts'
+
 export class RegistryError extends Error {
-  constructor(readonly service: string, readonly status: number) {
-    super(`${service} ${status || 'unreachable'}`)
+  readonly service: string
+  readonly status: number
+  readonly timedOut: boolean
+  constructor(service: string, status: number, timedOut = false) {
+    super(`${service} ${timedOut ? 'timeout' : status || 'unreachable'}`)
+    this.service = service
+    this.status = status
+    this.timedOut = timedOut
   }
+  /** Why the request failed, so a page never reports every failure as "not found". */
+  get kind(): ProviderErrorKind { return this.timedOut ? 'timeout' : classifyStatus(this.status) }
   /** Worth trying another registry (or the same one later): unreachable, rate limited or failing. */
-  get busy() { return this.status === 0 || this.status === 429 || this.status >= 500 }
+  get busy() { return this.timedOut || this.status === 0 || this.status === 429 || this.status >= 500 }
 }
 
 export type GetJson = (url: string, service: string, signal?: AbortSignal) => Promise<unknown>

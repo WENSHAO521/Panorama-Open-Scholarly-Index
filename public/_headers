@@ -31,3 +31,11 @@
   Cache-Control: public, max-age=3600
 /data/index/*.csv
   Content-Type: text/csv; charset=utf-8
+
+# Browser network allow-list. Publication search runs in the visitor's
+# browser and talks to these hosts directly; anything else (including any
+# analytics or proxy host) is refused by the browser. Scripts and styles are
+# not restricted here: the static export relies on inline bootstrap scripts.
+# Add a host to connect-src only after reading its terms and checking CORS.
+/*
+  Content-Security-Policy: connect-src 'self' https://api.openalex.org https://api.crossref.org https://api.datacite.org https://zenodo.org https://doi.org https://openlibrary.org https://www.googleapis.com https://data.posi.panorama-sg.com; object-src 'none'; base-uri 'self'
