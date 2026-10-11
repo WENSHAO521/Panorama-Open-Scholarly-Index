@@ -251,6 +251,28 @@ const EDITIONS = join(GEN, 'editions')
   }
 }
 
+// The discovered journals from the data layer (posi-data's discovered-journals collection) in place of the
+// committed src/lib/discovered-journals.json. Off unless POSI_DISCOVERED_FROM_DATA_LAYER=1: the site stays
+// on its own copy until scripts/check-discovered-parity.mjs is clean. Any failure, or a collection that
+// fails the safety checks (scripts/lib/discovered-sync.mjs), leaves the committed file in use.
+{
+  const out = join(GEN, 'discovered-journals.json'), outAliases = join(GEN, 'discovered-aliases.json')
+  rmSync(out, { force: true }); rmSync(outAliases, { force: true })
+  if (process.env.POSI_DISCOVERED_FROM_DATA_LAYER === '1') {
+    try {
+      if (!snapshotDir) throw new Error('no current snapshot')
+      const { buildDiscovered } = await import('./lib/discovered-sync.mjs')
+      const collection = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/discovered-journals.json.gz`, 'buffer')).toString('utf-8'))
+      const committed = JSON.parse(readFileSync(join(ROOT, 'src/lib/discovered-journals.json'), 'utf-8'))
+      const { records, aliases, report } = buildDiscovered(collection, committed)
+      writeFileSync(out, JSON.stringify(records)); writeFileSync(outAliases, JSON.stringify(aliases))
+      console.log(`sync-live-data: discovered journals from the data layer, ${report.records} records, ${report.aliases} redirects`)
+    } catch (e) {
+      console.warn(`sync-live-data: discovered journals use the committed file (${e.message})`)
+    }
+  }
+}
+
 const RANKINGS_ONLY = process.argv.includes('--rankings-only')
 
 // 2. Global journal directory

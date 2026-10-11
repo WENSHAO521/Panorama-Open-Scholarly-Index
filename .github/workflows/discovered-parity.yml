@@ -1,0 +1,40 @@
+name: Discovered journals parity
+
+# Compares the data layer's discovered-journals collection (posi-data, published at
+# data.posi.panorama-sg.com) with the committed src/lib/discovered-journals.json and reports what would
+# change on the site if it read the collection (POSI_DISCOVERED_FROM_DATA_LAYER=1 in the build). The site
+# switches only when this is clean: no journal missing, regressions within the limit. See
+# docs/MIGRATION-PLAN.md. Read-only; it fails when the gate fails so the failure is visible.
+
+on:
+  schedule:
+    - cron: '41 4 * * 1'   # Mondays 04:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download the collection
+        run: |
+          set -euo pipefail
+          BASE=https://data.posi.panorama-sg.com
+          DIR=$(curl -fsS "$BASE/current.json" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).manifest.replace(/manifest\.json$/,'')))")
+          if ! curl -fsS "$BASE${DIR}collections/discovered-journals.json.gz" -o "$RUNNER_TEMP/discovered.json.gz"; then
+            echo "The data layer does not publish discovered-journals yet ($DIR); nothing to compare." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "skip=true" >> "$GITHUB_ENV"
+          fi
+      - name: Compare
+        if: env.skip != 'true'
+        run: |
+          set -o pipefail
+          node scripts/check-discovered-parity.mjs "$RUNNER_TEMP/discovered.json.gz" --max-regressions 200 | tee "$RUNNER_TEMP/parity.txt"
+          { echo '```'; cat "$RUNNER_TEMP/parity.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
