@@ -6,5 +6,21 @@
     "issns": ["3135-0011"],
     "withdrawn": "2026-10-03",
     "reason": "No DOIs registered, so it cannot be indexed. Remove this entry to index it again once it has DOIs."
+  },
+  {
+    "posi_id": "ISSNL-0203-2597",
+    "journal_code": "issn-0203-2597",
+    "title": "Testing new deposit code",
+    "issns": ["0203-2597", "5017-7168"],
+    "withdrawn": "2026-10-11",
+    "reason": "A Crossref test deposit (publisher \"Crossref Test\", one DOI), not a journal. Remove this entry to index it again."
+  },
+  {
+    "posi_id": "ISSNL-0707-6940",
+    "journal_code": "issn-0707-6940",
+    "title": "Testing new deposit code",
+    "issns": ["0707-6940", "0217-7498"],
+    "withdrawn": "2026-10-11",
+    "reason": "A Crossref test deposit (publisher \"Crossref Test\", one DOI), not a journal. Remove this entry to index it again."
   }
 ]
