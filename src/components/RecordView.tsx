@@ -264,7 +264,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
                   ) },
                 ]} />
               <FieldGroup id="observed" title="Registry and computed values" fields={[
-                { k: 'open_access', value: j.open_access ? 'Yes' : 'No' },
+                { k: 'open_access', value: j.open_access == null ? 'Unknown' : j.open_access ? 'Yes' : 'No' },
                 { k: 'doaj_status', value: j.doaj_status ? j.doaj_status.replace(/_/g, ' ') : null },
               ]} />
             </div>

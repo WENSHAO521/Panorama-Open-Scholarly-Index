@@ -169,8 +169,8 @@ export interface IndexRecord {
   k: Collection
   /** verification state */
   v: Verification
-  /** open access */
-  oa: boolean
+  /** open access; null when it is not known */
+  oa: boolean | null
   /** DOAJ status */
   d: Journal['doaj_status']
   /** article count */
@@ -190,7 +190,7 @@ export function toIndexRecord(j: Journal): IndexRecord {
     s: j.psc_category ?? null,
     k: collectionOf(j),
     v: verificationOf(j),
-    oa: !!j.open_access,
+    oa: j.open_access ?? null,
     d: j.doaj_status ?? null,
     n: j.article_count ?? 0,
     u: (j.updated_at || '').slice(0, 10),

@@ -149,11 +149,12 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
 
   // Journals per listed country or territory, each territory in its own right.
   const byCode = new Map<string, number>()
-  let oa = 0, doaj = 0
+  let oa = 0, doaj = 0, oaUnknown = 0
   for (const r of records) {
     const code = countryCode(r.co)
     if (code && LISTED_PLACES.has(code)) byCode.set(code, (byCode.get(code) ?? 0) + 1)
     if (r.oa) oa++
+    else if (r.oa == null) oaUnknown++
     if (r.dj) doaj++
   }
   const topCountries = [...byCode].sort((a, b) => b[1] - a[1]).slice(0, 10)
@@ -230,7 +231,7 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
           </div>
           <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pct(oa)}%</p>
           <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>of indexed journals are open access; {pct(doaj)}% are listed in DOAJ.</p>
-          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pct(doaj)}% in DOAJ, ${Math.max(0, pct(oa) - pct(doaj))}% other open access, ${100 - pct(oa)}% not open access`}>
+          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pct(doaj)}% in DOAJ, ${Math.max(0, pct(oa) - pct(doaj))}% other open access, ${pct(total - oa - oaUnknown)}% not open access, ${pct(oaUnknown)}% unknown`}>
             <span style={{ width: `${pct(doaj)}%`, background: 'var(--teal)' }} />
             <span style={{ width: `${Math.max(0, pct(oa) - pct(doaj))}%`, background: 'var(--teal-line)' }} />
             <span className="flex-1" style={{ background: 'var(--surface-3)' }} />
@@ -238,7 +239,8 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
           <ul className="mt-2.5 space-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>
             <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(doaj)}</span></li>
             <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(Math.max(0, oa - doaj))}</span></li>
-            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(total - oa)}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(total - oa - oaUnknown)}</span></li>
+            {oaUnknown > 0 && <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--line)' }} />Unknown <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(oaUnknown)}</span></li>}
           </ul>
         </div>
       </div>

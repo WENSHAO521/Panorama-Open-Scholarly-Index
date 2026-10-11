@@ -27,7 +27,7 @@ export interface Journal {
   country: string
   language: string
   frequency: string
-  open_access: boolean
+  open_access: boolean | null
   license: string
   peer_review_type: string
   website_url: string
