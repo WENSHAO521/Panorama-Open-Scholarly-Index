@@ -44,7 +44,7 @@ function Gallery({ marks }: { marks: MarkFile[] }) {
     <ul className="grid gap-4 sm:grid-cols-2">
       {marks.map(m => (
         <li key={m.file} className="panel overflow-hidden">
-          <div className="flex items-center justify-center p-6" style={{ background: /dark|white/.test(m.file) ? '#2b3440' : 'var(--surface-2)', minHeight: 150 }}>
+          <div className="flex items-center justify-center p-6" style={{ background: /dark|white/.test(m.file) ? '#1e2b26' : 'var(--surface-2)', minHeight: 150 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/logos/${m.file}`} alt="" width={m.width} height={m.height} style={{ maxWidth: '100%', height: 'auto' }} />
           </div>

@@ -116,7 +116,7 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
                   </p>
                 )}
                 {SOURCE_NOTE[it.source] && (
-                  <p className="text-[11px] mt-1" style={{ color: 'var(--check, #b45309)' }}>{SOURCE_NOTE[it.source]}</p>
+                  <p className="text-[11px] mt-1" style={{ color: 'var(--check)' }}>{SOURCE_NOTE[it.source]}</p>
                 )}
               </li>
             ))}
@@ -126,7 +126,7 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
               <p className="text-xs font-semibold mb-2" style={{ color: 'var(--rejected)' }}>Not found - convert these by hand</p>
               <ul className="space-y-1">
                 {failed.map((it, i) => (
-                  <li key={i} className="text-xs font-mono break-words" style={{ color: '#7f1d1d' }}>{it.entry.raw.slice(0, 200)}</li>
+                  <li key={i} className="text-xs font-mono break-words" style={{ color: 'var(--rejected)' }}>{it.entry.raw.slice(0, 200)}</li>
                 ))}
               </ul>
             </div>

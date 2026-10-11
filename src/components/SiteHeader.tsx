@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
+import { ThemeToggle } from './ThemeToggle'
 import { PRIMARY_NAV, UTILITY_NAV, type NavGroup } from '@/lib/site-nav'
 
 /**
@@ -82,14 +83,14 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
         aria-controls={id}
         onClick={onOpen}
         className="inline-flex h-14 items-center gap-1 px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
-        style={{ color: active || open ? 'var(--ink)' : 'var(--ink-2)', boxShadow: active ? 'inset 0 -2px 0 var(--teal)' : undefined }}
+        style={{ color: active || open ? 'var(--ink)' : 'var(--ink-2)', boxShadow: active ? 'inset 0 -2px 0 var(--posi-accent)' : undefined }}
       >
         {group.label}
         <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
       </button>
       {open && (
         <div id={id} className="absolute left-0 top-full z-50">
-          <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--teal)', boxShadow: '0 6px 18px rgba(15, 23, 32, 0.12)' }}>
+          <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--posi-accent)', boxShadow: 'var(--posi-shadow-pop)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
                 <Link href={l.href} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
@@ -123,6 +124,7 @@ export function SiteHeader() {
       <div className="wrap flex h-8 items-center justify-between text-[12px]">
         <span>Panorama Scholarly Group Ltd.</span>
         <nav aria-label="Utility" className="flex items-center gap-4">
+          <ThemeToggle onBand />
           {UTILITY_NAV.map(l => (
             <Link key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</Link>
           ))}
@@ -151,7 +153,7 @@ export function SiteHeader() {
               href={g.href!}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
               className="inline-flex h-14 items-center px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
-              style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--teal)' : undefined }}
+              style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--posi-accent)' : undefined }}
             >
               {g.label}
             </Link>
@@ -173,6 +175,7 @@ export function SiteHeader() {
         <div className="lg:hidden max-h-[calc(100dvh-56px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
           <div className="wrap py-3 space-y-3">
             <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
+            <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>Colour scheme <ThemeToggle /></div>
             <nav aria-label="Mobile">
               <ul>
                 {PRIMARY_NAV.map(g => (

@@ -38,60 +38,56 @@ export type BadgeVariant =
   | 'blocked'
   | 'default'
 
+const TONE = {
+  success: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
+  warning: 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
+  caution: 'bg-[var(--posi-caution-bg)] text-[var(--posi-caution)] ring-1 ring-[var(--posi-caution-border)]',
+  danger: 'bg-[var(--posi-danger-bg)] text-[var(--posi-danger)] ring-1 ring-[var(--posi-danger-border)]',
+  info: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
+  brand: 'bg-[var(--posi-brand-soft)] text-[var(--posi-brand)] ring-1 ring-[var(--posi-brand-line)]',
+  neutral: 'bg-[var(--posi-surface-soft)] text-[var(--posi-muted)] ring-1 ring-[var(--posi-border)]',
+} as const
+
+// Every variant maps to one tone. Tone only tints the pill: the label text is
+// the status (never colour alone), so keep one variant per meaning and let
+// the label differ ("Core Collection", "Official", "Provisional", "Unranked").
 const VARIANT_STYLES: Record<BadgeVariant, string> = {
-  oa: 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-emerald-200',
-  license: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
-  verified: 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-green-200',
-  registered: 'bg-teal-50 text-teal-700 ring-1 ring-teal-200',
-  pending: 'bg-[var(--check-soft)] text-[var(--check)] ring-1 ring-amber-200',
-  not_found: 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
-  conflict: 'bg-[var(--check-soft)] text-[var(--check)] ring-1 ring-orange-200',
-  broken: 'bg-[var(--rejected-soft)] text-[var(--rejected)] ring-1 ring-red-200',
-  'mqs-excellent': 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-green-200',
-  'mqs-good': 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-emerald-200',
-  'mqs-acceptable': 'bg-teal-50 text-teal-700 ring-1 ring-teal-200',
-  'mqs-needs': 'bg-[var(--check-soft)] text-[var(--check)] ring-1 ring-amber-200',
-  'mqs-incomplete': 'bg-[var(--rejected-soft)] text-[var(--rejected)] ring-1 ring-red-200',
-  'indexing-a': 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-green-200',
-  'indexing-b': 'bg-teal-50 text-teal-700 ring-1 ring-teal-200',
-  'indexing-c': 'bg-[var(--check-soft)] text-[var(--check)] ring-1 ring-amber-200',
-  'indexing-d': 'bg-[var(--rejected-soft)] text-[var(--rejected)] ring-1 ring-red-200',
-  'doaj-listed': 'bg-[var(--verified-soft)] text-[var(--verified)] ring-1 ring-green-200',
-  'doaj-pending': 'bg-[var(--check-soft)] text-[var(--check)] ring-1 ring-amber-200',
-  'doaj-not': 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
-  'core-collection': 'bg-[var(--info-soft)] text-[var(--info)] ring-1 ring-blue-200',
-  // Token-driven variants (share globals.css's --posi-* semantic tokens with
-  // Callout.tsx, rather than another one-off hardcoded tint) - the unified
-  // status vocabulary from the Stage 1 brief (§29): Published / Pending /
-  // Preview / Eligible / Not Eligible / Observation / Early Stage / Mature /
-  // Discovered / Indexed can all be expressed here without a page defining
-  // its own raw color. Stage 1 only *added* these variants for the
-  // homepage's new sections - existing pages still using status-colors.ts's
-  // raw {bg,color,border} triples or their own local color maps (evidence,
-  // data-sources, journal/[code], policies, source-status) are unchanged;
-  // migrating them onto this component is Stage 2 work, not done here.
-  published: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
-  'status-pending': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
-  preview: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
-  eligible: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
-  'not-eligible': 'bg-[var(--posi-danger-bg)] text-[var(--posi-danger)] ring-1 ring-[var(--posi-danger-border)]',
-  'observation-stage': 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
-  'early-stage': 'bg-[var(--posi-danger-bg)] text-[var(--posi-accent)] ring-1 ring-[var(--posi-danger-border)]',
-  'mature-stage': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
-  discovered: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
-  indexed: 'bg-[var(--posi-success-bg)] text-[var(--posi-success)] ring-1 ring-[var(--posi-success-border)]',
-  // Stage 2 additions (rankings/journal-profile surfaces) - additive only,
-  // reuse the same semantic tokens as their nearest sibling above rather
-  // than introducing new raw colors. Kept as distinct variants (not aliased
-  // to 'discovered'/'mature-stage'/'not-eligible') so the label text stays
-  // the only thing that differs - never conflate "Global Benchmark" with
-  // "Discovered", or "Blocked" with "Not Eligible", by reusing one variant
-  // name for two different meanings.
-  benchmark: 'bg-[var(--posi-info-bg)] text-[var(--posi-info)] ring-1 ring-[var(--posi-info-border)]',
-  'not-rateable': 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
-  provisional: 'bg-[var(--posi-warning-bg)] text-[var(--posi-warning)] ring-1 ring-[var(--posi-warning-border)]',
-  blocked: 'bg-[var(--posi-danger-bg)] text-[var(--posi-danger)] ring-1 ring-[var(--posi-danger-border)]',
-  default: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
+  oa: TONE.success,
+  license: TONE.neutral,
+  verified: TONE.success,
+  registered: TONE.brand,
+  pending: TONE.caution,
+  not_found: TONE.neutral,
+  conflict: TONE.caution,
+  broken: TONE.danger,
+  'mqs-excellent': TONE.success,
+  'mqs-good': TONE.success,
+  'mqs-acceptable': TONE.brand,
+  'mqs-needs': TONE.caution,
+  'mqs-incomplete': TONE.danger,
+  'indexing-a': TONE.success,
+  'indexing-b': TONE.brand,
+  'indexing-c': TONE.caution,
+  'indexing-d': TONE.danger,
+  'doaj-listed': TONE.success,
+  'doaj-pending': TONE.caution,
+  'doaj-not': TONE.neutral,
+  'core-collection': TONE.brand,
+  published: TONE.success,
+  'status-pending': TONE.warning,
+  preview: TONE.info,
+  eligible: TONE.success,
+  'not-eligible': TONE.danger,
+  'observation-stage': TONE.neutral,
+  'early-stage': TONE.caution,
+  'mature-stage': TONE.warning,
+  discovered: TONE.info,
+  indexed: TONE.success,
+  benchmark: TONE.info,
+  'not-rateable': TONE.warning,
+  provisional: TONE.warning,
+  blocked: TONE.danger,
+  default: TONE.neutral,
 }
 
 export function mqsVariant(score: number): BadgeVariant {

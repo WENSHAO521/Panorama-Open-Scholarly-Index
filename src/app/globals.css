@@ -1,113 +1,79 @@
 @import "tailwindcss";
 
+@import "../styles/posi-tokens.css";
+
 /*
- * POSI design system: a research database interface.
- *
- * Direction: cold, exact and dense, in the family of Web of Science, Scopus,
- * Dimensions and PubMed. Cool neutral greys, one institutional blue accent for
- * links and primary actions, hairline rules instead of cards and shadows.
- * Verification colours are semantic only (see src/lib/records.ts).
+ * POSI interface: a research database in the Japanese Editorial Academic
+ * style. Dense, exact and quiet: hairline rules instead of cards and shadows,
+ * one deep-green brand, one clay accent used sparingly. All colour lives in
+ * src/styles/posi-tokens.css (Light / Dark / System); this file and every
+ * component read tokens, never raw hex.
  *
  * Shape rule: every surface, control, chip and table uses --radius (2px).
- * The accent tokens keep their historical --teal-* names.
- *
- * Theme: light only, on a white page. Components read tokens, never raw hex.
  */
 :root {
-  color-scheme: light;
-  --paper: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #f0f2f4;
-  --surface-3: #e3e7eb;
-  --hover: #f4f6f8;
-  --line: #d3d8de;
-  --line-soft: #e4e8ec;
+  /*
+   * Short names used throughout the components. They are aliases of the
+   * semantic --posi-* tokens, so a page written against either vocabulary
+   * follows the palette and the colour scheme. New code should use --posi-*.
+   * The --teal-* names are historical: they now mean the deep-green brand.
+   */
+  --paper: var(--posi-canvas);
+  --surface: var(--posi-surface);
+  --surface-2: var(--posi-surface-soft);
+  --surface-3: var(--posi-surface-sunken);
+  --hover: var(--posi-hover);
+  --line: var(--posi-border);
+  --line-soft: var(--posi-border-soft);
+  --line-strong: var(--posi-border-strong);
 
-  --ink: #13171c;
-  --ink-2: #343c45;
-  --muted: #59636e;
-  --soft: #838d98;
+  --ink: var(--posi-text);
+  --ink-2: var(--posi-text-2);
+  --muted: var(--posi-muted);
+  --soft: var(--posi-faint);
 
-  --teal: #1c4f8f;
-  --teal-hover: #153e72;
-  --teal-soft: #e7eef7;
-  /* Chart series (categorical slots 1-2, validated as a pair on --surface). */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  /* External index buttons: each service's brand colour, text only (no logos).
-     White on the purple (7.8:1); ink on the orange, which fails with white. */
-  --wos-brand: #5e33bf;
-  --on-wos-brand: #ffffff;
-  --scopus-brand: #e9711c;
-  --on-scopus-brand: #13171c;
-  --pubmed-brand: #20558a;
-  --on-pubmed-brand: #ffffff;
-  --teal-line: #b7c8de;
-  --on-teal: #ffffff;
+  --teal: var(--posi-brand);
+  --teal-hover: var(--posi-brand-hover);
+  --teal-soft: var(--posi-brand-soft);
+  --teal-line: var(--posi-brand-line);
+  --on-teal: var(--posi-on-brand);
 
-  --verified: #1d6b47;
-  --verified-soft: #e2f0e8;
-  --partial: #6f5a0f;
-  --partial-soft: #f2eed8;
-  --check: #9a4a17;
-  --check-soft: #f6e6db;
-  --rejected: #9a2335;
-  --rejected-soft: #f6e1e5;
-  --info: #1c4f8f;
-  --info-soft: #e7eef7;
+  --series-1: var(--posi-cat-1);
+  --series-2: var(--posi-cat-2);
+  --wos-brand: var(--posi-wos);       --on-wos-brand: var(--posi-on-wos);
+  --scopus-brand: var(--posi-scopus); --on-scopus-brand: var(--posi-on-scopus);
+  --pubmed-brand: var(--posi-pubmed); --on-pubmed-brand: var(--posi-on-pubmed);
 
-  --band: #141a21;
-  --band-ink: #e6eaef;
-  --band-muted: #9ba6b2;
-  --band-line: rgba(255, 255, 255, 0.1);
-  --code-bg: #10161d;
-  --code-ink: #d3dde7;
-  --brand-red: #e30613;
+  --verified: var(--posi-success);  --verified-soft: var(--posi-success-bg);
+  --partial: var(--posi-warning);   --partial-soft: var(--posi-warning-bg);
+  --check: var(--posi-caution);     --check-soft: var(--posi-caution-bg);
+  --rejected: var(--posi-danger);   --rejected-soft: var(--posi-danger-bg);
+  --info: var(--posi-info);         --info-soft: var(--posi-info-bg);
 
-  --radius: 2px;
-  --radius-sm: 2px;
+  --band: var(--posi-band);
+  --band-ink: var(--posi-band-ink);
+  --band-muted: var(--posi-band-muted);
+  --band-line: var(--posi-band-line);
+  --code-bg: var(--posi-code-bg);
+  --code-ink: var(--posi-code-ink);
+  --brand-red: var(--posi-brand-red);
+
+  --radius: var(--posi-radius);
+  --radius-sm: var(--posi-radius);
   --shadow-1: none;
+
+  /* Older --posi-* spellings still read by a few pages. */
+  --posi-bg: var(--posi-canvas);
+  --posi-border-light: var(--posi-border-soft);
+  --posi-soft: var(--posi-faint);
+  --posi-accent-light: var(--posi-brand-soft);
 
   --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-body: var(--font-ibm), 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-body);
 }
 
-
-:root {
-  /*
-   * Legacy aliases. Pages written against the previous Bauhaus palette
-   * read --posi-* directly; mapping them here re-themes those pages in
-   * both colour schemes without hand-editing each file.
-   */
-  --posi-primary: var(--band);
-  --posi-primary-light: var(--band);
-  --posi-primary-dark: var(--band);
-  --posi-accent: var(--teal);
-  --posi-accent-hover: var(--teal-hover);
-  --posi-accent-light: var(--teal-soft);
-  --posi-danger: var(--rejected);
-  --posi-warning: var(--check);
-  --posi-success: var(--verified);
-  --posi-info: var(--info);
-  --posi-info-bg: var(--info-soft);
-  --posi-info-border: var(--line);
-  --posi-warning-bg: var(--check-soft);
-  --posi-warning-border: var(--line);
-  --posi-danger-bg: var(--rejected-soft);
-  --posi-danger-border: var(--line);
-  --posi-success-bg: var(--verified-soft);
-  --posi-success-border: var(--line);
-  --posi-bg: var(--paper);
-  --posi-surface: var(--surface);
-  --posi-border: var(--line);
-  --posi-border-light: var(--line-soft);
-  --posi-text: var(--ink);
-  --posi-muted: var(--muted);
-  --posi-soft: var(--soft);
-}
-
-html { background: var(--paper); }
+html { background: var(--posi-canvas); }
 
 body {
   background: var(--paper);
@@ -128,7 +94,9 @@ body {
 .font-mono.tnum, .figure { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; }
 .figure { font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
 
-:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 2px; }
+:focus-visible { outline: var(--posi-focus-ring); outline-offset: 2px; border-radius: 2px; }
+/* Controls on a dark or brand fill need an outline that still reads. */
+.btn-primary:focus-visible { outline-color: var(--posi-accent); }
 
 /* In the base layer so component classes (.link, .btn) can colour links. */
 @layer base {
@@ -138,7 +106,7 @@ body {
   *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--line); }
 }
 
-::selection { background: var(--teal-soft); color: var(--ink); }
+::selection { background: var(--posi-accent-soft); color: var(--ink); }
 
 @layer components {
 /* ── Primitives ─────────────────────────────────────────────── */
@@ -165,29 +133,69 @@ body {
 .link:hover { text-decoration: underline; }
 
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 32px; padding: 0 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 32px; padding: 0 12px;
   font-size: 13.5px; font-weight: 500;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--surface); color: var(--ink);
   transition: background .15s, border-color .15s, color .15s;
-  white-space: nowrap;
+  white-space: nowrap; cursor: pointer;
 }
-.btn:hover { border-color: var(--soft); background: var(--hover); }
+.btn:hover { border-color: var(--posi-brand); background: var(--hover); color: var(--posi-brand); }
 .btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: .5; pointer-events: none; }
-.btn-primary { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
-.btn-primary:hover { background: var(--teal-hover); border-color: var(--teal-hover); color: var(--on-teal); }
-.btn-sm { height: 28px; padding: 0 9px; font-size: 12.5px; }
+/* Disabled: faded AND not-allowed AND (where used) aria-disabled, so it is
+   not conveyed by lightness alone. */
+.btn:disabled, .btn[aria-disabled="true"] {
+  cursor: not-allowed; pointer-events: none;
+  background: var(--posi-surface-soft); color: var(--muted);
+  border-color: var(--line-strong); border-style: dashed;
+}
+.btn[aria-busy="true"] { cursor: progress; }
+.btn[aria-busy="true"]::before {
+  content: ""; width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: posi-spin .8s linear infinite;
+}
+.btn-primary { background: var(--posi-brand); border-color: var(--posi-brand); color: var(--posi-on-brand); }
+.btn-primary:hover { background: var(--posi-brand-hover); border-color: var(--posi-brand-hover); color: var(--posi-on-brand); }
+.btn-sm { min-height: 28px; padding: 0 9px; font-size: 12.5px; }
+@keyframes posi-spin { to { transform: rotate(360deg); } }
 
-.input {
-  height: 34px; padding: 0 10px; width: 100%;
+/* Form controls: input, select, textarea share one look. */
+.input, select.input, textarea.input {
+  min-height: 34px; padding: 0 10px; width: 100%;
   background: var(--surface); color: var(--ink);
-  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
   font-size: 14px;
 }
-.input:focus { outline: none; border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
+textarea.input { padding: 8px 10px; }
+.input::placeholder { color: var(--posi-faint); opacity: 1; }
+.input:hover { border-color: var(--posi-brand); }
+.input:focus { outline: none; border-color: var(--posi-brand); box-shadow: inset 0 0 0 1px var(--posi-brand); }
+.input:focus-visible { outline: var(--posi-focus-ring); outline-offset: 1px; }
+.input:disabled { opacity: .6; cursor: not-allowed; background: var(--posi-surface-soft); border-style: dashed; }
+.input[aria-invalid="true"] { border-color: var(--posi-danger); box-shadow: inset 3px 0 0 var(--posi-danger); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
+
+/* Messages. Each carries an icon or a leading word in the markup; the left
+   rule and tint are reinforcement only. */
+.notice {
+  padding: 10px 14px; font-size: 13.5px; line-height: 1.5;
+  border: 1px solid var(--posi-info-border); border-left-width: 3px;
+  background: var(--posi-info-bg); color: var(--ink);
+}
+.notice-success { border-color: var(--posi-success-border); border-left-color: var(--posi-success); background: var(--posi-success-bg); }
+.notice-warning { border-color: var(--posi-warning-border); border-left-color: var(--posi-warning); background: var(--posi-warning-bg); }
+.notice-error   { border-color: var(--posi-danger-border);  border-left-color: var(--posi-danger);  background: var(--posi-danger-bg); }
+.notice-info    { border-left-color: var(--posi-info); }
+
+/* Empty state */
+.empty { padding: 36px 16px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
+/* Loading skeleton: a pulse is not enough alone, so pair with aria-busy. */
+.animate-pulse { animation: posi-pulse 1.6s ease-in-out infinite; }
+@keyframes posi-pulse { 50% { opacity: .55; } }
 
 .chip {
   display: inline-flex; align-items: center; gap: 5px;
@@ -208,24 +216,28 @@ body {
 /* Figure strip: a row of headline figures under a rule, without boxes. */
 .stat-strip {
   display: grid; column-gap: 28px;
-  border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line);
+  border-top: 2px solid var(--posi-brand); border-bottom: 1px solid var(--line);
 }
 .stat-strip > * { padding: 14px 0 16px; min-width: 0; }
 .stat-strip dt, .stat-strip .label { font-size: 12.5px; color: var(--muted); }
 .stat-strip dd, .stat-strip .note { margin: 0; }
 .stat-strip .note { margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
-.stat-strip a:hover .figure { color: var(--teal); }
+.stat-strip a:hover .figure { color: var(--posi-brand); }
 
 /* Data tables */
 .dtable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .dtable th {
   text-align: left; font-weight: 600; font-size: 12px;
   color: var(--ink-2); background: var(--surface-2);
-  padding: 7px 10px; border-bottom: 1px solid var(--line);
+  padding: 7px 10px; border-bottom: 1px solid var(--line-strong);
   white-space: nowrap; position: sticky; top: 0;
 }
 .dtable td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
 .dtable tbody tr:hover td { background: var(--hover); }
+.dtable caption { text-align: left; padding: 8px 10px; color: var(--muted); font-size: 12.5px; }
+/* Wide tables scroll sideways on narrow screens; none of their columns is hidden. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll > table { min-width: 640px; }
 .dtable tbody tr:last-child td { border-bottom: none; }
 
 /* Definition list used on record pages */
@@ -311,7 +323,21 @@ pre.code {
 /* Printing: only the certificate (or page content) goes to paper. */
 @media print {
   @page { size: A4; margin: 12mm; }
-  html, body { background: #ffffff !important; }
+  /* Paper is white and ink is dark whatever the screen scheme. */
+  :root:root:root {
+    color-scheme: light;
+    --posi-canvas: #ffffff; --posi-surface: #ffffff; --posi-surface-soft: #f3f3f0; --posi-hover: #ffffff;
+    --posi-border: #c9cbc3; --posi-border-soft: #dcded6; --posi-border-strong: #6f7a72;
+    --posi-text: #1b211e; --posi-text-2: #2c3430; --posi-muted: #3e4a43; --posi-faint: #4d5a52;
+    --posi-brand: #244d40; --posi-brand-soft: #e8eee9; --posi-on-brand: #ffffff;
+    --posi-success: #1f5a3c; --posi-success-bg: #ffffff; --posi-warning: #6a4f15; --posi-warning-bg: #ffffff;
+    --posi-caution: #823f1f; --posi-caution-bg: #ffffff; --posi-danger: #8a2d2d; --posi-danger-bg: #ffffff;
+    --posi-info: #2e4f63; --posi-info-bg: #ffffff;
+  }
+  html, body { background: #ffffff !important; color: #1b211e !important; }
+  a { color: inherit !important; text-decoration: underline; }
+  .dtable th { position: static; }
+  .glance-cell { background: #ffffff !important; }
   header.sticky, footer, .no-print, nextjs-portal { display: none !important; }
   main { padding: 0 !important; }
   .wrap { padding: 0 !important; max-width: none !important; }
@@ -344,7 +370,10 @@ pre.code {
   .doc .formula { font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem 1rem; overflow-x: auto; }
 }
 /* Unlayered: the global a {} reset is unlayered too. */
-.doc a:not(.btn):not(.posi-grades) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.doc a:not(.btn):not(.posi-grades) { color: var(--posi-brand); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+
+/* Reduced motion also stops the spinner. */
+@media (prefers-reduced-motion: reduce) { .btn[aria-busy="true"]::before, .animate-pulse { animation: none; } }
 
 /* Home page subject treemap: tinted fill, a solid domain strip on top, and a
    2px surface gap between cells. */
@@ -357,7 +386,7 @@ pre.code {
 .glance-cell:hover,
 .glance-cell:focus-visible {
   background: color-mix(in srgb, var(--c) 34%, var(--surface));
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--posi-focus);
   outline-offset: -2px;
   z-index: 1;
 }
@@ -366,7 +395,7 @@ pre.code {
 .map-country { stroke: var(--surface); stroke-width: 0.5; transition: fill 120ms; }
 .map-country:hover { stroke: var(--ink); stroke-width: 1.2; }
 .map-country-off { fill: var(--hover); stroke: var(--surface); stroke-width: 0.5; opacity: 0.6; }
-.map-dot circle:first-child, .map-dot-key { stroke: var(--teal); stroke-width: 1; }
+.map-dot circle:first-child, .map-dot-key { stroke: var(--posi-brand); stroke-width: 1; }
 .map-dot-key { fill: color-mix(in srgb, var(--teal) 42%, var(--surface)); }
 .map-dot:hover circle:first-child { stroke: var(--ink); stroke-width: 1.4; }
 .map-dot-empty circle:first-child { stroke: var(--soft); stroke-width: 0.7; }

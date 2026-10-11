@@ -76,7 +76,7 @@ export function LogoEmbed({ core, indexedMarks, coreMarks }: {
       </div>
 
       <div className="min-w-0 space-y-3">
-        <div className="flex items-center justify-center p-5 rounded-[2px]" style={{ background: /dark/.test(mark.file) ? '#2b3440' : 'var(--surface-2)', minHeight: 120 }}>
+        <div className="flex items-center justify-center p-5 rounded-[2px]" style={{ background: /dark/.test(mark.file) ? '#1e2b26' : 'var(--surface-2)', minHeight: 120 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/logos/${mark.file}`} alt={alt} width={mark.width} height={mark.height} style={{ maxWidth: '100%', height: 'auto' }} />
         </div>

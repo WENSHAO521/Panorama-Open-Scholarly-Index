@@ -245,10 +245,10 @@ export function CitationFormatter({ article }: Props) {
             style={
               format === f.id
                 ? {
-                    color: f.id === 'psg' ? 'var(--teal)' : 'var(--posi-accent)',
-                    borderBottom: `2px solid ${f.id === 'psg' ? 'var(--teal)' : 'var(--posi-accent)'}`,
+                    color: 'var(--posi-brand)',
+                    borderBottom: '2px solid var(--posi-brand)',
                     fontFamily: 'var(--font-mono)',
-                    background: f.id === 'psg' ? '#fef2f4' : 'var(--posi-accent-light)',
+                    background: 'var(--posi-brand-soft)',
                     marginBottom: '-1px',
                   }
                 : {

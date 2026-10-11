@@ -87,7 +87,7 @@ export default function CertificationPage() {
         </section>
         <section aria-labelledby="pqf">
           <SectionTitle id="pqf" aside={<Link href="/editorial-policy/#certification" className="link">Full method</Link>}>What is evaluated</SectionTitle>
-          <div className="panel overflow-hidden">
+          <div className="panel overflow-x-auto">
             <table className="dtable">
               <thead><tr><th>PQF factor</th><th className="text-right">Points</th></tr></thead>
               <tbody>
