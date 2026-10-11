@@ -113,15 +113,22 @@ falls back to full-page navigations and pages reload in a loop. That was a fault
 ## 6. Not verified / known limits
 
 - Google Books (the ISBN fallback), batch citation and certificate checks were not exercised.
-- Cloudflare's own handling of `_headers` was not tested: branch previews are behind Cloudflare Access, so their
-  headers cannot be read without logging in. Production (checked 2026-10-11) sends no CSP today, so this one will
-  not stack with another; it already sends `Referrer-Policy: strict-origin-when-cross-origin`, so `_headers` does
-  not repeat it. After merge, check `curl -sI https://posi.panorama-sg.com/ | grep -i content-security`.
+- Production (checked 2026-10-11 after #88 deployed): `Content-Security-Policy` is served on every page, and
+  home, journals, rankings, publication search, a DataCite record, the citation generator and both certificate
+  PDF downloads ran in Chromium against posi.panorama-sg.com with 0 CSP violations.
 - PNCI / AJR / PQF formulas were not reviewed or changed (out of scope by design).
 - Not built, by decision: IndexedDB cache, per-type TTLs, BYOK, a query router across providers, a separate SDK
   repository. The session cache and fallback chain cover current needs.
 
-## 7. Maintaining the boundary
+## 7. Open finding: Cloudflare Web Analytics
+
+Every production page loads `static.cloudflareinsights.com/beacon.min.js`, injected by Cloudflare (it is not in
+this repository). It posts page path, load timings and browser type to `/cdn-cgi/rum` on POSI's own domain. A
+search for a test keyword showed the query string is not sent. The privacy page says POSI "runs no analytics", so
+either Web Analytics is turned off in the Cloudflare dashboard, or the privacy page describes it. That is an
+owner's decision; nothing was changed.
+
+## 8. Maintaining the boundary
 
 - Add a third-party host only after reading its terms and checking CORS. Add it to `connect-src` in
   `public/_headers`; the unit test will fail until you do.
