@@ -51,24 +51,19 @@ keep `journal_code` stable so public URLs and certificates keep working.
 - Secrets `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine (step 5).
 - A decision, per difference list in step 2, on which side is correct.
 
-## Status (2026-10-11)
+## Status (2026-10-11, evening)
 
 | Step | State |
 |---|---|
 | 1 Unique ids | done |
-| 2 Reconcile | done (posi-data audit); 31 contaminated records repaired and 7,439 publishers filled (posi-data #59, merged) |
-| 2b Missing journals | 234 minted, 105 held for review (posi-data #60, open) |
-| 3 Publish from posi-data | built, not merged: `schema/screening.schema.json`, `screening/discovered-screening.jsonl` (25,144 of 25,676 site records paired), `collections/discovered-journals.json.gz` in the snapshot, validator support in posi-engine |
-| 4 Read it at build time | **not ready.** `npm run` equivalent: `node scripts/check-discovered-parity.mjs <collection>`. Today: 12,905 identical, 3,690 cosmetic, 8,549 substantive differences, 532 site journals without a counterpart. The site must not switch until substantive differences are reviewed |
-| 5 Move the jobs to posi-engine | not started; needs `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine |
-| 6 Cut over | after 4 and 5 |
+| 2 Reconcile | done; posi-data #59 (repairs) merged |
+| 2b Missing journals | posi-data #60 merged: 234 minted; 5 more minted and 55 duplicates marked superseded in #62 |
+| 3 Publish from posi-data | posi-data #61 merged: screening collection and `collections/discovered-journals.json.gz` in the snapshot; posi-engine #52 validates it. #62 completes the coverage |
+| 4 Read it at build time | built, **off by default**: `POSI_DISCOVERED_FROM_DATA_LAYER=1` makes `sync-live-data.mjs` use the collection (refused if it covers under 99% of the committed journals, repeats an id or lacks a title; any failure keeps the committed file); `append-alias-redirects.mjs` redirects the codes of journals that had two. The weekly `discovered-parity` workflow reports the comparison |
+| 5 Move the jobs to posi-engine | not started: needs `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine, and can only be proven by a real run |
+| 6 Cut over | after 5; turn the flag on, then stop committing the file |
 
-### What blocks step 4
-
-- 532 site journals have no POSI counterpart: 441 are two site records for one journal that posi-data
-  holds once (predecessor and successor titles); 56 match two POSI ids (a journal ingested twice, not
-  marked superseded); 35 have none (the 34 held in #60 and one more).
-- Substantive differences (data layer vs site): website_url 6,014 (different home page, not only
-  http/slash), publisher 1,626, title 564, country 290, ISSN roles 713 / 124, open access 126.
-  The data layer's values come from Crossref/OpenAlex and are not always better; each category needs a
-  decision on which side wins before the site reads the collection.
+Parity with #62: every one of the 25,676 site journals is covered (470 codes are redirected to a journal
+that had two), 13,231 records identical, 3,783 cosmetic, 7,995 where both sides have a value and differ (the
+data layer wins), 195 where the data layer is empty and the site is not (166 are ISSN roles on
+`journals/core` records, which are left to a change that also updates `corpus/`).
