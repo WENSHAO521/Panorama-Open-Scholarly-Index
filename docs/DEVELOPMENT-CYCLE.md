@@ -88,6 +88,6 @@
 
 ## 5. 当前状态
 
-状态在看板上维护,这里不再手写:<https://github.com/users/WENSHAO521/projects/2/views/1>
+状态在看板上维护,这里不再手写:<https://github.com/users/WENSHAO521/projects/2>
 
 C1 的事项是 issue #96 到 #103。看板用 Iteration 字段对应上面的周期(每轮 4 周,从 10 月 12 日起),Status 字段为 Todo / Doing / Done。周五更新看板;周期复盘时把没做完的移到下一轮,并写明原因。
