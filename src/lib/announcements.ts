@@ -9,6 +9,39 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'development-cycle',
+    title: 'POSI development now runs in four-week cycles, starting 12 October 2026',
+    date: '2026-10-12',
+    summary:
+      'From 12 October 2026, new features and changes to the site are planned and released in four-week cycles. This notice gives the cycle dates, what the first cycle covers, how releases are timed around the monthly and yearly data updates, and where progress is reported.',
+    body: [
+      'What changes. New features and changes to the website are now planned in four-week cycles that start on a Monday. Each cycle has a short list of work, and at its end we report in News what was released and what moved to the next cycle. The data itself is unaffected: Core Collection ratings are still re-rated on the 7th of each month, and the Citation Ranking is still published once a year, in December.',
+      'Cycle dates. Cycle 1: 12 October to 8 November 2026. Cycle 2: 9 November to 6 December. Cycle 3: 7 December to 3 January 2027. Cycle 4: 4 January to 31 January 2027. These are plans; if a date moves, this notice is updated.',
+      'Cycle 1. Two pieces of work. First, the journal directory will be read from POSI\'s data layer instead of a copy held with the website, so there is one source for each journal record. Journal addresses, short codes and identifiers do not change. Second, the groundwork for a multilingual interface, described in the notice \'Plan: a multilingual POSI interface\': interface text moves into language files and a language switcher is added, with English the only language offered.',
+      'Cycles 2 and 3. The Simplified Chinese interface, starting with navigation, search, journal pages and rankings, then the Core Collection, the certificate and citation tools and the data pages.',
+      'Release freeze. From 30 November to 4 December 2026 we release only fixes, so that nothing on the site changes while the yearly Citation Ranking edition is published.',
+      'How we work. A cycle carries at most three pieces of work at a time. A change counts as finished when it is live on the site, not when the code is written. Changes to how data reaches the site are released on their own, apart from feature changes, so a problem can be traced to one cause.',
+      'How to take part. Corrections to a record, requests for a language or a feature, and reports of errors can be sent through the contact page at any time. We read them at the start of each cycle and say in News which were taken up.',
+    ],
+  },
+  {
+    slug: 'multilingual-interface-plan',
+    title: 'Plan: a multilingual POSI interface, in four stages from October 2026',
+    date: '2026-10-12',
+    summary:
+      'POSI will add interface languages in stages, starting with Simplified Chinese. This notice sets out the stages, what each one delivers, what stays in English on purpose, and how we will report progress. Dates are plans, not commitments.',
+    body: [
+      'Why. Most of POSI is read by authors and editors outside English-speaking countries, and the certificate and citation tools are used heavily in China. An interface in the reader\'s own language lowers the cost of checking a journal, a ranking or a certificate. We are adding languages in stages so each one can be finished, reviewed and kept up to date before the next begins.',
+      'Stage 1, foundation (October to November 2026). Interface text is moved out of the pages into language files, pages gain a language-aware address (for example /zh/journals/) with the current English addresses unchanged, and a language switcher is added to the header and footer. Nothing changes for readers at this stage except the switcher, which offers English only. Done when: every page builds in English from the language files and no existing URL has changed.',
+      'Stage 2, Simplified Chinese interface (December 2026 to January 2027). Navigation, search, journal and publication pages, rankings tables, the Core Collection, the certificate and citation tools, and the data pages. Done when: every page reachable from the main menu is available in Simplified Chinese and has been checked by a native-speaking reviewer.',
+      'Stage 3, documentation (February to March 2027). The about, editorial policy, methodology, grades, ratings and legal pages. Until a page is translated, the Chinese interface links to its English original and says so. Done when: the pages above are translated and each shows the date of the English version it was translated from.',
+      'Stage 4, further languages (from April 2027). Which language comes next is decided by usage and by requests sent through the contact page. A language is added only when a reviewer is available to keep it current.',
+      'What stays in English on purpose. Evaluation terms and codes (PQF, AJR, PNCI, PCS, C-Q1 to C-Q4, POSI Zone), POSI-J identifiers, ISSNs, journal and publisher names, and the PSG citation format are identical in every language, so a grade means the same thing wherever it is read. Certificates, their verification pages and the downloadable data files remain in English. Where a translated page and the English page differ, the English page is authoritative.',
+      'What does not change. This plan changes presentation only. No PQF, AJR, citation indicator, ranking or Zone is affected, and the evaluation methodology is not altered by translation.',
+      'How we will report. The state of each stage (planned, in progress, released) is posted here in News at the end of every stage, and dates are revised in this notice if they move. Corrections to a translation, and requests for a language, can be sent through the contact page.',
+    ],
+  },
+  {
     slug: 'october-2026-updates',
     title: 'October 2026 updates: certificates for DataCite and Zenodo DOIs, PSG citation tools, new journals',
     date: '2026-10-11',
