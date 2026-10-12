@@ -9,6 +9,23 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'multilingual-interface-plan',
+    title: 'Plan: a multilingual POSI interface, in four stages from October 2026',
+    date: '2026-10-12',
+    summary:
+      'POSI will add interface languages in stages, starting with Simplified Chinese. This notice sets out the stages, what each one delivers, what stays in English on purpose, and how we will report progress. Dates are plans, not commitments.',
+    body: [
+      'Why. Most of POSI is read by authors and editors outside English-speaking countries, and the certificate and citation tools are used heavily in China. An interface in the reader\'s own language lowers the cost of checking a journal, a ranking or a certificate. We are adding languages in stages so each one can be finished, reviewed and kept up to date before the next begins.',
+      'Stage 1, foundation (October to November 2026). Interface text is moved out of the pages into language files, pages gain a language-aware address (for example /zh/journals/) with the current English addresses unchanged, and a language switcher is added to the header and footer. Nothing changes for readers at this stage except the switcher, which offers English only. Done when: every page builds in English from the language files and no existing URL has changed.',
+      'Stage 2, Simplified Chinese interface (December 2026 to January 2027). Navigation, search, journal and publication pages, rankings tables, the Core Collection, the certificate and citation tools, and the data pages. Done when: every page reachable from the main menu is available in Simplified Chinese and has been checked by a native-speaking reviewer.',
+      'Stage 3, documentation (February to March 2027). The about, editorial policy, methodology, grades, ratings and legal pages. Until a page is translated, the Chinese interface links to its English original and says so. Done when: the pages above are translated and each shows the date of the English version it was translated from.',
+      'Stage 4, further languages (from April 2027). Which language comes next is decided by usage and by requests sent through the contact page. A language is added only when a reviewer is available to keep it current.',
+      'What stays in English on purpose. Evaluation terms and codes (PQF, AJR, PNCI, PCS, C-Q1 to C-Q4, POSI Zone), POSI-J identifiers, ISSNs, journal and publisher names, and the PSG citation format are identical in every language, so a grade means the same thing wherever it is read. Certificates, their verification pages and the downloadable data files remain in English. Where a translated page and the English page differ, the English page is authoritative.',
+      'What does not change. This plan changes presentation only. No PQF, AJR, citation indicator, ranking or Zone is affected, and the evaluation methodology is not altered by translation.',
+      'How we will report. The state of each stage (planned, in progress, released) is posted here in News at the end of every stage, and dates are revised in this notice if they move. Corrections to a translation, and requests for a language, can be sent through the contact page.',
+    ],
+  },
+  {
     slug: 'october-2026-updates',
     title: 'October 2026 updates: certificates for DataCite and Zenodo DOIs, PSG citation tools, new journals',
     date: '2026-10-11',
