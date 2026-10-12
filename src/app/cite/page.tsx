@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  MagnifyingGlass, XCircle, ArrowSquareOut, Copy, Check,
+  MagnifyingGlass, XCircle, Copy, Check,
   BookOpen, Globe, PencilSimple, Plus, Trash, Newspaper, UploadSimple,
 } from '@phosphor-icons/react/dist/ssr'
 import { CitationFormatter } from '@/components/CitationFormatter'
@@ -723,13 +723,13 @@ function CitePage() {
       } else if (detected.kind === 'search') {
         const results = await crossrefSearchMany(detected.payload)
         if (myId !== lookupCount.current) return
-        if (!results.length) { setError('No articles found for this title. Try more words from the title, or enter the details manually below ↓'); return }
+        if (!results.length) { setError('No articles found for this title. Try more words from the title, or enter the details manually below'); return }
         setPicked(new Set()); setAutoResult({ type: 'search', query: detected.payload, results })
       } else if (detected.kind === 'isbn') {
         const book = await fetchBookByIsbn(detected.payload)
         if (myId !== lookupCount.current) return
         if (!book?.title) {
-          setError('No book found for this ISBN. Enter details manually below ↓')
+          setError('No book found for this ISBN. Enter details manually below')
           setShowManual(true)
           setManualType('book')
           setBForm(f => ({ ...f, isbn: detected.payload }))
@@ -920,7 +920,7 @@ function CitePage() {
               <div className="mt-3">
                 <a href={`https://doi.org/${autoResult.article.doi}`} target="_blank" rel="noopener noreferrer"
                   className="text-xs flex items-center gap-1 hover:underline" style={{ color: 'var(--posi-brand)' }}>
-                  {autoResult.article.doi} <ArrowSquareOut className="h-3 w-3" />
+                  {autoResult.article.doi}
                 </a>
               </div>
             )}
@@ -1014,7 +1014,7 @@ function CitePage() {
           <MultiFormatCards citations={autoResult.citations} />
           <button onClick={() => setAutoResult({ type: 'webpage-form', url: autoResult.citations.psg.plain.match(/https?:\/\/\S+/)?.[0] ?? '' })}
             className="text-xs hover:underline" style={{ color: 'var(--posi-brand)' }}>
-            ← Edit details
+            Edit details
           </button>
         </div>
       )}
@@ -1027,7 +1027,7 @@ function CitePage() {
           style={{ color: showManual ? 'var(--posi-brand)' : 'var(--posi-muted)' }}
         >
           <PencilSimple className="h-4 w-4" />
-          {showManual ? 'Hide manual entry' : 'Or enter details manually →'}
+          {showManual ? 'Hide manual entry' : 'Or enter details manually'}
         </button>
 
         {showManual && (

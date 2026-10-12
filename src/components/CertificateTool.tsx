@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, type FormEvent } from 'react'
-import { CheckCircle, XCircle, DownloadSimple, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
+import { CheckCircle, XCircle, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
 import {
   MAX_DOIS, SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, parseDoiList, scholarUrl, todayIso, verifyPath, type CertItem,
 } from '@/lib/certificate'
@@ -147,7 +147,7 @@ export function CertificateTool() {
                               <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
                             </span>
                           )}
-                          {it && it.status !== 'invalid' && <a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link shrink-0 whitespace-nowrap text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a>}
+                          {it && it.status !== 'invalid' && <a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link shrink-0 whitespace-nowrap text-[12.5px]">Google Scholar</a>}
                         </div>
                       </td>
                     </tr>
@@ -172,7 +172,7 @@ export function CertificateTool() {
           <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-4">
             <h2 id="cert-heading" className="text-[17px] font-semibold tracking-tight">Certificate</h2>
             <div className="flex gap-2">
-              <a href={cert.verifyUrl} target="_blank" rel="noopener noreferrer" className="btn">Verify <ArrowSquareOut className="h-4 w-4" /></a>
+              <a href={cert.verifyUrl} target="_blank" rel="noopener noreferrer" className="btn">Verify</a>
               <button type="button" className="btn btn-primary" onClick={downloadPdf} disabled={pdfState === 'working'} aria-busy={pdfState === 'working'}>
                 <DownloadSimple className="h-4 w-4" /> {pdfState === 'working' ? 'Preparing PDF…' : 'Download PDF'}
               </button>

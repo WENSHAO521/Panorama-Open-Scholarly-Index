@@ -6,7 +6,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowSquareOut, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
+import { DownloadSimple } from '@phosphor-icons/react/dist/ssr'
 import { getJournalProfile, journalHref, type JournalProfile } from '@/lib/journal-profile'
 import { buildZoneCertificate, type ZoneCertificateData } from '@/lib/zone-certificate'
 import { todayIso } from '@/lib/certificate'
@@ -92,7 +92,7 @@ export function ZoneCertificateTool() {
           <Link href={journalHref(j.k)} className="hover:underline">{j.t}</Link>
         </h2>
         <div className="flex gap-2">
-          <a href={cert.verifyUrl} target="_blank" rel="noopener noreferrer" className="btn">Verify <ArrowSquareOut className="h-4 w-4" /></a>
+          <a href={cert.verifyUrl} target="_blank" rel="noopener noreferrer" className="btn">Verify</a>
           <button type="button" className="btn btn-primary" onClick={downloadPdf} disabled={pdfState === 'working'} aria-busy={pdfState === 'working'}>
             <DownloadSimple className="h-4 w-4" /> {pdfState === 'working' ? 'Preparing PDF…' : 'Download PDF'}
           </button>

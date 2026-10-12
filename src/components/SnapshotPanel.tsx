@@ -4,7 +4,6 @@
 // browser: current.json -> manifest.json -> SHA256SUMS. Nothing is proxied.
 
 import { useEffect, useState } from 'react'
-import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 
 const BASE = 'https://data.posi.panorama-sg.com'
 
@@ -116,7 +115,7 @@ export function SnapshotPanel() {
                 <td className="font-mono text-[12px]" style={{ color: 'var(--muted)' }} title={s.hash}>{s.hash.slice(0, 16)}…</td>
                 <td className="text-right">
                   <a href={`${BASE}${dir}${s.path}`} className="inline-flex items-center gap-1 link text-[13px]" target="_blank" rel="noopener noreferrer">
-                    Open <ArrowSquareOut className="h-3.5 w-3.5" />
+                    Open
                   </a>
                 </td>
               </tr>

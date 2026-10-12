@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { LockOpen, Quotes, ArrowSquareOut, Warning } from '@phosphor-icons/react/dist/ssr'
+import { LockOpen, Quotes, Warning } from '@phosphor-icons/react/dist/ssr'
 import { type Work, abstractOf, doiOf, pages, shortId, TYPE_LABEL } from '@/lib/openalex'
 import { recordHref, type IndexRecord } from '@/lib/records'
 import { CollectionTag } from './db'
@@ -60,7 +60,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px]">
         {doi && (
           <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm font-mono">
-            {doi} <ArrowSquareOut className="h-3 w-3" />
+            {doi}
           </a>
         )}
         {w.open_access?.oa_url && (

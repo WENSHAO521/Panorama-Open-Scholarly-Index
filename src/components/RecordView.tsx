@@ -7,7 +7,7 @@
 // lookups are done by the caller and passed in.
 
 import Link from 'next/link'
-import { ArrowSquareOut, Certificate, DownloadSimple, Globe } from '@phosphor-icons/react/dist/ssr'
+import { Certificate, DownloadSimple, Globe } from '@phosphor-icons/react/dist/ssr'
 import type { Journal } from '@/lib/types'
 import type { PcsEntry } from '@/lib/pcs'
 import type { PciEntry } from '@/lib/pci'
@@ -236,7 +236,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
                 { k: 'issn_print', value: j.issn_print, mono: true },
                 { k: 'openalex_source_id', value: j.openalex_source_id && (
                   <a href={`https://openalex.org/${j.openalex_source_id}`} target="_blank" rel="noopener noreferrer" className="link inline-flex items-center gap-1">
-                    {j.openalex_source_id} <ArrowSquareOut className="h-3.5 w-3.5" />
+                    {j.openalex_source_id}
                   </a>
                 ), mono: true },
                 { k: 'title', value: j.title },

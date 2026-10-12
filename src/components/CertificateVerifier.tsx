@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CheckCircle, XCircle, WarningCircle, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
+import { CheckCircle, XCircle, WarningCircle } from '@phosphor-icons/react/dist/ssr'
 import { SNAPSHOT, STATUS_TEXT, checkAll, certificateCode, scholarUrl, type CertItem } from '@/lib/certificate'
 
 type Verdict = 'valid' | 'changed' | 'tampered'
@@ -133,7 +133,7 @@ export function CertificateVerifier() {
                           <span>{st.text}{it?.status === 'indexed' && <><br /><span style={{ color: 'var(--muted)' }}>Journal status: {it.tier === 'core' ? 'Core Collection' : 'Indexed'} · via {it.via}</span></>}</span>
                         </span>
                       ) : <span className="inline-block h-3.5 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />}
-                      {it && it.status !== 'invalid' && <a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link shrink-0 whitespace-nowrap text-[12.5px]">Google Scholar <ArrowSquareOut className="inline h-3 w-3" /></a>}
+                      {it && it.status !== 'invalid' && <a href={scholarUrl(it)} target="_blank" rel="noopener noreferrer" className="link shrink-0 whitespace-nowrap text-[12.5px]">Google Scholar</a>}
                     </div>
                   </td>
                 </tr>
