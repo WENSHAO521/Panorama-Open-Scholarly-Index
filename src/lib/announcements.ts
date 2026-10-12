@@ -9,6 +9,22 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    slug: 'development-cycle',
+    title: 'POSI development now runs in four-week cycles, starting 12 October 2026',
+    date: '2026-10-12',
+    summary:
+      'From 12 October 2026, new features and changes to the site are planned and released in four-week cycles. This notice gives the cycle dates, what the first cycle covers, how releases are timed around the monthly and yearly data updates, and where progress is reported.',
+    body: [
+      'What changes. New features and changes to the website are now planned in four-week cycles that start on a Monday. Each cycle has a short list of work, and at its end we report in News what was released and what moved to the next cycle. The data itself is unaffected: Core Collection ratings are still re-rated on the 7th of each month, and the Citation Ranking is still published once a year, in December.',
+      'Cycle dates. Cycle 1: 12 October to 8 November 2026. Cycle 2: 9 November to 6 December. Cycle 3: 7 December to 3 January 2027. Cycle 4: 4 January to 31 January 2027. These are plans; if a date moves, this notice is updated.',
+      'Cycle 1. Two pieces of work. First, the journal directory will be read from POSI\'s data layer instead of a copy held with the website, so there is one source for each journal record. Journal addresses, short codes and identifiers do not change. Second, the groundwork for a multilingual interface, described in the notice \'Plan: a multilingual POSI interface\': interface text moves into language files and a language switcher is added, with English the only language offered.',
+      'Cycles 2 and 3. The Simplified Chinese interface, starting with navigation, search, journal pages and rankings, then the Core Collection, the certificate and citation tools and the data pages.',
+      'Release freeze. From 30 November to 4 December 2026 we release only fixes, so that nothing on the site changes while the yearly Citation Ranking edition is published.',
+      'How we work. A cycle carries at most three pieces of work at a time. A change counts as finished when it is live on the site, not when the code is written. Changes to how data reaches the site are released on their own, apart from feature changes, so a problem can be traced to one cause.',
+      'How to take part. Corrections to a record, requests for a language or a feature, and reports of errors can be sent through the contact page at any time. We read them at the start of each cycle and say in News which were taken up.',
+    ],
+  },
+  {
     slug: 'multilingual-interface-plan',
     title: 'Plan: a multilingual POSI interface, in four stages from October 2026',
     date: '2026-10-12',
