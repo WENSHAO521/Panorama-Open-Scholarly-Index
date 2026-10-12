@@ -2,11 +2,11 @@
   "grhas": {
     "issn": "3052-539X",
     "stats": {
-      "two_yr_mean_citedness": 0.37254901960784315,
+      "two_yr_mean_citedness": 0.4634146341463415,
       "h_index": 2,
       "cited_by_count": 19
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "afs": {
     "issn": "3053-4011",
@@ -15,7 +15,7 @@
       "h_index": 2,
       "cited_by_count": 14
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jlpcs": {
     "issn": "3052-9654",
@@ -24,7 +24,7 @@
       "h_index": 2,
       "cited_by_count": 9
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "hnex": {
     "issn": "3053-7037",
@@ -33,16 +33,16 @@
       "h_index": 1,
       "cited_by_count": 3
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "pear": {
     "issn": "3053-3597",
     "stats": {
-      "two_yr_mean_citedness": 0.06666666666666667,
+      "two_yr_mean_citedness": 0.07692307692307693,
       "h_index": 1,
       "cited_by_count": 1
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jesa": {
     "issn": "3053-478X",
@@ -51,7 +51,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "tts": {
     "issn": "3053-6553",
@@ -60,7 +60,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "rggd": {
     "issn": "3053-7282",
@@ -69,7 +69,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "rjgms": {
     "issn": "3053-4410",
@@ -78,7 +78,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "csgs": {
     "issn": "3054-9663",
@@ -87,7 +87,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jscc": {
     "issn": "3054-6958",
@@ -96,110 +96,118 @@
       "h_index": 1,
       "cited_by_count": 1
     },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "silence": {
     "issn": "3054-4386",
-    "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "stats": {
+      "two_yr_mean_citedness": 0,
+      "h_index": 0,
+      "cited_by_count": 0
+    },
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jmss": {
     "issn": "3078-4441",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jcsis": {
     "issn": "3078-5324",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jcac": {
     "issn": "3079-7489",
-    "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "stats": {
+      "two_yr_mean_citedness": 0.3125,
+      "h_index": 1,
+      "cited_by_count": 5
+    },
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "rwxk": {
     "issn": "3104-5022",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jyyjx": {
     "issn": "3080-8847",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "jassp": {
     "issn": "3079-7659",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "zgwxxk": {
     "issn": "3106-3675",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "yishu": {
     "issn": "3107-0191",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "shr-ai": {
     "issn": "3106-3705",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "smn": {
     "issn": "3106-3713",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "xw": {
     "issn": "3106-9983",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "zgfx": {
     "issn": "3107-1708",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "cmas": {
     "issn": "3106-0749",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "cds": {
     "issn": "3105-5834",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "rae": {
     "issn": "3105-5842",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "eaou": {
     "issn": "3105-5850",
-    "stats": {
-      "two_yr_mean_citedness": 0.14606741573033707,
-      "h_index": 2,
-      "cited_by_count": 13
-    },
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "stats": null,
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "tjiss": {
     "issn": "3030-5322",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "cropt": {
     "issn": "3056-0977",
     "stats": null,
-    "fetched_at": "2026-10-05T09:47:40.347Z"
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   },
   "aimed": {
     "issn": "3079-4757",
-    "stats": null,
-    "fetched_at": "2026-10-09T10:26:01.084Z"
+    "stats": {
+      "two_yr_mean_citedness": 1.3333333333333333,
+      "h_index": 1,
+      "cited_by_count": 16
+    },
+    "fetched_at": "2026-10-12T09:58:36.217Z"
   }
 }
