@@ -6,7 +6,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ArrowSquareOut, Books, Certificate, SealCheck } from '@phosphor-icons/react/dist/ssr'
+import { Books, Certificate, SealCheck } from '@phosphor-icons/react/dist/ssr'
 import { getJournalProfile, PSC_CONFIDENCE_TEXT, type JournalProfile } from '@/lib/journal-profile'
 import { countryName, recordHref } from '@/lib/records'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -89,7 +89,7 @@ export function JournalProfileView() {
           </Link>
           {j.hp && (
             <a href={j.hp} className="link inline-flex items-center gap-1" target="_blank" rel="noopener noreferrer">
-              Journal website <ArrowSquareOut className="h-3.5 w-3.5" />
+              Journal website
             </a>
           )}
           {curated && <Link href={recordHref(curated)} className="link" prefetch={false}>POSI record</Link>}

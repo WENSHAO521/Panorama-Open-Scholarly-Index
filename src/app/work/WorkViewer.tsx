@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ArrowSquareOut, LockOpen, Warning } from '@phosphor-icons/react/dist/ssr'
+import { LockOpen, Warning } from '@phosphor-icons/react/dist/ssr'
 import { getWork, resourceOf, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work, RegistryError } from '@/lib/openalex'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { recordHref } from '@/lib/records'
@@ -118,9 +118,9 @@ export function WorkViewer() {
           </ul>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            {doi && <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Publisher page <ArrowSquareOut className="h-4 w-4" /></a>}
-            {w.open_access?.oa_url && <a href={w.open_access.oa_url} target="_blank" rel="noopener noreferrer" className="btn">Full text <ArrowSquareOut className="h-4 w-4" /></a>}
-            {w.id.startsWith('https://openalex.org/') && <a href={w.id} target="_blank" rel="noopener noreferrer" className="btn">OpenAlex <ArrowSquareOut className="h-4 w-4" /></a>}
+            {doi && <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Publisher page</a>}
+            {w.open_access?.oa_url && <a href={w.open_access.oa_url} target="_blank" rel="noopener noreferrer" className="btn">Full text</a>}
+            {w.id.startsWith('https://openalex.org/') && <a href={w.id} target="_blank" rel="noopener noreferrer" className="btn">OpenAlex</a>}
           </div>
 
           <section className="mt-10" aria-labelledby="abstract">

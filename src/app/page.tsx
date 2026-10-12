@@ -8,7 +8,7 @@ import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
 import { RankingsPending } from '@/components/Evaluation'
 import { getSortedAnnouncements } from '@/lib/announcements'
 import { fmt } from '@/components/db'
-import { CaretRight, Certificate, Database, Medal, Quotes, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
+import { Certificate, Database, Medal, Quotes, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
 import type { Icon } from '@phosphor-icons/react'
 
 export const metadata = {
@@ -61,7 +61,6 @@ function ServicesList() {
                     <span className="block text-[13.5px] font-medium leading-snug" style={{ color: 'var(--ink)' }}>{s.label}</span>
                     <span className="block text-[12px] leading-snug" style={{ color: 'var(--muted)' }}>{s.note}</span>
                   </span>
-                  <CaretRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" style={{ color: 'var(--soft)' }} />
                 </Link>
               </li>
             ))}

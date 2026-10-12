@@ -192,7 +192,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
           value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>Eligible, certified</span> : 'Indexed, not certified'}
           action={core === 'core'
             ? <Link href="/core-collection/" className="link">Core Collection</Link>
-            : <Link href="/certification/" className="link">Apply for certification →</Link>}>
+            : <Link href="/certification/" className="link">Apply for certification</Link>}>
           <p>{core === 'core' ? 'Passed editorial evaluation under the POSI Quality Framework.' : 'Listed in the journal directory. Certification is by application.'}</p>
         </Card>
 
