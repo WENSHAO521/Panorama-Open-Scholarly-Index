@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import "@/app/globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TRANSLATION_GUARD_SCRIPT } from "@/lib/translation-guard";
@@ -27,45 +26,14 @@ const geistMono = localFont({
   src: [{ path: "../fonts/geist-mono.woff2", weight: "400 700", style: "normal" }],
 });
 
-const SITE_URL = "https://posi.panorama-sg.com";
-const SITE_DESCRIPTION =
-  "The Panorama Open Scholarly Index (POSI) is a scholarly database published by Panorama Scholarly Group Ltd: publications, journals, journal rankings and certificates of indexing.";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "Panorama Open Scholarly Index (POSI)",
-    template: "%s · POSI",
-  },
-  description: SITE_DESCRIPTION,
-  publisher: "Panorama Scholarly Group Ltd",
-  authors: [{ name: "Panorama Scholarly Group Ltd", url: "https://panorama-sg.com" }],
-  keywords: ["open database", "journal index", "scholarly journals", "open data", "journal metadata", "citation indicators", "journal rankings", "citation index", "PSC", "provenance"],
-  icons: { icon: "/favicon.svg" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-  openGraph: {
-    type: "website",
-    url: SITE_URL,
-    siteName: "POSI - Panorama Open Scholarly Index",
-    title: "Panorama Open Scholarly Index (POSI)",
-    description: SITE_DESCRIPTION,
-    locale: "en_US",
-  },
-  twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION },
-};
-
-// Light and dark: the page follows the visitor's choice or, by default, the OS (see styles/posi-tokens.css).
-export const viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f8f6f0' },
-    { media: '(prefers-color-scheme: dark)', color: '#17231f' },
-  ],
-}
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+/**
+ * The <html> document shared by every root layout (one per language) and by the global 404 page.
+ * `lang` is the language of the interface text.
+ */
+export function RootShell({ lang, children }: Readonly<{ lang: string; children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+    <html lang={lang} className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+      {/* eslint-disable-next-line @next/next/no-head-element -- the document head of a root layout, as before the move into this component */}
       <head>
         {/* Before React loads: survive browser page translation (see lib/translation-guard). */}
         <script dangerouslySetInnerHTML={{ __html: TRANSLATION_GUARD_SCRIPT }} />
