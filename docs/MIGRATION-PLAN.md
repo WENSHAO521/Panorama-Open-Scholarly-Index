@@ -75,3 +75,20 @@ keep `journal_code` stable so public URLs and certificates keep working.
    The committed file is the fallback until then, and gets stale once its workflows stop.
 4. `citation-stats` (weekly) still writes `citation-stats.json` here; it is derived from OpenAlex and Crossref and
    can move to posi-engine the same way.
+
+## Regressions reviewed (2026-10-15, issue #97)
+
+Re-run of `scripts/check-discovered-parity.mjs` on the published collection (snapshot `2026-10-11-3`) against the
+committed file as of 2026-10-15: 289 regressions, not 195, because the site's daily sync kept writing after the
+snapshot. The 289 fall into five groups; none needs the site to keep its own copy.
+
+| Field | Count | Reason | Handling |
+|---|---|---|---|
+| `crossref_checked_at` | 190 | Site was synced on 2026-10-11 or later; the snapshot predates it | Gone with the next snapshot; no action |
+| `auto_pqf` | 8 | Same timing: site scored these on 2026-10-13 | Gone with the next snapshot; no action |
+| `issn_print` | 186 | 109: the data layer holds the same ISSN as `issn_online` (role swap, e.g. Molecules 1420-3049, which is the print ISSN). 4: the ISSN sits in another field. 73: absent from the data layer record | Fix in posi-data as part of the ISSN-roles decision (#96). Not a site problem; ISSN values are never dropped, only mis-roled |
+| `country` | 85 | 81 are "United States" / "United Kingdom" with no ISO code in the data layer; 4 are the invalid value "VRA" | Map the 81 to `US` / `GB` in posi-data; the 4 "VRA" need a person to look at the journal |
+| `open_access` (5), `website_url` (1) | 6 | Data layer left null / empty | Fill from the site value in posi-data (`j-disc-issn-2460-1543`, `ddjylc`, `xwkyjdt`, `qzxb`, `nthxgkcyxb`; `j-disc-issn-2765-1606`) |
+
+Next step is a posi-data PR for the last three rows; the parity gate's `--max-regressions` can then be set to 0
+before the flag is turned on (#99).
