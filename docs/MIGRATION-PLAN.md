@@ -85,11 +85,13 @@ Run against the published collection of snapshot 2026-10-11-3 (`check-discovered
 |---|---|---|---|
 | `crossref_checked_at` 190, `auto_pqf` 8 | 198 | Written by the site's daily jobs after the snapshot; not a data-layer loss | None. Disappears once the daily job runs in posi-engine |
 | `issn_print` | 109 | Site stored the same ISSN as print and online (e.g. Molecules, online only); the data layer is correct | None. Data layer wins |
-| `issn_print` | 73 | Site has a print ISSN the data layer lacks, and online ISSN equal. Often the site had print and online swapped (e.g. The Astrophysical Journal: print 1538-4357 is the online ISSN) | Decide per journal; fill `issn_print` in posi-data from the ISSN Portal |
-| `issn_online` | 4 | Data layer holds an ISSN-L of a predecessor title as online ISSN: Experimental Biology and Medicine (0071-3384), Archives of Gynecology and Obstetrics (0003-9128), J Cancer Res Clin Oncol (0084-5353), Journal of Chest Surgery (0301-2859; its `website_url` is also empty) | Fix in posi-data; add to the ISSN review queue |
-| `country` | 85 | Corrections made here (Wiley 35, Hindawi 44, OUP 3, other 3) were never carried upstream, as step 2 warned | Port the 85 values to posi-data |
-| `country` = `VRA` | 4 | Not a country. Site-side bad value (iMetaOmics, CleanMat, Regenerative medicine and dentistry, and one more Scilight title) | Replace with the publisher's country in both stores |
-| `open_access` | 5 | Four Chinese-language journals and one Indonesian law journal, `true` here, empty upstream | Confirm against DOAJ, then fill upstream |
+| `issn_print` | 73 | Site has a print ISSN the data layer lacks, and online ISSN equal. Often the site had print and online swapped (e.g. The Astrophysical Journal: print 1538-4357 is the online ISSN) | Partly done in posi-data #66: 42 ISSN pairs set from Crossref (this row and the next). 29 journals Crossref cannot resolve are in `audits/data-quality/site-regression-repair-2026-10-15/issn-unresolved.csv`; they need the ISSN Portal |
+| `issn_online` | 4 | Data layer holds an ISSN-L of a predecessor title as online ISSN: Experimental Biology and Medicine (0071-3384), Archives of Gynecology and Obstetrics (0003-9128), J Cancer Res Clin Oncol (0084-5353), Journal of Chest Surgery (0301-2859; its `website_url` is also empty) | Experimental Biology and Medicine fixed in posi-data #66. The other three (Archives of Gynecology and Obstetrics, J Cancer Res Clin Oncol, Journal of Chest Surgery) are in `issn-unresolved.csv` |
+| `country` | 85 | Corrections made here (Wiley 35, Hindawi 44, OUP 3, other 3) were never carried upstream, as step 2 warned | Done in posi-data #66: 79 filled. Two remain in `journals/core` records, which #66 does not touch because the corpus keeps its own copy |
+| `country` = `VRA` | 4 | Not a country. Site-side bad value (iMetaOmics, CleanMat, Regenerative medicine and dentistry, and one more Scilight title) | Done in posi-data #66 (Wiley titles US, Scilight titles AU, by the publisher's most common country). The site's own copy keeps `VRA` until the data layer is switched on |
+| `open_access` | 5 | Four Chinese-language journals and one Indonesian law journal, `true` here, empty upstream | Open: confirm against DOAJ, then fill upstream |
 
-Nothing here requires a decision from the owner beyond item 1 of the cycle plan. The country and ISSN fixes are
-data-path changes and go in a separate PR on posi-data, not here.
+Nothing here requires a decision from the owner beyond item 1 of the cycle plan. The country and ISSN fixes were
+data-path changes and went in a separate PR on posi-data (#66, merged 2026-10-15). The site sees them after posi-data
+publishes a new snapshot. Still open: the 29 unresolved ISSN journals, the 5 open access values, and the 2 `journals/core`
+countries.
