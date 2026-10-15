@@ -56,7 +56,7 @@
 目标是不改变读者看到的内容,只打好地基:
 
 1. 先读 `node_modules/next/dist/docs/` 里有关国际化与静态导出的部分(本仓库使用 `output: "export"` 和 `trailingSlash`,Next 版本与常见版本不同)。
-2. 选定路由方案并写一页设计:英文 URL 保持原样,中文走 `/zh/…`。确认静态导出下 `sitemap.ts`、`alternates`、`hreflang` 怎么处理。
+2. 选定路由方案并写一页设计:英文 URL 保持原样,中文走 `/zh/…`。确认静态导出下 `sitemap.ts`、`alternates`、`hreflang` 怎么处理。设计稿已写:`docs/I18N-DESIGN.md`(两个根布局、不用 `[lang]`,最小工程已验证能静态导出)。
 3. 把界面文字抽到语言文件;先从 `SiteHeader`、`SiteFooter`、`site-nav.ts`、`docs-nav.ts` 开始,用一页验证整个流程。
 4. 语言切换器上线,只列英文。
 
