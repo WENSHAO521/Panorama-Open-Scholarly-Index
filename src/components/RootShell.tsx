@@ -4,6 +4,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TRANSLATION_GUARD_SCRIPT } from "@/lib/translation-guard";
 import { THEME_SCRIPT } from "@/lib/theme";
+import { HTML_LANG, type Locale } from "@/i18n/config";
+import { clientMessages, getMessages } from "@/i18n";
+import { LocaleProvider } from "@/i18n/LocaleProvider";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -28,11 +31,12 @@ const geistMono = localFont({
 
 /**
  * The <html> document shared by every root layout (one per language) and by the global 404 page.
- * `lang` is the language of the interface text.
+ * `locale` is the language of the interface text; it sets the `lang` attribute, the strings and the address prefix of the links.
  */
-export function RootShell({ lang, children }: Readonly<{ lang: string; children: React.ReactNode }>) {
+export function RootShell({ locale, children }: Readonly<{ locale: Locale; children: React.ReactNode }>) {
+  const messages = getMessages(locale);
   return (
-    <html lang={lang} className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+    <html lang={HTML_LANG[locale]} className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
       {/* eslint-disable-next-line @next/next/no-head-element -- the document head of a root layout, as before the move into this component */}
       <head>
         {/* Before React loads: survive browser page translation (see lib/translation-guard). */}
@@ -46,11 +50,13 @@ export function RootShell({ lang, children }: Readonly<{ lang: string; children:
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
           style={{ background: 'var(--posi-brand)', color: 'var(--posi-on-brand)' }}
         >
-          Skip to content
+          {messages.common.skipToContent}
         </a>
-        <SiteHeader />
-        <main id="main-content" className="flex-1">{children}</main>
-        <SiteFooter />
+        <LocaleProvider locale={locale} messages={clientMessages(messages)}>
+          <SiteHeader />
+          <main id="main-content" className="flex-1">{children}</main>
+          <SiteFooter locale={locale} />
+        </LocaleProvider>
       </body>
     </html>
   );
