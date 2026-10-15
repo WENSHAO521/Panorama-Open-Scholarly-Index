@@ -9,6 +9,7 @@ import { primaryNav, utilityNav, type NavGroup } from '@/lib/site-nav'
 import { localePath, stripLocale } from '@/i18n/config'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 /**
  * The Panorama block mark, same geometry as public/posi-logo.svg (three
@@ -133,6 +134,7 @@ export function SiteHeader() {
         <span>{header.orgName}</span>
         <nav aria-label={header.navUtility} className="flex items-center gap-4">
           <ThemeToggle onBand />
+          <LanguageSwitcher onBand />
           {utility.map(l => (
             <LocalizedLink key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</LocalizedLink>
           ))}
@@ -184,6 +186,7 @@ export function SiteHeader() {
           <div className="wrap py-3 space-y-3">
             <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
             <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.colourScheme} <ThemeToggle /></div>
+            <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.language} <LanguageSwitcher /></div>
             <nav aria-label={header.navMobile}>
               <ul>
                 {groups.map(g => (

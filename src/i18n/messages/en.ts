@@ -13,6 +13,7 @@ export const en = {
     menuOpen: 'Open menu',
     menuClose: 'Close menu',
     colourScheme: 'Colour scheme',
+    language: 'Language',
     theme: {
       system: 'System',
       light: 'Light',
