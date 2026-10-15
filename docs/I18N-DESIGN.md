@@ -64,7 +64,7 @@ export const stripLocale = (pathname: string) => …                            
 
 ## 7. 要做的 PR(每个单独合并,同时进行不超过 3 个)
 
-1. **只搬文件**:全部现有路由移入 `(en)`,删掉 `app/layout.tsx` 换成 `(en)/layout.tsx`,加 `global-not-found`。不改任何内容。门槛:`out/` 的文件清单与改前逐项相同,抽样 20 个 HTML 除构建哈希外无差异。需要同时确认 `error.tsx`、`opengraph-image.tsx`、`icon.*` 在多根布局下的位置(`error.tsx` 应进 `(en)`;其余在 PoC 里未测,要在这个 PR 里测)。
+1. **只搬文件**:全部现有路由移入 `(en)`,删掉 `app/layout.tsx` 换成 `(en)/layout.tsx`,加 `global-not-found`。不改任何内容。门槛:`out/` 的文件清单与改前逐项相同,抽样 20 个 HTML 除构建哈希外无差异。实测结果:`error.tsx` 进 `(en)`;`icon.*`、`sitemap.ts` 留在 `app/` 根,输出不变;`opengraph-image.tsx` 留在根(进 `(en)` 会被改名为 `/opengraph-image-35z9bs`),各页不再自动继承,改由 `site-metadata.ts` 的 `openGraph.images` / `twitter.images` 显式引用,地址 `/opengraph-image` 不变,只少了 `?哈希` 缓存参数。
 2. **i18n 核心 + 头部、页脚、导航**:`src/i18n/*`、`en.ts`、`LocaleProvider`、`getMessages`,把 `SiteHeader`、`SiteFooter`、`site-nav.ts`、`docs-nav.ts` 的文字抽出。英文输出必须与改前相同。
 3. **切换器 + `pageAlternates` + 测试**:`zh-Hans.ts` 键与 `en.ts` 一致的类型检查;`localePath`/`stripLocale` 的单元测试(`npm test` 已用 `node --test`)。
 
@@ -85,5 +85,4 @@ export const stripLocale = (pathname: string) => …                            
 ## 10. 未验证,实施时要查
 
 - `globalNotFound` 在 `next build` 之外的 `next dev` 下的行为。
-- `opengraph-image.tsx`、`icon.png`/`icon.svg` 放在 `app/` 根、没有根布局时是否仍生成。
 - 把 `(docs)/layout.tsx` 放进 `(en)` 之后,嵌套布局是否与新的根布局正常叠加(PoC 没有嵌套布局)。
