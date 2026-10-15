@@ -15,7 +15,7 @@ export const HTML_LANG: Record<Locale, string> = { en: 'en' }
 export const LANGUAGE_NAME: Record<Locale, string> = { en: 'English' }
 
 /** Address of `href` (a path starting with "/") in the given language. */
-export function localePath<L extends string = Locale>(locale: L, href: string, prefix: Record<L, string> = URL_PREFIX as Record<L, string>): string {
+export function localePath(locale: string, href: string, prefix: Record<string, string> = URL_PREFIX): string {
   return /^\/(?!\/)/.test(href) ? `${prefix[locale]}${href}` : href
 }
 

@@ -4,9 +4,8 @@ import assert from 'node:assert/strict'
 import { localePath, stripLocale } from './config.ts'
 import { availableLocales, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, type LocaleTable } from './alternates.ts'
 
-type L = 'en' | 'zh-Hans'
 // A second language that has translated two pages, to exercise what a single published language cannot.
-const two: LocaleTable<L> = {
+const two: LocaleTable = {
   locales: ['en', 'zh-Hans'],
   defaultLocale: 'en',
   prefix: { en: '', 'zh-Hans': '/zh' },

@@ -3,13 +3,14 @@
 // entry ever points at a 404. English, the default, has every page.
 import { DEFAULT_LOCALE, HTML_LANG, LOCALES, URL_PREFIX, type Locale } from './config.ts'
 
-export interface LocaleTable<L extends string = Locale> {
-  locales: readonly L[]
-  defaultLocale: L
-  prefix: Record<L, string>
-  htmlLang: Record<L, string>
+/** The languages and what is translated; a parameter of the functions below only so tests can use a second language. */
+export interface LocaleTable {
+  locales: readonly string[]
+  defaultLocale: string
+  prefix: Record<string, string>
+  htmlLang: Record<string, string>
   /** Paths (as in site-nav, with a trailing slash) translated into each language; `null` means every path. */
-  translated: Record<L, readonly string[] | null>
+  translated: Record<string, readonly string[] | null>
 }
 
 /**
@@ -27,8 +28,8 @@ export const LOCALE_TABLE: LocaleTable = {
 }
 
 /** The languages `path` (without a language prefix) exists in, the default language first. */
-export function availableLocales<L extends string = Locale>(path: string, table: LocaleTable<L> = LOCALE_TABLE as unknown as LocaleTable<L>): L[] {
-  const has = (l: L) => table.translated[l] === null || table.translated[l].includes(path)
+export function availableLocales(path: string, table: LocaleTable = LOCALE_TABLE): string[] {
+  const has = (l: string) => table.translated[l] === null || table.translated[l].includes(path)
   return [table.defaultLocale, ...table.locales.filter(l => l !== table.defaultLocale)].filter(has)
 }
 
@@ -37,7 +38,7 @@ export function availableLocales<L extends string = Locale>(path: string, table:
  * exists in more than one language, the address in each language and the default one for x-default.
  * `path` is the page's address without a language prefix.
  */
-export function pageAlternates<L extends string = Locale>(path: string, locale?: L, table: LocaleTable<L> = LOCALE_TABLE as unknown as LocaleTable<L>): { canonical: string; languages?: Record<string, string> } {
+export function pageAlternates(path: string, locale?: string, table: LocaleTable = LOCALE_TABLE): { canonical: string; languages?: Record<string, string> } {
   const canonical = `${table.prefix[locale ?? table.defaultLocale]}${path}`
   const here = availableLocales(path, table)
   if (here.length < 2) return { canonical }
@@ -48,7 +49,7 @@ export function pageAlternates<L extends string = Locale>(path: string, locale?:
 }
 
 /** The `alternates.languages` of a sitemap entry (absolute addresses), or undefined when the page has one language. */
-export function sitemapLanguages<L extends string = Locale>(path: string, base: string, table: LocaleTable<L> = LOCALE_TABLE as unknown as LocaleTable<L>): Record<string, string> | undefined {
+export function sitemapLanguages(path: string, base: string, table: LocaleTable = LOCALE_TABLE): Record<string, string> | undefined {
   const languages = pageAlternates(path, undefined, table).languages
   if (!languages) return undefined
   return Object.fromEntries(Object.entries(languages).map(([k, v]) => [k, `${base}${v}`]))
