@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { THEME_KEY, type ThemeChoice } from '@/lib/theme'
+import { useMessages } from '@/i18n/LocaleProvider'
 
-const CHOICES: { id: ThemeChoice; label: string }[] = [
-  { id: 'system', label: 'System' },
-  { id: 'light', label: 'Light' },
-  { id: 'dark', label: 'Dark' },
-]
+const CHOICE_IDS: ThemeChoice[] = ['system', 'light', 'dark']
 
 function apply(choice: ThemeChoice) {
   const root = document.documentElement
@@ -21,6 +18,7 @@ function apply(choice: ThemeChoice) {
 
 /** Colour-scheme switch: a radio group, so it works by keyboard and is announced as one control. */
 export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
+  const { header } = useMessages()
   const [choice, setChoice] = useState<ThemeChoice>('system')
 
   useEffect(() => {
@@ -33,16 +31,16 @@ export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
   function pick(c: ThemeChoice) { setChoice(c); apply(c) }
 
   return (
-    <div role="radiogroup" aria-label="Colour scheme" className="inline-flex items-center" style={{ border: `1px solid ${onBand ? 'var(--band-line)' : 'var(--line-strong)'}`, borderRadius: 'var(--radius)' }}>
-      {CHOICES.map((c, i) => {
-        const on = choice === c.id
+    <div role="radiogroup" aria-label={header.colourScheme} className="inline-flex items-center" style={{ border: `1px solid ${onBand ? 'var(--band-line)' : 'var(--line-strong)'}`, borderRadius: 'var(--radius)' }}>
+      {CHOICE_IDS.map((id, i) => {
+        const on = choice === id
         return (
           <button
-            key={c.id}
+            key={id}
             type="button"
             role="radio"
             aria-checked={on}
-            onClick={() => pick(c.id)}
+            onClick={() => pick(id)}
             className="px-2 h-6 text-[11.5px] font-medium"
             style={{
               borderLeft: i ? `1px solid ${onBand ? 'var(--band-line)' : 'var(--line)'}` : undefined,
@@ -50,7 +48,7 @@ export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
               color: on ? (onBand ? 'var(--band)' : 'var(--posi-on-brand)') : (onBand ? 'var(--band-muted)' : 'var(--muted)'),
             }}
           >
-            {c.label}
+            {header.theme[id]}
           </button>
         )
       })}

@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { ANNOUNCEMENTS } from '@/lib/announcements'
 import { getStaticRecordJournals } from '@/lib/records-data'
 import { getPublishers } from '@/lib/global-journals'
-import { DOCS_NAV } from '@/lib/docs-nav'
+import { DOCS_STRUCTURE } from '@/lib/docs-nav'
 import { getEditionList } from '@/lib/ranking-editions'
 
 export const dynamic = 'force-static'
@@ -13,7 +13,7 @@ const BASE = 'https://posi.panorama-sg.com'
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
   const top = ['/', '/publications/', '/journals/', '/journals/open-access/', '/core-collection/', '/publishers/', '/subjects/', '/datasets/', '/certificate/', '/certificate/verify/', '/certificate/zone/', '/certification/', '/cite/', '/logos/', '/rankings/']
-  const docs = DOCS_NAV.flatMap(s => s.links.map(l => l.href))
+  const docs = DOCS_STRUCTURE.flatMap(s => s.links.map(l => l.href))
   const paths = [...new Set([...top, ...docs])]
   return [
     ...paths.map(p => ({ url: `${BASE}${p}`, lastModified: now, changeFrequency: 'weekly' as const, priority: p === '/' ? 1 : 0.7 })),

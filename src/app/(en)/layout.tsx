@@ -5,5 +5,5 @@ export const metadata = siteMetadata;
 export const viewport = siteViewport;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <RootShell lang="en">{children}</RootShell>;
+  return <RootShell locale="en">{children}</RootShell>;
 }

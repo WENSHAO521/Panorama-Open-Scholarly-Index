@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { DOCS_NAV } from '@/lib/docs-nav'
+import { docsNav } from '@/lib/docs-nav'
+import { getMessages } from '@/i18n'
 import { PageHeader } from '@/components/db'
 
 export const metadata = {
@@ -9,6 +10,7 @@ export const metadata = {
 }
 
 export default function DocsHome() {
+  const sections = docsNav(getMessages('en').docs)
   return (
     <div className="pb-10">
       <PageHeader title="Documentation">
@@ -17,7 +19,7 @@ export default function DocsHome() {
         </p>
       </PageHeader>
       <div className="grid gap-4 md:grid-cols-2">
-        {DOCS_NAV.map(section => (
+        {sections.map(section => (
           <section key={section.title} className="panel p-5">
             <h2 className="text-[16px] font-semibold" style={{ color: 'var(--ink)' }}>{section.title}</h2>
             <p className="mt-1 text-[13.5px]" style={{ color: 'var(--muted)' }}>{section.blurb}</p>

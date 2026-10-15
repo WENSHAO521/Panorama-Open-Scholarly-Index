@@ -1,57 +1,66 @@
-// Sidebar for every documentation page (the (docs) route group).
+// Sidebar for every documentation page (the (docs) route group). The structure is here; the words are in
+// src/i18n/messages, looked up by id.
+import type { Messages } from '../i18n/index.ts'
+
 export interface DocsLink { label: string; href: string; external?: boolean }
 export interface DocsSection { title: string; blurb: string; links: DocsLink[] }
 
-export const DOCS_NAV: DocsSection[] = [
+interface LinkDef { id: string; href: string; external?: boolean }
+
+export const DOCS_STRUCTURE: { id: string; links: LinkDef[] }[] = [
   {
-    title: 'About',
-    blurb: 'Who publishes POSI, what it covers, and how to reach us.',
+    id: 'about',
     links: [
-      { label: 'About POSI', href: '/about/' },
-      { label: 'News', href: '/announcements/' },
-      { label: 'Contact', href: '/contact/' },
+      { id: 'aboutPOSI', href: '/about/' },
+      { id: 'news', href: '/announcements/' },
+      { id: 'contact', href: '/contact/' },
     ],
   },
   {
-    title: 'Policies',
-    blurb: 'Indexing, certification, coverage changes and appropriate use.',
+    id: 'policies',
     links: [
-      { label: 'Editorial policy', href: '/editorial-policy/' },
-      { label: 'Responsible use', href: '/responsible-use/' },
-      { label: 'Conflict of interest', href: '/coi/' },
+      { id: 'editorialPolicy', href: '/editorial-policy/' },
+      { id: 'responsibleUse', href: '/responsible-use/' },
+      { id: 'conflictOfInterest', href: '/coi/' },
     ],
   },
   {
-    title: 'Methodology',
-    blurb: 'The evaluation architecture: PQF, AJR, citation indicators and the Citation Rankings.',
+    id: 'methodology',
     links: [
-      { label: 'Methodology', href: '/methodology/' },
-      { label: 'How to read POSI grades', href: '/grades/' },
-      { label: 'PQF: Core Collection eligibility', href: '/pqf/' },
-      { label: 'AJR ratings', href: '/ratings/' },
-      { label: 'AJR-E', href: '/ratings/early-stage/' },
-      { label: 'AJR-M', href: '/ratings/mature/' },
-      { label: 'Citation indicators', href: '/pci/' },
-      { label: 'Certificates', href: '/docs/certificates/' },
-      { label: 'PSG citation format', href: '/psg-format/' },
+      { id: 'methodology', href: '/methodology/' },
+      { id: 'howToReadPOSIGrades', href: '/grades/' },
+      { id: 'pQFCoreCollectionEligibility', href: '/pqf/' },
+      { id: 'aJRRatings', href: '/ratings/' },
+      { id: 'aJRE', href: '/ratings/early-stage/' },
+      { id: 'aJRM', href: '/ratings/mature/' },
+      { id: 'citationIndicators', href: '/pci/' },
+      { id: 'certificates', href: '/docs/certificates/' },
+      { id: 'pSGCitationFormat', href: '/psg-format/' },
     ],
   },
   {
-    title: 'Data',
-    blurb: 'Sources, record fields, provenance and downloads.',
+    id: 'data',
     links: [
-      { label: 'Documentation home', href: '/docs/' },
-      { label: 'Data sources and access', href: '/docs/data/' },
-      { label: 'Record schema', href: '/docs/schema/' },
-      { label: 'Provenance and verification', href: '/docs/provenance/' },
+      { id: 'documentationHome', href: '/docs/' },
+      { id: 'dataSourcesAndAccess', href: '/docs/data/' },
+      { id: 'recordSchema', href: '/docs/schema/' },
+      { id: 'provenanceAndVerification', href: '/docs/provenance/' },
     ],
   },
   {
-    title: 'Legal',
-    blurb: 'Terms of use and privacy.',
+    id: 'legal',
     links: [
-      { label: 'Terms of use', href: '/terms/' },
-      { label: 'Privacy policy', href: '/privacy/' },
+      { id: 'termsOfUse', href: '/terms/' },
+      { id: 'privacyPolicy', href: '/privacy/' },
     ],
   },
 ]
+
+export function docsNav(docs: Messages['docs']): DocsSection[] {
+  const text: Record<string, { title: string; blurb: string; links: Record<string, string> }> = docs
+  return DOCS_STRUCTURE.map(s => ({
+    title: text[s.id].title,
+    blurb: text[s.id].blurb,
+    links: s.links.map(l => ({ href: l.href, label: text[s.id].links[l.id], ...(l.external ? { external: true } : {}) })),
+  }))
+}

@@ -1,107 +1,124 @@
-// Primary navigation. One source for the header menu and the footer.
+// Primary, utility and footer navigation. The structure (which links exist, and where they go) is here; the
+// words are in src/i18n/messages, looked up by id, so the same structure serves every language.
+import type { Messages } from '../i18n/index.ts'
 
 export interface NavLink { label: string; href: string; description?: string }
 /** `match` lists extra path prefixes that belong to the group without being in its menu, so the header highlights it on those pages. */
-export interface NavGroup { label: string; href?: string; links?: NavLink[]; match?: string[] }
+export interface NavGroup { id: string; label: string; href?: string; links?: NavLink[]; match?: string[] }
 
-export const PRIMARY_NAV: NavGroup[] = [
-  {
-    label: 'Journals',
-    match: ['/journal/', '/record/'],
-    links: [
-      { label: 'Browse journals', href: '/journals/', description: 'Every indexed journal, by subject category' },
-      { label: 'Core Collection', href: '/core-collection/', description: 'Journals certified after editorial evaluation' },
-      { label: 'Open access directory', href: '/journals/open-access/', description: 'Open access journals by subject' },
-      { label: 'Publishers', href: '/publishers/', description: 'Publishers and their journals' },
-      { label: 'Subject categories', href: '/subjects/', description: 'The PSC subject classification' },
-    ],
+interface LinkDef { id: string; href: string }
+interface GroupDef { id: string; href?: string; match?: string[]; links?: LinkDef[] }
+
+export const PRIMARY_STRUCTURE: GroupDef[] = [
+  { id: 'journals', match: ['/journal/', '/record/'], links: [
+      { id: 'browseJournals', href: '/journals/' },
+      { id: 'coreCollection', href: '/core-collection/' },
+      { id: 'openAccessDirectory', href: '/journals/open-access/' },
+      { id: 'publishers', href: '/publishers/' },
+      { id: 'subjectCategories', href: '/subjects/' },
+    ]
   },
-  {
-    label: 'Rankings',
-    match: ['/grades/', '/pqf/', '/pci/', '/ratings/'],
-    links: [
-      { label: 'Citation Rankings', href: '/rankings/', description: 'PNCI ranks, Citation Quartiles and POSI Zones by subject category' },
-      { label: 'All categories', href: '/rankings/all/', description: 'Every ranked journal, with its category rank' },
-      { label: 'Methodology', href: '/methodology/', description: 'PQF, AJR, citation indicators and the ranking method' },
-    ],
+  { id: 'rankings', match: ['/grades/', '/pqf/', '/pci/', '/ratings/'], links: [
+      { id: 'citationRankings', href: '/rankings/' },
+      { id: 'allCategories', href: '/rankings/all/' },
+      { id: 'methodology', href: '/methodology/' },
+    ]
   },
-  { label: 'Publications', href: '/publications/', match: ['/work/'] },
-  {
-    label: 'Services',
-    links: [
-      { label: 'Certificate of indexing', href: '/certificate/', description: 'For authors of indexed publications' },
-      { label: 'Verify a certificate', href: '/certificate/verify/', description: 'Check a certificate number' },
-      { label: 'Zone certificate', href: '/certificate/zone/', description: 'A journal’s official POSI Zone in its subject category' },
-      { label: 'Journal certification', href: '/certification/', description: 'Apply for the Core Collection' },
-      { label: 'Citation generator', href: '/cite/', description: 'Convert one or many DOIs, titles or references to PSG, APA, MLA and Chicago' },
-      { label: 'PSG citation format', href: '/psg-format/', description: 'The PSG author-date citation standard' },
-      { label: 'Logos and journal marks', href: '/logos/', description: 'POSI marks for indexed and Core Collection journals' },
-    ],
+  { id: 'publications', href: '/publications/', match: ['/work/'] },
+  { id: 'services', links: [
+      { id: 'certificateOfIndexing', href: '/certificate/' },
+      { id: 'verifyACertificate', href: '/certificate/verify/' },
+      { id: 'zoneCertificate', href: '/certificate/zone/' },
+      { id: 'journalCertification', href: '/certification/' },
+      { id: 'citationGenerator', href: '/cite/' },
+      { id: 'pSGCitationFormat', href: '/psg-format/' },
+      { id: 'logosAndJournalMarks', href: '/logos/' },
+    ]
   },
-  { label: 'Data', href: '/datasets/' },
-  {
-    label: 'About',
-    match: ['/coi/', '/privacy/', '/terms/', '/responsible-use/'],
-    links: [
-      { label: 'About POSI', href: '/about/', description: 'Publisher, coverage and independence' },
-      { label: 'Editorial policy', href: '/editorial-policy/', description: 'Indexing, certification and coverage changes' },
-      { label: 'Documentation', href: '/docs/', description: 'Data sources, schema and provenance' },
-      { label: 'News', href: '/announcements/', description: 'Updates and coverage changes' },
-      { label: 'Contact', href: '/contact/', description: 'Corrections, certification and data enquiries' },
-    ],
+  { id: 'data', href: '/datasets/' },
+  { id: 'about', match: ['/coi/', '/privacy/', '/terms/', '/responsible-use/'], links: [
+      { id: 'aboutPOSI', href: '/about/' },
+      { id: 'editorialPolicy', href: '/editorial-policy/' },
+      { id: 'documentation', href: '/docs/' },
+      { id: 'news', href: '/announcements/' },
+      { id: 'contact', href: '/contact/' },
+    ]
   },
 ]
 
 /** Utility strip above the main header. */
-export const UTILITY_NAV: NavLink[] = [
-  { label: 'Editorial policy', href: '/editorial-policy/' },
-  { label: 'Methodology', href: '/methodology/' },
-  { label: 'Documentation', href: '/docs/' },
-  { label: 'Contact', href: '/contact/' },
+export const UTILITY_STRUCTURE: LinkDef[] = [
+  { id: 'editorialPolicy', href: '/editorial-policy/' },
+  { id: 'methodology', href: '/methodology/' },
+  { id: 'documentation', href: '/docs/' },
+  { id: 'contact', href: '/contact/' },
 ]
 
-export const FOOTER_NAV: { title: string; links: NavLink[] }[] = [
+export const FOOTER_STRUCTURE: { id: string; links: LinkDef[] }[] = [
   {
-    title: 'Search',
+    id: 'search',
     links: [
-      { label: 'Publications', href: '/publications/' },
-      { label: 'Journals', href: '/journals/' },
-      { label: 'Publishers', href: '/publishers/' },
-      { label: 'Subject categories', href: '/subjects/' },
-      { label: 'Citation Rankings', href: '/rankings/' },
+      { id: 'publications', href: '/publications/' },
+      { id: 'journals', href: '/journals/' },
+      { id: 'publishers', href: '/publishers/' },
+      { id: 'subjectCategories', href: '/subjects/' },
+      { id: 'citationRankings', href: '/rankings/' },
     ],
   },
   {
-    title: 'Services',
+    id: 'services',
     links: [
-      { label: 'Certificate of indexing', href: '/certificate/' },
-      { label: 'Verify a certificate', href: '/certificate/verify/' },
-      { label: 'Zone certificate', href: '/certificate/zone/' },
-      { label: 'Journal certification', href: '/certification/' },
-      { label: 'Citation generator', href: '/cite/' },
-      { label: 'PSG citation format', href: '/psg-format/' },
-      { label: 'Logos and journal marks', href: '/logos/' },
-      { label: 'Data downloads', href: '/datasets/' },
+      { id: 'certificateOfIndexing', href: '/certificate/' },
+      { id: 'verifyACertificate', href: '/certificate/verify/' },
+      { id: 'zoneCertificate', href: '/certificate/zone/' },
+      { id: 'journalCertification', href: '/certification/' },
+      { id: 'citationGenerator', href: '/cite/' },
+      { id: 'pSGCitationFormat', href: '/psg-format/' },
+      { id: 'logosAndJournalMarks', href: '/logos/' },
+      { id: 'dataDownloads', href: '/datasets/' },
     ],
   },
   {
-    title: 'About',
+    id: 'about',
     links: [
-      { label: 'About POSI', href: '/about/' },
-      { label: 'Editorial policy', href: '/editorial-policy/' },
-      { label: 'Methodology', href: '/methodology/' },
-      { label: 'Documentation', href: '/docs/' },
-      { label: 'News', href: '/announcements/' },
-      { label: 'Contact', href: '/contact/' },
+      { id: 'aboutPOSI', href: '/about/' },
+      { id: 'editorialPolicy', href: '/editorial-policy/' },
+      { id: 'methodology', href: '/methodology/' },
+      { id: 'documentation', href: '/docs/' },
+      { id: 'news', href: '/announcements/' },
+      { id: 'contact', href: '/contact/' },
     ],
   },
   {
-    title: 'Legal',
+    id: 'legal',
     links: [
-      { label: 'Terms of use', href: '/terms/' },
-      { label: 'Privacy policy', href: '/privacy/' },
-      { label: 'Responsible use', href: '/responsible-use/' },
-      { label: 'Conflict of interest', href: '/coi/' },
+      { id: 'termsOfUse', href: '/terms/' },
+      { id: 'privacyPolicy', href: '/privacy/' },
+      { id: 'responsibleUse', href: '/responsible-use/' },
+      { id: 'conflictOfInterest', href: '/coi/' },
     ],
   },
 ]
+
+type PrimaryText = Record<string, { label: string; links?: Record<string, { label: string; description?: string }> }>
+
+export function primaryNav(nav: Messages['nav']): NavGroup[] {
+  const text: PrimaryText = nav.primary
+  return PRIMARY_STRUCTURE.map(g => ({
+    id: g.id,
+    label: text[g.id].label,
+    href: g.href,
+    match: g.match,
+    links: g.links?.map(l => ({ href: l.href, ...text[g.id].links![l.id] })),
+  }))
+}
+
+export function utilityNav(nav: Messages['nav']): NavLink[] {
+  const text: Record<string, string> = nav.utility
+  return UTILITY_STRUCTURE.map(l => ({ href: l.href, label: text[l.id] }))
+}
+
+export function footerNav(nav: Messages['nav']): { title: string; links: NavLink[] }[] {
+  const text: Record<string, { title: string; links: Record<string, string> }> = nav.footer
+  return FOOTER_STRUCTURE.map(c => ({ title: text[c.id].title, links: c.links.map(l => ({ href: l.href, label: text[c.id].links[l.id] })) }))
+}
