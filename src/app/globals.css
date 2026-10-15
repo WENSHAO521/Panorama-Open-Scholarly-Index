@@ -6,7 +6,7 @@
  * POSI interface: a research database in the Japanese Editorial Academic
  * style. Dense, exact and quiet: hairline rules instead of cards and shadows,
  * one deep-green brand, one clay accent used sparingly. All colour lives in
- * src/styles/posi-tokens.css (Light / Dark / System); this file and every
+ * src/styles/posi-tokens.css (Light / Dark); this file and every
  * component read tokens, never raw hex.
  *
  * Shape rule: every surface, control, chip and table uses --radius (2px).

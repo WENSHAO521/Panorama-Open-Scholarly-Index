@@ -14,11 +14,7 @@ export const en = {
     menuClose: 'Close menu',
     colourScheme: 'Colour scheme',
     language: 'Language',
-    theme: {
-      system: 'System',
-      light: 'Light',
-      dark: 'Dark',
-    },
+    theme: { light: 'Light', dark: 'Dark' },
     navUtility: 'Utility',
     navPrimary: 'Primary',
     navMobile: 'Mobile',

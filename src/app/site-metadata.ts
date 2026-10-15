@@ -32,11 +32,8 @@ export const siteMetadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Panorama Open Scholarly Index (POSI)", description: SITE_DESCRIPTION, images: [SOCIAL_IMAGE] },
 };
 
-// Light and dark: the page follows the visitor's choice or, by default, the OS (see styles/posi-tokens.css).
+// Light by default; dark only when the visitor picks the moon (see styles/posi-tokens.css and ThemeToggle).
 export const siteViewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f8f6f0' },
-    { media: '(prefers-color-scheme: dark)', color: '#17231f' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f8f6f0',
 }
