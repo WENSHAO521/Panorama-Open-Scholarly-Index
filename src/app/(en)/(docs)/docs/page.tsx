@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { docsNav } from '@/lib/docs-nav'
 import { getMessages } from '@/i18n'
+import { pageAlternates } from '@/i18n/alternates'
 import { PageHeader } from '@/components/db'
 
 export const metadata = {
   title: 'Documentation',
   description: 'How POSI works: policies, methodology, data sources, record schema and provenance.',
-  alternates: { canonical: '/docs/' },
+  alternates: pageAlternates('/docs/'),
 }
 
 export default function DocsHome() {

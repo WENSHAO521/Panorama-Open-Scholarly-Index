@@ -8,18 +8,20 @@ export const DEFAULT_LOCALE: Locale = 'en'
 /** Path prefix of each language, without a trailing slash. English has none, so its addresses do not change. */
 export const URL_PREFIX: Record<Locale, string> = { en: '' }
 
-/** The `lang` attribute of the <html> element. */
+/** The `lang` attribute of the <html> element, also the hreflang value of the language's pages. */
 export const HTML_LANG: Record<Locale, string> = { en: 'en' }
 
+/** Each language's name in that language, as shown in the language switcher. Not translated. */
+export const LANGUAGE_NAME: Record<Locale, string> = { en: 'English' }
+
 /** Address of `href` (a path starting with "/") in the given language. */
-export function localePath(locale: Locale, href: string): string {
-  return /^\/(?!\/)/.test(href) ? `${URL_PREFIX[locale]}${href}` : href
+export function localePath<L extends string = Locale>(locale: L, href: string, prefix: Record<L, string> = URL_PREFIX as Record<L, string>): string {
+  return /^\/(?!\/)/.test(href) ? `${prefix[locale]}${href}` : href
 }
 
 /** The path without a language prefix: "/zh/journals/" becomes "/journals/". */
-export function stripLocale(pathname: string): string {
-  for (const l of LOCALES) {
-    const prefix = URL_PREFIX[l]
+export function stripLocale(pathname: string, prefixes: Record<string, string> = URL_PREFIX): string {
+  for (const prefix of Object.values(prefixes)) {
     if (prefix && (pathname === prefix || pathname.startsWith(`${prefix}/`))) return pathname.slice(prefix.length) || '/'
   }
   return pathname

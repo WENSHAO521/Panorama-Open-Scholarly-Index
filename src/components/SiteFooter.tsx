@@ -1,5 +1,6 @@
 import { Logo } from './SiteHeader'
 import { LocalizedLink } from './LocalizedLink'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { footerNav } from '@/lib/site-nav'
 import { getMessages } from '@/i18n'
 import type { Locale } from '@/i18n/config'
@@ -19,6 +20,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
             {m.footer.openSource}
           </p>
+          <div className="mt-4"><LanguageSwitcher onBand /></div>
         </div>
         {columns.map(col => (
           <nav key={col.title} aria-label={col.title}>
