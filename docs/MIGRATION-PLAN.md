@@ -75,3 +75,21 @@ keep `journal_code` stable so public URLs and certificates keep working.
    The committed file is the fallback until then, and gets stale once its workflows stop.
 4. `citation-stats` (weekly) still writes `citation-stats.json` here; it is derived from OpenAlex and Crossref and
    can move to posi-engine the same way.
+
+## Regression review (2026-10-15, C1 P0 item 2)
+
+Run against the published collection of snapshot 2026-10-11-3 (`check-discovered-parity.mjs`). The count is now
+289 rather than 195 because the site's daily jobs have kept writing since 10-11. Broken down by cause:
+
+| Field | Count | Cause | Action |
+|---|---|---|---|
+| `crossref_checked_at` 190, `auto_pqf` 8 | 198 | Written by the site's daily jobs after the snapshot; not a data-layer loss | None. Disappears once the daily job runs in posi-engine |
+| `issn_print` | 109 | Site stored the same ISSN as print and online (e.g. Molecules, online only); the data layer is correct | None. Data layer wins |
+| `issn_print` | 73 | Site has a print ISSN the data layer lacks, and online ISSN equal. Often the site had print and online swapped (e.g. The Astrophysical Journal: print 1538-4357 is the online ISSN) | Decide per journal; fill `issn_print` in posi-data from the ISSN Portal |
+| `issn_online` | 4 | Data layer holds an ISSN-L of a predecessor title as online ISSN: Experimental Biology and Medicine (0071-3384), Archives of Gynecology and Obstetrics (0003-9128), J Cancer Res Clin Oncol (0084-5353), Journal of Chest Surgery (0301-2859; its `website_url` is also empty) | Fix in posi-data; add to the ISSN review queue |
+| `country` | 85 | Corrections made here (Wiley 35, Hindawi 44, OUP 3, other 3) were never carried upstream, as step 2 warned | Port the 85 values to posi-data |
+| `country` = `VRA` | 4 | Not a country. Site-side bad value (iMetaOmics, CleanMat, Regenerative medicine and dentistry, and one more Scilight title) | Replace with the publisher's country in both stores |
+| `open_access` | 5 | Four Chinese-language journals and one Indonesian law journal, `true` here, empty upstream | Confirm against DOAJ, then fill upstream |
+
+Nothing here requires a decision from the owner beyond item 1 of the cycle plan. The country and ISSN fixes are
+data-path changes and go in a separate PR on posi-data, not here.
