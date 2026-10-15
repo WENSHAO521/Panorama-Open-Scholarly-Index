@@ -10,9 +10,9 @@
  * Palette: 深緑 (brand), 卯の花 (canvas), 利休鼠 (muted greens), 墨 (text),
  * 枯茶 (accent). Restrained, low-saturation; no gradients, no glass.
  *
- * Schemes: light by default; dark when the visitor chose Dark
- * (html[data-theme="dark"]) or chose nothing / System and the OS prefers
- * dark. html[data-theme="light"] pins light. See ThemeToggle + THEME_SCRIPT.
+ * Schemes: light by default; dark when the visitor chose it with the sun/moon
+ * switch (html[data-theme="dark"]). The operating system's setting is not
+ * followed. See ThemeToggle + THEME_SCRIPT.
  *
  * Contrast (WCAG 2.x, checked with scripts in docs/DESIGN-SYSTEM.md):
  * every text/background pair below is >= 4.5:1; control borders
@@ -20,7 +20,7 @@
  */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* ── Surfaces ───────────────────────────────────────────── */
   --posi-canvas: #f8f6f0;          /* 卯の花: page */
@@ -94,66 +94,8 @@
   --posi-focus-ring: 2px solid var(--posi-focus);
 }
 
-/* Dark. Declared twice by necessity (CSS has no selector-list for media +
-   attribute): keep the two blocks identical. System follows the OS unless the
-   visitor pinned Light. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --posi-canvas: #17231f;
-    --posi-surface: #24332c;
-    --posi-surface-soft: #2c3d33;
-    --posi-surface-sunken: #1d2b25;
-    --posi-hover: #2c3d33;
-
-    --posi-border: #425249;
-    --posi-border-soft: #35443c;
-    --posi-border-strong: #6f8277;
-
-    --posi-text: #eae7dd;
-    --posi-text-2: #d4d6cb;
-    --posi-muted: #bac5b9;
-    --posi-faint: #a3b1a6;
-
-    --posi-brand: #bfd2c3;
-    --posi-brand-hover: #d6e4d9;
-    --posi-brand-soft: #30463b;
-    --posi-brand-line: #567063;
-    --posi-on-brand: #17231f;
-
-    --posi-accent: #d1b58a;
-    --posi-accent-text: #d1b58a;
-    --posi-accent-soft: #3a3427;
-
-    --posi-success: #9acbae;  --posi-success-bg: #274236;  --posi-success-border: #3f6552;
-    --posi-warning: #d9be7c;  --posi-warning-bg: #3f3a24;  --posi-warning-border: #665c35;
-    --posi-caution: #e3a585;  --posi-caution-bg: #46302a;  --posi-caution-border: #6d4a3e;
-    --posi-danger: #e8a3a0;   --posi-danger-bg: #472b2d;   --posi-danger-border: #724346;
-    --posi-info: #9cbfd3;     --posi-info-bg: #2a3e49;     --posi-info-border: #46606f;
-
-    --posi-band: #101a17;
-    --posi-band-ink: #eae7dd;
-    --posi-band-muted: #a9b8ae;
-    --posi-band-line: rgba(234, 231, 221, 0.14);
-    --posi-code-bg: #101a17;
-    --posi-code-ink: #dfe5dc;
-
-    --posi-cat-1: #9cc6e0;
-    --posi-cat-2: #d68e66;
-    --posi-cat-3: #7fb596;
-    --posi-cat-4: #d2ae5a;
-    --posi-cat-5: #d198ae;
-    --posi-cat-6: #8274bd;
-    --posi-cat-neutral: #7d8982;
-
-    --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
-    --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
-    --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #17231f;
-
-    --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --posi-focus: #d1b58a;
-  }
-}
+/* Dark: only when the visitor chose it with the sun/moon switch (ThemeToggle stores the choice; THEME_SCRIPT applies
+   it before first paint). Without a choice the page is light, whatever the operating system prefers. */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --posi-canvas: #17231f;

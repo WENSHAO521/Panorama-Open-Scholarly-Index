@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { HTML_LANG, LANGUAGE_NAME, stripLocale } from '@/i18n/config'
+import { HTML_LANG, LANGUAGE_NAME, stripLocale, type Locale } from '@/i18n/config'
 import { availableLocales } from '@/i18n/alternates'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
@@ -15,7 +15,7 @@ export function LanguageSwitcher({ onBand = false }: { onBand?: boolean }) {
   const { header } = useMessages()
   const locale = useLocale()
   const path = stripLocale(usePathname() || '/')
-  const here = availableLocales(path)
+  const here = availableLocales(path) as Locale[] // the registry only lists the languages in config
   const muted = onBand ? 'var(--band-muted)' : 'var(--muted)'
   const ink = onBand ? 'var(--band-ink)' : 'var(--ink)'
   return (

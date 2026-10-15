@@ -21,8 +21,8 @@ New code uses `--posi-*`; components never hold raw hex.
 | accent-text | #81603A | #D1B58A |
 | border-strong (controls, ≥3:1) | #7E8C82 | #6F8277 |
 
-Schemes: Light, Dark, System (default). `ThemeToggle` (utility bar; mobile menu) stores the choice in
-this browser's localStorage; `THEME_SCRIPT` applies it before first paint. System = OS preference.
+Schemes: Light (default) and Dark. `ThemeToggle`, a sun and a moon (utility bar; mobile menu), stores the choice in
+this browser's localStorage; `THEME_SCRIPT` applies it before first paint. The operating system's setting is not followed.
 Print always uses a light, high-contrast token set.
 
 ## Accent use
