@@ -89,7 +89,7 @@ Run against the published collection of snapshot 2026-10-11-3 (`check-discovered
 | `issn_online` | 4 | Data layer holds an ISSN-L of a predecessor title as online ISSN: Experimental Biology and Medicine (0071-3384), Archives of Gynecology and Obstetrics (0003-9128), J Cancer Res Clin Oncol (0084-5353), Journal of Chest Surgery (0301-2859; its `website_url` is also empty) | Experimental Biology and Medicine, Archives of Gynecology and Obstetrics and J Cancer Res Clin Oncol are `journals/core` records with a Crossref pair; fixed in posi-data #67 (merged 2026-10-15). Journal of Chest Surgery has no pair and needs the ISSN Portal |
 | `country` | 85 | Corrections made here (Wiley 35, Hindawi 44, OUP 3, other 3) were never carried upstream, as step 2 warned | Done in posi-data #66: 79 filled. Two remain in `journals/core` records, which #66 does not touch because the corpus keeps its own copy |
 | `country` = `VRA` | 4 | Not a country. Site-side bad value (iMetaOmics, CleanMat, Regenerative medicine and dentistry, and one more Scilight title) | Done in posi-data #66 (Wiley titles US, Scilight titles AU, by the publisher's most common country). The site's own copy keeps `VRA` until the data layer is switched on |
-| `open_access` | 5 | Four Chinese-language journals and one Indonesian law journal, `true` here, empty upstream | Open: confirm against DOAJ, then fill upstream |
+| `open_access` | 5 | Four Chinese-language journals and one Indonesian law journal, `true` here, empty upstream | Checked 2026-10-15, nothing to fill: none of the five is in DOAJ (ISSN search of the DOAJ API; the same search finds Molecules). OpenAlex says `is_oa` false for the four Chinese-language journals and `true` (not in DOAJ) for Padjadjaran. The site's `true` has no DOAJ support, so the data layer's empty value stands, as for other journals DOAJ does not list (posi-data #65) |
 
 ### Correction (2026-10-15, after snapshot 2026-10-15 went live)
 
@@ -125,11 +125,12 @@ with one. Measured on that snapshot:
 | 47 `issn_print`, core journals | Fixed by posi-data #67 | Gone once the next snapshot is published |
 | 23 `issn_print` | No Crossref pair | Block. Fix at the ISSN Portal, or accept after a person has looked at the list |
 | 6 `issn_print` | Crossref pair has a bad check digit or duplicates another record (5 discovered records, plus Monthly Notices of the Royal Astronomical Society) | Block. They belong to the ISSN review queue |
-| 2 `country`, 1 `website_url`, 5 `open_access` | Core records (2), empty upstream (1), DOAJ check outstanding (5) | Block until fixed or explicitly accepted |
+| 5 `open_access` | DOAJ lists none of them; the site's `true` is unsupported | Count as accepted disagreements: the data layer's empty value is right |
+| 2 `country`, 1 `website_url` | Core records (2), empty upstream (1) | Block until fixed or explicitly accepted |
 
 Proposed rule: `--max-regressions` stays 0, but the script first removes the first three rows from the count (and
 prints them as their own categories). The gate then passes when the remaining blocking items are 0, which after #67 is
-23 + 6 + 8 = 37 records. The `discovered-parity.yml` workflow keeps running it; turning the flag on waits for it.
+23 + 6 + 3 = 32 records. The `discovered-parity.yml` workflow keeps running it; turning the flag on waits for it.
 
 Order: merge the next `directory-sync` pull request on posi-data, re-run the gate, fix or accept the 36, then turn the
 flag on for a week of side-by-side builds.
