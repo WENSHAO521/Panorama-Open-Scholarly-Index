@@ -76,6 +76,41 @@ keep `journal_code` stable so public URLs and certificates keep working.
 4. `citation-stats` (weekly) still writes `citation-stats.json` here; it is derived from OpenAlex and Crossref and
    can move to posi-engine the same way.
 
+## Decision: which side wins where both have a value (2026-10-17, C1 P0 item 1, issue #96)
+
+Measured by rebuilding the collection from the current posi-data master (`composeDiscovered`) and comparing it with
+the site's `discovered-journals.json` (`check-discovered-parity.mjs`, then a per-field breakdown). Counts are
+journals whose values differ beyond case, punctuation and http/https; they are smaller than the 2026-10-11 counts
+because posi-data #66 to #68 repaired some. The default is the one the plan always had: the data layer wins once the
+site reads it. The table lists where evidence shows the data layer is wrong or the site is newer, so the winner is
+the site until posi-data is repaired. **A repair is a posi-data change; the flag is not turned on for a field until
+its repair is merged.**
+
+| Field | Differ | Decision | Evidence |
+|---|---|---|---|
+| `website_url` | 6,085 | **Site wins** | 4,521 are a different host, and the site holds the current one: `journals.elsevier.com` to `sciencedirect.com` (542), `hindawi.com` to `onlinelibrary.wiley.com` (147 of 150), `us.sagepub.com` to `journals.sagepub.com` (117), `sciendo.com` to `reference-global.com` (102), `degruyter.com` to `degruyterbrill.com` (59). 3,035 move from http to https. Where only the path differs (1,564) the site wins too; its URL is never empty here |
+| `publisher` | 1,457 | **Site wins for 1,384**; the other 73 case by case | The data layer holds a Crossref qualifier the site left out: "Wiley (Blackwell Publishing)", "Wiley (John Wiley & Sons)". The site's name is the public one. The 20 where the site is longer and the 49 different names go to a review list |
+| `country` | 178 | **Site wins for about 123**; **data layer wins for 55** | The data layer holds wrong codes for about 123: Indonesia stored as `IO` (British Indian Ocean Territory, 41; for example POSI-J-019365 Lahjatuna), Argentina as `AG`, Brazil as `BL`, China as `CC`, Switzerland as `SZ`, Netherlands as `NE`, Ukraine as `UN`. Where the site says United States (49: Wiley and similar, which the data layer places in the United Kingdom 33, Germany 13, Netherlands 2, India 1) or `VRA` (4), or only the spelling differs (2: Macao, Trinidad & Tobago), the data layer is right |
+| `title` | 549 | **Site wins for 204**; data layer wins for the other 345 | The data layer holds the native-script title (157, for example Persian and Chinese journals the site shows in Latin script), a "parallel title/parallel title" form (21), or a trailing "(Chichester, England. Print)" (26). The other 345 differ only in an ampersand, a diacritic, or a case the comparison did not fold: no reason to prefer either, so the data layer |
+| `open_access` | 126 | **Data layer wins** | All 126 are site `true`, data layer `false`; 101 are Wiley titles that DOAJ does not list, and OpenAlex is the source for this field (posi-data #65 and #68) |
+| `issn_online` / `issn_print` | 173 / 119 | **Data layer wins**, except the print and online ISSNs of the 32 journals where the two sides are a pure swap, which wait for the Crossref pair | 110 differ inside the same two ISSNs (a role swap, wrong on either side: the site is right for PLoS Computational Biology, the data layer for Infection and Immunity), so neither side can be chosen in bulk. The 39 with different ISSNs go to the ISSN review queue (#102) |
+| `auto_pqf`, `metadata_quality_score`, `crossref_checked_at`, `updated_at` | 1,215 / 209 / 20 / 130 | **Data layer wins** | Computed fields. The site's daily jobs wrote newer values than the snapshot holds; they arrive with the next merged `directory-sync` pull request and are re-measured then |
+| `short_title`, `language`, `doaj_status`, `license`, `peer_review_type`, `subjects`, `openalex_source_id` | 59, 69, 30, 13, 11, 8, 108 | **Data layer wins** | Small groups; no pattern of site corrections |
+
+### What this asks of posi-data before the flag goes on
+
+Each is its own posi-data pull request (data-path changes are never mixed, see `DEVELOPMENT-CYCLE.md` rule 4), carried
+by a script that skips ids in `journals/core` and records `posi_curation` provenance, like `repair-from-site-regressions.mjs`:
+
+1. `country`: the roughly 123 (the wrong codes above).
+2. `website_url`: the site's value, where the data layer's differs beyond http/https and a trailing slash.
+3. `publisher`: strip the Crossref qualifier for the 1,384, then review the 73.
+4. `title`: the 204 where the data layer holds a native-script or parallel-title form; keep the native title in `aliases`
+   if the schema has one.
+
+The first three do not touch `journals/core` (a core change alters a released collection, see the correction above).
+The 90 site journals missing from the data layer are in the next `directory-sync` run, not part of this decision.
+
 ## Regression review (2026-10-15, C1 P0 item 2)
 
 Run against the published collection of snapshot 2026-10-11-3 (`check-discovered-parity.mjs`). The count is now
