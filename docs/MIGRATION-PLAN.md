@@ -115,7 +115,7 @@ listed under `audits/data-quality/marc-country-repair-2026-10-17/`), `website_ur
 for review), `title` 127 (the old title kept in `alternate_titles`). Re-measured on a collection rebuilt from that branch:
 records with a disagreement 8,878 to 1,975; identical 12,522 to 19,317; regressions unchanged at 229 (the C1 item 2
 list). Left: 157 core records the scripts do not touch, `website_url` 161, `publisher` 77, `title` 422 (the data layer
-wins), `country` 65. Nothing is merged yet: it needs a posi-data pull request and the next snapshot.
+wins), `country` 65. Merged in posi-data #72 (2026-10-17, validated by the posi-engine schema check); it reaches the published collection with the next snapshot. A collection rebuilt from master after the merge: identical 19,323, disagreement 1,968, regressions 229. The 40 publisher differences were reviewed one by one: 17 changed, 22 kept, reasons in `audits/data-quality/publisher-review-2026-10-17/decisions.json` in posi-data. Open: the 5,933 website URLs were taken from the site without opening the links; a reachability check is still to do.
 
 The first three do not touch `journals/core` (a core change alters a released collection, see the correction above).
 The 90 site journals missing from the data layer are in the next `directory-sync` run, not part of this decision.
