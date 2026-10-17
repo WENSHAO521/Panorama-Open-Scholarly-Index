@@ -1,0 +1,43 @@
+name: Weekly OpenAlex Totals Refresh
+
+# Refreshes src/lib/openalex-totals.json: OpenAlex's total works, journals and works per type. The publication
+# search page shows them when a visitor's browser cannot reach OpenAlex (its free daily budget is spent) and the
+# query has no words or filters. Three requests; the project's OPENALEX_API_KEY is used when the secret is set.
+
+on:
+  schedule:
+    - cron: '20 3 * * 1'   # Mondays 03:20 UTC, after the citation stats refresh
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fetch OpenAlex totals
+        env:
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+        run: node scripts/fetch-openalex-totals.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "posi-sync-bot"
+          git config user.email "posi-sync-bot@users.noreply.github.com"
+          git add src/lib/openalex-totals.json
+          if git diff --staged --quiet; then
+            echo "No changes, skipping commit"
+          else
+            git commit -m "chore(data): weekly OpenAlex totals refresh $(date -u +%Y-%m-%d)"
+            git push
+          fi

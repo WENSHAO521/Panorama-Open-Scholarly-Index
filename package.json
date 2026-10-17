@@ -11,6 +11,7 @@
     "test": "node --test 'src/**/*.test.ts'",
     "sync": "node scripts/discover-journals.mjs --openalex-doaj --write --limit 100 && node scripts/calc-discovered-mqs.mjs && node scripts/auto-pqf.mjs --write",
     "citation-stats": "node scripts/fetch-citation-stats.mjs",
+    "openalex-totals": "node scripts/fetch-openalex-totals.mjs",
     "prebuild": "node --max-old-space-size=6144 scripts/sync-live-data.mjs",
     "postbuild": "node scripts/check-output-sizes.mjs && node scripts/drop-served-data.mjs && node scripts/append-alias-redirects.mjs",
     "sync-live-data": "node scripts/sync-live-data.mjs",

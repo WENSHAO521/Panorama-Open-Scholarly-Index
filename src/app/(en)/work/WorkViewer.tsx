@@ -22,6 +22,16 @@ function apaOf(w: Work): string {
   return `${who} (${w.publication_year ?? 'n.d.'}). ${w.title ?? ''}${resourceOf(w) ? ` [${resourceOf(w)!.apa}]` : ''}. ${src?.display_name ?? ''}${vol}${pg}.${doi ? ` https://doi.org/${doi}` : ''}`
 }
 
+// OpenAlex gives either a short key ("cc-by") or a licence URL; show a short label, link the URL.
+function LicenseValue({ value }: { value: string }) {
+  const cc = value.match(/creativecommons\.org\/(?:licenses|publicdomain)\/([a-z-]+)\/([\d.]+)/i)
+  const kind = cc?.[1].toLowerCase()
+  const label = !cc ? value : kind === 'zero' ? 'CC0' : `CC ${kind!.toUpperCase()} ${cc[2]}`
+  return /^https?:\/\//.test(value)
+    ? <a href={value} target="_blank" rel="noopener noreferrer" className="link">{label}</a>
+    : <>{label}</>
+}
+
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4 max-w-[900px]" aria-busy="true" aria-label="Loading publication">
@@ -189,7 +199,7 @@ export function WorkViewer() {
               {pg && <><dt style={{ color: 'var(--muted)' }}>Pages</dt><dd className="font-mono">{pg}</dd></>}
               {src?.issn_l && <><dt style={{ color: 'var(--muted)' }}>ISSN-L</dt><dd className="font-mono">{src.issn_l}</dd></>}
               {doi && <><dt style={{ color: 'var(--muted)' }}>DOI</dt><dd className="font-mono break-all">{doi}</dd></>}
-              {w.primary_location?.license && <><dt style={{ color: 'var(--muted)' }}>License</dt><dd>{w.primary_location.license}</dd></>}
+              {w.primary_location?.license && <><dt style={{ color: 'var(--muted)' }}>License</dt><dd className="break-all"><LicenseValue value={w.primary_location.license} /></dd></>}
             </dl>
             {src?.issn_l && <Link href={`/publications/?issn=${src.issn_l}&sort=newest`} className="mt-3 inline-block link">More from this source</Link>}
           </div>
