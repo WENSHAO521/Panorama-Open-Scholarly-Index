@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { extractDoi } from '@/lib/utils'
 import { getTotalWorks, getTotalJournals } from '@/lib/openalex'
+import { OPENALEX_TOTALS } from '@/lib/openalex-totals'
 
 const SCOPES = [
   { key: 'sources', label: 'Journals', placeholder: 'Journal title or ISSN' },
@@ -79,7 +80,8 @@ export function LiveWorksCount() {
     getTotalWorks(c.signal).then(setN).catch(() => { if (!c.signal.aborted) setN(-1) })
     return () => c.abort()
   }, [])
-  return n === null || n === -1 ? <>Over 300 million</> : <>{n.toLocaleString('en-US')}</>
+  const snap = OPENALEX_TOTALS.works
+  return n === null || n === -1 ? (n === -1 && snap ? <>{snap.toLocaleString('en-US')}</> : <>Over 300 million</>) : <>{n.toLocaleString('en-US')}</>
 }
 
 /** Live total of journals in OpenAlex (every one is indexed by POSI). */
@@ -87,7 +89,7 @@ export function LiveJournalsCount() {
   const [n, setN] = useState<number | null>(null)
   useEffect(() => {
     const c = new AbortController()
-    getTotalJournals(c.signal).then(setN).catch(() => {})
+    getTotalJournals(c.signal).then(setN).catch(() => { if (!c.signal.aborted && OPENALEX_TOTALS.journals) setN(OPENALEX_TOTALS.journals) })
     return () => c.abort()
   }, [])
   return n === null

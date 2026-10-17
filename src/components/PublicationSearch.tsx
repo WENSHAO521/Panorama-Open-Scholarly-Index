@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
+import { openalexTotals } from '@/lib/openalex-totals'
 import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
 import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
@@ -82,7 +83,12 @@ export function PublicationSearch() {
   const [attempt, setAttempt] = useState(0)
   const [fac, setFac] = useState<{ key: string; facets: Facet[] } | null>(null)
   const status: Status = res?.key === queryKey ? res.status : { kind: 'loading' }
-  const facets = fac?.key === queryKey ? fac.facets : null
+  // OpenAlex cannot answer and nothing narrows the query: keep OpenAlex's own total and type counts (a weekly snapshot)
+  // rather than showing Crossref's.
+  const totals = openalexTotals()
+  const unnarrowed = !q && !preset && !fromYear && !toYear && !types.length && !oa && !issn
+  const snapshot = status.kind === 'ok' && status.via && unnarrowed && totals ? totals : null
+  const facets = snapshot ? snapshot.types : fac?.key === queryKey ? fac.facets : null
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -113,7 +119,7 @@ export function PublicationSearch() {
 
   const activeFilters = (preset ? 1 : 0) + (fromYear || toYear ? 1 : 0) + types.length + (oa ? 1 : 0) + (issn ? 1 : 0)
   const results = status.kind === 'ok' ? status.results : []
-  const count = status.kind === 'ok' ? status.count : null
+  const count = snapshot ? snapshot.works : status.kind === 'ok' ? status.count : null
   const lastPage = count !== null ? Math.min(MAX_PAGE, Math.max(1, Math.ceil(count / PER_PAGE))) : page
 
   const filterPanel = (
@@ -286,7 +292,7 @@ export function PublicationSearch() {
             <div className="mt-2 mb-3">
               <Note>
                 {openalexDown(status.viaWhy)}, so these results come from {{ crossref: 'Crossref', datacite: 'DataCite', zenodo: 'Zenodo' }[status.via]}. Abstracts, open access status and type
-                filters may be incomplete.{' '}
+                filters may be incomplete.{snapshot?.fetched_at && <> The total and the type counts are OpenAlex&rsquo;s, as of {snapshot.fetched_at}.</>}{' '}
                 {/* While the free daily budget is spent the page sends no OpenAlex request, so a retry would change nothing. */}
                 {!openalexBlockedUntil() && <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>}
               </Note>
