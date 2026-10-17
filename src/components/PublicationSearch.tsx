@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
-import { searchWorks, typeFacets, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
+import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
 import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -27,7 +27,17 @@ const PRESETS = [
   { key: '5y', label: 'Last 5 years', from: () => `${new Date().getFullYear() - 5}-01-01` },
 ]
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback }
+// Why the results below did not come from OpenAlex. A spent daily budget says when it resets.
+function openalexDown(why?: ProviderErrorKind): string {
+  const until = openalexBlockedUntil()
+  if (until) return `OpenAlex's free daily request limit for this browser is used up and resets at ${new Date(until).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
+  if (why === 'rate-limited') return 'OpenAlex has reached its request limit for now'
+  if (why === 'timeout') return 'OpenAlex did not answer in time'
+  if (why === 'unreachable') return 'OpenAlex could not be reached directly from your browser (network problem, filter or extension, or it refused the request)'
+  return 'OpenAlex is temporarily unavailable'
+}
+
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind }
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -77,9 +87,13 @@ export function PublicationSearch() {
   useEffect(() => {
     const ctrl = new AbortController()
     searchWorks(query, ctrl.signal)
-      .then(r => setRes({ key: queryKey, status: { kind: 'ok', ...r } }))
+      .then(r => {
+        setRes({ key: queryKey, status: { kind: 'ok', ...r } })
+        // The type counts come from OpenAlex too: when it just failed, asking again only spends its request budget.
+        if (r.via) { setFac({ key: queryKey, facets: [] }); return }
+        typeFacets(query, ctrl.signal).then(f => setFac({ key: queryKey, facets: f })).catch(e => { if (e.name !== 'AbortError') setFac({ key: queryKey, facets: [] }) })
+      })
       .catch(e => { if (e.name !== 'AbortError') setRes({ key: queryKey, status: { kind: 'error', message: String(e.message || e), why: e instanceof RegistryError ? e.kind : undefined } }) })
-    typeFacets(query, ctrl.signal).then(f => setFac({ key: queryKey, facets: f })).catch(e => { if (e.name !== 'AbortError') setFac({ key: queryKey, facets: [] }) })
     return () => ctrl.abort()
   }, [query, queryKey, attempt])
 
@@ -271,8 +285,10 @@ export function PublicationSearch() {
           {status.kind === 'ok' && status.via && (
             <div className="mt-2 mb-3">
               <Note>
-                OpenAlex is busy, so these results come from {{ crossref: 'Crossref', datacite: 'DataCite', zenodo: 'Zenodo' }[status.via]}. Abstracts, open access status and type
-                filters may be incomplete. <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>
+                {openalexDown(status.viaWhy)}, so these results come from {{ crossref: 'Crossref', datacite: 'DataCite', zenodo: 'Zenodo' }[status.via]}. Abstracts, open access status and type
+                filters may be incomplete.{' '}
+                {/* While the free daily budget is spent the page sends no OpenAlex request, so a retry would change nothing. */}
+                {!openalexBlockedUntil() && <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>}
               </Note>
             </div>
           )}

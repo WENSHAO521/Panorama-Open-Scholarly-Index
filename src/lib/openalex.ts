@@ -9,6 +9,7 @@ import {
   RegistryError, dataciteSearch, zenodoSearch, recordByDoi, registrationAgency, registriesFor, invertedIndex, holderOf,
   type GetJson, type RegistryRecord, type RecordQuery,
 } from './registries'
+import type { ProviderErrorKind } from './scholarly-api/errors'
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -70,6 +71,8 @@ export interface WorkPage {
   results: Work[]
   /** set when OpenAlex was unavailable and another registry answered instead */
   via?: Fallback
+  /** why OpenAlex could not answer, when `via` is set */
+  viaWhy?: ProviderErrorKind
 }
 
 export type Fallback = 'crossref' | 'datacite' | 'zenodo'
@@ -118,6 +121,11 @@ const wait = (ms: number, signal?: AbortSignal) => new Promise<void>((res, rej) 
 const BLOCK_KEY = (service: string) => `blocked:${service}`
 function blockedUntil(service: string): number {
   try { return Number(sessionStorage.getItem(BLOCK_KEY(service))) || 0 } catch { return 0 }
+}
+/** When OpenAlex is skipped until (ms since epoch), or 0: the visitor's daily request budget is spent. */
+export function openalexBlockedUntil(): number {
+  const t = blockedUntil('OpenAlex')
+  return t > Date.now() ? t : 0
 }
 function block(service: string, seconds: number) {
   try { sessionStorage.setItem(BLOCK_KEY(service), String(Date.now() + seconds * 1000)) } catch { /* disabled */ }
@@ -345,7 +353,7 @@ export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<
       // Repositories have no journal ISSN, so an ISSN-scoped search can only fall back to Crossref.
       const attempts = [() => crossrefSearch(qy, signal)]
       if (!qy.issn) attempts.push(() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal))
-      return firstAnswer(attempts, e)
+      return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind }
     }
     throw e
   }
