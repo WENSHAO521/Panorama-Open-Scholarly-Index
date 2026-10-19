@@ -2,11 +2,11 @@
   "grhas": {
     "issn": "3052-539X",
     "stats": {
-      "two_yr_mean_citedness": 0.4634146341463415,
+      "two_yr_mean_citedness": 0.38,
       "h_index": 2,
       "cited_by_count": 19
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "afs": {
     "issn": "3053-4011",
@@ -15,16 +15,16 @@
       "h_index": 2,
       "cited_by_count": 14
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jlpcs": {
     "issn": "3052-9654",
     "stats": {
-      "two_yr_mean_citedness": 0.4090909090909091,
+      "two_yr_mean_citedness": 0.45454545454545453,
       "h_index": 2,
-      "cited_by_count": 9
+      "cited_by_count": 10
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "hnex": {
     "issn": "3053-7037",
@@ -33,16 +33,16 @@
       "h_index": 1,
       "cited_by_count": 3
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "pear": {
     "issn": "3053-3597",
     "stats": {
-      "two_yr_mean_citedness": 0.07692307692307693,
+      "two_yr_mean_citedness": 0.07142857142857142,
       "h_index": 1,
       "cited_by_count": 1
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jesa": {
     "issn": "3053-478X",
@@ -51,7 +51,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "tts": {
     "issn": "3053-6553",
@@ -60,7 +60,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "rggd": {
     "issn": "3053-7282",
@@ -69,7 +69,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "rjgms": {
     "issn": "3053-4410",
@@ -78,7 +78,7 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "csgs": {
     "issn": "3054-9663",
@@ -87,16 +87,12 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jscc": {
     "issn": "3054-6958",
-    "stats": {
-      "two_yr_mean_citedness": 0.3333333333333333,
-      "h_index": 1,
-      "cited_by_count": 1
-    },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "stats": null,
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "silence": {
     "issn": "3054-4386",
@@ -105,109 +101,114 @@
       "h_index": 0,
       "cited_by_count": 0
     },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jmss": {
     "issn": "3078-4441",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jcsis": {
     "issn": "3078-5324",
-    "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "stats": {
+      "two_yr_mean_citedness": 1.0869565217391304,
+      "h_index": 4,
+      "cited_by_count": 75
+    },
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jcac": {
     "issn": "3079-7489",
-    "stats": {
-      "two_yr_mean_citedness": 0.3125,
-      "h_index": 1,
-      "cited_by_count": 5
-    },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "stats": null,
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "rwxk": {
     "issn": "3104-5022",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jyyjx": {
     "issn": "3080-8847",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "jassp": {
     "issn": "3079-7659",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "zgwxxk": {
     "issn": "3106-3675",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "yishu": {
     "issn": "3107-0191",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "shr-ai": {
     "issn": "3106-3705",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "smn": {
     "issn": "3106-3713",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "xw": {
     "issn": "3106-9983",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "zgfx": {
     "issn": "3107-1708",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "cmas": {
     "issn": "3106-0749",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "cds": {
     "issn": "3105-5834",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "rae": {
     "issn": "3105-5842",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "eaou": {
     "issn": "3105-5850",
-    "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "stats": {
+      "two_yr_mean_citedness": 0.16853932584269662,
+      "h_index": 2,
+      "cited_by_count": 15
+    },
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "tjiss": {
     "issn": "3030-5322",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "cropt": {
     "issn": "3056-0977",
     "stats": null,
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   },
   "aimed": {
     "issn": "3079-4757",
-    "stats": {
-      "two_yr_mean_citedness": 1.3333333333333333,
-      "h_index": 1,
-      "cited_by_count": 16
-    },
-    "fetched_at": "2026-10-12T09:58:36.217Z"
+    "stats": null,
+    "fetched_at": "2026-10-19T08:15:27.781Z"
+  },
+  "hndh": {
+    "issn": "3056-6177",
+    "stats": null,
+    "fetched_at": "2026-10-19T08:15:27.781Z"
   }
 }
