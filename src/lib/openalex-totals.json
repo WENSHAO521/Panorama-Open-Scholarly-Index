@@ -1,72 +1,72 @@
 {
-  "fetched_at": "2026-10-17",
-  "works": 327631994,
-  "journals": 217176,
+  "fetched_at": "2026-10-19",
+  "works": 328064067,
+  "journals": 217256,
   "types": [
     {
       "key": "article",
       "label": "article",
-      "count": 201131137
+      "count": 200976123
     },
     {
       "key": "dataset",
       "label": "dataset",
-      "count": 28588470
+      "count": 28907629
     },
     {
       "key": "book-chapter",
       "label": "book-chapter",
-      "count": 22171118
+      "count": 22401288
     },
     {
       "key": "conference-paper",
       "label": "conference-paper",
-      "count": 16264432
+      "count": 16297396
     },
     {
       "key": "other",
       "label": "other",
-      "count": 11702130
+      "count": 11704531
     },
     {
       "key": "dissertation",
       "label": "dissertation",
-      "count": 11387818
+      "count": 11397084
     },
     {
       "key": "paratext",
       "label": "paratext",
-      "count": 6354742
+      "count": 6356811
     },
     {
       "key": "book",
       "label": "book",
-      "count": 6314960
+      "count": 6314082
     },
     {
       "key": "preprint",
       "label": "preprint",
-      "count": 5137300
+      "count": 5139959
     },
     {
       "key": "conference-abstract",
       "label": "conference-abstract",
-      "count": 3347482
+      "count": 3347146
     },
     {
       "key": "reference-entry",
       "label": "reference-entry",
-      "count": 3317884
+      "count": 3318149
     },
     {
       "key": "report",
       "label": "report",
-      "count": 2371636
+      "count": 2373957
     },
     {
       "key": "book-review",
       "label": "book-review",
-      "count": 2117276
+      "count": 2115090
     },
     {
       "key": "libguides",
@@ -76,57 +76,57 @@
     {
       "key": "peer-review",
       "label": "peer-review",
-      "count": 1368721
+      "count": 1370109
     },
     {
       "key": "editorial",
       "label": "editorial",
-      "count": 1130404
+      "count": 1130192
     },
     {
       "key": "review",
       "label": "review",
-      "count": 1074258
+      "count": 1075557
     },
     {
       "key": "erratum",
       "label": "erratum",
-      "count": 603094
+      "count": 603360
     },
     {
       "key": "letter",
       "label": "letter",
-      "count": 527245
+      "count": 527333
     },
     {
       "key": "standard",
       "label": "standard",
-      "count": 435339
+      "count": 435432
     },
     {
       "key": "supplementary-materials",
       "label": "supplementary-materials",
-      "count": 350763
+      "count": 351011
     },
     {
       "key": "software",
       "label": "software",
-      "count": 150774
+      "count": 136778
     },
     {
       "key": "retraction",
       "label": "retraction",
-      "count": 49368
+      "count": 49417
     },
     {
       "key": "data-paper",
       "label": "data-paper",
-      "count": 25247
+      "count": 25266
     },
     {
       "key": "software-paper",
       "label": "software-paper",
-      "count": 5129
+      "count": 5100
     }
   ]
 }
