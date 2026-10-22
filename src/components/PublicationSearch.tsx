@@ -39,7 +39,7 @@ function openalexDown(why?: ProviderErrorKind): string {
   return 'OpenAlex is temporarily unavailable'
 }
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind }
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind; fresh?: number }
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -298,6 +298,12 @@ export function PublicationSearch() {
                 {!openalexBlockedUntil() && <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>}
               </Note>
             </div>
+          )}
+
+          {status.kind === 'ok' && !status.via && !!status.fresh && (
+            <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              {status.fresh === 1 ? 'The newest article comes' : `The ${status.fresh} newest articles come`} from Crossref; OpenAlex has not indexed {status.fresh === 1 ? 'it' : 'them'} yet.
+            </p>
           )}
 
           {status.kind === 'ok' && !results.length && (

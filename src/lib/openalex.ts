@@ -10,6 +10,7 @@ import {
   type GetJson, type RegistryRecord, type RecordQuery,
 } from './registries'
 import type { ProviderErrorKind } from './scholarly-api/errors'
+import { mergeNewest } from './newest-merge'
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -50,6 +51,8 @@ export interface Work {
   abstract_inverted_index?: Record<string, number[]> | null
   primary_topic?: { display_name: string; field?: { display_name: string } } | null
   keywords?: { display_name: string }[]
+  /** from Crossref, not yet indexed by OpenAlex (a journal's newest articles) */
+  fresh?: boolean
 }
 
 export type SortKey = 'relevance' | 'newest' | 'cited'
@@ -73,6 +76,8 @@ export interface WorkPage {
   via?: Fallback
   /** why OpenAlex could not answer, when `via` is set */
   viaWhy?: ProviderErrorKind
+  /** how many of the results came from Crossref because OpenAlex has not indexed them yet */
+  fresh?: number
 }
 
 export type Fallback = 'crossref' | 'datacite' | 'zenodo'
@@ -346,9 +351,25 @@ async function firstAnswer<T>(attempts: (() => Promise<T>)[], first: unknown): P
   throw err
 }
 
+/**
+ * A journal's newest articles, first page: Crossref has them as soon as the publisher deposits them,
+ * OpenAlex days to weeks later. Filters Crossref cannot apply (open access, types other than articles)
+ * keep the listing OpenAlex-only.
+ */
+function wantsFresh(qy: WorkQuery): boolean {
+  return !!qy.issn && qy.sort === 'newest' && !qy.q && qy.page === 1 && !qy.oa
+    && (!qy.type?.length || (qy.type.length === 1 && qy.type[0] === 'article'))
+}
+
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  // Started alongside OpenAlex; a Crossref failure only means the listing is OpenAlex's alone.
+  const crossref = wantsFresh(qy) ? crossrefSearch({ ...qy, type: ['article'] }, signal).catch(() => null) : null
   try {
-    return await openalexSearch(qy, signal)
+    const page = await openalexSearch(qy, signal)
+    const cr = await crossref
+    if (!cr) return page
+    const { results, added } = mergeNewest(page.results, cr.results.map(w => ({ ...w, fresh: true })), qy.perPage)
+    return added ? { ...page, count: page.count + added, results, fresh: added } : page
   } catch (e) {
     if (e instanceof RegistryError && e.busy) {
       // Repositories have no journal ISSN, so an ISSN-scoped search can only fall back to Crossref.
