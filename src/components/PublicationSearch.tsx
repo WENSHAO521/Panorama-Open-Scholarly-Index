@@ -28,13 +28,14 @@ const PRESETS = [
   { key: '5y', label: 'Last 5 years', from: () => `${new Date().getFullYear() - 5}-01-01` },
 ]
 
-// Why the results below did not come from OpenAlex. A spent daily budget says when it resets.
+// Why the results below did not come from OpenAlex, in a few words. A spent daily budget says when it resets. The
+// keyless budget belongs to the visitor's IP address (shared on a VPN or campus network), not to this browser.
 function openalexDown(why?: ProviderErrorKind): string {
   const until = openalexBlockedUntil()
-  if (until) return `OpenAlex's free daily request limit for this browser is used up and resets at ${new Date(until).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
-  if (why === 'rate-limited') return 'OpenAlex has reached its request limit for now'
+  if (until) return `OpenAlex's free daily limit for your network is used up until ${new Date(until).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
+  if (why === 'rate-limited') return 'OpenAlex is busy right now'
   if (why === 'timeout') return 'OpenAlex did not answer in time'
-  if (why === 'unreachable') return 'OpenAlex could not be reached directly from your browser (network problem, filter or extension, or it refused the request)'
+  if (why === 'unreachable') return 'OpenAlex could not be reached from your browser'
   return 'OpenAlex is temporarily unavailable'
 }
 
@@ -291,8 +292,8 @@ export function PublicationSearch() {
           {status.kind === 'ok' && status.via && (
             <div className="mt-2 mb-3">
               <Note>
-                {openalexDown(status.viaWhy)}, so these results come from {{ crossref: 'Crossref', datacite: 'DataCite', zenodo: 'Zenodo' }[status.via]}. Abstracts, open access status and type
-                filters may be incomplete.{snapshot?.fetched_at && <> The total and the type counts are OpenAlex&rsquo;s, as of {snapshot.fetched_at}.</>}{' '}
+                Results from {{ crossref: 'Crossref', datacite: 'DataCite', zenodo: 'Zenodo' }[status.via]} ({openalexDown(status.viaWhy)}).
+                Some abstracts, open access details and type filters may be missing.{snapshot?.fetched_at && <> Totals are OpenAlex&rsquo;s, as of {snapshot.fetched_at}.</>}{' '}
                 {/* While the free daily budget is spent the page sends no OpenAlex request, so a retry would change nothing. */}
                 {!openalexBlockedUntil() && <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>}
               </Note>

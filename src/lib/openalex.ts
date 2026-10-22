@@ -175,7 +175,8 @@ async function fetchJsonUncached<T>(u: string, service: string): Promise<T> {
       const r = await fetchOnce(u)
       if (r.ok) { const v = await r.json(); cacheSet(u, v); return v }
       status = r.status
-      retryAfter = Number(r.headers.get('Retry-After')) || 0
+      // OpenAlex states the seconds to its midnight-UTC reset in X-RateLimit-Reset.
+      retryAfter = Number(r.headers.get('Retry-After')) || (status === 429 ? Number(r.headers.get('X-RateLimit-Reset')) || 0 : 0)
     } catch (e) {
       timedOut = e instanceof RegistryError && e.timedOut
     }
