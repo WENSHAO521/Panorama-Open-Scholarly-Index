@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { openalexTotals } from '@/lib/openalex-totals'
-import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
+import { searchWorks, typeFacets, openalexBlockedUntil, openalexKey, setOpenalexKey, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
 import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -31,11 +31,32 @@ const PRESETS = [
 // Why the results below did not come from OpenAlex. A spent daily budget says when it resets.
 function openalexDown(why?: ProviderErrorKind): string {
   const until = openalexBlockedUntil()
-  if (until) return `OpenAlex's free daily request limit for this browser is used up and resets at ${new Date(until).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
+  if (until) return `OpenAlex's free daily request limit for your ${openalexKey() ? 'API key' : 'network (it is shared by everyone on the same IP address, VPN or campus network)'} is used up and resets at ${new Date(until).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
   if (why === 'rate-limited') return 'OpenAlex has reached its request limit for now'
   if (why === 'timeout') return 'OpenAlex did not answer in time'
   if (why === 'unreachable') return 'OpenAlex could not be reached directly from your browser (network problem, filter or extension, or it refused the request)'
   return 'OpenAlex is temporarily unavailable'
+}
+
+// OpenAlex allows a keyless network about 100 searches a day; a free personal key allows ten times that. The key
+// stays in this browser and is sent only to OpenAlex.
+function OpenalexKeyForm({ onSaved }: { onSaved: () => void }) {
+  const [v, setV] = useState('')
+  const saved = openalexKey()
+  return (
+    <form
+      className="mt-2 flex flex-wrap items-center gap-2"
+      onSubmit={e => { e.preventDefault(); setOpenalexKey(v); setV(''); onSaved() }}
+    >
+      <label htmlFor="oakey">
+        {saved ? 'Replace your OpenAlex API key' : <>Use your own free <a className="link" href="https://openalex.org/settings/api" target="_blank" rel="noopener noreferrer">OpenAlex API key</a></>}
+        {' '}(kept in this browser only):
+      </label>
+      <input id="oakey" className="input h-8 text-[13px] px-2 w-56" autoComplete="off" spellCheck={false} value={v} onChange={e => setV(e.target.value)} />
+      <button type="submit" className="btn btn-sm h-8" disabled={!v.trim()}>Save</button>
+      {saved && <button type="button" className="link" onClick={() => { setOpenalexKey(''); onSaved() }}>Remove key</button>}
+    </form>
+  )
 }
 
 type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind }
@@ -295,6 +316,7 @@ export function PublicationSearch() {
                 filters may be incomplete.{snapshot?.fetched_at && <> The total and the type counts are OpenAlex&rsquo;s, as of {snapshot.fetched_at}.</>}{' '}
                 {/* While the free daily budget is spent the page sends no OpenAlex request, so a retry would change nothing. */}
                 {!openalexBlockedUntil() && <button type="button" className="link" onClick={() => { setRes(null); setAttempt(a => a + 1) }}>Retry with OpenAlex</button>}
+                {status.viaWhy === 'rate-limited' && <OpenalexKeyForm onSaved={() => { setRes(null); setAttempt(a => a + 1) }} />}
               </Note>
             </div>
           )}
