@@ -117,6 +117,38 @@ const openAccessOf = r => (isCore(r.posi_id) ? true : r.open_access ?? null)
 // OpenAlex carry the depositing member, which is not always the publisher.
 const publisherOf = (posiId, registryPublisher) => clean(CURATED.get(posiId)?.publisher) ?? registryPublisher ?? null
 
+// The corpus is merged with the curated records when it is built, so a Core
+// Collection journal added since then is either an uncurated corpus record
+// (linked here by ISSN) or, when Crossref and OpenAlex do not list it yet,
+// missing (its curated record stands in), so it still has a directory entry
+// and a journal page with its Core Collection status.
+function withCuratedJournals(corpus) {
+  const inCorpus = new Set(corpus.map(r => r.posi_id))
+  const byIssn = new Map()
+  for (const c of CURATED.values()) if (!inCorpus.has(c.posi_id)) for (const i of [c.issn_online, c.issn_print]) if (i) byIssn.set(i, c)
+  let linked = 0
+  for (const r of corpus) {
+    if (r.curated) continue
+    const c = (r.issns ?? []).map(i => byIssn.get(i)).find(Boolean)
+    if (!c || inCorpus.has(c.posi_id)) continue
+    r.posi_id = c.posi_id
+    r.curated = true
+    r.openalex_source_id ??= c.openalex_source_id ?? null
+    inCorpus.add(c.posi_id)
+    linked++
+  }
+  const added = [...CURATED.values()]
+    .filter(c => !inCorpus.has(c.posi_id) && (c.issn_online || c.issn_print))
+    .map(c => ({
+      posi_id: c.posi_id, curated: true, title: c.title, publisher: c.publisher ?? null,
+      issns: [c.issn_online, c.issn_print].filter(Boolean), issn_l: null, openalex_source_id: c.openalex_source_id ?? null,
+      country: c.country ?? null, open_access: c.open_access ?? null, in_doaj: null, works_count: null,
+      crossref_total_dois: null, psc_category: c.psc_category ?? null, psc_confidence: c.psc_confidence ?? null, sources: [],
+    }))
+  if (linked || added.length) console.log(`  journal directory: Core Collection journals newer than the corpus, ${linked} linked by ISSN, ${added.length} from the curated records`)
+  return added.length ? [...corpus, ...added] : corpus
+}
+
 function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
@@ -301,6 +333,7 @@ if (!RANKINGS_ONLY) {
       }
       corpus = JSON.parse(gunzipSync(await get(`${assetBase}/global-corpus.json.gz`, 'buffer')).toString('utf-8'))
     }
+    corpus = withCuratedJournals(corpus)
     // Withdrawn journals leave the directory, and so the profiles and the search index built from it.
     corpus = withoutWithdrawn(corpus, 'journal directory')
     writeFileSync(out, JSON.stringify(slim(corpus)))
