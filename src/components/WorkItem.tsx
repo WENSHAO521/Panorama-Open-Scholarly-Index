@@ -25,6 +25,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         {w.publication_date && <time dateTime={w.publication_date} className="font-mono">{w.publication_date}</time>}
         {w.type && <span>{TYPE_LABEL[w.type] ?? w.type}</span>}
+        {w.fresh && <span title="Registered with Crossref; OpenAlex has not indexed it yet">New in Crossref</span>}
         {w.open_access?.is_oa && (
           <span className="inline-flex items-center gap-1" style={{ color: 'var(--verified)' }}>
             <LockOpen className="h-3.5 w-3.5" /> Open access
