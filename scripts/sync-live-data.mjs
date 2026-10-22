@@ -18,7 +18,8 @@
  *                         global-index-* (yearly ranking), asset global-corpus.json.gz
  *   public/data/j/*.json  journal profiles for /journal/, in 1024 hashed shards,
  *                         built from the corpus, the OpenAlex profiles asset
- *                         (openalex-profiles.jsonl.gz), the Citation Ranking edition
+ *                         (openalex-profiles.jsonl.gz: the daily refresh on the
+ *                         openalex-profiles release, else the corpus release's), the Citation Ranking edition
  *                         and PCS
  *
  * The ranking falls back to the committed src/lib/citation-ranking.json and
@@ -319,8 +320,16 @@ if (!RANKINGS_ONLY) {
     if (process.env.POSI_OPENALEX_PROFILES) {
       lines = readFileSync(process.env.POSI_OPENALEX_PROFILES, 'utf-8')
     } else {
-      if (!assetBase) throw new Error('no release to download profiles from')
-      lines = gunzipSync(await get(`${assetBase}/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
+      // The daily API refresh (posi-engine openalex-profiles.yml) first; the corpus release's monthly
+      // snapshot profiles if it is missing.
+      try {
+        lines = gunzipSync(await get(`${RELEASE_DOWNLOADS}/download/openalex-profiles/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
+        console.log('sync-live-data: journal profiles from the daily OpenAlex refresh')
+      } catch (e) {
+        console.warn(`sync-live-data: daily journal profiles unavailable (${e.message}); using the corpus release's`)
+        if (!assetBase) throw new Error('no release to download profiles from')
+        lines = gunzipSync(await get(`${assetBase}/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
+      }
     }
     const oa = new Map()
     for (const l of lines.split('\n')) { if (l) { const p = JSON.parse(l); oa.set(p.id, p) } }
