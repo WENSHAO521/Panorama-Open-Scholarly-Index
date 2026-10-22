@@ -117,6 +117,65 @@ const openAccessOf = r => (isCore(r.posi_id) ? true : r.open_access ?? null)
 // OpenAlex carry the depositing member, which is not always the publisher.
 const publisherOf = (posiId, registryPublisher) => clean(CURATED.get(posiId)?.publisher) ?? registryPublisher ?? null
 
+// Every journal POSI lists gets a directory entry and a journal page, the
+// moment it is added. The corpus release lists only journals Crossref or
+// OpenAlex carry, merged with the curated records (Core Collection and Global
+// Benchmark) when it was built, so a journal added since, or not yet listed
+// by either registry, is linked here: a curated journal that the corpus holds
+// only as an uncurated record takes it over by ISSN; any registry journal
+// (curated or discovered) adds the ISSNs the corpus record lacks, so each of
+// them leads to the page; and one with no corpus record stands in with its own.
+function withRegistryJournals(corpus) {
+  const read = f => JSON.parse(readFileSync(f, 'utf-8'))
+  const curated = [...CURATED.values(), ...read(join(ROOT, 'src/lib/global-benchmark.json'))].filter(j => j.posi_id)
+  const genDiscovered = join(GEN, 'discovered-journals.json')
+  const discovered = read(existsSync(genDiscovered) ? genDiscovered : join(ROOT, 'src/lib/discovered-journals.json'))
+  const issnsOf = j => [...new Set([j.issn_online, j.issn_print].filter(Boolean))]
+
+  const inCorpus = new Set(corpus.map(r => r.posi_id))
+  const curatedByIssn = new Map()
+  for (const c of curated) if (!inCorpus.has(c.posi_id)) for (const i of issnsOf(c)) curatedByIssn.set(i, c)
+  let linked = 0
+  for (const r of corpus) {
+    if (r.curated) continue
+    const c = (r.issns ?? []).map(i => curatedByIssn.get(i)).find(Boolean)
+    if (!c || inCorpus.has(c.posi_id)) continue
+    r.posi_id = c.posi_id
+    r.curated = true
+    r.openalex_source_id ??= c.openalex_source_id ?? null
+    inCorpus.add(c.posi_id)
+    linked++
+  }
+
+  const byId = new Map(corpus.map(r => [r.posi_id, r]))
+  const byIssn = new Map()
+  for (const r of corpus) for (const i of r.issns ?? []) if (!byIssn.has(i)) byIssn.set(i, r)
+  const added = []
+  let issnsAdded = 0
+  for (const [j, isCurated] of [...curated.map(c => [c, true]), ...discovered.map(d => [d, false])]) {
+    const issns = issnsOf(j)
+    if (!issns.length) continue
+    let r = (isCurated && byId.get(j.posi_id)) || issns.map(i => byIssn.get(i)).find(Boolean)
+    if (r) {
+      const more = issns.filter(i => !byIssn.has(i))
+      r.issns = [...(r.issns ?? []), ...more]
+      issnsAdded += more.length
+    } else {
+      r = {
+        posi_id: isCurated ? j.posi_id : `ISSNL-${issns[0]}`, curated: isCurated, title: j.title, publisher: j.publisher ?? null,
+        issns, issn_l: null, openalex_source_id: j.openalex_source_id ?? null,
+        country: j.country ?? null, open_access: j.open_access ?? null, in_doaj: j.doaj_status ? j.doaj_status === 'listed' : null,
+        works_count: null, crossref_total_dois: null, psc_category: j.psc_category ?? null, psc_confidence: j.psc_confidence ?? null, sources: [],
+      }
+      added.push(r)
+      byId.set(r.posi_id, r)
+    }
+    for (const i of issns) if (!byIssn.has(i)) byIssn.set(i, r)
+  }
+  console.log(`  journal directory: POSI journals beyond the corpus: ${linked} curated linked by ISSN, ${issnsAdded} ISSN(s) added, ${added.length} journal(s) from POSI's own records`)
+  return added.length ? [...corpus, ...added] : corpus
+}
+
 function titleKey(t) {
   return t?.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 }
@@ -301,6 +360,7 @@ if (!RANKINGS_ONLY) {
       }
       corpus = JSON.parse(gunzipSync(await get(`${assetBase}/global-corpus.json.gz`, 'buffer')).toString('utf-8'))
     }
+    corpus = withRegistryJournals(corpus)
     // Withdrawn journals leave the directory, and so the profiles and the search index built from it.
     corpus = withoutWithdrawn(corpus, 'journal directory')
     writeFileSync(out, JSON.stringify(slim(corpus)))
