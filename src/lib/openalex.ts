@@ -122,30 +122,13 @@ const BLOCK_KEY = (service: string) => `blocked:${service}`
 function blockedUntil(service: string): number {
   try { return Number(sessionStorage.getItem(BLOCK_KEY(service))) || 0 } catch { return 0 }
 }
-/** When OpenAlex is skipped until (ms since epoch), or 0: the daily budget of the visitor's network (or own key) is spent. */
+/** When OpenAlex is skipped until (ms since epoch), or 0: the visitor's daily request budget is spent. */
 export function openalexBlockedUntil(): number {
   const t = blockedUntil('OpenAlex')
   return t > Date.now() ? t : 0
 }
 function block(service: string, seconds: number) {
   try { sessionStorage.setItem(BLOCK_KEY(service), String(Date.now() + seconds * 1000)) } catch { /* disabled */ }
-}
-
-// Without a key OpenAlex allows $0.10 of requests a day per IP address (about 100 searches), shared by everyone
-// behind the same VPN, campus or office address. A visitor may add their own free key ($1 a day): it stays in
-// their browser and is added only to their own requests to OpenAlex. POSI never receives it.
-const KEY_STORE = 'openalex:api_key'
-/** The visitor's own OpenAlex API key, or ''. */
-export function openalexKey(): string {
-  try { return localStorage.getItem(KEY_STORE)?.trim() || '' } catch { return '' }
-}
-/** Saves (or, when empty, forgets) the visitor's OpenAlex key. A spent budget belonged to the old key, so it is cleared. */
-export function setOpenalexKey(key: string) {
-  try {
-    if (key.trim()) localStorage.setItem(KEY_STORE, key.trim())
-    else localStorage.removeItem(KEY_STORE)
-  } catch { /* disabled */ }
-  try { sessionStorage.removeItem(BLOCK_KEY('OpenAlex')) } catch { /* disabled */ }
 }
 
 const TIMEOUT_MS = 12000
@@ -164,17 +147,14 @@ async function fetchOnce(u: string, signal?: AbortSignal): Promise<Response> {
   } finally { clearTimeout(timer); signal?.removeEventListener('abort', onAbort) }
 }
 
-/**
- * GET with session cache, one shared request per URL, a time limit, and up to two short retries on busy responses.
- * `auth` is appended to the request only, so a key never becomes part of a cache entry's name.
- */
-function fetchJson<T>(u: string, service: string, signal?: AbortSignal, auth = ''): Promise<T> {
+/** GET with session cache, one shared request per URL, a time limit, and up to two short retries on busy responses. */
+function fetchJson<T>(u: string, service: string, signal?: AbortSignal): Promise<T> {
   const hit = cacheGet<T>(u)
   if (hit) return Promise.resolve(hit)
   // Identical requests in flight share one network call; a caller that aborts only abandons its own wait.
   let p = inflight.get(u) as Promise<T> | undefined
   if (!p) {
-    p = fetchJsonUncached<T>(u, service, auth).finally(() => inflight.delete(u))
+    p = fetchJsonUncached<T>(u, service).finally(() => inflight.delete(u))
     inflight.set(u, p)
   }
   if (!signal) return p
@@ -185,14 +165,14 @@ function fetchJson<T>(u: string, service: string, signal?: AbortSignal, auth = '
   })
 }
 
-async function fetchJsonUncached<T>(u: string, service: string, auth = ''): Promise<T> {
+async function fetchJsonUncached<T>(u: string, service: string): Promise<T> {
   if (blockedUntil(service) > Date.now()) throw new RegistryError(service, 429)
   for (let attempt = 0; ; attempt++) {
     let status = 0
     let retryAfter = 0
     let timedOut = false
     try {
-      const r = await fetchOnce(u + auth)
+      const r = await fetchOnce(u)
       if (r.ok) { const v = await r.json(); cacheSet(u, v); return v }
       status = r.status
       // OpenAlex states the seconds to its midnight-UTC reset in X-RateLimit-Reset.
@@ -208,17 +188,8 @@ async function fetchJsonUncached<T>(u: string, service: string, auth = ''): Prom
   }
 }
 
-async function get<T>(u: string, signal?: AbortSignal): Promise<T> {
-  const key = openalexKey()
-  if (!key) return fetchJson<T>(u, 'OpenAlex', signal)
-  try {
-    return await fetchJson<T>(u, 'OpenAlex', signal, `&api_key=${encodeURIComponent(key)}`)
-  } catch (e) {
-    // A key OpenAlex refuses is forgotten, and the request is sent again without one.
-    if (!(e instanceof RegistryError) || (e.status !== 401 && e.status !== 403)) throw e
-    setOpenalexKey('')
-    return fetchJson<T>(u, 'OpenAlex', signal)
-  }
+function get<T>(u: string, signal?: AbortSignal): Promise<T> {
+  return fetchJson<T>(u, 'OpenAlex', signal)
 }
 
 // Crossref fallback. Crossref has no abstracts index, topics or OA status,
