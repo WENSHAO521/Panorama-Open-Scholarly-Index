@@ -1,13 +1,7 @@
-import { getRankings } from '@/lib/rankings'
-import { getEdition } from '@/lib/ranking-editions'
-import { RankingsOverview } from '@/components/RankingViews'
+import { RankingsView, rankingsMetadata } from '@/components/views/RankingsView'
 
-export const metadata = {
-  title: 'Journal Citation Rankings',
-  description: 'POSI Citation Rankings: journals ranked by PNCI within their PSC subject category, with citation percentile, Citation Quartile (C-Q1 to C-Q4) and POSI Zone.',
-  alternates: { canonical: '/rankings/' },
-}
+export const metadata = rankingsMetadata('en')
 
-export default function RankingsPage() {
-  return <RankingsOverview e={getEdition(getRankings().year)!} />
+export default function Page() {
+  return <RankingsView locale="en" />
 }

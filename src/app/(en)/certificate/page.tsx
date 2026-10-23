@@ -1,30 +1,7 @@
-import Link from 'next/link'
-import { CertificateTool } from '@/components/CertificateTool'
-import { PageHeader } from '@/components/db'
+import { CertificateView, certificateMetadata } from '@/components/views/CertificateView'
 
-export const metadata = {
-  title: 'Indexing certificate',
-  description: 'Issue a verifiable certificate of indexing for your journal publications. Free, instant, checked against Crossref, DataCite, Zenodo, OpenAlex and the live POSI index.',
-  alternates: { canonical: '/certificate/' },
-}
+export const metadata = certificateMetadata('en')
 
-export default function CertificatePage() {
-  return (
-    <div className="wrap pb-10">
-      <div className="no-print">
-        <PageHeader title="Indexing certificate" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Certificate' }]}>
-          <p className="max-w-[68ch]">
-            Enter the DOIs of your publications. Each one is checked against Crossref, DataCite, Zenodo, OpenAlex and the POSI index, and a
-            certificate is issued for every indexed journal publication, stating whether its journal is in the Core
-            Collection. Anyone can verify the certificate by scanning its code. See <Link href="/docs/certificates/" className="link">how certificates work</Link>.
-          </p>
-          <p className="max-w-[68ch] mt-2">
-            Journals: a <Link href="/certificate/zone/" className="link">zone certificate</Link> states a journal&apos;s POSI
-            Zone (POSI 分区) in the current Journal Rankings.
-          </p>
-        </PageHeader>
-      </div>
-      <CertificateTool />
-    </div>
-  )
+export default function Page() {
+  return <CertificateView locale="en" />
 }

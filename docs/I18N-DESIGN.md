@@ -95,3 +95,7 @@ export const stripLocale = (pathname: string) => …                            
   - 新闻标题仍为英文(标 `lang="en"`)。404 页仍只有英文。
   - 测试:各语言键与英文一致、占位符一致、每个 PSC 代码都有中文名。
 - 下一批:期刊列表、排名表、文献检索、学科类别、出版商、核心合集。期刊详情页(2.5 万页)仍按 §9 待定。
+- **2026-10-23,第二至五批**:`/zh/journals/`、`/zh/journals/open-access/`、`/zh/subjects/`、`/zh/publishers/`、`/zh/rankings/`、`/zh/core-collection/`、`/zh/publications/`、`/zh/certificate/`、`/zh/certificate/zone/`。
+  - 做法:每页一个共用视图(`src/components/views/`),英文与中文路由都渲染它;页面专属文字放在该文件的 `Record<Locale, …>` 里,以英文为类型,漏键即 typecheck 失败。跨页共用的界面文字仍在 `messages/`。
+  - **证书与验证页保持英文**(负责人 2026-10-23 确认):中文页只翻译申请表、核查结果和说明;证书 PDF、`/certificate/verify/`、`/certificate/zone/verify/` 不翻译。
+  - 排名的类别页与历年版本页、期刊详情页、文档类页面仍为英文。
