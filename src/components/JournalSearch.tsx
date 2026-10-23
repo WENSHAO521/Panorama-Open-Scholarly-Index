@@ -58,8 +58,8 @@ export function JournalSearch() {
             <div className="panel divide-y divide-[var(--line-soft)]" aria-busy="true">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="px-4 py-3 space-y-2" style={{ borderColor: 'var(--line-soft)' }}>
-                  <div className="h-4 w-1/2 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-3 w-1/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                  <div className="h-4 w-1/2 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-3 w-1/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
                 </div>
               ))}
             </div>

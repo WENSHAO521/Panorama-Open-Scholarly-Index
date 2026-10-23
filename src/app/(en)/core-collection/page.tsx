@@ -34,7 +34,7 @@ export default function CoreCollectionPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px rounded-[2px] overflow-hidden max-w-[640px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px rounded-[var(--radius)] overflow-hidden max-w-[640px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         {[
           ['Certified journals', fmt(journals.length)],
           ['With a Citation Ranking', fmt(ranked)],

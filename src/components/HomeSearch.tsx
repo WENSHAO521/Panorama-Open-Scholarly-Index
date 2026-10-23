@@ -36,7 +36,7 @@ export function HomeSearch() {
 
   return (
     <div className="w-full">
-      <div role="tablist" aria-label="Search scope" className="flex">
+      <div role="tablist" aria-label="Search scope" className="inline-flex gap-1 p-1 mb-3 rounded-[var(--radius-lg)]" style={{ background: 'var(--surface-2)' }}>
         {SCOPES.map(s => (
           <button
             key={s.key}
@@ -44,29 +44,30 @@ export function HomeSearch() {
             role="tab"
             aria-selected={scope === s.key}
             onClick={() => setScope(s.key)}
-            className="h-9 px-4 text-[13.5px] font-medium transition-colors"
+            className="h-8 px-4 rounded-[var(--radius)] text-[13.5px] font-medium transition-colors"
             style={scope === s.key
-              ? { background: 'var(--surface)', color: 'var(--ink)', border: '1px solid var(--line)', borderBottomColor: 'var(--surface)', borderTop: '2px solid var(--teal)', marginBottom: -1, position: 'relative' }
-              : { color: 'var(--muted)', border: '1px solid transparent' }}
+              ? { background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'var(--posi-shadow-card), 0 0 0 1px var(--line)' }
+              : { color: 'var(--muted)' }}
           >
             {s.label}
           </button>
         ))}
       </div>
-      <form onSubmit={submit} role="search" className="flex flex-col sm:flex-row gap-2 p-3" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+      <form onSubmit={submit} role="search" className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <label htmlFor="home-search" className="sr-only">Search {active.label.toLowerCase()}</label>
-          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] pointer-events-none" style={{ color: 'var(--soft)' }} />
+          <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none" style={{ color: 'var(--soft)' }} />
           <input
             id="home-search"
             type="search"
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder={active.placeholder}
-            className="input h-11 pl-10 text-[15px]"
+            className="input h-[52px] pl-12 text-[16px] rounded-[var(--radius-lg)]"
+            style={{ boxShadow: 'var(--posi-shadow-card)' }}
           />
         </div>
-        <button type="submit" className="btn btn-primary h-11 px-7 text-[14px]">Search</button>
+        <button type="submit" className="btn btn-primary h-[52px] px-8 text-[15px] rounded-[var(--radius-lg)]">Search</button>
       </form>
     </div>
   )
@@ -81,7 +82,7 @@ export function LiveWorksCount() {
     return () => c.abort()
   }, [])
   const snap = OPENALEX_TOTALS.works
-  return n === null || n === -1 ? (n === -1 && snap ? <>{snap.toLocaleString('en-US')}</> : <>Over 300 million</>) : <>{n.toLocaleString('en-US')}</>
+  return n === null || n === -1 ? (n === -1 && snap ? <>{snap.toLocaleString('en-US')}</> : <>300 million+</>) : <>{n.toLocaleString('en-US')}</>
 }
 
 /** Live total of journals in OpenAlex (every one is indexed by POSI). */
@@ -93,6 +94,6 @@ export function LiveJournalsCount() {
     return () => c.abort()
   }, [])
   return n === null
-    ? <span className="inline-block h-6 w-24 align-middle rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
+    ? <span className="inline-block h-6 w-24 align-middle rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} aria-label="Loading" />
     : <>{n.toLocaleString('en-US')}</>
 }

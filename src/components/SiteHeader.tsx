@@ -88,18 +88,18 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
         aria-expanded={open}
         aria-controls={id}
         onClick={onOpen}
-        className="inline-flex h-14 items-center gap-1 px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
-        style={{ color: active || open ? 'var(--ink)' : 'var(--ink-2)', boxShadow: active ? 'inset 0 -2px 0 var(--posi-accent)' : undefined }}
+        className="inline-flex h-9 items-center gap-1 px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+        style={{ color: active || open ? 'var(--posi-brand)' : 'var(--ink-2)', background: active ? 'var(--posi-brand-soft)' : undefined }}
       >
         {group.label}
         <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
       </button>
       {open && (
-        <div id={id} className="absolute left-0 top-full z-50">
-          <ul className="w-[300px] py-1" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: '2px solid var(--posi-accent)', boxShadow: 'var(--posi-shadow-pop)' }}>
+        <div id={id} className="absolute left-0 top-full z-50 pt-2">
+          <ul className="w-[300px] p-1.5" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--posi-shadow-pop)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
-                <LocalizedLink href={l.href} onClick={onClose} className="block px-3.5 py-2 transition-colors hover:bg-[var(--hover)]">
+                <LocalizedLink href={l.href} onClick={onClose} className="block px-3 py-2 rounded-[var(--radius)] transition-colors hover:bg-[var(--hover)]">
                   <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
                   {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
                 </LocalizedLink>
@@ -117,6 +117,7 @@ export function SiteHeader() {
   const groups = primaryNav(nav)
   const utility = utilityNav(nav)
   const pathname = norm(stripLocale(usePathname() || '/'))
+  const onHome = pathname === '/'
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -129,25 +130,13 @@ export function SiteHeader() {
 
   return (
     <>
-    <div className="hidden md:block" style={{ background: 'var(--band)', color: 'var(--band-muted)' }}>
-      <div className="wrap flex h-8 items-center justify-between text-[12px]">
-        <span>{header.orgName}</span>
-        <nav aria-label={header.navUtility} className="flex items-center gap-4">
-          <ThemeToggle onBand />
-          <LanguageSwitcher onBand />
-          {utility.map(l => (
-            <LocalizedLink key={l.href} href={l.href} className="transition-colors hover:text-[var(--band-ink)]">{l.label}</LocalizedLink>
-          ))}
-        </nav>
-      </div>
-    </div>
     <header
       className="sticky top-0 z-40"
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="wrap flex items-center gap-5 h-14">
+      <div className="wrap flex items-center gap-4 h-16">
         <LocalizedLink href="/" aria-label={header.homeLabel} className="shrink-0"><Logo /></LocalizedLink>
-        <nav aria-label={header.navPrimary} className="hidden lg:flex items-center">
+        <nav aria-label={header.navPrimary} className="hidden lg:flex items-center gap-0.5 ml-2">
           {groups.map(g => g.links ? (
             <Dropdown
               key={g.id}
@@ -162,17 +151,20 @@ export function SiteHeader() {
               key={g.id}
               href={g.href!}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
-              className="inline-flex h-14 items-center px-3 text-[13.5px] font-medium transition-colors hover:text-[var(--ink)]"
-              style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--ink-2)', boxShadow: groupActive(g, pathname) ? 'inset 0 -2px 0 var(--posi-accent)' : undefined }}
+              className="inline-flex h-9 items-center px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+              style={{ color: groupActive(g, pathname) ? 'var(--posi-brand)' : 'var(--ink-2)', background: groupActive(g, pathname) ? 'var(--posi-brand-soft)' : undefined }}
             >
               {g.label}
             </LocalizedLink>
           ))}
         </nav>
-        <div className="hidden md:block ml-auto w-[240px] xl:w-[300px]"><HeaderSearch /></div>
+        <div className="hidden md:flex ml-auto items-center gap-3">
+          {!onHome && <div className="w-[220px] xl:w-[280px]"><HeaderSearch /></div>}
+          <ThemeToggle />
+        </div>
         <button
           type="button"
-          className="lg:hidden ml-auto md:ml-2 btn btn-sm"
+          className="lg:hidden ml-auto md:ml-0 btn btn-sm"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? header.menuClose : header.menuOpen}
           onClick={() => setMobileOpen(o => !o)}
@@ -182,11 +174,14 @@ export function SiteHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden max-h-[calc(100dvh-56px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
+        <div className="lg:hidden max-h-[calc(100dvh-64px)] overflow-y-auto" style={{ borderTop: '1px solid var(--line)', background: 'var(--surface)' }}>
           <div className="wrap py-3 space-y-3">
             <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
             <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.colourScheme} <ThemeToggle /></div>
-            <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.language} <LanguageSwitcher /></div>
+            <div className="flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.language} <LanguageSwitcher /></div>
+            <nav aria-label={header.navUtility} className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+              {utility.map(l => <LocalizedLink key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="link">{l.label}</LocalizedLink>)}
+            </nav>
             <nav aria-label={header.navMobile}>
               <ul>
                 {groups.map(g => (

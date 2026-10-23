@@ -57,9 +57,9 @@ export function PosiGrades({ tier, ajr, quartile, quartileProvisional, zone, zon
   const label = segs.map(s => s.text).join(', ')
   return (
     <Link href="/grades/" prefetch={false} aria-label={`POSI grades: ${label}. How to read POSI grades`}
-      className={`posi-grades inline-flex items-stretch whitespace-nowrap rounded-[3px] overflow-hidden font-medium align-middle ${text} transition-shadow hover:shadow-[0_0_0_2px_var(--posi-brand-line)]`}
+      className={`posi-grades inline-flex items-stretch whitespace-nowrap rounded-[var(--radius)] overflow-hidden font-medium align-middle ${text} transition-shadow hover:shadow-[0_0_0_2px_var(--posi-brand-line)]`}
       style={{ border: '1px solid var(--line)', background: 'var(--surface)' }}>
-      <span className="grid place-items-center px-1.5 font-semibold tracking-wide" style={{ background: 'var(--ink)', color: 'var(--surface)' }} title="POSI's own grades">POSI</span>
+      <span className="grid place-items-center px-1.5 font-semibold tracking-wide" style={{ background: 'var(--posi-brand)', color: 'var(--posi-on-brand)' }} title="POSI's own grades">POSI</span>
       {segs.map(s => (
         <span key={s.key} title={s.title} className="grid place-items-center px-2 tnum"
           style={{ ...s.style, borderLeft: `1px ${s.dashed ? 'dashed' : 'solid'} var(--line)` }}>{s.text}</span>

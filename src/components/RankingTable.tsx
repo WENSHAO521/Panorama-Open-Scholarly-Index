@@ -81,10 +81,10 @@ export function RankingTable({ rows, fileName, categories }: { rows: RankedJourn
     <div>
       <div className="flex flex-col gap-3">
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-          <div role="tablist" aria-label="Collection" className="inline-flex rounded-[2px] p-0.5 self-start" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
+          <div role="tablist" aria-label="Collection" className="inline-flex rounded-[var(--radius)] p-0.5 self-start" style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}>
             {([['all', `All (${fmt(rows.length)})`], ['core', `Core (${fmt(coreCount)})`], ['indexed', `Indexed (${fmt(rows.length - coreCount)})`]] as const).map(([k, label]) => (
               <button key={k} type="button" role="tab" aria-selected={collection === k} onClick={() => setCollection(k)}
-                className="px-3 h-8 text-[13px] rounded-[2px]"
+                className="px-3 h-8 text-[13px] rounded-[var(--radius)]"
                 style={collection === k ? { background: 'var(--surface)', color: 'var(--ink)', fontWeight: 500, boxShadow: 'var(--shadow-1)' } : { color: 'var(--muted)' }}>
                 {label}
               </button>

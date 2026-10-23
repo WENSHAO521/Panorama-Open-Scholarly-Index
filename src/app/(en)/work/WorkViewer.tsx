@@ -35,10 +35,10 @@ function LicenseValue({ value }: { value: string }) {
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4 max-w-[900px]" aria-busy="true" aria-label="Loading publication">
-      <div className="h-4 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-8 w-5/6 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-4 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-40 rounded-[2px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-4 w-48 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-8 w-5/6 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-4 w-2/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-40 rounded-[var(--radius)] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
     </div>
   )
 }

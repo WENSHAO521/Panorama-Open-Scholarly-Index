@@ -187,7 +187,7 @@ export function EvaluationCards({ ev, core, autoPqf }: {
   const reason = rankingReason(r.reason, c.eligibleItems)
   return (
     <div>
-      <div className="grid sm:grid-cols-2 gap-px rounded-[2px] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <div className="grid sm:grid-cols-2 gap-px rounded-[var(--radius-lg)] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         <Card step={1} title="Core Collection" state={core === 'core' ? 'done' : 'none'}
           value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>Eligible, certified</span> : 'Indexed, not certified'}
           action={core === 'core'

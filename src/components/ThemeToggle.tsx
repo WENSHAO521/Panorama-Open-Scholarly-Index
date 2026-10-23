@@ -27,7 +27,7 @@ export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
   function pick(c: ThemeChoice) { setChoice(c); apply(c) }
 
   return (
-    <div role="radiogroup" aria-label={header.colourScheme} className="inline-flex items-center" style={{ border: `1px solid ${onBand ? 'var(--band-line)' : 'var(--line-strong)'}`, borderRadius: 'var(--radius)' }}>
+    <div role="radiogroup" aria-label={header.colourScheme} className="inline-flex items-center overflow-hidden" style={{ border: `1px solid ${onBand ? 'var(--band-line)' : 'var(--line)'}`, borderRadius: 'var(--radius)' }}>
       {CHOICES.map(({ id, Icon }, i) => {
         const on = choice === id
         return (
@@ -39,7 +39,7 @@ export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
             aria-label={header.theme[id]}
             title={header.theme[id]}
             onClick={() => pick(id)}
-            className="inline-flex items-center justify-center w-7 h-6"
+            className="inline-flex items-center justify-center w-8 h-7"
             style={{
               borderLeft: i ? `1px solid ${onBand ? 'var(--band-line)' : 'var(--line)'}` : undefined,
               background: on ? (onBand ? 'var(--band-ink)' : 'var(--posi-brand)') : 'transparent',

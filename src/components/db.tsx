@@ -42,7 +42,7 @@ export function FreshnessTag({ f }: { f: Freshness }) {
 export function BasisTag({ b }: { b: Basis }) {
   return (
     <span
-      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[2px]"
+      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[var(--radius)]"
       title={BASIS[b].description}
       style={{ color: 'var(--muted)', border: '1px solid var(--line)' }}
     >
@@ -107,7 +107,7 @@ export function SectionTitle({ id, children, aside }: { id?: string; children: R
 export function Note({ tone = 'info', children }: { tone?: 'info' | 'warn' | 'ok'; children: React.ReactNode }) {
   const bg = tone === 'warn' ? 'var(--check-soft)' : tone === 'ok' ? 'var(--verified-soft)' : 'var(--surface-2)'
   return (
-    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[2px]" style={{ background: bg, border: '1px solid var(--line-soft)', color: 'var(--ink-2)' }}>
+    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[var(--radius)]" style={{ background: bg, border: '1px solid var(--line-soft)', color: 'var(--ink-2)' }}>
       {children}
     </div>
   )
