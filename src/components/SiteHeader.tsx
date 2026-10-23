@@ -135,7 +135,7 @@ export function SiteHeader() {
       className="sticky top-0 z-40"
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="wrap flex items-center gap-4 h-16">
+      <div className="wrap flex items-center gap-3 sm:gap-4 h-16">
         <LocalizedLink href="/" aria-label={header.homeLabel} className="shrink-0"><Logo /></LocalizedLink>
         <nav aria-label={header.navPrimary} className="hidden lg:flex items-center gap-0.5 ml-2">
           {groups.map(g => g.links ? (
@@ -161,11 +161,13 @@ export function SiteHeader() {
         </nav>
         <div className="hidden md:flex ml-auto items-center gap-3">
           {!onHome && <div className="w-[220px] xl:w-[280px]"><HeaderSearch /></div>}
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
+        <div className="md:hidden ml-auto"><LanguageSwitcher /></div>
         <button
           type="button"
-          className="lg:hidden ml-auto md:ml-0 btn btn-sm"
+          className="lg:hidden md:ml-0 btn btn-sm"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? header.menuClose : header.menuOpen}
           onClick={() => setMobileOpen(o => !o)}
@@ -179,7 +181,6 @@ export function SiteHeader() {
           <div className="wrap py-3 space-y-3">
             <div className="md:hidden"><HeaderSearch onDone={() => setMobileOpen(false)} /></div>
             <div className="md:hidden flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.colourScheme} <ThemeToggle /></div>
-            <div className="flex items-center justify-between text-[13px]" style={{ color: 'var(--muted)' }}>{header.language} <LanguageSwitcher /></div>
             <nav aria-label={header.navUtility} className="flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
               {utility.map(l => <LocalizedLink key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="link">{l.label}</LocalizedLink>)}
             </nav>

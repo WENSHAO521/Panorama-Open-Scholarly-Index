@@ -1,30 +1,43 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { HTML_LANG, LANGUAGE_NAME, stripLocale, type Locale } from '@/i18n/config'
+import { Translate } from '@phosphor-icons/react/dist/ssr'
+import { DEFAULT_LOCALE, HTML_LANG, LANGUAGE_NAME, LOCALES, stripLocale, type Locale } from '@/i18n/config'
 import { availableLocales } from '@/i18n/alternates'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
 
+// The narrow-screen label, so the switch fits beside the logo and the menu button.
+const SHORT_NAME: Record<Locale, string> = { en: 'EN', 'zh-Hans': '中文' }
+
 /**
- * Language switch for the current page: the languages the page exists in, each named in its own language.
- * With one language (all there is until the first translated page) it shows that language's name and nothing to
- * click; the link to another language appears with the page's translation (see TRANSLATED_PATHS).
+ * Language switch in the header bar: one link to the other language, named in that language. It goes to the same page
+ * in that language when the page is translated, otherwise to that language's home page (see TRANSLATED_PATHS), so a
+ * reader can always reach the other interface from wherever they are.
  */
-export function LanguageSwitcher({ onBand = false }: { onBand?: boolean }) {
+export function LanguageSwitcher() {
   const { header } = useMessages()
   const locale = useLocale()
   const path = stripLocale(usePathname() || '/')
   const here = availableLocales(path) as Locale[] // the registry only lists the languages in config
-  const muted = onBand ? 'var(--band-muted)' : 'var(--muted)'
-  const ink = onBand ? 'var(--band-ink)' : 'var(--ink)'
+  // With two languages, the other one; English from any other language.
+  const other = locale === DEFAULT_LOCALE ? LOCALES.find(l => l !== DEFAULT_LOCALE) : DEFAULT_LOCALE
+  if (!other) return null
+  const target = here.includes(other) ? path : '/'
   return (
-    <span role="group" aria-label={header.language} className="inline-flex items-center gap-3 text-[12px]">
-      {here.map(l => l === locale ? (
-        <span key={l} lang={HTML_LANG[l]} aria-current="true" className="font-medium" style={{ color: ink }}>{LANGUAGE_NAME[l]}</span>
-      ) : (
-        <LocalizedLink key={l} href={path} locale={l} lang={HTML_LANG[l]} hrefLang={HTML_LANG[l]} className="hover:underline" style={{ color: muted }}>{LANGUAGE_NAME[l]}</LocalizedLink>
-      ))}
-    </span>
+    <LocalizedLink
+      href={target}
+      locale={other}
+      lang={HTML_LANG[other]}
+      hrefLang={HTML_LANG[other]}
+      aria-label={`${header.language}: ${LANGUAGE_NAME[other]}`}
+      title={LANGUAGE_NAME[other]}
+      className="inline-flex h-7 items-center gap-1.5 px-2 sm:px-2.5 rounded-[var(--radius)] text-[13px] font-medium whitespace-nowrap transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+      style={{ border: '1px solid var(--line)', color: 'var(--ink-2)' }}
+    >
+      <Translate className="h-3.5 w-3.5" aria-hidden="true" />
+      <span className="hidden sm:inline">{LANGUAGE_NAME[other]}</span>
+      <span className="sm:hidden">{SHORT_NAME[other]}</span>
+    </LocalizedLink>
   )
 }
