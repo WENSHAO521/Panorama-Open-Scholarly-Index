@@ -1,9 +1,9 @@
 name: Daily Journal Sync
 
+# 定时运行已停（2026-10-23，#97）：期刊目录由 posi-engine 的 directory-sync 写入 posi-data，
+# 这里再写一份会让两边各自漂移（parity 检查失败）。网站切换到数据层后连同脚本删除。
 on:
-  schedule:
-    - cron: '0 2 * * *'   # 每天 UTC 02:00（北京时间 10:00）
-  workflow_dispatch:        # 允许手动触发
+  workflow_dispatch:        # 只允许手动触发
 
 # 和 DOAJ Journal Sync 写同一个文件，排队执行，不并发
 concurrency:
