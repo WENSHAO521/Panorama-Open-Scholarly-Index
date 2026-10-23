@@ -4,6 +4,7 @@
 import Link from 'next/link'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, type Collection, type Verification, type Freshness } from '@/lib/records'
 import { BASIS, type Basis } from '@/lib/schema'
+import type { Locale } from '@/i18n/config'
 
 export function VerificationPill({ v, withLabel = true }: { v: Verification; withLabel?: boolean }) {
   const m = VERIFICATION[v]
@@ -54,8 +55,10 @@ export function BasisTag({ b }: { b: Basis }) {
 }
 
 export function PageHeader({
-  eyebrow, title, children, crumbs, actions,
+  eyebrow, title, children, crumbs, actions, locale = 'en',
 }: {
+  /** The page's language, for the breadcrumb's label; crumb addresses are given already localised. */
+  locale?: Locale
   eyebrow?: string
   title: React.ReactNode
   children?: React.ReactNode
@@ -65,7 +68,7 @@ export function PageHeader({
   return (
     <header className="pt-6 pb-8 md:pt-8">
       {crumbs && (
-        <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <nav aria-label={locale === 'zh-Hans' ? '面包屑导航' : 'Breadcrumb'} className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           {crumbs.map((c, i) => (
             <span key={i}>
               {i > 0 && <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>}
