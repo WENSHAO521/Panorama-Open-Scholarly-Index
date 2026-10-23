@@ -1,6 +1,5 @@
 import { Logo } from './SiteHeader'
 import { LocalizedLink } from './LocalizedLink'
-import { LanguageSwitcher } from './LanguageSwitcher'
 import { footerNav } from '@/lib/site-nav'
 import { getMessages } from '@/i18n'
 import type { Locale } from '@/i18n/config'
@@ -20,7 +19,6 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--band-muted)' }}>
             {m.footer.openSource}
           </p>
-          <div className="mt-4"><LanguageSwitcher onBand /></div>
         </div>
         {columns.map(col => (
           <nav key={col.title} aria-label={col.title}>
@@ -39,8 +37,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="wrap py-5 grid gap-2 md:grid-cols-[1fr_auto] md:items-center text-[12px]" style={{ color: 'var(--band-muted)' }}>
           <p>
             &copy; {year} {m.footer.copyrightLead}{' '}
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">{m.footer.licenceName}</a>.{' '}
-            {m.footer.copyrightTail}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">{m.footer.licenceName}</a>{m.footer.copyrightTail}
           </p>
           <p>{m.footer.independence}</p>
         </div>

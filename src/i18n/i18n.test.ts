@@ -5,6 +5,7 @@ import { LOCALES, DEFAULT_LOCALE, URL_PREFIX, localePath, stripLocale } from './
 import { getMessages } from './index.ts'
 import { PRIMARY_STRUCTURE, UTILITY_STRUCTURE, FOOTER_STRUCTURE, primaryNav, utilityNav, footerNav } from '../lib/site-nav.ts'
 import { DOCS_STRUCTURE, docsNav } from '../lib/docs-nav.ts'
+import { PSC_ZH_HANS } from './psc-zh-Hans.ts'
 
 test('English is the default and has no path prefix, so its addresses do not change', () => {
   assert.equal(DEFAULT_LOCALE, 'en')
@@ -70,4 +71,25 @@ test('every message is a non-empty string', () => {
     else for (const [k, x] of Object.entries(v as object)) walk(x, `${path}.${k}`)
   }
   for (const l of LOCALES) walk(getMessages(l), l)
+})
+
+test('every language has the same message keys as English, in the same order', () => {
+  const keys = (v: unknown, path = ''): string[] =>
+    typeof v === 'string' ? [path] : Object.entries(v as object).flatMap(([k, x]) => keys(x, `${path}.${k}`))
+  for (const l of LOCALES) assert.deepEqual(keys(getMessages(l)), keys(getMessages(DEFAULT_LOCALE)), l)
+})
+
+test('placeholders in a translation are the ones in the English message', () => {
+  const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort()
+  const walk = (en: unknown, other: unknown, path: string, l: string) => {
+    if (typeof en === 'string') assert.deepEqual(holes(other as string), holes(en), `${l}${path}`)
+    else for (const [k, x] of Object.entries(en as object)) walk(x, (other as Record<string, unknown>)[k], `${path}.${k}`, l)
+  }
+  for (const l of LOCALES) walk(getMessages(DEFAULT_LOCALE), getMessages(l), '', l)
+})
+
+test('every PSC domain and category has a Simplified Chinese name', async () => {
+  const { readFileSync } = await import('node:fs')
+  const psc = JSON.parse(readFileSync(new URL('../lib/psc-v1.0.snapshot.json', import.meta.url), 'utf8')) as { categories: { code: string }[] }
+  for (const c of psc.categories) assert.ok(PSC_ZH_HANS[c.code], c.code)
 })
