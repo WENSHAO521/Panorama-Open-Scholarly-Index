@@ -41,7 +41,7 @@
 | 1 | 对比 7,995 条两边都有值但不一致的期刊:出版社写法 1,458、主页 URL 6,071、标题 549、国家 287、ISSN 角色 76/135、开放获取 122。逐类决定以哪边为准 | 每类一条决定,写进迁移计划 | 负责人 |
 | 2 | 195 条回退(regressions)逐条看原因 | 清单清零,或每条有说明 | 开发 |
 | 3 | 启用 posi-engine `directory-sync` 的定时(取消 cron 注释),每次生成一个 posi-data PR 由人合并 | 连续两次定时运行成功 | 开发 |
-| 4 | 打开 `POSI_DISCOVERED_FROM_DATA_LAYER=1`(Cloudflare Pages 变量和 `publish-site-data.yml`),对比生成的 `public/data` 一周 | 并行一周无意外差异 | 开发 |
+| 4 | 读取数据层:2026-10-23 起默认开启(#99,不再需要 Cloudflare 变量;`=0` 可退回),parity 每日运行对比一周 | 并行一周无意外差异 | 开发 |
 | 5 | 切换完成后,删除 `discovered-journals.json`、`Daily Journal Sync`、`DOAJ Journal Sync` 和它们的脚本,更新 `docs/UPDATING.md` | 前端不再含期刊记录 | 开发 |
 
 第 5 项可以留到 C2 初,前提是第 4 项的一周对比跨过了 C1 结束日。

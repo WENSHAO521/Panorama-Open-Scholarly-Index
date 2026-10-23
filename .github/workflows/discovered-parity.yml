@@ -2,13 +2,14 @@ name: Discovered journals parity
 
 # Compares the data layer's discovered-journals collection (posi-data, published at
 # data.posi.panorama-sg.com) with the committed src/lib/discovered-journals.json and reports what would
-# change on the site if it read the collection (POSI_DISCOVERED_FROM_DATA_LAYER=1 in the build). The site
-# switches only when this is clean: no journal missing, regressions within the limit. See
-# docs/MIGRATION-PLAN.md. Read-only; it fails when the gate fails so the failure is visible.
+# changed on the site by reading the collection (the default since #99; POSI_DISCOVERED_FROM_DATA_LAYER=0 turns
+# it off). It must stay clean: no journal missing, regressions within the limit; daily during the one-week
+# side-by-side check before the committed file is removed (#100). See docs/MIGRATION-PLAN.md. Read-only; it
+# fails when the gate fails so the failure is visible.
 
 on:
   schedule:
-    - cron: '41 4 * * 1'   # Mondays 04:41 UTC
+    - cron: '41 4 * * *'   # daily 04:41 UTC
   workflow_dispatch:
 
 permissions:

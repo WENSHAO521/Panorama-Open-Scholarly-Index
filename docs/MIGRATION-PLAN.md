@@ -58,7 +58,7 @@ keep `journal_code` stable so public URLs and certificates keep working.
 | 1 Unique ids | done |
 | 2 Reconcile | done; posi-data #59 (repairs), #60 and #62 (234 + 5 journals minted, 55 duplicates marked superseded) merged |
 | 3 Publish from posi-data | done: screening collection (posi-data #61), `collections/discovered-journals.json.gz` published in snapshot 2026-10-11, validated by posi-engine |
-| 4 Read it at build time | built, **off**: `POSI_DISCOVERED_FROM_DATA_LAYER=1`. `next build` passes with the flag off. The parity gate on the published collection: all 25,676 journals covered, 195 regressions, 7,995 differences where both sides have a value |
+| 4 Read it at build time | **on** since 2026-10-23 (#99): every build reads the collection; `POSI_DISCOVERED_FROM_DATA_LAYER=0` falls back to the committed file. Parity gate on snapshot 2026-10-23: 0 missing, 25 regressions ([run](https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/actions/runs/39997701104)); the gate now runs daily for the one-week side-by-side check |
 | 5 Move the jobs to posi-engine | built and run once by hand end to end (posi-engine #53, #55; it opened posi-data #63, merged): **manual only**, no schedule. Needs the `DOAJ_API_KEY` secret for fresher DOAJ data (optional) |
 | 6 Cut over | not done. Left for a decision, see below |
 
