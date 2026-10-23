@@ -24,22 +24,22 @@
   color-scheme: light;
 
   /* ── Surfaces ───────────────────────────────────────────── */
-  --posi-canvas: #f6f7f4;          /* page: a near-white, faintly green neutral */
+  --posi-canvas: #f7f7f5;          /* page: a near-white neutral, the green bias kept slight */
   --posi-surface: #ffffff;         /* cards, tables, inputs */
-  --posi-surface-soft: #eff2ed;    /* table headers, chips, hero band */
-  --posi-surface-sunken: #e5e8e0;  /* tracks, unfilled bars */
-  --posi-hover: #f1f4ef;           /* row / item hover */
+  --posi-surface-soft: #f0f1ee;    /* table headers, chips, hero band */
+  --posi-surface-sunken: #e6e8e3;  /* tracks, unfilled bars */
+  --posi-hover: #f2f3f0;           /* row / item hover */
 
   /* ── Lines ──────────────────────────────────────────────── */
-  --posi-border: #dfe3dc;          /* hairlines, dividers */
-  --posi-border-soft: #eaede7;     /* row separators */
-  --posi-border-strong: #7e8c82;   /* input / control edges, >= 3:1 */
+  --posi-border: #e1e3df;          /* hairlines, dividers */
+  --posi-border-soft: #ebece9;     /* row separators */
+  --posi-border-strong: #7e8a83;   /* input / control edges, >= 3:1 */
 
   /* ── Text ───────────────────────────────────────────────── */
   --posi-text: #1d2521;            /* 墨 */
-  --posi-text-2: #36423b;
-  --posi-muted: #56635a;           /* 利休鼠 */
-  --posi-faint: #627065;           /* placeholders, tertiary; still AA */
+  --posi-text-2: #36403b;
+  --posi-muted: #56605a;           /* 利休鼠 */
+  --posi-faint: #626c66;           /* placeholders, tertiary; still AA */
 
   /* ── Brand 深緑 ─────────────────────────────────────────── */
   --posi-brand: #244d40;
@@ -101,26 +101,26 @@
    it before first paint). Without a choice the page is light, whatever the operating system prefers. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --posi-canvas: #17231f;
-  --posi-surface: #24332c;
-  --posi-surface-soft: #2c3d33;
-  --posi-surface-sunken: #1d2b25;
-  --posi-hover: #2c3d33;
+  --posi-canvas: #161c1a;
+  --posi-surface: #1f2724;
+  --posi-surface-soft: #27302c;
+  --posi-surface-sunken: #1a211e;
+  --posi-hover: #27302c;
 
-  --posi-border: #425249;
-  --posi-border-soft: #35443c;
-  --posi-border-strong: #6f8277;
+  --posi-border: #3a4540;
+  --posi-border-soft: #2e3833;
+  --posi-border-strong: #6c7a72;
 
   --posi-text: #eae7dd;
   --posi-text-2: #d4d6cb;
-  --posi-muted: #bac5b9;
-  --posi-faint: #a3b1a6;
+  --posi-muted: #b3bdb6;
+  --posi-faint: #a1aca5;
 
   --posi-brand: #bfd2c3;
   --posi-brand-hover: #d6e4d9;
-  --posi-brand-soft: #30463b;
+  --posi-brand-soft: #2c3f35;
   --posi-brand-line: #567063;
-  --posi-on-brand: #17231f;
+  --posi-on-brand: #161c1a;
 
   --posi-accent: #d1b58a;
   --posi-accent-text: #d1b58a;
@@ -147,9 +147,9 @@
   --posi-cat-6: #8274bd;
   --posi-cat-neutral: #7d8982;
 
-  --posi-wos: #b9aee6;     --posi-on-wos: #17231f;
-  --posi-scopus: #e0a070;  --posi-on-scopus: #17231f;
-  --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #17231f;
+  --posi-wos: #b9aee6;     --posi-on-wos: #161c1a;
+  --posi-scopus: #e0a070;  --posi-on-scopus: #161c1a;
+  --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #161c1a;
 
   --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
   --posi-shadow-card: none;
