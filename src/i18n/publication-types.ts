@@ -1,0 +1,25 @@
+// Simplified Chinese names of the publication types (lib/openalex TYPE_LABEL keys), as used in Chinese
+// bibliographic practice. A type without a name here is shown with its English label.
+export const PUBLICATION_TYPE_ZH: Record<string, string> = {
+  article: '期刊论文',
+  review: '综述',
+  preprint: '预印本',
+  'book-chapter': '图书章节',
+  book: '图书',
+  dataset: '数据集',
+  dissertation: '学位论文',
+  editorial: '社论',
+  letter: '通讯',
+  erratum: '勘误',
+  'conference-paper': '会议论文',
+  paratext: '附文',
+  report: '报告',
+  other: '其他',
+  'peer-review': '同行评审意见',
+  libguides: '指南',
+  standard: '标准',
+  retraction: '撤稿声明',
+  'supplementary-materials': '补充材料',
+  grant: '基金项目',
+  software: '软件',
+}

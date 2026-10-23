@@ -17,7 +17,7 @@ export function VerificationPill({ v, withLabel = true }: { v: Verification; wit
 }
 
 /** Public tier chip: Core (certified) or Indexed. */
-export function CollectionTag({ k }: { k: Collection }) {
+export function CollectionTag({ k, locale = 'en' }: { k: Collection; locale?: Locale }) {
   const core = k === 'core'
   return (
     <span
@@ -27,7 +27,7 @@ export function CollectionTag({ k }: { k: Collection }) {
         ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' }
         : { color: 'var(--ink-2)', background: 'var(--surface-2)' }}
     >
-      {core ? 'Core' : 'Indexed'}
+      {locale === 'zh-Hans' ? (core ? '核心合集' : '已收录') : core ? 'Core' : 'Indexed'}
     </span>
   )
 }

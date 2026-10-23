@@ -1,20 +1,7 @@
-import { Suspense } from 'react'
-import { PublicationSearch } from '@/components/PublicationSearch'
-import { PageHeader } from '@/components/db'
+import { PublicationsView, publicationsMetadata } from '@/components/views/PublicationsView'
 
-export const metadata = {
-  title: 'Publications',
-  description: 'Search scholarly publications by date, access and type, with links to journal records, rankings and certificates of indexing.',
-  alternates: { canonical: '/publications/' },
-}
+export const metadata = publicationsMetadata('en')
 
-export default function PublicationsPage() {
-  return (
-    <div className="wrap">
-      <PageHeader title="Publications" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Publications' }]} />
-      <Suspense fallback={null}>
-        <PublicationSearch />
-      </Suspense>
-    </div>
-  )
+export default function Page() {
+  return <PublicationsView locale="en" />
 }
