@@ -4,22 +4,42 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { LockOpen, Warning } from '@phosphor-icons/react/dist/ssr'
-import { getWork, resourceOf, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work, RegistryError } from '@/lib/openalex'
+import { getWork, abstractOf, doiOf, pages, shortId, toBibtex, toRis, download, TYPE_LABEL, type Work, RegistryError } from '@/lib/openalex'
+import { generateCitationText, generatePsgInText, generateShortNote } from '@/components/CitationFormatter'
+import type { Article } from '@/lib/types'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
 import { recordHref } from '@/lib/records'
 import { CollectionTag, SectionTitle } from '@/components/db'
 
 type State = { kind: 'loading' } | { kind: 'error'; notFound: boolean } | { kind: 'ok'; w: Work }
-type CiteFormat = 'apa' | 'bibtex' | 'ris'
+const CITE_FORMATS = [
+  { id: 'apa', label: 'APA' }, { id: 'psg', label: 'PSG' }, { id: 'footnote', label: 'Footnote' },
+  { id: 'bibtex', label: 'BibTeX' }, { id: 'ris', label: 'RIS' },
+] as const
+type CiteFormat = typeof CITE_FORMATS[number]['id']
+// APA is the default; a visitor's last pick is remembered on their browser.
+const CITE_KEY = 'posi:work-cite-format'
 
-function apaOf(w: Work): string {
-  const src = w.primary_location?.source
-  const doi = doiOf(w)
-  const names = w.authorships.map(a => a.author.display_name)
-  const who = names.slice(0, 20).join(', ') + (names.length > 20 ? ', et al.' : '')
-  const vol = (w.biblio?.volume ? `, ${w.biblio.volume}` : '') + (w.biblio?.issue ? `(${w.biblio.issue})` : '')
-  const pg = pages(w) ? `, ${pages(w)}` : ''
-  return `${who} (${w.publication_year ?? 'n.d.'}). ${w.title ?? ''}${resourceOf(w) ? ` [${resourceOf(w)!.apa}]` : ''}. ${src?.display_name ?? ''}${vol}${pg}.${doi ? ` https://doi.org/${doi}` : ''}`
+/** The citation styles are written for the citation generator's Article; map a Work onto it. */
+function workToArticle(w: Work): Article {
+  const doi = doiOf(w) ?? ''
+  return {
+    id: doi || w.id, doi, title: w.title ?? '', subtitle: null,
+    journal_id: '', journal_title: w.primary_location?.source?.display_name ?? '',
+    volume: w.biblio?.volume ?? null, issue: w.biblio?.issue ?? null,
+    first_page: w.biblio?.first_page ?? null, last_page: w.biblio?.last_page ?? null,
+    // 0 is not a plausible year, so the styles print "n.d."
+    publication_year: w.publication_year ?? 0, publication_date: w.publication_date,
+    article_type: w.type === 'dataset' ? 'Dataset' : w.type === 'software' ? 'Software' : (w.type ?? 'Article'),
+    language: w.language ?? '', abstract: null, keywords: [], license: null, pdf_url: null, html_url: null,
+    openalex_work_id: null, crossref_status: null, cited_by_count: w.cited_by_count, reference_count: 0,
+    is_retracted: !!w.is_retracted, metadata_quality_score: 0, created_at: '', updated_at: '',
+    authors: w.authorships.map((a, i) => ({
+      id: a.author.id || String(i), display_name: a.author.display_name,
+      given_name: a.author.given ?? null, family_name: a.author.family ?? null,
+      orcid: a.author.orcid, openalex_author_id: null, country: null,
+    })),
+  }
 }
 
 // OpenAlex gives either a short key ("cc-by") or a licence URL; show a short label, link the URL.
@@ -47,7 +67,18 @@ export function WorkViewer() {
   const id = (useSearchParams().get('id') ?? '').trim()
   const [result, setResult] = useState<{ id: string; state: State } | null>(null)
   const state: State = !id ? { kind: 'error', notFound: true } : result?.id === id ? result.state : { kind: 'loading' }
-  const [cite, setCite] = useState<CiteFormat>('apa')
+  const [cite, setCiteState] = useState<CiteFormat>('apa')
+  const setCite = (f: CiteFormat) => {
+    setCiteState(f)
+    try { localStorage.setItem(CITE_KEY, f) } catch { /* storage blocked */ }
+  }
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CITE_KEY)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once after hydration; the server render has no storage
+      if (CITE_FORMATS.some(f => f.id === saved)) setCiteState(saved as CiteFormat)
+    } catch { /* storage blocked */ }
+  }, [])
   const issnMap = usePosiIssnMap()
 
   useEffect(() => {
@@ -80,7 +111,10 @@ export function WorkViewer() {
   const doi = doiOf(w)
   const abs = abstractOf(w)
   const posi = matchIssn(issnMap, src?.issn ?? (src?.issn_l ? [src.issn_l] : null))
-  const citeText = cite === 'apa' ? apaOf(w) : cite === 'bibtex' ? toBibtex(w) : toRis(w)
+  const article = workToArticle(w)
+  const citeText = cite === 'bibtex' ? toBibtex(w) : cite === 'ris' ? toRis(w) : generateCitationText(article, cite)
+  const citeExtra = cite === 'psg' ? { label: 'In-text', text: generatePsgInText(article.authors, w.publication_year) }
+    : cite === 'footnote' ? { label: 'Short note', text: generateShortNote(article) } : null
   const pg = pages(w)
 
   return (
@@ -157,7 +191,7 @@ export function WorkViewer() {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
               <h2 id="cite" className="text-[20px] font-semibold tracking-tight">Cite</h2>
               <div className="flex gap-1" role="tablist" aria-label="Citation format">
-                {(['apa', 'bibtex', 'ris'] as const).map(f => (
+                {CITE_FORMATS.map(({ id: f, label }) => (
                   <button
                     key={f}
                     role="tab"
@@ -167,20 +201,25 @@ export function WorkViewer() {
                     className="btn btn-sm"
                     style={cite === f ? { background: 'var(--teal-soft)', color: 'var(--teal)', borderColor: 'var(--teal-line)' } : undefined}
                   >
-                    {f === 'apa' ? 'APA' : f === 'bibtex' ? 'BibTeX' : 'RIS'}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
             <pre className="code whitespace-pre-wrap break-words"><code>{citeText}</code></pre>
+            {citeExtra?.text && (
+              <p className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>
+                {citeExtra.label}: <span className="font-mono" style={{ color: 'var(--ink-2)' }}>{citeExtra.text}</span>
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button type="button" className="btn btn-sm" onClick={() => navigator.clipboard?.writeText(citeText)}>Copy</button>
-              {cite !== 'apa' && (
+              {(cite === 'bibtex' || cite === 'ris') && (
                 <button type="button" className="btn btn-sm" onClick={() => download(`${shortId(w)}.${cite === 'bibtex' ? 'bib' : 'ris'}`, citeText, 'text/plain')}>
                   Download
                 </button>
               )}
-              {doi && <Link href={`/cite/?doi=${encodeURIComponent(doi)}`} prefetch={false} className="link text-[13px] ml-auto">PSG, MLA and Chicago</Link>}
+              {doi && <Link href={`/cite/?doi=${encodeURIComponent(doi)}`} prefetch={false} className="link text-[13px] ml-auto">MLA, Chicago and GB/T</Link>}
             </div>
           </section>
         </div>

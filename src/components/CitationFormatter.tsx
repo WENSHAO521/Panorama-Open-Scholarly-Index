@@ -5,14 +5,17 @@ import { Copy, Check } from '@phosphor-icons/react/dist/ssr'
 import { decodeHtml } from '@/lib/utils'
 import type { Article } from '@/lib/types'
 import { psgArticle, psgDataset, psgInText } from '@/lib/psg'
+import { footnoteArticle, footnoteDataset } from '@/lib/footnote'
+import { cleanTitle, initials, plausibleYear, spaceInitials, splitName, titleStop } from '@/lib/cite-text'
 
-export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'gbt' | 'bibtex' | 'ris'
+export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'footnote' | 'gbt' | 'bibtex' | 'ris'
 
 export const FORMATS: { id: CitationFormat; label: string }[] = [
   { id: 'psg',     label: 'PSG Format' },
   { id: 'apa',     label: 'APA 7' },
   { id: 'mla',     label: 'MLA 9' },
   { id: 'chicago', label: 'Chicago 17' },
+  { id: 'footnote', label: 'Footnote' },
   { id: 'gbt',     label: 'GB/T 7714' },
   { id: 'bibtex',  label: 'BibTeX' },
   { id: 'ris',     label: 'RIS' },
@@ -23,21 +26,34 @@ const FORMAT_NOTES: Record<CitationFormat, string> = {
   apa:     'APA 7th Edition - Publication Manual of the American Psychological Association (7th ed.)',
   mla:     'MLA 9th Edition - MLA Handbook (9th ed.), 2021',
   chicago: 'Chicago 17th Edition Author-Date - The Chicago Manual of Style (17th ed.)',
+  footnote: 'Footnote - Chicago 17th Edition Notes-Bibliography: the full note the first time a work is cited, the short note after',
   gbt:     'GB/T 7714-2015 - Chinese national standard for bibliographic references',
   bibtex:  'BibTeX format - for use with LaTeX reference management',
   ris:     'RIS format - compatible with Zotero, Mendeley, EndNote, and RefWorks',
 }
 
-function initials(name: string): string {
-  return name.split(/\s+/).filter(Boolean).map(n => `${n.charAt(0)}.`).join(' ')
+/** Given and family names; OpenAlex and DataCite give only a display name, which is split here. */
+function namesOf(a: Article['authors'][0]): { given: string; family: string } | null {
+  return a.family_name && a.given_name ? { given: a.given_name, family: a.family_name } : splitName(a.display_name)
 }
 
 function apaAuthor(a: Article['authors'][0]): string {
-  if (a.family_name && a.given_name) return `${a.family_name}, ${initials(a.given_name)}`
-  return a.display_name
+  const n = namesOf(a)
+  return n ? `${n.family}, ${initials(n.given)}` : a.display_name
 }
 
-const personOf = (a: Article['authors'][0]) => ({ family: a.family_name, given: a.given_name, name: a.display_name })
+const personOf = (a: Article['authors'][0]) => {
+  const n = namesOf(a)
+  return n ? { family: n.family, given: spaceInitials(n.given), name: a.display_name } : { family: null, given: null, name: a.display_name }
+}
+
+export function generateShortNote(article: Article): string {
+  const people = article.authors.map(personOf)
+  const title = decodeHtml(article.title)
+  return resourceKind(article)
+    ? footnoteDataset({ authors: people, title, kind: '' }).short
+    : footnoteArticle({ authors: people, title }).short
+}
 
 export function generatePsgInText(authors: Article['authors'], year: number | string | null): string {
   return psgInText(authors.map(personOf), year)
@@ -52,9 +68,9 @@ function resourceKind(a: Article): { psg: string; apa: string; gbt: string; bibt
 }
 
 export function generateCitationText(article: Article, format: CitationFormat, yearLabel?: string): string {
-  const title       = decodeHtml(article.title)
+  const title       = cleanTitle(decodeHtml(article.title))
   const journal     = decodeHtml(article.journal_title ?? '')
-  const year        = article.publication_year
+  const year        = plausibleYear(article.publication_year) ? article.publication_year : 'n.d.'
   const vol         = article.volume
   const iss         = article.issue
   const fp          = article.first_page
@@ -62,6 +78,7 @@ export function generateCitationText(article: Article, format: CitationFormat, y
   const doi         = article.doi
   const authors     = article.authors
   const pages       = fp ? (lp && lp !== fp ? `${fp}-${lp}` : fp) : null
+  const pagesDash   = pages?.replace('-', '–') ?? null  // APA, MLA and Chicago print ranges with an en dash
   const doiUrl      = doi ? `https://doi.org/${doi}` : null
 
   const res = resourceKind(article)
@@ -71,6 +88,10 @@ export function generateCitationText(article: Article, format: CitationFormat, y
     case 'psg':
       if (res) return psgDataset({ authors: authors.map(personOf), year: yearLabel ?? year, title, kind: res.psg, publisher: journal, doi })
       return psgArticle({ authors: authors.map(personOf), year: yearLabel ?? year, title, journal, volume: vol, issue: iss, pages, doi })
+
+    case 'footnote':
+      if (res) return footnoteDataset({ authors: authors.map(personOf), year, title, kind: res.psg, publisher: journal, doi }).full
+      return footnoteArticle({ authors: authors.map(personOf), year, title, journal, volume: vol, issue: iss, pages, doi }).full
 
     case 'apa': {
       const names = authors.map(apaAuthor)
@@ -83,42 +104,38 @@ export function generateCitationText(article: Article, format: CitationFormat, y
         authorStr = names.slice(0, 19).join(', ') + ', ... ' + names[names.length - 1]
       }
       let out = authorStr ? `${authorStr} ` : ''
-      out += `(${year}). ${title}${res ? ` [${res.apa}]` : ''}. `
+      out += `(${year}). ${res ? `${title} [${res.apa}].` : titleStop(title)} `
       if (journal) out += journal
       if (vol)     out += `, ${vol}`
       if (iss)     out += `(${iss})`
-      if (pages)   out += `, ${pages}`
+      if (pages)   out += `, ${pagesDash}`
       out += '.'
       if (doiUrl)  out += ` ${doiUrl}`
       return out
     }
 
     case 'mla': {
-      const fmtFirst = (a: Article['authors'][0]) =>
-        a.family_name && a.given_name ? `${a.family_name}, ${a.given_name}` : a.display_name
-      const fmtOther = (a: Article['authors'][0]) =>
-        a.given_name && a.family_name ? `${a.given_name} ${a.family_name}` : a.display_name
+      const fmtFirst = (a: Article['authors'][0]) => { const n = personOf(a); return n.family ? `${n.family}, ${n.given}` : a.display_name }
+      const fmtOther = (a: Article['authors'][0]) => { const n = personOf(a); return n.family ? `${n.given} ${n.family}` : a.display_name }
       let out = ''
       if      (authors.length === 1) out = `${fmtFirst(authors[0])}.`
       else if (authors.length === 2) out = `${fmtFirst(authors[0])}, and ${fmtOther(authors[1])}.`
       else if (authors.length > 2)   out = `${fmtFirst(authors[0])}, et al.`
       if (out) out += ' '
-      out += `"${title}." `
+      out += `"${titleStop(title)}" `
       if (journal) out += journal
       if (vol)     out += `, vol. ${vol}`
       if (iss)     out += `, no. ${iss}`
       out +=  `, ${year}`
-      if (pages)   out += `, pp. ${pages}`
+      if (pages)   out += `, pp. ${pagesDash}`
       if (doi)     out += `, doi:${doi}`
       out += '.'
       return out
     }
 
     case 'chicago': {
-      const fmtFirst = (a: Article['authors'][0]) =>
-        a.family_name && a.given_name ? `${a.family_name}, ${a.given_name}` : a.display_name
-      const fmtOther = (a: Article['authors'][0]) =>
-        a.given_name && a.family_name ? `${a.given_name} ${a.family_name}` : a.display_name
+      const fmtFirst = (a: Article['authors'][0]) => { const n = personOf(a); return n.family ? `${n.family}, ${n.given}` : a.display_name }
+      const fmtOther = (a: Article['authors'][0]) => { const n = personOf(a); return n.family ? `${n.given} ${n.family}` : a.display_name }
       let authorStr = ''
       if (authors.length === 1) {
         authorStr = fmtFirst(authors[0])
@@ -129,12 +146,11 @@ export function generateCitationText(article: Article, format: CitationFormat, y
         authorStr = [fmtFirst(authors[0]), ...rest].join(', ') + ', and ' + fmtOther(authors[authors.length - 1])
       }
       let out = authorStr ? `${authorStr}. ` : ''
-      out += `${year}. "${title}." `
+      out += `${year}. "${titleStop(title)}" `
       if (journal) out += journal
       if (vol)     out += ` ${vol}`
       if (iss)     out += `, no. ${iss}`
-      out += ` (${year})`
-      if (pages)   out += `: ${pages}`
+      if (pages)   out += `: ${pagesDash}`
       out += '.'
       if (doiUrl)  out += ` ${doiUrl}.`
       return out
@@ -215,8 +231,10 @@ export function CitationFormatter({ article }: Props) {
 
   const text = generateCitationText(article, format)
   const isCode = format === 'bibtex' || format === 'ris'
-  const isPsg = format === 'psg'
-  const psgInText = isPsg ? generatePsgInText(article.authors, article.publication_year) : null
+  // PSG adds an in-text citation; a footnote adds the short note used after the first citation.
+  const second = format === 'psg'
+    ? { label: 'In-text Citation', text: generatePsgInText(article.authors, plausibleYear(article.publication_year) ? article.publication_year : null) }
+    : format === 'footnote' ? { label: 'Short note', text: generateShortNote(article) } : null
 
   async function handleCopy() {
     try {
@@ -291,13 +309,13 @@ export function CitationFormatter({ article }: Props) {
         </button>
       </div>
 
-      {/* PSG in-text citation */}
-      {isPsg && psgInText && (
+      {/* PSG in-text citation, or the short form of a footnote */}
+      {second?.text && (
         <div className="px-5 pb-4 pt-0" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
-            In-text Citation
+            {second.label}
           </p>
-          <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{psgInText}</p>
+          <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{second.text}</p>
         </div>
       )}
 

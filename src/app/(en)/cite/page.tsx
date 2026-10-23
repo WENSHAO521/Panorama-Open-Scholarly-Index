@@ -12,6 +12,8 @@ import { parseInput, MAX_BATCH } from '@/lib/cite-parse'
 import type { RefEntry } from '@/lib/cite-parse'
 import { psgArticle, psgBook, psgWebpage, psgInText, PLAIN } from '@/lib/psg'
 import type { PsgFmt } from '@/lib/psg'
+import { titleStop } from '@/lib/cite-text'
+import { footnoteArticle, footnoteBook, footnoteWebpage, type FootnotePair } from '@/lib/footnote'
 import { crossrefSearchMany, doiAgencies, openAlexGetArticle, registryGetWork, fetchBookByIsbn } from '@/lib/cite-sources'
 import type { BookInfo } from '@/lib/cite-sources'
 import { decodeHtml } from '@/lib/utils'
@@ -44,7 +46,7 @@ interface ManualWebsiteForm {
 }
 
 interface CitPair { html: string; plain: string; intext: string }
-interface AllCitations { psg: CitPair; apa: CitPair; mla: CitPair; chicago: CitPair }
+interface AllCitations { psg: CitPair; apa: CitPair; mla: CitPair; chicago: CitPair; footnote: CitPair }
 
 type InputKind = 'doi' | 'isbn' | 'url-doi' | 'url-manual' | 'search'
 type Source = 'crossref' | 'openalex' | 'zenodo' | 'datacite'
@@ -198,7 +200,7 @@ function buildApaArticle(f: ManualArticleForm): CitPair {
   const y = f.year || 'n.d.'
   const pg = f.pages ? fmtPages(f.pages) : ''
   let h = auth ? `${endStop(auth)} ` : ''
-  h += `(${y}). ${f.title || 'Untitled'}. `
+  h += `(${y}). ${titleStop(f.title || 'Untitled')} `
   h += `<em>${f.journal || 'Journal'}</em>`
   if (f.volume) h += `, <em>${f.volume}</em>`
   if (f.issue) h += `(${f.issue})`
@@ -228,7 +230,7 @@ function buildApaWebsite(f: ManualWebsiteForm): CitPair {
   }
   const dateStr = f.monthDay ? `${f.year}, ${f.monthDay}` : f.year || 'n.d.'
   let h = authStr ? `${authStr}. ` : ''
-  h += `(${dateStr}). ${f.title || 'Untitled'}.`
+  h += `(${dateStr}). ${titleStop(f.title || 'Untitled')}`
   if (f.siteName) h += ` <em>${f.siteName}</em>.`
   if (f.url) h += ` ${f.url}`
   const nm = f.isOrg ? f.authorName : f.authorName.split(',')[0].trim()
@@ -241,7 +243,7 @@ function buildMlaArticle(f: ManualArticleForm): CitPair {
   const auth = mlaAuthors(f.authors)
   const pg = f.pages ? fmtPages(f.pages) : ''
   let h = auth ? `${endStop(auth)} ` : ''
-  h += `"${f.title || 'Untitled'}." <em>${f.journal || 'Journal'}</em>`
+  h += `"${titleStop(f.title || 'Untitled')}" <em>${f.journal || 'Journal'}</em>`
   if (f.volume) h += `, vol. ${f.volume}`
   if (f.issue) h += `, no. ${f.issue}`
   if (f.year) h += `, ${f.year}`
@@ -271,7 +273,7 @@ function buildMlaWebsite(f: ManualWebsiteForm): CitPair {
     return `${last.trim()}, ${rest.join(',').trim()}`
   })()
   let h = auth ? `${endStop(auth)} ` : ''
-  h += `"${f.title || 'Untitled'}." `
+  h += `"${titleStop(f.title || 'Untitled')}" `
   if (f.siteName) h += `<em>${f.siteName}</em>, `
   const dateStr = f.monthDay ? `${f.monthDay} ${f.year}` : f.year || 'n.d.'
   h += `${dateStr},`
@@ -288,7 +290,7 @@ function buildChicagoArticle(f: ManualArticleForm): CitPair {
   const y = f.year || 'n.d.'
   const pg = f.pages ? fmtPages(f.pages) : ''
   let h = auth ? `${endStop(auth)} ` : ''
-  h += `${y}. "${f.title || 'Untitled'}." <em>${f.journal || 'Journal'}</em>`
+  h += `${y}. "${titleStop(f.title || 'Untitled')}" <em>${f.journal || 'Journal'}</em>`
   if (f.volume) h += ` ${f.volume}`
   if (f.issue) h += ` (${f.issue})`
   if (pg) h += `: ${pg}`
@@ -313,7 +315,7 @@ function buildChicagoWebsite(f: ManualWebsiteForm): CitPair {
   const auth = f.authorName
   const y = f.year || 'n.d.'
   let h = auth ? `${endStop(auth)} ` : ''
-  h += `${y}. "${f.title || 'Untitled'}."`
+  h += `${y}. "${titleStop(f.title || 'Untitled')}"`
   if (f.siteName) h += ` ${f.siteName}.`
   if (f.accessDate) h += ` Accessed ${f.accessDate}.`
   if (f.url) h += ` ${f.url}.`
@@ -321,16 +323,42 @@ function buildChicagoWebsite(f: ManualWebsiteForm): CitPair {
   return cp(h, `(${nm || 'Author'} ${y})`)
 }
 
+// ── Footnote (Chicago notes-bibliography) builders; the short note takes the in-text slot ──
+
+/** The same footnote builder rendered twice: HTML for display, plain text for copying. */
+function notePair(build: (f: PsgFmt) => FootnotePair): CitPair {
+  const html = build(HTML_FMT), plain = build(PLAIN)
+  return { html: html.full, plain: plain.full, intext: plain.short }
+}
+
+function buildFootnoteArticle(f: ManualArticleForm): CitPair {
+  return notePair(fmt => footnoteArticle({
+    authors: psgPeople(f.authors), year: f.year, title: f.title, journal: f.journal,
+    volume: f.volume, issue: f.issue, pages: f.pages ? fmtPages(f.pages) : '', doi: f.doi,
+  }, fmt))
+}
+
+function buildFootnoteBook(f: ManualBookForm): CitPair {
+  return notePair(fmt => footnoteBook({ ...f, authors: psgPeople(f.authors) }, fmt))
+}
+
+function buildFootnoteWebsite(f: ManualWebsiteForm): CitPair {
+  const published = f.monthDay && f.year ? `${f.monthDay}, ${f.year}` : f.monthDay || f.year
+  return notePair(fmt => footnoteWebpage({
+    author: f.authorName, isOrg: f.isOrg, title: f.title, siteName: f.siteName, published, accessDate: f.accessDate, url: f.url,
+  }, fmt))
+}
+
 // ── All-format builders ───────────────────────────────────────────────────────
 
 function buildAllArticle(f: ManualArticleForm): AllCitations {
-  return { psg: buildPsgArticle(f), apa: buildApaArticle(f), mla: buildMlaArticle(f), chicago: buildChicagoArticle(f) }
+  return { psg: buildPsgArticle(f), apa: buildApaArticle(f), mla: buildMlaArticle(f), chicago: buildChicagoArticle(f), footnote: buildFootnoteArticle(f) }
 }
 function buildAllBook(f: ManualBookForm): AllCitations {
-  return { psg: buildPsgBook(f), apa: buildApaBook(f), mla: buildMlaBook(f), chicago: buildChicagoBook(f) }
+  return { psg: buildPsgBook(f), apa: buildApaBook(f), mla: buildMlaBook(f), chicago: buildChicagoBook(f), footnote: buildFootnoteBook(f) }
 }
 function buildAllWebsite(f: ManualWebsiteForm): AllCitations {
-  return { psg: buildPsgWebsite(f), apa: buildApaWebsite(f), mla: buildMlaWebsite(f), chicago: buildChicagoWebsite(f) }
+  return { psg: buildPsgWebsite(f), apa: buildApaWebsite(f), mla: buildMlaWebsite(f), chicago: buildChicagoWebsite(f), footnote: buildFootnoteWebsite(f) }
 }
 
 function bookInfoToForm(b: BookInfo): ManualBookForm {
@@ -393,7 +421,7 @@ function CopyBtn({ text }: { text: string }) {
   )
 }
 
-const FMT_LABELS: Record<string, string> = { psg: 'PSG Format', apa: 'APA 7th', mla: 'MLA 9th', chicago: 'Chicago 17th' }
+const FMT_LABELS: Record<string, string> = { psg: 'PSG Format', apa: 'APA 7th', mla: 'MLA 9th', chicago: 'Chicago 17th', footnote: 'Footnote (Chicago notes)' }
 const FMT_COLORS: Record<string, [string, string]> = {
   psg: ['var(--teal-soft)', 'var(--teal)'],
   apa: ['var(--info-soft)', 'var(--info)'],
@@ -420,7 +448,7 @@ function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
       </div>
       <div className="px-5 pb-4 pt-3" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
         <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-1" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
-          In-text
+          {fmt === 'footnote' ? 'Short note' : 'In-text'}
         </p>
         <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{pair.intext}</p>
       </div>
@@ -431,7 +459,7 @@ function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
 function MultiFormatCards({ citations }: { citations: AllCitations }) {
   return (
     <div className="space-y-3">
-      {(['psg', 'apa', 'mla', 'chicago'] as const).map(fmt => (
+      {(['psg', 'apa', 'mla', 'chicago', 'footnote'] as const).map(fmt => (
         <CitCard key={fmt} fmt={fmt} pair={citations[fmt]} />
       ))}
     </div>
