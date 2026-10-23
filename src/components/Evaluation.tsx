@@ -13,11 +13,35 @@ import {
   NOT_AVAILABLE, NOT_YET_RANKED, RANKING_STATUS_LABEL, ZONE_SHARE, fmtCoverage, fmtDay, fmtPercentile, fmtPqf, fmtScore, fmtSnapshot,
   pqfStatusLabel, quartileLabel, rankingReason,
 } from '@/lib/evaluation/display'
+import type { Locale } from '@/i18n/config'
+
+// The words of the badges below in Simplified Chinese; English uses the labels from lib/evaluation. Grade codes
+// (C-Q1, Zone 1) are the same in every language.
+const ZH = {
+  notYetRanked: '尚未排名',
+  provisional: '暂定',
+  quartileTitle: 'POSI 引文分区，依据期刊在其 PSC 类别内的 PNCI 百分位划定。',
+  noZone: '无 Zone',
+  zoneTitle: 'POSI Zone {z}：按 PNCI 百分位位于期刊所属 PSC 类别的{share}',
+  zoneProvisional: '（暂定：类别内期刊数为 30–49 种）',
+  share: { 1: '前 5%', 2: '前 5%–20%', 3: '前 20%–50%', 4: '后 50%' } as Record<PosiZone, string>,
+  status: {
+    official: '正式', provisional: '暂定', insufficient_items: '数据不足', insufficient_category: '类别规模不足',
+    incomplete_coverage: '引文覆盖不完整', observation: '观察期', not_available: '尚未排名',
+  } as Record<CitationRankingStatus, string>,
+}
+
+/** The label of a ranking status in the language. */
+export function rankingStatusLabel(status: CitationRankingStatus, locale: Locale = 'en'): string {
+  return locale === 'zh-Hans' ? ZH.status[status] : RANKING_STATUS_LABEL[status]
+}
 
 /** Citation Quartile chip, C-Q1 … C-Q4; one accent stepped in strength. */
-export function QuartileBadge({ q, provisional = false }: { q: CitationQuartile | null | undefined; provisional?: boolean }) {
+export function QuartileBadge({ q, provisional = false, locale = 'en' }: { q: CitationQuartile | null | undefined; provisional?: boolean; locale?: Locale }) {
+  const zh = locale === 'zh-Hans'
   const label = quartileLabel(q)
-  if (!label || !q) return <span style={{ color: 'var(--soft)' }}>{NOT_YET_RANKED}</span>
+  if (!label || !q) return <span style={{ color: 'var(--soft)' }}>{zh ? ZH.notYetRanked : NOT_YET_RANKED}</span>
+  const tip = zh ? ZH.quartileTitle : QUARTILE_TOOLTIP
   const tone = {
     Q1: { background: 'var(--teal)', color: 'var(--on-teal)', borderColor: 'var(--teal)' },
     Q2: { background: 'var(--teal-soft)', color: 'var(--teal)', borderColor: 'var(--teal-line)' },
@@ -25,9 +49,9 @@ export function QuartileBadge({ q, provisional = false }: { q: CitationQuartile 
     Q4: { background: 'transparent', color: 'var(--muted)', borderColor: 'var(--line)' },
   }[q]
   return (
-    <span className="chip font-semibold whitespace-nowrap" title={provisional ? `Provisional. ${QUARTILE_TOOLTIP}` : QUARTILE_TOOLTIP}
+    <span className="chip font-semibold whitespace-nowrap" title={provisional ? `${zh ? `${ZH.provisional}。` : 'Provisional. '}${tip}` : tip}
       style={provisional ? { ...tone, background: 'transparent', color: 'var(--ink-2)', borderColor: 'var(--line)', borderStyle: 'dashed' } : tone}>
-      {provisional ? `Provisional ${label}` : label}
+      {provisional ? (zh ? `${ZH.provisional} ${label}` : `Provisional ${label}`) : label}
     </span>
   )
 }
@@ -41,22 +65,26 @@ const ZONE_TONE: Record<PosiZone, React.CSSProperties> = {
 }
 
 /** POSI Zone chip: numbered and outlined, distinct from the filled quartile chips. */
-export function ZoneBadge({ z, status = 'official', long = false }: { z: PosiZone | null | undefined; status?: ZoneStatus; long?: boolean }) {
-  if (!z || status === 'not_assigned') return <span style={{ color: 'var(--soft)' }}>No zone</span>
+export function ZoneBadge({ z, status = 'official', long = false, locale = 'en' }: { z: PosiZone | null | undefined; status?: ZoneStatus; long?: boolean; locale?: Locale }) {
+  const zh = locale === 'zh-Hans'
+  if (!z || status === 'not_assigned') return <span style={{ color: 'var(--soft)' }}>{zh ? ZH.noZone : 'No zone'}</span>
   const provisional = status === 'provisional'
+  const share = zh ? ZH.share[z] : ZONE_SHARE[z]
   return (
-    <span className="chip font-semibold whitespace-nowrap" title={`POSI Zone ${z}: ${ZONE_SHARE[z]} of the journal’s PSC category by PNCI percentile${provisional ? ' (provisional: category of 30–49 journals)' : ''}`}
+    <span className="chip font-semibold whitespace-nowrap" title={zh
+        ? `${ZH.zoneTitle.replace('{z}', String(z)).replace('{share}', share)}${provisional ? ZH.zoneProvisional : ''}`
+        : `POSI Zone ${z}: ${ZONE_SHARE[z]} of the journal’s PSC category by PNCI percentile${provisional ? ' (provisional: category of 30–49 journals)' : ''}`}
       style={{ ...ZONE_TONE[z], borderStyle: provisional ? 'dashed' : 'solid' }}>
-      {provisional ? 'Provisional ' : ''}Zone {z}{long ? ` · ${ZONE_SHARE[z]}` : ''}
+      {provisional ? (zh ? `${ZH.provisional} ` : 'Provisional ') : ''}Zone {z}{long ? ` · ${share}` : ''}
     </span>
   )
 }
 
-export function RankingStatusBadge({ status }: { status: CitationRankingStatus }) {
+export function RankingStatusBadge({ status, locale = 'en' }: { status: CitationRankingStatus; locale?: Locale }) {
   const official = status === 'official'
   return (
     <span className="chip whitespace-nowrap" style={official ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : status === 'provisional' ? { borderStyle: 'dashed' } : { color: 'var(--muted)' }}>
-      {RANKING_STATUS_LABEL[status]}
+      {rankingStatusLabel(status, locale)}
     </span>
   )
 }
@@ -248,7 +276,23 @@ export function EvaluationCards({ ev, core, autoPqf }: {
 }
 
 /** Shown until the first PNCI-1.0 Citation Ranking edition is published. */
-export function RankingsPending() {
+export function RankingsPending({ locale = 'en' }: { locale?: Locale }) {
+  if (locale === 'zh-Hans') return (
+    <div className="panel p-5 flex gap-4">
+      <span aria-hidden className="h-10 w-10 shrink-0 grid place-items-center rounded-[var(--radius)]" style={{ background: 'var(--posi-info-bg)', color: 'var(--posi-info)' }}>
+        <Hourglass className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+        <p className="text-[15px] font-semibold" style={{ color: 'var(--ink)' }}>首个排名版本正在编制中</p>
+        <p className="mt-1">
+          依据 POSI-EVAL-1.0（PNCI-1.0）编制的首个引文排名版本，将在下一个数据周期依据篇级引文数据计算。在此之前，所有期刊均无排名、引文分区或 POSI Zone。
+        </p>
+        <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>
+          此前基于 PCS 的分区（PCS-Q）已于 2026 年 9 月 28 日停用：PCS 仅为补充指标，不再决定任何排名、分区或 Zone。
+        </p>
+      </div>
+    </div>
+  )
   return (
     <div className="panel p-5 flex gap-4">
       <span aria-hidden className="h-10 w-10 shrink-0 grid place-items-center rounded-[var(--radius)]" style={{ background: 'var(--posi-info-bg)', color: 'var(--posi-info)' }}>
