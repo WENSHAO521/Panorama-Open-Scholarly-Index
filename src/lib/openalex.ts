@@ -11,6 +11,7 @@ import {
 } from './registries'
 import type { ProviderErrorKind } from './scholarly-api/errors'
 import { mergeNewest } from './newest-merge'
+import { plausibleYear } from './cite-text'
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -43,7 +44,8 @@ export interface Work {
   referenced_works_count?: number
   is_retracted?: boolean
   authorships: {
-    author: { id: string; display_name: string; orcid: string | null }
+    /** `given` / `family` only from Crossref; OpenAlex gives a display name alone */
+    author: { id: string; display_name: string; orcid: string | null; given?: string; family?: string }
     institutions: { id: string; display_name: string; country_code: string | null }[]
   }[]
   primary_location: { source: WorkSource | null; landing_page_url: string | null; pdf_url: string | null; license: string | null } | null
@@ -250,7 +252,7 @@ function crToWork(m: CrItem): Work {
     cited_by_count: m['is-referenced-by-count'] ?? 0,
     referenced_works_count: m['references-count'],
     authorships: (m.author ?? []).map(a => ({
-      author: { id: '', display_name: a.name ?? [a.given, a.family].filter(Boolean).join(' '), orcid: a.ORCID ?? null },
+      author: { id: '', display_name: a.name ?? [a.given, a.family].filter(Boolean).join(' '), orcid: a.ORCID ?? null, given: a.given, family: a.family },
       institutions: (a.affiliation ?? []).map(x => ({ id: '', display_name: x.name, country_code: null })),
     })),
     primary_location: {
@@ -408,8 +410,9 @@ export async function typeFacets(qy: WorkQuery, signal?: AbortSignal): Promise<F
 export async function getWork(id: string, signal?: AbortSignal): Promise<Work> {
   const doi = /^10\./.test(id)
   const key = doi ? `doi:${id}` : id.replace('https://openalex.org/', '')
+  let w: Work
   try {
-    return await get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
+    w = await get<Work>(url(`/works/${encodeURIComponent(key)}`, { select: SELECT }), signal)
   } catch (e) {
     // A DOI can still be resolved through its registry while OpenAlex is busy, or when OpenAlex has not
     // indexed it yet (new Zenodo and other repository DOIs often are not). Other IDs have no fallback.
@@ -422,6 +425,22 @@ export async function getWork(id: string, signal?: AbortSignal): Promise<Work> {
       : recordByDoi(reg, id, getJson, signal).then(recordToWork))
     return firstAnswer(attempts, e)
   }
+  const d = doi ? id : doiOf(w)
+  return d && w.publication_year != null && !plausibleYear(w.publication_year) ? withCrossrefYear(w, d, signal) : w
+}
+
+/**
+ * OpenAlex sometimes carries an impossible year ("2203" for a 2003 article). Take the date Crossref
+ * registered for the DOI instead; when that is no better, drop the year so citations read "n.d.".
+ */
+async function withCrossrefYear(w: Work, doi: string, signal?: AbortSignal): Promise<Work> {
+  try {
+    const cr = crToWork((await fetchJson<{ message: CrItem }>(crUrl(`/works/${encodeURIComponent(doi)}`, {}), 'Crossref', signal)).message)
+    if (plausibleYear(cr.publication_year)) return { ...w, publication_year: cr.publication_year, publication_date: cr.publication_date }
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+  }
+  return { ...w, publication_year: null, publication_date: null }
 }
 
 export async function getTotalWorks(signal?: AbortSignal): Promise<number> {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Check, DownloadSimple } from '@phosphor-icons/react/dist/ssr'
-import { FORMATS, generateCitationText, generatePsgInText } from '@/components/CitationFormatter'
+import { FORMATS, generateCitationText, generatePsgInText, generateShortNote } from '@/components/CitationFormatter'
 import type { CitationFormat } from '@/components/CitationFormatter'
 import type { RefEntry } from '@/lib/cite-parse'
 import { decodeHtml } from '@/lib/utils'
@@ -42,7 +42,7 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
     const rows = ok.map((it, i) => ({
       it,
       text: generateCitationText(it.article!, fmt, labels[i]),
-      intext: fmt === 'psg' ? generatePsgInText(it.article!.authors, labels[i]) : null,
+      intext: fmt === 'psg' ? generatePsgInText(it.article!.authors, labels[i]) : fmt === 'footnote' ? generateShortNote(it.article!) : null,
       // Sort keys: the reference without its year suffix, and the author+year group the suffix belongs to.
       base: fmt === 'psg' ? generateCitationText(it.article!, fmt) : '',
       group: fmt === 'psg' && labels[i].length > String(it.article!.publication_year).length
@@ -112,7 +112,7 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
                 </p>
                 {intext && (
                   <p className="text-[11.5px] mt-1" style={{ color: 'var(--posi-muted)' }}>
-                    In-text: <span className="font-mono">{intext}</span>
+                    {fmt === 'footnote' ? 'Short note' : 'In-text'}: <span className="font-mono">{intext}</span>
                   </p>
                 )}
                 {SOURCE_NOTE[it.source] && (
