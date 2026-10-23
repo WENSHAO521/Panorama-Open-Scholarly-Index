@@ -6,11 +6,37 @@ import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { publisherHref, type PublisherRow } from '@/lib/publishers'
 import { fmt } from './db'
 import { dataUrl } from '@/lib/data-base'
+import type { Locale } from '@/i18n/config'
+import { useLocale } from '@/i18n/LocaleProvider'
+import { localizedHref } from '@/i18n/alternates'
+import { fill } from '@/i18n/format'
+
+const en = {
+  filter: 'Filter publishers', placeholder: 'Filter by publisher name', sort: 'Sort',
+  sorts: { journals: 'Most journals', works: 'Most works', oa: 'Highest open-access share', name: 'Name A to Z' },
+  count: 'publishers', loading: ', loading the full list',
+  cols: { publisher: 'Publisher', journals: 'Journals', core: 'Core', oa: 'Open access', doaj: 'In DOAJ', works: 'Works' },
+  none: 'No publisher matches that name.',
+  pagination: 'Pagination', previous: 'Previous', next: 'Next', page: 'page {page} of {pages}',
+}
+const WORDS: Record<Locale, typeof en> = {
+  en,
+  'zh-Hans': {
+    filter: '筛选出版商', placeholder: '按出版商名称筛选', sort: '排序',
+    sorts: { journals: '期刊数从多到少', works: '文献数从多到少', oa: '开放获取比例从高到低', name: '名称（A–Z）' },
+    count: '家出版商', loading: '，正在加载完整列表',
+    cols: { publisher: '出版商', journals: '期刊数', core: '核心合集', oa: '开放获取', doaj: 'DOAJ 收录', works: '文献数' },
+    none: '没有与该名称匹配的出版商。',
+    pagination: '分页', previous: '上一页', next: '下一页', page: '第 {page} 页，共 {pages} 页',
+  },
+}
 
 const PAGE = 50
 type Sort = 'journals' | 'name' | 'works' | 'oa'
 
 export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
+  const locale = useLocale()
+  const w = WORDS[locale]
   const [rows, setRows] = useState<PublisherRow[]>(top)
   const [full, setFull] = useState(false)
   const [q, setQ] = useState('')
@@ -45,41 +71,38 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
     <div>
       <div className="panel p-3 flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <label htmlFor="pub-search" className="sr-only">Filter publishers</label>
+          <label htmlFor="pub-search" className="sr-only">{w.filter}</label>
           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
-          <input id="pub-search" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Filter by publisher name" className="input h-10 pl-9" />
+          <input id="pub-search" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={w.placeholder} className="input h-10 pl-9" />
         </div>
-        <label htmlFor="pub-sort" className="sr-only">Sort</label>
+        <label htmlFor="pub-sort" className="sr-only">{w.sort}</label>
         <select id="pub-sort" value={sort} onChange={e => setSort(e.target.value as Sort)} className="input h-10 w-auto pr-8">
-          <option value="journals">Most journals</option>
-          <option value="works">Most works</option>
-          <option value="oa">Highest open-access share</option>
-          <option value="name">Name A to Z</option>
+          {(['journals', 'works', 'oa', 'name'] as const).map(k => <option key={k} value={k}>{w.sorts[k]}</option>)}
         </select>
       </div>
 
       <p className="mt-4 mb-2 text-[13px]" style={{ color: 'var(--muted)' }} aria-live="polite">
-        <span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span> publishers
-        {!full && <span style={{ color: 'var(--soft)' }}>, loading the full list</span>}
+        <span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{' '}{w.count}
+        {!full && <span style={{ color: 'var(--soft)' }}>{w.loading}</span>}
       </p>
 
       <div ref={tableTop} className="panel overflow-x-auto" style={{ scrollMarginTop: 72 }}>
         <table className="dtable min-w-[720px]">
           <thead>
             <tr>
-              <th>Publisher</th>
-              <th className="text-right">Journals</th>
-              <th className="text-right">Core</th>
-              <th className="text-right">Open access</th>
-              <th className="text-right">In DOAJ</th>
-              <th className="text-right">Works</th>
+              <th>{w.cols.publisher}</th>
+              <th className="text-right">{w.cols.journals}</th>
+              <th className="text-right">{w.cols.core}</th>
+              <th className="text-right">{w.cols.oa}</th>
+              <th className="text-right">{w.cols.doaj}</th>
+              <th className="text-right">{w.cols.works}</th>
             </tr>
           </thead>
           <tbody>
             {shown.map(r => (
               <tr key={r.slug}>
                 <td className="max-w-[360px]">
-                  <Link href={publisherHref(r)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.name}</Link>
+                  <Link href={localizedHref(locale, publisherHref(r))} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.name}</Link>
                 </td>
                 <td className="text-right font-mono tnum">{fmt(r.n)}</td>
                 <td className="text-right font-mono tnum" style={{ color: r.core ? 'var(--ink)' : 'var(--soft)' }}>{fmt(r.core)}</td>
@@ -89,17 +112,17 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
               </tr>
             ))}
             {!shown.length && (
-              <tr><td colSpan={6} className="py-12 text-center" style={{ color: 'var(--muted)' }}>No publisher matches that name.</td></tr>
+              <tr><td colSpan={6} className="py-12 text-center" style={{ color: 'var(--muted)' }}>{w.none}</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       {pages > 1 && (
-        <nav aria-label="Pagination" className="flex items-center justify-between mt-4 text-[13px]">
-          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</button>
-          <span className="font-mono" style={{ color: 'var(--muted)' }}>page {page} of {fmt(pages)}</span>
-          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => setPage(p => p + 1)}>Next</button>
+        <nav aria-label={w.pagination} className="flex items-center justify-between mt-4 text-[13px]">
+          <button type="button" className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>{w.previous}</button>
+          <span className="font-mono" style={{ color: 'var(--muted)' }}>{fill(w.page, { page, pages: fmt(pages) })}</span>
+          <button type="button" className="btn btn-sm" disabled={page === pages} onClick={() => setPage(p => p + 1)}>{w.next}</button>
         </nav>
       )}
     </div>

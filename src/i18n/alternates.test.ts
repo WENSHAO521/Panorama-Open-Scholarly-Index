@@ -73,3 +73,10 @@ test('localePath and stripLocale are inverse for a prefixed language', () => {
   assert.equal(stripLocale('/zh', two.prefix), '/')
   assert.equal(stripLocale('/zhang/', two.prefix), '/zhang/')
 })
+
+test('every translated path has its page under src/app/zh, so no switcher or hreflang link points at a 404', async () => {
+  const { existsSync } = await import('node:fs')
+  for (const p of TRANSLATED_PATHS['zh-Hans'] ?? []) {
+    assert.ok(existsSync(new URL(`../app/zh${p}page.tsx`, import.meta.url)), p)
+  }
+})

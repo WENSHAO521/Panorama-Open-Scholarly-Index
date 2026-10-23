@@ -19,7 +19,7 @@ export interface LocaleTable {
  */
 export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
   en: null,
-  'zh-Hans': ['/'],
+  'zh-Hans': ['/', '/journals/', '/journals/open-access/', '/subjects/', '/publishers/'],
 }
 
 export const LOCALE_TABLE: LocaleTable = {
