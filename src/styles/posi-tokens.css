@@ -7,8 +7,9 @@
  * bottom as aliases of the semantic tokens, so every existing page follows
  * the palette and the colour scheme without being rewritten.
  *
- * Palette: 深緑 (brand), 卯の花 (canvas), 利休鼠 (muted greens), 墨 (text),
- * 枯茶 (accent). Restrained, low-saturation; no gradients, no glass.
+ * Palette: 深緑 (brand), a near-white canvas, 利休鼠 (muted greens), 墨 (text),
+ * 枯茶 (accent). Restrained, low-saturation; no gradients, no glass. Panels
+ * are white cards with a 10px radius and a barely-there shadow; controls 6px.
  *
  * Schemes: light by default; dark when the visitor chose it with the sun/moon
  * switch (html[data-theme="dark"]). The operating system's setting is not
@@ -23,21 +24,21 @@
   color-scheme: light;
 
   /* ── Surfaces ───────────────────────────────────────────── */
-  --posi-canvas: #f8f6f0;          /* 卯の花: page */
+  --posi-canvas: #f6f7f4;          /* page: a near-white, faintly green neutral */
   --posi-surface: #ffffff;         /* cards, tables, inputs */
-  --posi-surface-soft: #f0f2ec;    /* table headers, chips, hero band */
+  --posi-surface-soft: #eff2ed;    /* table headers, chips, hero band */
   --posi-surface-sunken: #e5e8e0;  /* tracks, unfilled bars */
-  --posi-hover: #f0f2ec;           /* row / item hover */
+  --posi-hover: #f1f4ef;           /* row / item hover */
 
   /* ── Lines ──────────────────────────────────────────────── */
-  --posi-border: #dedfd6;          /* hairlines, dividers */
-  --posi-border-soft: #e9eae2;     /* row separators */
+  --posi-border: #dfe3dc;          /* hairlines, dividers */
+  --posi-border-soft: #eaede7;     /* row separators */
   --posi-border-strong: #7e8c82;   /* input / control edges, >= 3:1 */
 
   /* ── Text ───────────────────────────────────────────────── */
-  --posi-text: #2c3430;            /* 墨 */
-  --posi-text-2: #3e4a43;
-  --posi-muted: #566659;           /* 利休鼠 */
+  --posi-text: #1d2521;            /* 墨 */
+  --posi-text-2: #36423b;
+  --posi-muted: #56635a;           /* 利休鼠 */
   --posi-faint: #627065;           /* placeholders, tertiary; still AA */
 
   /* ── Brand 深緑 ─────────────────────────────────────────── */
@@ -88,7 +89,9 @@
   --posi-brand-red: #e30613;   /* the red block of the Panorama mark */
 
   /* ── Shape, type ───────────────────────────────────────────── */
-  --posi-radius: 2px;
+  --posi-radius: 6px;               /* controls, chips */
+  --posi-radius-lg: 10px;           /* panels, cards */
+  --posi-shadow-card: 0 1px 2px rgba(29, 37, 33, 0.05), 0 1px 1px rgba(29, 37, 33, 0.03);
   --posi-shadow-pop: 0 2px 8px rgba(30, 43, 38, 0.10);  /* menus only */
   --posi-focus: #244d40;
   --posi-focus-ring: 2px solid var(--posi-focus);
@@ -149,6 +152,7 @@
   --posi-pubmed: #9cbfd3;  --posi-on-pubmed: #17231f;
 
   --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --posi-shadow-card: none;
   --posi-focus: #d1b58a;
 }
 :root[data-theme="light"] { color-scheme: light; }

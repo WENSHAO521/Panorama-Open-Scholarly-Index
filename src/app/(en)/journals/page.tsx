@@ -50,10 +50,14 @@ export default function JournalsPage() {
         <SectionTitle id="by-subject">Browse by subject</SectionTitle>
         <SubjectGrid cats={cats} />
         {unclassified && unclassified.count > 0 && (
-          <p className="mt-6 text-[14px]" style={{ color: 'var(--ink-2)' }}>
-            <Link href="/journals/subject/unclassified/" className="link">{fmt(unclassified.count)} journals not yet classified</Link>{' '}
-            <span style={{ color: 'var(--muted)' }}>are listed alphabetically.</span>
-          </p>
+          <div className="panel mt-6 p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+            <p className="flex-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+              <span className="font-semibold" style={{ color: 'var(--ink)' }}>{fmt(unclassified.count)} journals are not yet classified.</span>{' '}
+              They are indexed and searchable like every other journal, but have no subject profile yet, usually because they
+              are registered with Crossref and not yet described by OpenAlex. Search above, or browse them alphabetically.
+            </p>
+            <Link href="/journals/subject/unclassified/" className="btn shrink-0">Browse A–Z</Link>
+          </div>
         )}
       </section>
     </div>

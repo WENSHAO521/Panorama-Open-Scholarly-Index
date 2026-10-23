@@ -56,7 +56,7 @@ export function JournalProfileView() {
 
   return (
     <article className="pb-12">
-      <header className="pt-8 pb-6 md:pt-10">
+      <header className="pt-6 pb-6 md:pt-8">
         <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           <Link href="/" className="hover:underline">POSI</Link>
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
@@ -66,7 +66,8 @@ export function JournalProfileView() {
             <Link href={catHref} className="hover:underline">{catName}</Link>
           </>}
         </nav>
-        <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="panel p-5 md:p-7">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <PosiGrades size="md" showEmpty tier={core ? 'core' : 'indexed'}
             ajr={ev.ajr.rating} quartile={ev.ranking.quartile} quartileProvisional={ev.ranking.status === 'provisional'}
             zone={ev.ranking.zone} zoneStatus={ev.ranking.zoneStatus} />
@@ -74,7 +75,7 @@ export function JournalProfileView() {
           {j.dj && <span className="chip">DOAJ</span>}
           {j.sc === 'multidisciplinary' && <span className="chip">Multidisciplinary</span>}
         </div>
-        <h1 className="text-[24px] md:text-[28px] font-semibold leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
+        <h1 className="text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
         <p className="mt-2 text-[15.5px]" style={{ color: 'var(--ink-2)' }}>
           {[j.pub ?? curated?.p, country].filter(Boolean).join(' · ') || 'Publisher not recorded'}
         </p>
@@ -83,6 +84,9 @@ export function JournalProfileView() {
             Also known as {[j.ab, ...(j.alt ?? [])].filter((x, i, a) => x && a.indexOf(x) === i).join('; ')}
           </p>
         )}
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>
+          {j.is.map(i => <span key={i}>ISSN {i}</span>)}
+        </p>
         <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px]">
           <Link href={`/publications/?issn=${encodeURIComponent(j.k)}&sort=newest`} className="btn btn-primary" prefetch={false}>
             <Books className="h-4 w-4" /> Browse publications
@@ -94,6 +98,7 @@ export function JournalProfileView() {
           )}
           {curated && <Link href={recordHref(curated)} className="link" prefetch={false}>POSI record</Link>}
           <Link href="/certificate/" className="link inline-flex items-center gap-1"><Certificate className="h-4 w-4" /> Indexing certificate</Link>
+        </div>
         </div>
       </header>
 
@@ -154,21 +159,8 @@ export function JournalProfileView() {
           </section>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="space-y-6 order-first lg:order-none">
           <EvaluationCard j={j} core={core} />
-
-          <section aria-labelledby="ids" className="panel">
-            <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
-            <dl className="px-4 pb-4 pt-2 text-[13.5px] divide-y divide-[var(--line-soft)]">
-              <Row k="ISSN-L" v={j.k} mono />
-              <Row k="ISSN" v={j.is.join(', ')} mono />
-              <Row k="POSI ID" v={j.pid} mono />
-              {j.oid && <Row k="OpenAlex" v={<a href={`https://openalex.org/${j.oid}`} className="link" target="_blank" rel="noopener noreferrer">{j.oid}</a>} mono />}
-              {j.cr != null && <Row k="Crossref DOIs" v={fmt(j.cr)} mono />}
-              {country && <Row k="Country" v={country} />}
-              {!!j.soc?.length && <Row k="Society" v={j.soc.join('; ')} />}
-            </dl>
-          </section>
 
           <section aria-labelledby="coverage" className="panel p-4">
             <h2 id="coverage" className="text-[15px] font-semibold">Coverage</h2>
@@ -187,6 +179,19 @@ export function JournalProfileView() {
             )}
             <div className="mt-3"><IndexChecks issns={[j.k, ...j.is.filter(i => i !== j.k)]} /></div>
           </section>
+          <section aria-labelledby="ids" className="panel">
+            <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">Identifiers</h2>
+            <dl className="px-4 pb-4 pt-2 text-[13.5px] divide-y divide-[var(--line-soft)]">
+              <Row k="ISSN-L" v={j.k} mono />
+              <Row k="ISSN" v={j.is.join(', ')} mono />
+              <Row k="POSI ID" v={j.pid} mono />
+              {j.oid && <Row k="OpenAlex" v={<a href={`https://openalex.org/${j.oid}`} className="link" target="_blank" rel="noopener noreferrer">{j.oid}</a>} mono />}
+              {j.cr != null && <Row k="Crossref DOIs" v={fmt(j.cr)} mono />}
+              {country && <Row k="Country" v={country} />}
+              {!!j.soc?.length && <Row k="Society" v={j.soc.join('; ')} />}
+            </dl>
+          </section>
+
         </aside>
       </div>
     </article>
@@ -241,13 +246,13 @@ function historyRows(j: JournalProfile): RankingHistoryRow[] {
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4" aria-busy="true" aria-label="Loading journal">
-      <div className="h-4 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-9 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-4 w-1/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-20 rounded-[2px] animate-pulse mt-6" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-4 w-48 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-9 w-2/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-4 w-1/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-20 rounded-[var(--radius)] animate-pulse mt-6" style={{ background: 'var(--surface-2)' }} />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="h-64 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-        <div className="h-64 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-64 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+        <div className="h-64 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
       </div>
     </div>
   )

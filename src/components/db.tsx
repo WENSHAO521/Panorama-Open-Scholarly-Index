@@ -42,7 +42,7 @@ export function FreshnessTag({ f }: { f: Freshness }) {
 export function BasisTag({ b }: { b: Basis }) {
   return (
     <span
-      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[2px]"
+      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[var(--radius)]"
       title={BASIS[b].description}
       style={{ color: 'var(--muted)', border: '1px solid var(--line)' }}
     >
@@ -61,7 +61,7 @@ export function PageHeader({
   actions?: React.ReactNode
 }) {
   return (
-    <header className="pt-6 pb-6 md:pt-7">
+    <header className="pt-6 pb-8 md:pt-8">
       {crumbs && (
         <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           {crumbs.map((c, i) => (
@@ -75,8 +75,8 @@ export function PageHeader({
       <div className="flex flex-col md:flex-row md:items-end gap-4 md:justify-between">
         <div className="min-w-0 max-w-3xl">
           {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-          <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
-          {children && <div className="mt-2 text-[14.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
+          <h1 className="text-[26px] md:text-[34px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
+          {children && <div className="mt-3 text-[15.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
         </div>
         {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
       </div>
@@ -98,7 +98,7 @@ export function OnThisPage({ items }: { items: [id: string, label: string][] }) 
 export function SectionTitle({ id, children, aside }: { id?: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 mb-3">
-      <h2 id={id} className="text-[17px] font-semibold tracking-tight scroll-mt-28" style={{ color: 'var(--ink)' }}>{children}</h2>
+      <h2 id={id} className="text-[20px] font-semibold tracking-tight scroll-mt-28" style={{ color: 'var(--ink)' }}>{children}</h2>
       {aside && <div className="text-[13px]" style={{ color: 'var(--muted)' }}>{aside}</div>}
     </div>
   )
@@ -107,7 +107,7 @@ export function SectionTitle({ id, children, aside }: { id?: string; children: R
 export function Note({ tone = 'info', children }: { tone?: 'info' | 'warn' | 'ok'; children: React.ReactNode }) {
   const bg = tone === 'warn' ? 'var(--check-soft)' : tone === 'ok' ? 'var(--verified-soft)' : 'var(--surface-2)'
   return (
-    <div className="text-[13.5px] leading-relaxed px-4 py-3 rounded-[2px]" style={{ background: bg, border: '1px solid var(--line-soft)', color: 'var(--ink-2)' }}>
+    <div className="text-[14px] leading-relaxed px-4 py-3 rounded-[var(--radius-lg)]" style={{ background: bg, border: '1px solid var(--line-soft)', color: 'var(--ink-2)' }}>
       {children}
     </div>
   )

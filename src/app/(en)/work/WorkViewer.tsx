@@ -35,10 +35,10 @@ function LicenseValue({ value }: { value: string }) {
 function Skeleton() {
   return (
     <div className="pt-10 space-y-4 max-w-[900px]" aria-busy="true" aria-label="Loading publication">
-      <div className="h-4 w-48 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-8 w-5/6 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-      <div className="h-4 w-2/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-      <div className="h-40 rounded-[2px] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-4 w-48 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-8 w-5/6 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+      <div className="h-4 w-2/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+      <div className="h-40 rounded-[var(--radius)] animate-pulse mt-8" style={{ background: 'var(--surface-2)' }} />
     </div>
   )
 }
@@ -84,7 +84,7 @@ export function WorkViewer() {
   const pg = pages(w)
 
   return (
-    <article className="pt-8 md:pt-10">
+    <article className="pt-6 md:pt-8">
       <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         <Link href="/" className="hover:underline">POSI</Link>
         <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
@@ -109,7 +109,7 @@ export function WorkViewer() {
               </span>
             )}
           </div>
-          <h1 className="mt-2 text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
+          <h1 className="mt-2 text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
             {w.title || 'Untitled'}
           </h1>
 
@@ -153,9 +153,9 @@ export function WorkViewer() {
             </section>
           )}
 
-          <section className="mt-8" aria-labelledby="cite">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h2 id="cite" className="text-[17px] font-semibold tracking-tight">Cite</h2>
+          <section className="mt-10 panel p-5" aria-labelledby="cite">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <h2 id="cite" className="text-[20px] font-semibold tracking-tight">Cite</h2>
               <div className="flex gap-1" role="tablist" aria-label="Citation format">
                 {(['apa', 'bibtex', 'ris'] as const).map(f => (
                   <button
@@ -173,13 +173,14 @@ export function WorkViewer() {
               </div>
             </div>
             <pre className="code whitespace-pre-wrap break-words"><code>{citeText}</code></pre>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <button type="button" className="btn btn-sm" onClick={() => navigator.clipboard?.writeText(citeText)}>Copy</button>
               {cite !== 'apa' && (
                 <button type="button" className="btn btn-sm" onClick={() => download(`${shortId(w)}.${cite === 'bibtex' ? 'bib' : 'ris'}`, citeText, 'text/plain')}>
                   Download
                 </button>
               )}
+              {doi && <Link href={`/cite/?doi=${encodeURIComponent(doi)}`} prefetch={false} className="link text-[13px] ml-auto">PSG, MLA and Chicago</Link>}
             </div>
           </section>
         </div>

@@ -21,7 +21,7 @@ export function DocsSidebar() {
     <nav aria-label={m.common.documentation} className="space-y-5">
       {sections.map(section => (
         <div key={section.title}>
-          <h2 className="mb-1.5 text-[12.5px] font-semibold" style={{ color: 'var(--muted)' }}>{section.title}</h2>
+          <h2 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{section.title}</h2>
           <ul>
             {section.links.map(l => {
               const active = norm(l.href) === pathname
@@ -31,8 +31,8 @@ export function DocsSidebar() {
                     href={l.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
-                    className={`block py-[5px] text-[13.5px] leading-snug ${active ? '' : 'hover:underline underline-offset-2'}`}
-                    style={active ? { color: 'var(--ink)', fontWeight: 600 } : { color: 'var(--teal)' }}
+                    className="block -mx-2.5 px-2.5 py-1.5 rounded-[var(--radius)] text-[14px] leading-snug transition-colors hover:bg-[var(--hover)]"
+                    style={active ? { color: 'var(--posi-brand)', background: 'var(--posi-brand-soft)', fontWeight: 600 } : { color: 'var(--ink-2)' }}
                   >
                     {l.label}
                   </LocalizedLink>
@@ -54,7 +54,7 @@ export function DocsSidebar() {
         </button>
         {open && <div className="panel mt-2 p-3">{list}</div>}
       </div>
-      <aside className="hidden lg:block sticky top-[104px] max-h-[calc(100vh-120px)] overflow-y-auto pr-2 pb-8 scrollbar-none">
+      <aside className="hidden lg:block sticky top-[88px] max-h-[calc(100vh-104px)] overflow-y-auto pl-2.5 pr-2 pb-8 scrollbar-none">
         {list}
       </aside>
     </>

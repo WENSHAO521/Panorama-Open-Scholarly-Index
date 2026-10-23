@@ -176,7 +176,7 @@ export function PublicationSearch() {
         <legend className="font-medium mb-2" style={{ color: 'var(--ink-2)' }}>Publication type</legend>
         {facets === null ? (
           <div className="space-y-2" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-3.5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)', width: `${80 - i * 10}%` }} />)}
+            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-3.5 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)', width: `${80 - i * 10}%` }} />)}
           </div>
         ) : (
           <ul className="space-y-1.5">
@@ -194,7 +194,7 @@ export function PublicationSearch() {
       </fieldset>
 
       {issn && (
-        <div className="rounded-[2px] p-3 text-[12.5px]" style={{ background: 'var(--teal-soft)' }}>
+        <div className="rounded-[var(--radius)] p-3 text-[12.5px]" style={{ background: 'var(--teal-soft)' }}>
           Limited to source ISSN <span className="font-mono">{issn}</span>.{' '}
           <button type="button" className="link" onClick={() => update({ issn: null })}>Remove</button>
         </div>
@@ -212,13 +212,13 @@ export function PublicationSearch() {
         <div className="relative flex-1">
           <label htmlFor="pub-q" className="sr-only">Search publications</label>
           <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none" style={{ color: 'var(--soft)' }} />
-          <input id="pub-q" type="search" value={draft} onChange={e => setDraft(e.target.value)} placeholder="Title, abstract, author, keyword or DOI" className="input h-12 pl-11 text-[16px]" />
+          <input id="pub-q" type="search" value={draft} onChange={e => setDraft(e.target.value)} placeholder="Title, abstract, author, keyword or DOI" className="input h-12 pl-11 text-[16px] rounded-[var(--radius-lg)]" style={{ boxShadow: 'var(--posi-shadow-card)' }} />
         </div>
-        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px]">Search</button>
+        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px] rounded-[var(--radius-lg)]">Search</button>
       </form>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)]">
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">{filterPanel}</aside>
+        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start panel p-5">{filterPanel}</aside>
 
         <section aria-label="Results" className="min-w-0">
           <div className="flex flex-wrap items-center gap-3 pb-3">
@@ -249,7 +249,7 @@ export function PublicationSearch() {
                     ['BibTeX', () => download('posi-publications.bib', results.map(toBibtex).join('\n\n'), 'application/x-bibtex')],
                     ['RIS', () => download('posi-publications.ris', results.map(toRis).join('\n'), 'application/x-research-info-systems')],
                   ].map(([label, fn]) => (
-                    <button key={label as string} type="button" disabled={!results.length} onClick={fn as () => void} className="block w-full text-left px-3 py-1.5 rounded-[2px] hover:bg-[var(--hover)]">
+                    <button key={label as string} type="button" disabled={!results.length} onClick={fn as () => void} className="block w-full text-left px-3 py-1.5 rounded-[var(--radius)] hover:bg-[var(--hover)]">
                       {label as string} (this page)
                     </button>
                   ))}
@@ -263,11 +263,11 @@ export function PublicationSearch() {
           {status.kind === 'loading' && (
             <div aria-hidden="true">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="py-5 space-y-2" style={{ borderTop: '1px solid var(--line-soft)' }}>
-                  <div className="h-3 w-40 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-4 w-4/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-3 w-3/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
-                  <div className="h-3 w-2/5 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                <div key={i} className="panel p-5 mt-3 space-y-2">
+                  <div className="h-3 w-40 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-4 w-4/5 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-3 w-3/5 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                  <div className="h-3 w-2/5 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
                 </div>
               ))}
             </div>
@@ -307,7 +307,7 @@ export function PublicationSearch() {
           )}
 
           {status.kind === 'ok' && !results.length && (
-            <div className="py-16 text-center" style={{ borderTop: '1px solid var(--line-soft)' }}>
+            <div className="panel py-16 mt-3 text-center">
               <p className="font-medium">No publications match</p>
               <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>Try fewer words, or clear a filter.</p>
             </div>
@@ -323,7 +323,7 @@ export function PublicationSearch() {
           ))}
 
           {status.kind === 'ok' && count! > PER_PAGE && (
-            <nav aria-label="Pagination" className="flex items-center justify-between pt-5" style={{ borderTop: '1px solid var(--line-soft)' }}>
+            <nav aria-label="Pagination" className="flex items-center justify-between pt-5">
               <button type="button" className="btn btn-sm" disabled={page <= 1} onClick={() => update({ page: String(page - 1) }, false)}>
                 <CaretLeft className="h-4 w-4" /> Previous
               </button>

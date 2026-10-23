@@ -52,7 +52,7 @@ export default function CertificationPage() {
         </p>
       </PageHeader>
 
-      <section aria-labelledby="tiers" className="grid gap-px rounded-[2px] overflow-hidden md:grid-cols-2 mb-14" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <section aria-labelledby="tiers" className="grid gap-px rounded-[var(--radius)] overflow-hidden md:grid-cols-2 mb-14" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         <div className="p-6" style={{ background: 'var(--surface)' }}>
           <h2 id="tiers" className="text-[18px] font-semibold">Indexed</h2>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>Automatic, no application</p>

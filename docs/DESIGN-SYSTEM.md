@@ -1,7 +1,12 @@
 # POSI Design System — Japanese Editorial Academic
 
 Restrained, exact, professional. Deep green brand, 卯の花 canvas, 利休鼠 greys, 墨 text, 枯茶 accent.
-No gradients, glass, heavy shadows, large radii or decorative motifs. Radius is 2px everywhere.
+No gradients, glass, heavy shadows or decorative motifs.
+
+Shape (since the October 2026 redesign): controls and chips-in-groups use `--posi-radius` (6px), panels and cards
+`--posi-radius-lg` (10px) with `--posi-shadow-card` (a barely-there shadow; none in dark), stand-alone chips are pills.
+Body text is 15px. The header is one row (no utility strip); the theme switch sits at its right, the language
+switch in the footer and mobile menu.
 
 ## Tokens
 Single source: `src/styles/posi-tokens.css` (`--posi-*`). `src/app/globals.css` keeps the older short

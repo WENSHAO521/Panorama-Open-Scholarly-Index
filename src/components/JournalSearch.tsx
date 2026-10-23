@@ -47,9 +47,9 @@ export function JournalSearch() {
           <label htmlFor="journal-q" className="sr-only">Search all journals</label>
           <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none" style={{ color: 'var(--soft)' }} />
           <input id="journal-q" type="search" value={value} onChange={e => setDraft({ for: q, v: e.target.value })}
-            placeholder="Journal title or ISSN" className="input h-12 pl-11 text-[16px]" />
+            placeholder="Journal title or ISSN" className="input h-12 pl-11 text-[16px] rounded-[var(--radius-lg)]" style={{ boxShadow: 'var(--posi-shadow-card)' }} />
         </div>
-        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px]">Search</button>
+        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px] rounded-[var(--radius-lg)]">Search</button>
       </form>
 
       {q.trim() && (
@@ -58,8 +58,8 @@ export function JournalSearch() {
             <div className="panel divide-y divide-[var(--line-soft)]" aria-busy="true">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="px-4 py-3 space-y-2" style={{ borderColor: 'var(--line-soft)' }}>
-                  <div className="h-4 w-1/2 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-3)' }} />
-                  <div className="h-3 w-1/3 rounded-[2px] animate-pulse" style={{ background: 'var(--surface-2)' }} />
+                  <div className="h-4 w-1/2 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)' }} />
+                  <div className="h-3 w-1/3 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-2)' }} />
                 </div>
               ))}
             </div>
@@ -79,7 +79,7 @@ export function JournalSearch() {
                 {current.hits.map((h, i) => {
                   const curated = matchIssn(issnMap, [h.key])
                   return (
-                    <li key={h.key} className="px-4 py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
+                    <li key={h.key} className="px-5 py-3.5 grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
                       <div className="min-w-0">
                         <Link href={journalHref(h.key)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{h.title}</Link>
                         <p className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>

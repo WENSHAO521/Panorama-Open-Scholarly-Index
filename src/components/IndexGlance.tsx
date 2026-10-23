@@ -146,7 +146,7 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
   const classified = shown.reduce((s, c) => s + c.count, 0)
   const domains = [...new Map(shown.map(c => [c.domain, c.domainName])).entries()]
     .sort((a, b) => (a[0] === 'P0' ? 1 : b[0] === 'P0' ? -1 : a[0].localeCompare(b[0])))
-  const wide = layout(shown, 860, 380)
+  const wide = layout(shown, 640, 440)
   const tall = layout(shown, 360, 540)
 
   // Journals per listed country or territory, each territory in its own right.
@@ -169,29 +169,30 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
 
   return (
     <section aria-labelledby="glance">
-      <div className="flex items-end justify-between gap-4 pb-2 mb-3" style={{ borderBottom: '2px solid var(--ink)' }}>
-        <h2 id="glance" className="text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>The index at a glance</h2>
-        <Link href="/subjects/" className="link text-[13px]">All subject categories</Link>
+      <div className="flex items-end justify-between gap-4 mb-1.5">
+        <h2 id="glance" className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>The index at a glance</h2>
+        <Link href="/subjects/" className="link text-[13.5px]">All subject categories</Link>
       </div>
-      <p className="text-[13px] mb-3" style={{ color: 'var(--muted)' }}>
+      <p className="text-[14px] mb-4" style={{ color: 'var(--muted)' }}>
         {fmt(classified)} classified journals by subject. Each block&rsquo;s area is its number of indexed journals; select one to browse it.
       </p>
 
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5 mb-3 text-[12.5px]" aria-label="Domains">
         {domains.map(([d, name]) => (
           <li key={d} className="flex items-center gap-1.5" style={{ color: 'var(--ink-2)' }}>
-            <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-[2px]" style={{ background: DOMAIN_COLOR[d] ?? DOMAIN_COLOR.P0 }} />
+            <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-[var(--radius)]" style={{ background: DOMAIN_COLOR[d] ?? DOMAIN_COLOR.P0 }} />
             {name}
           </li>
         ))}
       </ul>
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
-        <Treemap cells={wide} w={860} h={380} className="hidden sm:block" />
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="panel">
+        <Treemap cells={wide} w={640} h={440} className="hidden sm:block" />
         <Treemap cells={tall} w={360} h={540} className="sm:hidden" />
       </div>
 
-      <div className="mt-6 p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+      <div className="panel p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 mb-2">
           <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Where journals are published</h3>
           <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{fmt(byCode.size)} of {fmt(LISTED_PLACES.size)} countries and territories</span>
@@ -210,7 +211,7 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
             <svg aria-hidden width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3.6" className="map-dot-key" /></svg>small country or territory
           </li>
         </ul>
-        <ol className="mt-4 pt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-5 gap-y-1.5 text-[12.5px]" style={{ borderTop: '1px solid var(--line-soft)' }}>
+        <ol className="mt-4 pt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-x-5 gap-y-1.5 text-[12.5px]" style={{ borderTop: '1px solid var(--line-soft)' }}>
           {topCountries.map(([c, n], i) => (
             <li key={c} className="flex items-baseline justify-between gap-2 min-w-0">
               <span className="truncate" style={{ color: 'var(--ink-2)' }}><span className="font-mono mr-1.5" style={{ color: 'var(--soft)' }}>{i + 1}</span>{c}</span>
@@ -219,31 +220,32 @@ export function IndexGlance({ records, cats, publishers }: { records: DirRecord[
           ))}
         </ol>
       </div>
+      </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <div className="p-4" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+        <div className="panel p-5">
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Largest publishers</h3>
             <Link href="/publishers/" className="link text-[12.5px]">All publishers</Link>
           </div>
           <Bars rows={topPublishers} />
         </div>
-        <div className="p-4 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--line)' }}>
+        <div className="panel p-5 flex flex-col">
           <div className="flex items-baseline justify-between gap-3 mb-3">
             <h3 className="text-[13.5px] font-semibold" style={{ color: 'var(--ink)' }}>Open access</h3>
             <Link href="/journals/open-access/" className="link text-[12.5px]">Browse</Link>
           </div>
           <p className="font-mono text-[40px] leading-none tnum tracking-tight" style={{ color: 'var(--ink)' }}>{pctOa(oa)}%</p>
           <p className="mt-1.5 text-[13px]" style={{ color: 'var(--muted)' }}>of indexed journals are open access; {pctOa(doaj)}% are listed in DOAJ.</p>
-          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[2px] overflow-hidden" role="img" aria-label={`${pctOa(doaj)}% in DOAJ, ${Math.max(0, pctOa(oa) - pctOa(doaj))}% other open access, ${pctOa(known - oa)}% not open access`}>
+          <div className="mt-5 flex h-[10px] gap-[2px] rounded-[var(--radius)] overflow-hidden" role="img" aria-label={`${pctOa(doaj)}% in DOAJ, ${Math.max(0, pctOa(oa) - pctOa(doaj))}% other open access, ${pctOa(known - oa)}% not open access`}>
             <span style={{ width: `${pctOa(doaj)}%`, background: 'var(--teal)' }} />
             <span style={{ width: `${Math.max(0, pctOa(oa) - pctOa(doaj))}%`, background: 'var(--teal-line)' }} />
             <span className="flex-1" style={{ background: 'var(--surface-3)' }} />
           </div>
           <ul className="mt-2.5 space-y-1 text-[12px]" style={{ color: 'var(--muted)' }}>
-            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(doaj)}</span></li>
-            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(Math.max(0, oa - doaj))}</span></li>
-            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[2px]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(known - oa)}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[var(--radius)]" style={{ background: 'var(--teal)' }} />Open access, in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(doaj)}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[var(--radius)]" style={{ background: 'var(--teal-line)' }} />Open access, not in DOAJ <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(Math.max(0, oa - doaj))}</span></li>
+            <li className="flex items-center gap-1.5"><span aria-hidden className="h-2.5 w-2.5 rounded-[var(--radius)]" style={{ background: 'var(--surface-3)' }} />Not open access <span className="ml-auto font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(known - oa)}</span></li>
           </ul>
         </div>
       </div>

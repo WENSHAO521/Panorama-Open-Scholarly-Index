@@ -21,7 +21,6 @@ import { RankingHistory, type RankingHistoryRow } from './RankingHistory'
 import { PosiGrades } from './PosiGrades'
 import { IndexChecks } from './IndexChecks'
 import { alternateTitleLabel } from '@/lib/titles'
-import { PQF_DISCLAIMER } from '@/lib/evaluation/rules'
 import { FreshnessTag, VerificationPill, SectionTitle, Note, fmt } from './db'
 
 export interface RecordMetrics {
@@ -121,7 +120,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
 
   return (
     <article>
-      <header className="pt-8 pb-6 md:pt-10">
+      <header className="pt-6 pb-6 md:pt-8">
         <nav aria-label="Breadcrumb" className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           <Link href="/" className="hover:underline">POSI</Link>
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
@@ -129,22 +128,24 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
           <Link href={k === 'core' ? '/core-collection/' : `/journals/?collection=${k}`} className="hover:underline">{COLLECTIONS[k].label}</Link>
         </nav>
-        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-          <div className="min-w-0">
-            <h1 className="text-[22px] md:text-[26px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
-            <p className="mt-1.5 text-[15px]" style={{ color: 'var(--muted)' }}>
-              {[j.publisher, countryName(j.registration_country || j.country)].filter(Boolean).join(', ')}
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {j.posi_id && <span className="id-tag">{j.posi_id}</span>}
-              {j.issn_online && <span className="id-tag">eISSN {j.issn_online}</span>}
-              {j.issn_print && j.issn_print !== j.issn_online && <span className="id-tag">pISSN {j.issn_print}</span>}
+        <div className="panel p-5 md:p-7 flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
+          <div className="min-w-0 flex-1 basis-[420px]">
+            <div className="flex flex-wrap items-center gap-2">
               <PosiGrades size="md" showEmpty tier={k === 'core' ? 'core' : 'indexed'}
                 ajr={evaluation.ajr.rating} quartile={evaluation.ranking.quartile} quartileProvisional={evaluation.ranking.status === 'provisional'}
                 zone={evaluation.ranking.zone} zoneStatus={evaluation.ranking.zoneStatus} />
               <VerificationPill v={v} />
               <FreshnessTag f={f} />
             </div>
+            <h1 className="mt-4 text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
+            <p className="mt-2 text-[15.5px]" style={{ color: 'var(--ink-2)' }}>
+              {[j.publisher, countryName(j.registration_country || j.country)].filter(Boolean).join(' · ')}
+            </p>
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              {j.posi_id && <span>{j.posi_id}</span>}
+              {j.issn_online && <span>eISSN {j.issn_online}</span>}
+              {j.issn_print && j.issn_print !== j.issn_online && <span>pISSN {j.issn_print}</span>}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {j.website_url && (
@@ -172,54 +173,69 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
         </div>
       )}
 
-      <section aria-label="Key figures" className="mb-10">
-        <dl className={`stat-strip grid-cols-2 ${k === 'core' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-y-2`}>
-          {/* PCI is a Core Collection indicator: other journals do not show it at all. */}
-          {k === 'core' && (
-            <Figure
-              label="Citation impact (PCI)"
-              value={pci?.pci != null ? fmtScore(pci.pci) : null}
-              note={pci?.pci == null ? undefined : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
-              sample={pci ? sampleLabel(pci.pci_citable_items) : null}
-              href="/methodology/#pci"
-            />
-          )}
-          <Figure
-            label="Citation score (PCS)"
-            value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
-            note={pcs ? <>Supplementary · {pcs.pcs_window_start_year}–{pcs.pcs_window_end_year} · {fmt(pcs.pcs_eligible_items)} items{pcs.pcs_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pcs.pcs_methodology_version}</span></>}</> : undefined}
-            sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
-            href="/methodology/#pcs"
-          />
-          <Figure
-            label="Articles"
-            value={j.article_count != null ? fmt(j.article_count) : null}
-            note={FIELD_BY_KEY.article_count?.source}
-          />
-          <div className="flex flex-col min-w-0">
-            <dt>Subject</dt>
-            {j.psc_category
-              ? <dd className="text-[16px] sm:text-[17px] font-semibold leading-snug mt-1.5" style={{ color: 'var(--ink)' }}>{pscName ?? j.psc_category}</dd>
-              : <dd className="text-[15px] py-1.5" style={{ color: 'var(--soft)' }}>Not yet classified</dd>}
-            {j.psc_category && <dd className="note"><span className="font-mono">{j.psc_category}</span>{j.psc_confidence && ` · confidence ${j.psc_confidence}`}</dd>}
-          </div>
-        </dl>
-        {oa && (
-          <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-            OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}
-            <span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, h-index{' '}
-            <span className="tnum">{fmt(oa.h_index)}</span>, fetched {citationStats?.fetched_at?.slice(0, 10)}.
-          </p>
-        )}
-      </section>
-
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-x-8 gap-y-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="indicators">
             <SectionTitle id="indicators" aside={<span className="font-mono text-[12px]">{evaluation.evaluationVersion}</span>}>Evaluation status</SectionTitle>
             <EvaluationCards ev={evaluation} core={k === 'core' ? 'core' : 'indexed'} autoPqf={autoPqf} />
           </section>
 
+          <section aria-labelledby="figures">
+            <SectionTitle id="figures">Citations and output</SectionTitle>
+            <dl className={`stat-strip grid-cols-2 ${k === 'core' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-y-2`}>
+              {/* PCI is a Core Collection indicator: other journals do not show it at all. */}
+              {k === 'core' && (
+                <Figure
+                  label="Citation impact (PCI)"
+                  value={pci?.pci != null ? fmtScore(pci.pci) : null}
+                  note={pci?.pci == null ? undefined : <>{pci.pci_window_start_year}–{pci.pci_window_end_year} · {fmt(pci.pci_citable_items)} citable items{pci.pci_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pci.pci_methodology_version}</span></>}</>}
+                  sample={pci ? sampleLabel(pci.pci_citable_items) : null}
+                  href="/methodology/#pci"
+                />
+              )}
+              <Figure
+                label="Citation score (PCS)"
+                value={pcs?.pcs != null ? fmtScore(pcs.pcs) : null}
+                note={pcs ? <>Supplementary · {pcs.pcs_window_start_year}–{pcs.pcs_window_end_year} · {fmt(pcs.pcs_eligible_items)} items{pcs.pcs_methodology_version && <> · <span className="font-mono whitespace-nowrap">{pcs.pcs_methodology_version}</span></>}</> : undefined}
+                sample={pcs ? sampleLabel(pcs.pcs_eligible_items) : null}
+                href="/methodology/#pcs"
+              />
+              <Figure
+                label="Articles"
+                value={j.article_count != null ? fmt(j.article_count) : null}
+                note={FIELD_BY_KEY.article_count?.source}
+              />
+              <div className="flex flex-col min-w-0">
+                <dt>Subject</dt>
+                {j.psc_category
+                  ? <dd className="text-[16px] sm:text-[17px] font-semibold leading-snug mt-1.5" style={{ color: 'var(--ink)' }}>{pscName ?? j.psc_category}</dd>
+                  : <dd className="text-[15px] py-1.5" style={{ color: 'var(--soft)' }}>Not yet classified</dd>}
+                {j.psc_category && <dd className="note"><span className="font-mono">{j.psc_category}</span>{j.psc_confidence && ` · confidence ${j.psc_confidence}`}</dd>}
+              </div>
+            </dl>
+            {oa && (
+              <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                OpenAlex source statistics (registry values, not POSI indicators): 2-year mean citedness{' '}
+                <span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, h-index{' '}
+                <span className="tnum">{fmt(oa.h_index)}</span>, fetched {citationStats?.fetched_at?.slice(0, 10)}.
+              </p>
+            )}
+          </section>
+        </div>
+
+        <aside className="space-y-4 lg:row-span-2 lg:col-start-2 lg:row-start-1">
+          <div className="panel p-4 space-y-2">
+            <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
+            {links}
+            <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
+            {issn && <IndexChecks issns={[j.issn_online, j.issn_print].filter((x): x is string => !!x)} />}
+          </div>
+          <div className="panel p-4 space-y-4 text-[13.5px] hidden lg:block">
+            <StatusNotes j={j} k={k} v={v} f={f} />
+          </div>
+        </aside>
+
+        <div className="min-w-0 space-y-10 lg:col-start-1">
           {!!metrics.rankingHistory?.length && (
             <section aria-labelledby="ranking-history">
               <SectionTitle id="ranking-history">Ranking history</SectionTitle>
@@ -273,11 +289,8 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
           {pqf && (
             <section aria-labelledby="pqf">
               <SectionTitle id="pqf" aside={pqf.version}>PQF sub-factors</SectionTitle>
-              <p className="text-[13px] mb-3 max-w-[70ch]" style={{ color: 'var(--muted)' }}>{PQF_DISCLAIMER}</p>
-              <div className="panel overflow-x-auto">
-                <table className="dtable">
-                  <thead><tr><th>Factor</th><th className="text-right">Score</th><th className="text-right">Max</th></tr></thead>
-                  <tbody>
+              <div className="panel p-5">
+                <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
                     {([
                       ['Journal transparency', pqf.subfactors.jtf, 25],
                       ['Metadata quality', pqf.subfactors.mqf, 25],
@@ -286,42 +299,23 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
                       ['Citation visibility', pqf.subfactors.cvf, 10],
                       ['Research integrity', pqf.subfactors.rif, 5],
                     ] as const).map(([label, val, max]) => (
-                      <tr key={label}>
-                        <td>{label}</td>
-                        <td className="text-right font-mono tnum">{val}</td>
-                        <td className="text-right font-mono tnum" style={{ color: 'var(--soft)' }}>{max}</td>
-                      </tr>
+                      <li key={label}>
+                        <div className="flex items-baseline justify-between gap-3 text-[14px]">
+                          <span style={{ color: 'var(--ink)' }}>{label}</span>
+                          <span className="tnum shrink-0"><span className="font-semibold">{val}</span><span style={{ color: 'var(--muted)' }}> / {max}</span></span>
+                        </div>
+                        <div className="mt-1.5 h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-3)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, (val / max) * 100)}%`, background: 'var(--teal)' }} />
+                        </div>
+                      </li>
                     ))}
-                  </tbody>
-                </table>
+                </ul>
               </div>
             </section>
           )}
-        </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="panel p-4 space-y-2">
-            <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>More for this journal</p>
-            {links}
-            <Link href="/certificate/" className="btn w-full justify-start"><Certificate className="h-4 w-4" /> Certificate of indexing</Link>
-            {issn && <IndexChecks issns={[j.issn_online, j.issn_print].filter((x): x is string => !!x)} />}
-          </div>
-          <div className="panel p-4 space-y-4 text-[13.5px]">
-            <div>
-              <p className="font-medium" style={{ color: 'var(--ink)' }}>Verification: {VERIFICATION[v].label}</p>
-              <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{VERIFICATION[v].rule}</p>
-            </div>
-            <div style={{ borderTop: '1px solid var(--line-soft)' }} className="pt-4">
-              <p className="font-medium" style={{ color: 'var(--ink)' }}>Freshness: {FRESHNESS[f].label}</p>
-              <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>
-                Updated {j.updated_at?.slice(0, 10) || 'unknown'}. {FRESHNESS[f].rule}
-              </p>
-            </div>
-            <div style={{ borderTop: '1px solid var(--line-soft)' }} className="pt-4">
-              <p className="font-medium" style={{ color: 'var(--ink)' }}>{COLLECTIONS[k].label}</p>
-              <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{COLLECTIONS[k].description}</p>
-            </div>
-            <Link href="/docs/provenance/" className="link text-[13px] inline-block">How states are assigned</Link>
+          <div className="panel p-4 space-y-4 text-[13.5px] lg:hidden">
+            <StatusNotes j={j} k={k} v={v} f={f} />
           </div>
           <div className="panel p-4 text-[13px]">
             <p className="font-medium mb-2" style={{ color: 'var(--ink)' }}>Cite this record</p>
@@ -329,8 +323,31 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links }: {
               Panorama Open Scholarly Index. ({new Date().getFullYear()}). {j.title} [journal record{j.posi_id ? `, ${j.posi_id}` : ''}]. https://posi.panorama-sg.com/journal/{j.journal_code}/
             </p>
           </div>
-        </aside>
+        </div>
       </div>
     </article>
+  )
+}
+
+/** Verification, freshness and collection, each with the rule behind it. */
+function StatusNotes({ j, k, v, f }: { j: Journal; k: ReturnType<typeof collectionOf>; v: ReturnType<typeof verificationOf>; f: ReturnType<typeof freshnessOf> }) {
+  return (
+    <>
+      <div>
+        <p className="font-medium" style={{ color: 'var(--ink)' }}>Verification: {VERIFICATION[v].label}</p>
+        <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{VERIFICATION[v].rule}</p>
+      </div>
+      <div style={{ borderTop: '1px solid var(--line-soft)' }} className="pt-4">
+        <p className="font-medium" style={{ color: 'var(--ink)' }}>Freshness: {FRESHNESS[f].label}</p>
+        <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>
+          Updated {j.updated_at?.slice(0, 10) || 'unknown'}. {FRESHNESS[f].rule}
+        </p>
+      </div>
+      <div style={{ borderTop: '1px solid var(--line-soft)' }} className="pt-4">
+        <p className="font-medium" style={{ color: 'var(--ink)' }}>{COLLECTIONS[k].label}</p>
+        <p className="mt-1 leading-relaxed" style={{ color: 'var(--muted)' }}>{COLLECTIONS[k].description}</p>
+      </div>
+      <Link href="/docs/provenance/" className="link text-[13px] inline-block">How states are assigned</Link>
+    </>
   )
 }
