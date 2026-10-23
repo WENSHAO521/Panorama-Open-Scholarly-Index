@@ -27,7 +27,7 @@ steps and their state):
 
 | File | Owner | Refreshed by | Cadence |
 |---|---|---|---|
-| `discovered-journals.json` (~25,700 records) | **moving to posi-data** (identity in `journals/discovered`, screening in `screening/`); until the site is switched this committed copy is what the site shows | `daily-sync` / `doaj-sync` here today; `directory-sync` in posi-engine once enabled | daily; 1st and 16th |
+| `discovered-journals.json` (~25,700 records) | **moving to posi-data** (identity in `journals/discovered`, screening in `screening/`); until the site is switched this committed copy is what the site shows | `directory-sync` in posi-engine writes posi-data; `daily-sync` / `doaj-sync` here are manual only since 2026-10-23 (#97), so this copy no longer changes | daily; full DOAJ 1st and 16th |
 | `withdrawn-journals.json` | this repo | by hand; an entry removes a journal from indexing | on demand |
 | `citation-stats.json` | this repo, for now | `citation-stats` (OpenAlex, Crossref) | weekly, Monday |
 | `scopus-sources.json`, `pubmed-journals.json` | this repo | `scripts/import-*` by hand | on demand |

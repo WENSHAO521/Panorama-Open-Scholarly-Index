@@ -5,10 +5,10 @@ name: DOAJ Journal Sync
 # 被 DOAJ 移除的期刊标为 not_listed。细节和安全阈值见 scripts/sync-doaj.mjs 顶部注释。
 # 有 Actions secret DOAJ_API_KEY 时用它取最新的 CSV（premium 一小时内更新）；key 不可用时退回公开版（30 天内更新）。
 
+# 定时运行已停（2026-10-23，#97）：期刊目录由 posi-engine 的 directory-sync 写入 posi-data，
+# 这里再写一份会让两边各自漂移（parity 检查失败）。网站切换到数据层后连同脚本删除。
 on:
-  schedule:
-    - cron: '17 5 1,16 * *'   # 每月 1 日和 16 日 UTC 05:17（北京时间 13:17），避开 02:00 的每日同步
-  workflow_dispatch:            # 允许手动触发
+  workflow_dispatch:        # 只允许手动触发
 
 # 和 Daily Journal Sync 写同一个文件，排队执行，不并发
 concurrency:
