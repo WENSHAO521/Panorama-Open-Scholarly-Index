@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getDirectory } from '@/lib/global-journals'
+import { getDirectory, getPublishers } from '@/lib/global-journals'
 import { getCoreCollection, PSG_JOURNALS } from '@/lib/data'
 import { getRankings, RANKING_AVAILABLE } from '@/lib/rankings'
 import { PageHeader, fmt } from '@/components/db'
@@ -15,6 +15,7 @@ export default function AboutPage() {
   const core = getCoreCollection().length
   const { ranked } = getRankings()
   const psg = PSG_JOURNALS.length
+  const publishers = getPublishers().length
 
   return (
     <div className="pb-12">
@@ -31,8 +32,9 @@ export default function AboutPage() {
         {[
           ['Indexed journals', fmt(indexed)],
           ['Core Collection', fmt(core)],
-          ['Ranked journals', RANKING_AVAILABLE ? fmt(ranked.length) : 'Pending'],
-          ['Publications', 'Over 300 million'],
+          // Before the first ranking edition, show a figure that exists rather than "Pending".
+          RANKING_AVAILABLE ? ['Ranked journals', fmt(ranked.length)] : ['Publishers', fmt(publishers)],
+          ['Publications', '300 million+'],
         ].map(([k, v]) => (
           <div key={k}>
             <dt>{k}</dt>

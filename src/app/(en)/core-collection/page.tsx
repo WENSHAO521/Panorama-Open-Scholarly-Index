@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getCoreCollection } from '@/lib/data'
-import { getJournalRanking, categoryName } from '@/lib/rankings'
+import { getJournalRanking, categoryName, RANKING_AVAILABLE } from '@/lib/rankings'
 import { countryName } from '@/lib/records'
 import { ajrOf } from '@/lib/evaluation/journal'
 import { getPQFStatus, PQF_DISCLAIMER } from '@/lib/evaluation/rules'
@@ -34,15 +34,16 @@ export default function CoreCollectionPage() {
         </p>
       </PageHeader>
 
-      <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px rounded-[var(--radius)] overflow-hidden max-w-[640px]" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+      <dl className="stat-strip grid-cols-2 sm:grid-cols-3 max-w-[720px]">
         {[
           ['Certified journals', fmt(journals.length)],
-          ['With a Citation Ranking', fmt(ranked)],
+          // Before the first ranking edition this would always read 0.
+          RANKING_AVAILABLE ? ['With a Citation Ranking', fmt(ranked)] : ['Rated by AJR', fmt(journals.filter(j => ajrOf(j).rating).length)],
           ['Publishers', fmt(new Set(journals.map(j => j.publisher)).size)],
         ].map(([k, v]) => (
-          <div key={k} className="p-4" style={{ background: 'var(--surface)' }}>
-            <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{k}</dt>
-            <dd className="mt-1 font-mono text-[20px] tnum">{v}</dd>
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd className="mt-1 figure text-[24px]">{v}</dd>
           </div>
         ))}
       </dl>
@@ -57,9 +58,11 @@ export default function CoreCollectionPage() {
               <th>Subject</th>
               <th>PQF</th>
               <th>AJR</th>
-              <th className="text-right">PNCI</th>
-              <th>Citation Quartile</th>
-              <th>POSI Zone</th>
+              {RANKING_AVAILABLE && <>
+                <th className="text-right">PNCI</th>
+                <th>Citation Quartile</th>
+                <th>POSI Zone</th>
+              </>}
             </tr>
           </thead>
           <tbody>
@@ -76,9 +79,11 @@ export default function CoreCollectionPage() {
                 <td className="text-[13px]">{j.psc_category ? categoryName(j.psc_category) ?? j.psc_category : <span style={{ color: 'var(--muted)' }}>Not yet classified</span>}</td>
                 <td className="text-[13px] whitespace-nowrap">{pqfStatusLabel(getPQFStatus((j.pqf ?? j.ojqf)?.total))}</td>
                 <td className="text-[13px] whitespace-nowrap">{(() => { const a = ajrOf(j); return a.rating ? `${a.model} · Rating ${a.rating}` : <span style={{ color: 'var(--muted)' }}>{a.lifecycle === 'observation' ? 'Observation' : a.model === 'AJR-M' ? 'AJR-M not yet rated' : 'Not rated'}</span> })()}</td>
-                <td className="text-right font-mono tnum text-[13px]">{fmtScore(r?.pnci, '-')}</td>
-                <td><QuartileBadge q={r?.q} provisional={r?.status === 'provisional'} /></td>
-                <td><ZoneBadge z={r?.zone} status={r?.zoneStatus} /></td>
+                {RANKING_AVAILABLE && <>
+                  <td className="text-right font-mono tnum text-[13px]">{fmtScore(r?.pnci, '-')}</td>
+                  <td><QuartileBadge q={r?.q} provisional={r?.status === 'provisional'} /></td>
+                  <td><ZoneBadge z={r?.zone} status={r?.zoneStatus} /></td>
+                </>}
               </tr>
             ))}
           </tbody>
@@ -87,7 +92,7 @@ export default function CoreCollectionPage() {
       <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         PQF shows the Core Collection eligibility status. {PQF_DISCLAIMER} AJR is the lifecycle rating (A+ to D).
         Citation Quartile (C-Q1 to C-Q4) and POSI Zone come from the journal&rsquo;s PNCI percentile within its PSC
-        category. See <Link href="/methodology/" className="link">methodology</Link>.
+        category{RANKING_AVAILABLE ? '' : '; they are added here once the first ranking edition is published'}. See <Link href="/methodology/" className="link">methodology</Link>.
       </p>
     </div>
   )

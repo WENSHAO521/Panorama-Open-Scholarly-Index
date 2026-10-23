@@ -21,7 +21,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
   const vol = [w.biblio?.volume && `Vol. ${w.biblio.volume}`, w.biblio?.issue && `No. ${w.biblio.issue}`, pg && `pp. ${pg}`].filter(Boolean).join(', ')
 
   return (
-    <article className="py-5" style={{ borderTop: '1px solid var(--line-soft)' }}>
+    <article className="panel p-5 mt-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         {w.publication_date && <time dateTime={w.publication_date} className="font-mono">{w.publication_date}</time>}
         {w.type && <span>{TYPE_LABEL[w.type] ?? w.type}</span>}
@@ -67,6 +67,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
         {w.open_access?.oa_url && (
           <a href={w.open_access.oa_url} target="_blank" rel="noopener noreferrer" className="btn btn-sm">Full text</a>
         )}
+        {doi && <Link href={`/cite/?doi=${encodeURIComponent(doi)}`} prefetch={false} className="btn btn-sm">Cite</Link>}
         <span className="inline-flex items-center gap-1 ml-1" style={{ color: 'var(--muted)' }} title="Citations recorded in OpenAlex">
           <Quotes className="h-3.5 w-3.5" /> <span className="font-mono tnum">{w.cited_by_count.toLocaleString('en-US')}</span> citations
         </span>

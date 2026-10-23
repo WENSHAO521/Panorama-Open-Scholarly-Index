@@ -25,10 +25,10 @@ export function EditionNav({ year, code }: { year: number; code?: string }) {
         const active = e.year === year
         return (
           <Link key={e.year} href={`${editionBase(e)}/${code ? `${code}/` : ''}`} aria-current={active ? 'page' : undefined}
-            className="rounded-[3px] px-2.5 py-1 font-mono tnum"
+            className="rounded-full px-3 py-1 tnum transition-colors hover:border-[var(--posi-brand)]"
             style={active
-              ? { background: 'var(--ink)', color: 'var(--paper)', border: '1px solid var(--ink)' }
-              : { border: '1px solid var(--line)', color: 'var(--ink-2)' }}>
+              ? { background: 'var(--posi-brand)', color: 'var(--posi-on-brand)', border: '1px solid var(--posi-brand)' }
+              : { border: '1px solid var(--line)', color: 'var(--ink-2)', background: 'var(--surface)' }}>
             {e.year}{e.current ? ' · current' : ''}
           </Link>
         )
@@ -98,18 +98,20 @@ export function RankingsOverview({ e, byYear = false }: { e: Edition; byYear?: b
 
       <section aria-labelledby="cats" className="mb-14">
         <SectionTitle id="cats" aside={`${e.version}, PSC v1.0`}>Subject categories</SectionTitle>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {!available && <p className="-mt-1 mb-4 text-[14px]" style={{ color: 'var(--muted)' }}>Each category gets its own ranking once the first edition is published.</p>}
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 items-start">
           {domains.map(([d, name]) => (
-            <div key={d}>
-              <h3 className="text-[13px] font-medium mb-2" style={{ color: 'var(--muted)' }}>{name}</h3>
-              <ul className="panel overflow-hidden">
+            <div key={d} className="panel">
+              <h3 className="px-4 py-3 text-[14px] font-semibold" style={{ color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>{name}</h3>
+              <ul>
                 {cats.filter(c => c.domain === d).map((c, i) => (
                   <li key={c.code} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                    <Link href={`${base}/${c.code}/`} className="grid grid-cols-[52px_minmax(0,1fr)_auto] gap-2 items-baseline px-3 py-2 transition-colors hover:bg-[var(--hover)]">
+                    <Link href={`${base}/${c.code}/`} className="grid grid-cols-[52px_minmax(0,1fr)_auto] gap-2 items-baseline px-4 py-2.5 transition-colors hover:bg-[var(--hover)]">
                       <span className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{c.code}</span>
                       <span className="text-[14px] truncate" style={{ color: 'var(--ink)' }}>{c.name}</span>
                       <span className="font-mono text-[12px] tnum" style={{ color: 'var(--muted)' }}>
-                        {c.ranked ? fmt(c.ranked) : 'Not ranked'}{c.core > 0 && <span style={{ color: 'var(--teal)' }}>, {c.core} Core</span>}
+                        {/* Before the first edition every row would read "Not ranked": the notice above says it once. */}
+                        {available && (c.ranked ? fmt(c.ranked) : 'Not ranked')}{c.core > 0 && <span style={{ color: 'var(--teal)' }}>{available ? ', ' : ''}{c.core} Core</span>}
                       </span>
                     </Link>
                   </li>
