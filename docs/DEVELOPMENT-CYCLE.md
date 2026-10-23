@@ -48,7 +48,7 @@
 
 ### P0:需要负责人的两个决定
 
-- **Cloudflare Web Analytics**:生产页面加载了统计脚本,而隐私页写着"不运行统计"。二选一:在 Cloudflare 里关闭,或改隐私页。(审计文档 §7)
+- **Cloudflare Web Analytics**:已决定(2026-10-23,#101):保留,隐私页如实说明。(审计文档 §7)
 - **ISSN 复核队列**:posi-data `audits/data-quality/issn-integrity/open-issues.csv` 有 9 条(4 个校验位错误、4 个重复 id、1 个 POSI-J-000143 属性串号)。每条给出处理方式。
 
 ### P1:多语言阶段 1(与公告一致:10–11 月)
