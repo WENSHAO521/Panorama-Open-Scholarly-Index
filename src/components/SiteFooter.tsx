@@ -39,8 +39,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="wrap py-5 grid gap-2 md:grid-cols-[1fr_auto] md:items-center text-[12px]" style={{ color: 'var(--band-muted)' }}>
           <p>
             &copy; {year} {m.footer.copyrightLead}{' '}
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">{m.footer.licenceName}</a>.{' '}
-            {m.footer.copyrightTail}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">{m.footer.licenceName}</a>{m.footer.copyrightTail}
           </p>
           <p>{m.footer.independence}</p>
         </div>

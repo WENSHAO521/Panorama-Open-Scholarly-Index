@@ -86,3 +86,12 @@ export const stripLocale = (pathname: string) => …                            
 
 - `globalNotFound` 在 `next build` 之外的 `next dev` 下的行为。
 - 把 `(docs)/layout.tsx` 放进 `(en)` 之后,嵌套布局是否与新的根布局正常叠加(PoC 没有嵌套布局)。
+
+## 11. 第 2 阶段进展
+
+- **2026-10-23,首批**:`zh-Hans` 上线于 `/zh/`(`zh/layout.tsx`),首页 `/zh/` 已翻译;头部、页脚、导航、文档导航的全部文字有中文。
+  - 尚未翻译的页面:中文界面里的链接直接指向英文原页(`localizedHref`,依据 `TRANSLATED_PATHS`),不会出现 404。
+  - PSC 48 个学科大类与类别的中文名在 `src/i18n/psc-zh-Hans.ts`,国家和地区名沿用 `country-list.ts` 的 `zh` 字段。
+  - 新闻标题仍为英文(标 `lang="en"`)。404 页仍只有英文。
+  - 测试:各语言键与英文一致、占位符一致、每个 PSC 代码都有中文名。
+- 下一批:期刊列表、排名表、文献检索、学科类别、出版商、核心合集。期刊详情页(2.5 万页)仍按 §9 待定。

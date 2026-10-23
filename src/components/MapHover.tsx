@@ -9,11 +9,14 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowCounterClockwise, Minus, Plus } from '@phosphor-icons/react/dist/ssr'
 import { fmt } from './db'
 
+/** The map's interface text, from the page's language; `journals` has an `{n}` placeholder. */
+export interface MapLabels { zoom: string; zoomIn: string; zoomOut: string; zoomReset: string; journals: string; none: string }
+
 const MAX_ZOOM = 8
 
 interface View { z: number; cx: number; cy: number }
 
-export function MapHover({ children }: { children: React.ReactNode }) {
+export function MapHover({ labels, children }: { labels: MapLabels; children: React.ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
   const base = useRef<{ x: number; y: number; w: number; h: number } | null>(null)
   const drag = useRef<{ x: number; y: number; view: View; moved: boolean } | null>(null)
@@ -93,15 +96,15 @@ export function MapHover({ children }: { children: React.ReactNode }) {
       onPointerUp={() => { drag.current = null }}
     >
       {children}
-      <div className="absolute right-2 top-2 flex flex-col gap-1" role="group" aria-label="Map zoom">
-        <button type="button" className="map-zoom" onClick={() => zoom(2)} disabled={(view?.z ?? 1) >= MAX_ZOOM} aria-label="Zoom in" title="Zoom in">
+      <div className="absolute right-2 top-2 flex flex-col gap-1" role="group" aria-label={labels.zoom}>
+        <button type="button" className="map-zoom" onClick={() => zoom(2)} disabled={(view?.z ?? 1) >= MAX_ZOOM} aria-label={labels.zoomIn} title={labels.zoomIn}>
           <Plus className="h-3.5 w-3.5" />
         </button>
-        <button type="button" className="map-zoom" onClick={() => zoom(0.5)} disabled={!zoomed} aria-label="Zoom out" title="Zoom out">
+        <button type="button" className="map-zoom" onClick={() => zoom(0.5)} disabled={!zoomed} aria-label={labels.zoomOut} title={labels.zoomOut}>
           <Minus className="h-3.5 w-3.5" />
         </button>
         {zoomed && (
-          <button type="button" className="map-zoom" onClick={() => setView(null)} aria-label="Reset zoom" title="Reset zoom">
+          <button type="button" className="map-zoom" onClick={() => setView(null)} aria-label={labels.zoomReset} title={labels.zoomReset}>
             <ArrowCounterClockwise className="h-3.5 w-3.5" />
           </button>
         )}
@@ -116,7 +119,7 @@ export function MapHover({ children }: { children: React.ReactNode }) {
           }}
         >
           <span className="font-medium">{tip.name}</span>
-          <span className="ml-2 font-mono tnum">{tip.n ? `${fmt(tip.n)} journals` : 'no journals indexed'}</span>
+          <span className="ml-2 font-mono tnum">{tip.n ? labels.journals.replace('{n}', fmt(tip.n)) : labels.none}</span>
         </div>
       )}
     </div>

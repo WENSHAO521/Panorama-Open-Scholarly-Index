@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { localePath, stripLocale } from './config.ts'
-import { availableLocales, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, type LocaleTable } from './alternates.ts'
+import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, type LocaleTable } from './alternates.ts'
 
 // A second language that has translated two pages, to exercise what a single published language cannot.
 const two: LocaleTable = {
@@ -13,14 +13,29 @@ const two: LocaleTable = {
   translated: { en: null, 'zh-Hans': ['/journals/', '/docs/'] },
 }
 
-test('with only English published, no page has an alternate language', () => {
-  assert.deepEqual(LOCALE_TABLE.locales, ['en'])
-  assert.deepEqual(TRANSLATED_PATHS, { en: null })
-  for (const p of ['/', '/journals/', '/docs/', '/journal/abc/']) {
+test('the published languages: Simplified Chinese under /zh/, starting with the home page', () => {
+  assert.deepEqual(LOCALE_TABLE.locales, ['en', 'zh-Hans'])
+  assert.equal(TRANSLATED_PATHS.en, null)
+  assert.ok(TRANSLATED_PATHS['zh-Hans']?.includes('/'))
+  assert.deepEqual(availableLocales('/'), ['en', 'zh-Hans'])
+  assert.deepEqual(pageAlternates('/', 'zh-Hans'), {
+    canonical: '/zh/',
+    languages: { en: '/', 'zh-Hans': '/zh/', 'x-default': '/' },
+  })
+  for (const p of ['/journal/abc/', '/pqf/']) {
     assert.deepEqual(availableLocales(p), ['en'])
     assert.deepEqual(pageAlternates(p), { canonical: p })
     assert.equal(sitemapLanguages(p, 'https://posi.panorama-sg.com'), undefined)
   }
+})
+
+test('a link from a translated page stays in its language only where the target is translated', () => {
+  assert.equal(localizedHref('zh-Hans', '/journals/', two), '/zh/journals/')
+  assert.equal(localizedHref('zh-Hans', '/journals/?q=nature', two), '/zh/journals/?q=nature')
+  assert.equal(localizedHref('zh-Hans', '/pqf/', two), '/pqf/')
+  assert.equal(localizedHref('zh-Hans', '/pqf/#scope', two), '/pqf/#scope')
+  assert.equal(localizedHref('en', '/journals/', two), '/journals/')
+  for (const href of ['https://example.org/x', '//example.org/x', 'mailto:a@b.c', '#top']) assert.equal(localizedHref('zh-Hans', href, two), href)
 })
 
 test('a translated page lists both languages, with x-default pointing at English', () => {

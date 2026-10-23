@@ -6,7 +6,8 @@ import { MagnifyingGlass, List, X, CaretDown } from '@phosphor-icons/react/dist/
 import { extractDoi } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
 import { primaryNav, utilityNav, type NavGroup } from '@/lib/site-nav'
-import { localePath, stripLocale } from '@/i18n/config'
+import { stripLocale } from '@/i18n/config'
+import { localizedHref } from '@/i18n/alternates'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -46,7 +47,7 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
     const v = q.trim()
     if (!v) return
     const doi = extractDoi(v)
-    router.push(localePath(locale, doi ? `/work/?id=${encodeURIComponent(doi)}` : `/publications/?q=${encodeURIComponent(v)}`))
+    router.push(localizedHref(locale, doi ? `/work/?id=${encodeURIComponent(doi)}` : `/publications/?q=${encodeURIComponent(v)}`))
     onDone?.()
   }
   return (
