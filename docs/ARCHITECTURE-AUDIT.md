@@ -120,13 +120,12 @@ falls back to full-page navigations and pages reload in a loop. That was a fault
 - Not built, by decision: IndexedDB cache, per-type TTLs, BYOK, a query router across providers, a separate SDK
   repository. The session cache and fallback chain cover current needs.
 
-## 7. Open finding: Cloudflare Web Analytics
+## 7. Cloudflare Web Analytics (resolved 2026-10-23)
 
 Every production page loads `static.cloudflareinsights.com/beacon.min.js`, injected by Cloudflare (it is not in
 this repository). It posts page path, load timings and browser type to `/cdn-cgi/rum` on POSI's own domain. A
-search for a test keyword showed the query string is not sent. The privacy page says POSI "runs no analytics", so
-either Web Analytics is turned off in the Cloudflare dashboard, or the privacy page describes it. That is an
-owner's decision; nothing was changed.
+search for a test keyword showed the query string is not sent. The owner decided to keep it (#101); the privacy
+page now describes it (section 3.1), with the other third parties a visitor's browser contacts.
 
 ## 8. Maintaining the boundary
 
