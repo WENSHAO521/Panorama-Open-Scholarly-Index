@@ -312,13 +312,13 @@ const EDITIONS = join(GEN, 'editions')
 }
 
 // The discovered journals from the data layer (posi-data's discovered-journals collection) in place of the
-// committed src/lib/discovered-journals.json. Off unless POSI_DISCOVERED_FROM_DATA_LAYER=1: the site stays
-// on its own copy until scripts/check-discovered-parity.mjs is clean. Any failure, or a collection that
-// fails the safety checks (scripts/lib/discovered-sync.mjs), leaves the committed file in use.
+// committed src/lib/discovered-journals.json. On by default since the parity gate passed (2026-10-23, #99);
+// POSI_DISCOVERED_FROM_DATA_LAYER=0 keeps the committed copy. Any failure, or a collection that fails the
+// safety checks (scripts/lib/discovered-sync.mjs), leaves the committed file in use.
 {
   const out = join(GEN, 'discovered-journals.json'), outAliases = join(GEN, 'discovered-aliases.json')
   rmSync(out, { force: true }); rmSync(outAliases, { force: true })
-  if (process.env.POSI_DISCOVERED_FROM_DATA_LAYER === '1') {
+  if (process.env.POSI_DISCOVERED_FROM_DATA_LAYER !== '0') {
     try {
       if (!snapshotDir) throw new Error('no current snapshot')
       const { buildDiscovered } = await import('./lib/discovered-sync.mjs')

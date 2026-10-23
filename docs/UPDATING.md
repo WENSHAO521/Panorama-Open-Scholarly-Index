@@ -36,8 +36,9 @@ steps and their state):
 | `citation-ranking.json`, `pcs-q.json` | fallbacks only | the build downloads the real editions | yearly (December) |
 | `psc-v1.0.snapshot.json` | posi-data taxonomy | by hand when PSC changes | rare |
 
-The build (`prebuild`: `sync-live-data.mjs`) downloads the global corpus and the ranking edition itself, and,
-with `POSI_DISCOVERED_FROM_DATA_LAYER=1`, the discovered journals from the data layer. `publish-site-data`
+The build (`prebuild`: `sync-live-data.mjs`) downloads the global corpus, the ranking edition and the
+discovered journals from the data layer itself (the last since 2026-10-23, #99; `POSI_DISCOVERED_FROM_DATA_LAYER=0`
+falls back to the committed `discovered-journals.json`). `publish-site-data`
 rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/site/v1/` whenever master moves.
 
 ### Discovered journals: where a change goes
