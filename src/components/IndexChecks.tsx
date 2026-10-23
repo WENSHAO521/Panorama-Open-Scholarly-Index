@@ -10,7 +10,7 @@
 // never described as not in Scopus.
 
 import { useEffect, useState } from 'react'
-import { BookOpenText, Check, Copy } from '@phosphor-icons/react/dist/ssr'
+import { ArrowSquareOut, Check, Copy } from '@phosphor-icons/react/dist/ssr'
 import { SCOPUS_RANK, scopusKey, scopusShard, scopusSourceHref, type ScopusEntry } from '@/lib/scopus'
 import { dataUrl } from '@/lib/data-base'
 
@@ -100,13 +100,13 @@ export function IndexChecks({ issns }: { issns: string[] }) {
   return (
     <div className="space-y-2 pt-3 mt-1" style={{ borderTop: '1px solid var(--line-soft)' }}>
       <p className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Check other indexes</p>
-      <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
-        style={{ background: 'var(--wos-brand)', borderColor: 'var(--wos-brand)', color: 'var(--on-wos-brand)' }}>
-        <BookOpenText className="h-4 w-4" /> Web of Science
+      <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
+        <span aria-hidden className="index-mark" style={{ background: 'var(--wos-brand)' }} /> Web of Science
+        <ArrowSquareOut aria-hidden className="ml-auto h-3.5 w-3.5" style={{ color: 'var(--muted)' }} />
       </a>
-      <a href={id ? scopusSourceHref(id) : SCOPUS_SOURCES} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
-        style={{ background: 'var(--scopus-brand)', borderColor: 'var(--scopus-brand)', color: 'var(--on-scopus-brand)' }}>
-        <BookOpenText className="h-4 w-4" /> Scopus
+      <a href={id ? scopusSourceHref(id) : SCOPUS_SOURCES} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
+        <span aria-hidden className="index-mark" style={{ background: 'var(--scopus-brand)' }} /> Scopus
+        <ArrowSquareOut aria-hidden className="ml-auto h-3.5 w-3.5" style={{ color: 'var(--muted)' }} />
       </a>
       {st && (
         <p className="flex items-start gap-1.5 text-[12px] leading-snug" style={{ color: 'var(--ink-2)' }}>
@@ -127,9 +127,9 @@ export function IndexChecks({ issns }: { issns: string[] }) {
           </button>
         </p>
       )}
-      <a href={pubmed?.nlmId ? nlmRecordHref(pubmed.nlmId) : nlmCatalogHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start hover:brightness-95"
-        style={{ background: 'var(--pubmed-brand)', borderColor: 'var(--pubmed-brand)', color: 'var(--on-pubmed-brand)' }}>
-        <BookOpenText className="h-4 w-4" /> PubMed
+      <a href={pubmed?.nlmId ? nlmRecordHref(pubmed.nlmId) : nlmCatalogHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
+        <span aria-hidden className="index-mark" style={{ background: 'var(--pubmed-brand)' }} /> PubMed
+        <ArrowSquareOut aria-hidden className="ml-auto h-3.5 w-3.5" style={{ color: 'var(--muted)' }} />
       </a>
       {pubmed && (
         <p className="flex items-start gap-1.5 text-[12px] leading-snug" style={{ color: 'var(--ink-2)' }}>

@@ -209,6 +209,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
   white-space: nowrap;
 }
 
+/* Status chips: a neutral pill with a coloured dot, so a status never borrows the brand green's filled look. */
+.chip-dot { width: 6px; height: 6px; border-radius: 999px; flex-shrink: 0; background: currentColor; }
+
+/* Links to other indexes: outlined like a secondary button; the index's colour is a small marker only. */
+.index-mark { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
 .id-tag {
   font-family: var(--font-mono); font-size: 12px;
   color: var(--ink-2); background: var(--surface-2);

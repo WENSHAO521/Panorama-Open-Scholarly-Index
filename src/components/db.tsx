@@ -8,7 +8,8 @@ import { BASIS, type Basis } from '@/lib/schema'
 export function VerificationPill({ v, withLabel = true }: { v: Verification; withLabel?: boolean }) {
   const m = VERIFICATION[v]
   return (
-    <span className="chip" title={m.rule} style={{ color: m.color, background: m.bg, borderColor: 'transparent' }}>
+    <span className="chip" title={m.rule}>
+      <span aria-hidden className="chip-dot" style={{ background: m.color }} />
       {withLabel ? m.label : v}
     </span>
   )
@@ -33,7 +34,8 @@ export function CollectionTag({ k }: { k: Collection }) {
 export function FreshnessTag({ f }: { f: Freshness }) {
   const m = FRESHNESS[f]
   return (
-    <span className="chip" title={m.rule} style={{ color: m.color }}>
+    <span className="chip" title={m.rule}>
+      <span aria-hidden className="chip-dot" style={{ background: m.color }} />
       {m.label}
     </span>
   )

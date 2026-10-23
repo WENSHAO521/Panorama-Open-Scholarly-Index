@@ -37,6 +37,14 @@ const QUARTILE_STYLE: Record<CitationQuartile, React.CSSProperties> = {
   Q4: { color: 'var(--muted)' },
 }
 
+// Four steps, one per zone, so Zone 1 and Zone 2 read apart; lighter than the quartile steps (no solid fill).
+const ZONE_STYLE: Record<PosiZone, React.CSSProperties> = {
+  1: { background: 'var(--teal-soft)', color: 'var(--teal)' },
+  2: { color: 'var(--teal)' },
+  3: { color: 'var(--ink-2)' },
+  4: { color: 'var(--muted)' },
+}
+
 export function PosiGrades({ tier, ajr, quartile, quartileProvisional, zone, zoneStatus = 'official', showEmpty = false, size = 'sm' }: PosiGradesProps) {
   const segs: Seg[] = [{ key: 'tier', ...TIER[tier] }]
   if (ajr) segs.push({ key: 'ajr', text: `AJR ${ajr}`, title: 'AJR Rating: an absolute lifecycle rating, A+ to D', style: { color: 'var(--ink)' } })
@@ -48,7 +56,7 @@ export function PosiGrades({ tier, ajr, quartile, quartileProvisional, zone, zon
   }
   if (zone && zoneStatus !== 'not_assigned') {
     const provisional = zoneStatus === 'provisional'
-    segs.push({ key: 'z', text: provisional ? `Zone ${zone} provisional` : `Zone ${zone}`, title: `POSI Zone ${zone}: ${ZONE_SHARE[zone]} of its PSC category by PNCI percentile${provisional ? ' (provisional)' : ''}`, style: { color: zone <= 2 ? 'var(--teal)' : zone === 3 ? 'var(--ink-2)' : 'var(--muted)' }, dashed: provisional })
+    segs.push({ key: 'z', text: provisional ? `Zone ${zone} provisional` : `Zone ${zone}`, title: `POSI Zone ${zone}: ${ZONE_SHARE[zone]} of its PSC category by PNCI percentile${provisional ? ' (provisional)' : ''}`, style: provisional ? { color: 'var(--ink-2)' } : ZONE_STYLE[zone], dashed: provisional })
   } else if (showEmpty) {
     segs.push({ key: 'z', text: 'Zone unassigned', title: 'POSI Zone: not yet assigned', style: { color: 'var(--soft)' } })
   }

@@ -32,13 +32,21 @@ export function QuartileBadge({ q, provisional = false }: { q: CitationQuartile 
   )
 }
 
+// One step per zone, outlined so zones stay distinct from the filled quartile chips.
+const ZONE_TONE: Record<PosiZone, React.CSSProperties> = {
+  1: { color: 'var(--teal)', borderColor: 'var(--teal)', background: 'var(--teal-soft)' },
+  2: { color: 'var(--teal)', borderColor: 'var(--teal-line)', background: 'transparent' },
+  3: { color: 'var(--ink-2)', borderColor: 'var(--line)', background: 'transparent' },
+  4: { color: 'var(--muted)', borderColor: 'var(--line)', background: 'transparent' },
+}
+
 /** POSI Zone chip: numbered and outlined, distinct from the filled quartile chips. */
 export function ZoneBadge({ z, status = 'official', long = false }: { z: PosiZone | null | undefined; status?: ZoneStatus; long?: boolean }) {
   if (!z || status === 'not_assigned') return <span style={{ color: 'var(--soft)' }}>No zone</span>
   const provisional = status === 'provisional'
   return (
     <span className="chip font-semibold whitespace-nowrap" title={`POSI Zone ${z}: ${ZONE_SHARE[z]} of the journal’s PSC category by PNCI percentile${provisional ? ' (provisional: category of 30–49 journals)' : ''}`}
-      style={{ color: z <= 2 ? 'var(--teal)' : z === 3 ? 'var(--ink-2)' : 'var(--muted)', borderColor: z <= 2 ? 'var(--teal)' : 'var(--line)', background: 'transparent', borderStyle: provisional ? 'dashed' : 'solid' }}>
+      style={{ ...ZONE_TONE[z], borderStyle: provisional ? 'dashed' : 'solid' }}>
       {provisional ? 'Provisional ' : ''}Zone {z}{long ? ` · ${ZONE_SHARE[z]}` : ''}
     </span>
   )

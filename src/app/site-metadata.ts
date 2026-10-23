@@ -35,5 +35,5 @@ export const siteMetadata: Metadata = {
 // Light by default; dark only when the visitor picks the moon (see styles/posi-tokens.css and ThemeToggle).
 export const siteViewport = {
   colorScheme: 'light',
-  themeColor: '#f8f6f0',
+  themeColor: '#f7f7f5',
 }
