@@ -12,6 +12,8 @@ export interface LocaleTable {
   htmlLang: Record<string, string>
   /** Paths (as in site-nav, with a trailing slash) translated into each language; `null` means every path. */
   translated: Record<string, readonly string[] | null>
+  /** Sections translated whole: every path under one of these exists in the language too. */
+  translatedSections?: Record<string, readonly string[]>
 }
 
 /**
@@ -27,17 +29,33 @@ export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
     '/journal/', '/record/', ...CORE_JOURNAL_CODES.map(c => `/journal/${c}/`)],
 }
 
+/**
+ * Sections whose pages are all translated: their Chinese routes take the same parameters as the English ones, so a
+ * page under them exists in both languages. The Citation Ranking: categories, editions and each edition's categories.
+ */
+export const TRANSLATED_SECTIONS: Record<Locale, readonly string[]> = {
+  en: [],
+  'zh-Hans': ['/rankings/'],
+}
+
 export const LOCALE_TABLE: LocaleTable = {
   locales: LOCALES,
   defaultLocale: DEFAULT_LOCALE,
   prefix: URL_PREFIX,
   htmlLang: HTML_LANG,
   translated: TRANSLATED_PATHS,
+  translatedSections: TRANSLATED_SECTIONS,
+}
+
+/** Whether the page at `path` (no language prefix, no query) exists in `locale`. */
+function isTranslated(locale: string, path: string, table: LocaleTable): boolean {
+  const list = table.translated[locale]
+  return list === null || !!list?.includes(path) || !!table.translatedSections?.[locale]?.some(s => path.startsWith(s))
 }
 
 /** The languages `path` (without a language prefix) exists in, the default language first. */
 export function availableLocales(path: string, table: LocaleTable = LOCALE_TABLE): string[] {
-  const has = (l: string) => table.translated[l] === null || table.translated[l].includes(path)
+  const has = (l: string) => isTranslated(l, path, table)
   return [table.defaultLocale, ...table.locales.filter(l => l !== table.defaultLocale)].filter(has)
 }
 
@@ -50,7 +68,7 @@ export function localizedHref(locale: string, href: string, table: LocaleTable =
   if (!/^\/(?!\/)/.test(href)) return href
   const path = href.replace(/[?#].*$/, '')
   const translated = table.translated[locale]
-  if (translated === null || translated?.includes(path)) return localePath(locale, href, table.prefix)
+  if (isTranslated(locale, path, table)) return localePath(locale, href, table.prefix)
   // A journal record without a static page in the language is shown by the record viewer, which builds the page in
   // the browser from the record's file: one page for every such journal, so the deploy stays under its file limit.
   const record = path.match(/^\/journal\/([^/?#]+)\/$/)
