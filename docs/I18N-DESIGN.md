@@ -103,3 +103,7 @@ export const stripLocale = (pathname: string) => …                            
   - 引文生成器只翻译界面(表单、提示、格式说明、批量转换);生成的引文本身按各格式规范保持英文。
   - 认证申请表的界面为中文,生成的申请邮件保持英文(编辑部工作语言)。徽标图片、`alt` 文字与嵌入代码保持英文(出现在期刊自己的网站上)。
   - 文档类页面:每页一个视图(`src/components/views/docs/`),英文与中文各为一个组件,共用数据;中文路由组 `zh/(docs)/` 复用文档侧栏。
+- **2026-10-24,第七批:期刊页**:`/zh/journal/?issn=`(期刊页)、`/zh/record/?code=`(记录查看器)、核心合集期刊的静态记录页 `/zh/journal/<code>/`。
+  - 其余约 1,000 个有英文静态页的记录(Benchmark 等)不再生成中文静态副本(会超出部署文件数上限),中文界面链接到 `/zh/record/?code=`,由浏览器读取 `/data/journal/<code>.json` 动态生成中文页面(`localizedHref` 自动改写)。负责人 2026-10-24 同意改为动态。
+  - 核心合集期刊代码由 `scripts/sync-corpus.mjs` 写入 `src/i18n/core-journal-codes.json`,测试确保与 `core-collection.json` 一致。
+  - 评价面板与卡片、排名历史、逐年趋势图、其他索引核查、记录字段(`src/i18n/records-zh-Hans.ts`)均已翻译。语言切换在同一页面时保留查询参数。

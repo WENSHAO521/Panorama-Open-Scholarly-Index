@@ -2,6 +2,7 @@
 // A language is listed for a path only when that page has been translated, so no hreflang or switcher
 // entry ever points at a 404. English, the default, has every page.
 import { DEFAULT_LOCALE, HTML_LANG, LOCALES, URL_PREFIX, localePath, type Locale } from './config.ts'
+import CORE_JOURNAL_CODES from './core-journal-codes.json' with { type: 'json' }
 
 /** The languages and what is translated; a parameter of the functions below only so tests can use a second language. */
 export interface LocaleTable {
@@ -19,7 +20,11 @@ export interface LocaleTable {
  */
 export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
   en: null,
-  'zh-Hans': ['/', '/journals/', '/journals/open-access/', '/subjects/', '/publishers/', '/rankings/', '/core-collection/', '/publications/', '/certificate/', '/certificate/zone/', '/cite/', '/datasets/', '/certification/', '/logos/', '/about/'],
+  'zh-Hans': ['/', '/journals/', '/journals/open-access/', '/subjects/', '/publishers/', '/rankings/', '/core-collection/', '/publications/', '/certificate/', '/certificate/zone/', '/cite/', '/datasets/', '/certification/', '/logos/', '/about/',
+    // Journal pages: the profile and the Discovered record viewer (one page each, chosen by the query string), and
+    // the static record pages of the Core Collection journals. The other records with a static English page (about
+    // 1,000) are shown in Chinese by the record viewer (see localizedHref): static copies would pass the file limit.
+    '/journal/', '/record/', ...CORE_JOURNAL_CODES.map(c => `/journal/${c}/`)],
 }
 
 export const LOCALE_TABLE: LocaleTable = {
@@ -45,7 +50,12 @@ export function localizedHref(locale: string, href: string, table: LocaleTable =
   if (!/^\/(?!\/)/.test(href)) return href
   const path = href.replace(/[?#].*$/, '')
   const translated = table.translated[locale]
-  return translated === null || translated?.includes(path) ? localePath(locale, href, table.prefix) : href
+  if (translated === null || translated?.includes(path)) return localePath(locale, href, table.prefix)
+  // A journal record without a static page in the language is shown by the record viewer, which builds the page in
+  // the browser from the record's file: one page for every such journal, so the deploy stays under its file limit.
+  const record = path.match(/^\/journal\/([^/?#]+)\/$/)
+  if (record && translated?.includes('/record/')) return localePath(locale, `/record/?code=${record[1]}${href.slice(path.length).replace(/^\?/, '&')}`, table.prefix)
+  return href
 }
 
 /**

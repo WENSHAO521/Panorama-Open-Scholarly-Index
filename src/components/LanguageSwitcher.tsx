@@ -1,9 +1,9 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Translate } from '@phosphor-icons/react/dist/ssr'
 import { DEFAULT_LOCALE, HTML_LANG, LANGUAGE_NAME, LOCALES, stripLocale, type Locale } from '@/i18n/config'
-import { availableLocales } from '@/i18n/alternates'
+import { availableLocales, localizedHref } from '@/i18n/alternates'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
 
@@ -13,11 +13,13 @@ const SHORT_NAME: Record<Locale, string> = { en: 'EN', 'zh-Hans': '中文' }
 /**
  * Language switch in the header bar: one link to the other language, named in that language. It goes to the same page
  * in that language when the page is translated, otherwise to that language's home page (see TRANSLATED_PATHS), so a
- * reader can always reach the other interface from wherever they are.
+ * reader can always reach the other interface from wherever they are. On the same page the query string goes along,
+ * since pages such as the journal profile (/journal/?issn=…) are chosen by it.
  */
 export function LanguageSwitcher() {
   const { header } = useMessages()
   const locale = useLocale()
+  const router = useRouter()
   const path = stripLocale(usePathname() || '/')
   const here = availableLocales(path) as Locale[] // the registry only lists the languages in config
   // With two languages, the other one; English from any other language.
@@ -34,6 +36,12 @@ export function LanguageSwitcher() {
       title={LANGUAGE_NAME[other]}
       className="inline-flex h-7 items-center gap-1.5 px-2 sm:px-2.5 rounded-[var(--radius)] text-[13px] font-medium whitespace-nowrap transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
       style={{ border: '1px solid var(--line)', color: 'var(--ink-2)' }}
+      onClick={e => {
+        const { search, hash } = window.location
+        if (target !== path || !(search || hash) || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+        e.preventDefault()
+        router.push(`${localizedHref(other, target)}${search}${hash}`)
+      }}
     >
       <Translate className="h-3.5 w-3.5" aria-hidden="true" />
       <span className="hidden sm:inline">{LANGUAGE_NAME[other]}</span>
