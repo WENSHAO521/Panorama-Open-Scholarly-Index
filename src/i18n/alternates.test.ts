@@ -77,6 +77,8 @@ test('localePath and stripLocale are inverse for a prefixed language', () => {
 test('every translated path has its page under src/app/zh, so no switcher or hreflang link points at a 404', async () => {
   const { existsSync } = await import('node:fs')
   for (const p of TRANSLATED_PATHS['zh-Hans'] ?? []) {
-    assert.ok(existsSync(new URL(`../app/zh${p}page.tsx`, import.meta.url)), p)
+    // Documentation pages sit in the (docs) route group, which shares their sidebar.
+    const at = (dir: string) => existsSync(new URL(`../app/zh${dir}${p}page.tsx`, import.meta.url))
+    assert.ok(at('') || at('/(docs)'), p)
   }
 })
