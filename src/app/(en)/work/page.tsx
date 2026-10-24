@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { WorkViewer } from './WorkViewer'
+import { WorkViewer } from '@/components/views/WorkViewer'
 
 export const metadata = {
   title: 'Publication',

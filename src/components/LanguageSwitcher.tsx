@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { Translate } from '@phosphor-icons/react/dist/ssr'
 import { DEFAULT_LOCALE, HTML_LANG, LANGUAGE_NAME, LOCALES, stripLocale, type Locale } from '@/i18n/config'
-import { availableLocales, localizedHref } from '@/i18n/alternates'
+import { availableLocales, localizedHref, viewerHref } from '@/i18n/alternates'
 import { useLocale, useMessages } from '@/i18n/LocaleProvider'
 import { LocalizedLink } from './LocalizedLink'
 
@@ -12,8 +12,9 @@ const SHORT_NAME: Record<Locale, string> = { en: 'EN', 'zh-Hans': '中文' }
 
 /**
  * Language switch in the header bar: one link to the other language, named in that language. It goes to the same page
- * in that language when the page is translated, otherwise to that language's home page (see TRANSLATED_PATHS), so a
- * reader can always reach the other interface from wherever they are. On the same page the query string goes along,
+ * in that language when the page is translated, or to the viewer that shows it in that language (a publisher or journal
+ * record page, see viewerHref), otherwise to that language's home page (see TRANSLATED_PATHS), so a reader can always
+ * reach the other interface from wherever they are. On the same page the query string goes along,
  * since pages such as the journal profile (/journal/?issn=…) are chosen by it.
  */
 export function LanguageSwitcher() {
@@ -25,7 +26,7 @@ export function LanguageSwitcher() {
   // With two languages, the other one; English from any other language.
   const other = locale === DEFAULT_LOCALE ? LOCALES.find(l => l !== DEFAULT_LOCALE) : DEFAULT_LOCALE
   if (!other) return null
-  const target = here.includes(other) ? path : '/'
+  const target = here.includes(other) ? path : viewerHref(other, path) ?? '/'
   return (
     <LocalizedLink
       href={target}

@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/db'
 import { localizedHref, pageAlternates } from '@/i18n/alternates'
 import { formatDate } from '@/i18n/format'
 
-// The News items that carry a Chinese version. The news list stays English, so its links go to the English pages.
+// The News items that carry a Chinese version.
 export const dynamicParams = false
 
 export async function generateStaticParams() {
@@ -26,12 +26,12 @@ export default async function AnnouncementDetailPage(props: { params: Promise<{ 
 
   return (
     <div className="pb-12">
-      <PageHeader locale="zh-Hans" title={a.zh.title} crumbs={[{ label: 'POSI', href: localizedHref('zh-Hans', '/') }, { label: '新闻动态', href: '/announcements/' }, { label: date }]}>
+      <PageHeader locale="zh-Hans" title={a.zh.title} crumbs={[{ label: 'POSI', href: localizedHref('zh-Hans', '/') }, { label: '新闻动态', href: localizedHref('zh-Hans', '/announcements/') }, { label: date }]}>
         <time dateTime={a.date} className="text-[13px] tnum" style={{ color: 'var(--muted)' }}>{date}</time>
       </PageHeader>
       <div className="doc">
         {a.zh.body.map((p, i) => <p key={i}>{p}</p>)}
-        <p className="pt-4"><Link href="/announcements/">全部动态（英文）</Link> · <Link href={`/announcements/${a.slug}/`} lang="en">English version</Link></p>
+        <p className="pt-4"><Link href={localizedHref('zh-Hans', '/announcements/')}>全部动态</Link> · <Link href={`/announcements/${a.slug}/`} lang="en">English version</Link></p>
       </div>
     </div>
   )

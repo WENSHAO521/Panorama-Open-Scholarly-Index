@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { PublisherViewer } from './PublisherViewer'
+import { PublisherViewer } from '@/components/views/PublisherViewer'
 
 export const metadata = {
   title: 'Publisher',
