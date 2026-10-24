@@ -12,8 +12,8 @@ import type { Locale } from '@/i18n/config'
 import { useLocale } from '@/i18n/LocaleProvider'
 import { fill } from '@/i18n/format'
 
-// The tool's words. The certificate itself (CertificateDocument) and its verification page stay in English in every
-// language, so a certificate reads the same wherever it is shown.
+// The tool's words. The certificate itself (CertificateDocument) stays in English in every language, so a certificate
+// reads the same wherever it is shown; its verification page is translated.
 const en = {
   noDoi: 'Enter at least one DOI.', tooMany: 'One certificate covers at most {max} DOIs. You entered {n}.',
   requester: 'Requester name', requesterHelp: 'Printed on the certificate. Not included in the verification link.',
@@ -50,7 +50,7 @@ const WORDS: Record<Locale, typeof en> = {
     },
     journalStatus: '期刊状态：{tier} · 来源 {via}', core: '核心合集', indexed: '已收录',
     none: '以上 DOI 均不是已收录的期刊文献，因此无法出具证书。POSI 收录在 Crossref 或 DataCite 注册、或被 OpenAlex 记录的期刊文献。',
-    certificate: '证书', certificateNote: '证书及其验证页面统一使用英文，以确保在任何场合出示和核验时内容一致。',
+    certificate: '证书', certificateNote: '证书统一使用英文，以确保在任何场合出示时内容一致；扫码打开的验证页面可切换为中文。',
     verify: '验证', preparing: '正在生成 PDF…', download: '下载 PDF',
     pdfError: '当前浏览器无法生成 PDF，请重试或换用其他浏览器。',
   },
