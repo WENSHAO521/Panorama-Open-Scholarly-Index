@@ -135,7 +135,7 @@ function Zh() {
         <section aria-labelledby="use">
           <h2 id="use">3. 排名与证书的使用</h2>
           <p>
-            <Link href={L('/responsible-use/')}>负责任使用</Link>指南构成本条款的一部分。收录证书证明某文献在出具之日发表于 POSI 收录的期刊；任何人都可以通过<Link href="/certificate/verify/">证书验证</Link>进行核查。不得篡改证书，也不得将收录冒充为核心合集认证。
+            <Link href={L('/responsible-use/')}>负责任使用</Link>指南构成本条款的一部分。收录证书证明某文献在出具之日发表于 POSI 收录的期刊；任何人都可以通过<Link href={L('/certificate/verify/')}>证书验证</Link>进行核查。不得篡改证书，也不得将收录冒充为核心合集认证。
           </p>
         </section>
 

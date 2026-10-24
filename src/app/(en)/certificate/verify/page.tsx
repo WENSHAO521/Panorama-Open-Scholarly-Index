@@ -1,22 +1,7 @@
-import { Suspense } from 'react'
-import { CertificateVerifier } from '@/components/CertificateVerifier'
-import { PageHeader } from '@/components/db'
+import { VerifyCertificateView, verifyCertificateMetadata } from '@/components/views/CertificateView'
 
-export const metadata = {
-  title: 'Verify a certificate',
-  description: 'Check that a POSI indexing certificate is unaltered and that every listed publication is still indexed.',
-  alternates: { canonical: '/certificate/verify/' },
-}
+export const metadata = verifyCertificateMetadata('en')
 
-export default function VerifyCertificatePage() {
-  return (
-    <div className="wrap pb-10">
-      <PageHeader title="Verify a certificate" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Certificate', href: '/certificate/' }, { label: 'Verify' }]}>
-        <p className="max-w-[65ch]">Open this page from the certificate&apos;s QR code, or paste its verification address.</p>
-      </PageHeader>
-      <Suspense fallback={null}>
-        <CertificateVerifier />
-      </Suspense>
-    </div>
-  )
+export default function Page() {
+  return <VerifyCertificateView locale="en" />
 }

@@ -36,7 +36,7 @@ const WORDS: Record<Locale, typeof en> = {
     noMatch: '没有与“{key}”匹配的收录期刊。',
     noZone: ' 在当前引文排名版本中没有正式的 POSI Zone，因此无法出具 Zone 证书。Zone 依据期刊在其 PSC 类别内的 PNCI 百分位划定；正式 Zone 要求期刊获得正式排名，且所在类别至少有 50 种参与排名的期刊。',
     status: '查看该期刊的排名状态', statusEnd: '。',
-    note: '证书及其验证页面统一使用英文，以确保在任何场合出示和核验时内容一致。',
+    note: '证书统一使用英文，以确保在任何场合出示时内容一致；扫码打开的验证页面可切换为中文。',
     verify: '验证', preparing: '正在生成 PDF…', download: '下载 PDF',
     pdfError: '当前浏览器无法生成 PDF，请重试或换用其他浏览器。',
   },

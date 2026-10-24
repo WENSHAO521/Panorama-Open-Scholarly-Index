@@ -23,7 +23,9 @@ test('the published languages: Simplified Chinese under /zh/, starting with the 
     canonical: '/zh/',
     languages: { en: '/', 'zh-Hans': '/zh/', 'x-default': '/' },
   })
-  for (const p of ['/journal/abc/', '/publishers/elsevier-bv/', '/certificate/verify/']) {
+  // The certificate verification pages are translated (2026-10-24); the certificates themselves stay English.
+  for (const p of ['/certificate/verify/', '/certificate/zone/verify/']) assert.deepEqual(availableLocales(p), ['en', 'zh-Hans'])
+  for (const p of ['/journal/abc/', '/publishers/elsevier-bv/']) {
     assert.deepEqual(availableLocales(p), ['en'])
     assert.deepEqual(pageAlternates(p), { canonical: p })
     assert.equal(sitemapLanguages(p, 'https://posi.panorama-sg.com'), undefined)

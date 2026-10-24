@@ -1,10 +1,13 @@
-// Issuing certificates (/certificate/ and /certificate/zone/), in every language they are published in. The certificates
-// and their verification pages stay in English (published plan; decided 2026-10-23).
+// Issuing certificates (/certificate/ and /certificate/zone/) and verifying them (…/verify/), in every language they
+// are published in. The certificates themselves stay in English (published plan; decided 2026-10-23); their
+// verification pages are translated (decided 2026-10-24).
 import { Suspense } from 'react'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { CertificateTool } from '@/components/CertificateTool'
 import { ZoneCertificateTool } from '@/components/ZoneCertificateTool'
+import { CertificateVerifier } from '@/components/CertificateVerifier'
+import { ZoneCertificateVerifier } from '@/components/ZoneCertificateVerifier'
 import { PageHeader } from '@/components/db'
 import type { Locale } from '@/i18n/config'
 import { localizedHref, pageAlternates } from '@/i18n/alternates'
@@ -21,6 +24,13 @@ const en = {
   zoneCrumb: 'Zone',
   zoneLead: 'A certificate of the journal\'s POSI Zone (POSI 分区) in the current Citation Ranking: the zone of its PNCI percentile within its PSC subject category. It is issued for every journal with an official zone and can be verified by anyone from its QR code. See ',
   zoneHow: 'how zone certificates work',
+  verifyTitle: 'Verify a certificate',
+  verifyDescription: 'Check that a POSI indexing certificate is unaltered and that every listed publication is still indexed.',
+  verifyCrumb: 'Verify',
+  verifyLead: 'Open this page from the certificate\'s QR code, or paste its verification address.',
+  zoneVerifyTitle: 'Verify a zone certificate',
+  zoneVerifyDescription: 'Check that a POSI zone certificate matches the journal’s zones in the current Journal Rankings.',
+  zoneVerifyLead: 'Opened from the certificate\'s QR code, this page checks the certificate against the journal\'s current ranking record.',
 }
 const WORDS: Record<Locale, typeof en> = {
   en,
@@ -36,6 +46,13 @@ const WORDS: Record<Locale, typeof en> = {
     zoneCrumb: 'Zone',
     zoneLead: '证明期刊在当前引文排名中的 POSI Zone（POSI 分区），即期刊 PNCI 百分位在其 PSC 学科类别内所处的分区。凡有正式 Zone 的期刊均可出具，任何人扫描二维码即可验证。详见',
     zoneHow: 'Zone 证书说明',
+    verifyTitle: '证书验证',
+    verifyDescription: '核验 POSI 收录证书是否未经改动，以及所列文献是否仍被收录。',
+    verifyCrumb: '验证',
+    verifyLead: '扫描证书上的二维码即可打开本页，也可粘贴证书的验证地址。',
+    zoneVerifyTitle: 'POSI Zone 证书验证',
+    zoneVerifyDescription: '核验 POSI Zone 证书是否与期刊在当前期刊排名中的 Zone 相符。',
+    zoneVerifyLead: '本页由证书上的二维码打开，依据期刊当前的排名记录核验证书。',
   },
 }
 
@@ -83,6 +100,46 @@ export function ZoneCertificateView({ locale }: { locale: Locale }) {
       </div>
       <Suspense fallback={null}>
         <ZoneCertificateTool />
+      </Suspense>
+    </div>
+  )
+}
+
+export function verifyCertificateMetadata(locale: Locale): Metadata {
+  const w = WORDS[locale]
+  return { title: w.verifyTitle, description: w.verifyDescription, alternates: pageAlternates('/certificate/verify/', locale) }
+}
+
+export function VerifyCertificateView({ locale }: { locale: Locale }) {
+  const w = WORDS[locale]
+  const href = (p: string) => localizedHref(locale, p)
+  return (
+    <div className="wrap pb-10">
+      <PageHeader locale={locale} title={w.verifyTitle} crumbs={[{ label: 'POSI', href: href('/') }, { label: w.crumb, href: href('/certificate/') }, { label: w.verifyCrumb }]}>
+        <p className="max-w-[65ch]">{w.verifyLead}</p>
+      </PageHeader>
+      <Suspense fallback={null}>
+        <CertificateVerifier />
+      </Suspense>
+    </div>
+  )
+}
+
+export function verifyZoneCertificateMetadata(locale: Locale): Metadata {
+  const w = WORDS[locale]
+  return { title: w.zoneVerifyTitle, description: w.zoneVerifyDescription, alternates: pageAlternates('/certificate/zone/verify/', locale) }
+}
+
+export function VerifyZoneCertificateView({ locale }: { locale: Locale }) {
+  const w = WORDS[locale]
+  const href = (p: string) => localizedHref(locale, p)
+  return (
+    <div className="wrap pb-10">
+      <PageHeader locale={locale} title={w.zoneVerifyTitle} crumbs={[{ label: 'POSI', href: href('/') }, { label: w.crumb, href: href('/certificate/') }, { label: w.zoneCrumb, href: href('/certificate/zone/') }, { label: w.verifyCrumb }]}>
+        <p className="max-w-[65ch]">{w.zoneVerifyLead}</p>
+      </PageHeader>
+      <Suspense fallback={null}>
+        <ZoneCertificateVerifier />
       </Suspense>
     </div>
   )

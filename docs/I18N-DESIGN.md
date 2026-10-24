@@ -98,6 +98,7 @@ export const stripLocale = (pathname: string) => …                            
 - **2026-10-23,第二至五批**:`/zh/journals/`、`/zh/journals/open-access/`、`/zh/subjects/`、`/zh/publishers/`、`/zh/rankings/`、`/zh/core-collection/`、`/zh/publications/`、`/zh/certificate/`、`/zh/certificate/zone/`。
   - 做法:每页一个共用视图(`src/components/views/`),英文与中文路由都渲染它;页面专属文字放在该文件的 `Record<Locale, …>` 里,以英文为类型,漏键即 typecheck 失败。跨页共用的界面文字仍在 `messages/`。
   - **证书与验证页保持英文**(负责人 2026-10-23 确认):中文页只翻译申请表、核查结果和说明;证书 PDF、`/certificate/verify/`、`/certificate/zone/verify/` 不翻译。
+  - **2026-10-24 更新**(负责人):验证页 `/zh/certificate/verify/`、`/zh/certificate/zone/verify/` 已翻译;证书 PDF 及其二维码地址仍为英文(扫码进入英文验证页,可用语言切换转到中文,查询参数保留)。
   - 排名的类别页与历年版本页、期刊详情页、文档类页面仍为英文。
 - **2026-10-24,第六批**:`/zh/cite/`、`/zh/datasets/`、`/zh/certification/`、`/zh/logos/`、`/zh/about/`。
   - 引文生成器只翻译界面(表单、提示、格式说明、批量转换);生成的引文本身按各格式规范保持英文。
