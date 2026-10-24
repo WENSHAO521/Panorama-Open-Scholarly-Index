@@ -1,10 +1,8 @@
 import { Suspense } from 'react'
-import { JournalProfileView } from './JournalProfileView'
+import { JournalProfileView } from '@/components/views/JournalProfileView'
+import { journalProfileMetadata } from '@/components/views/journal-metadata'
 
-export const metadata = {
-  title: 'Journal',
-  description: 'Journal profile in the Panorama Open Scholarly Index: identifiers, publications and citations per year, subject, topics, and its evaluation: Core Collection status, AJR rating (Core Collection journals) and PNCI citation ranking.',
-}
+export const metadata = journalProfileMetadata('en')
 
 export default function JournalProfilePage() {
   return (

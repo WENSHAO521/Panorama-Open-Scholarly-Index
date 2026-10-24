@@ -9,6 +9,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { fmt } from './db'
+import type { Locale } from '@/i18n/config'
+import { useLocale } from '@/i18n/LocaleProvider'
 
 type Row = [year: number, works: number, citations: number]
 
@@ -17,9 +19,26 @@ const PAD = { top: 12, right: 12, bottom: 24, left: 44 }
 const LABEL_W = 84                              // room for end labels when they fit
 
 const SERIES = [
-  { key: 1 as const, label: 'Publications', color: 'var(--series-1)' },
-  { key: 2 as const, label: 'Citations', color: 'var(--series-2)' },
+  { key: 1 as const, color: 'var(--series-1)' },
+  { key: 2 as const, color: 'var(--series-2)' },
 ]
+
+const WORDS = {
+  en: {
+    title: 'Publications and citations per year', series: { 1: 'Publications', 2: 'Citations' }, partial: ' (partial)',
+    values: (y: React.ReactNode, w: React.ReactNode, c: React.ReactNode) => <>{y}{' · '}{w} publications{' · '}{c} citations</>,
+    latest: (y: number, w: React.ReactNode, c: React.ReactNode) => <>{y}: {w} publications{' · '}{c} citations</>,
+    hoverShort: ' · hover or tap a year', hover: 'Hover or tap a year for values', to: (a: number, b: number) => `${a} to ${b}`, year: 'Year',
+    note: 'Both on one scale. Citations are counted in the year they were received.', inProgress: (y: number) => ` ${y} is in progress (dashed).`,
+  },
+  'zh-Hans': {
+    title: '逐年发文量与被引量', series: { 1: '发文量', 2: '被引量' }, partial: '（未满一年）',
+    values: (y: React.ReactNode, w: React.ReactNode, c: React.ReactNode) => <>{y}{' · '}发文 {w} 篇{' · '}被引 {c} 次</>,
+    latest: (y: number, w: React.ReactNode, c: React.ReactNode) => <>{y} 年：发文 {w} 篇{' · '}被引 {c} 次</>,
+    hoverShort: ' · 悬停或点按年份查看', hover: '悬停或点按年份查看数值', to: (a: number, b: number) => `${a}–${b} 年`, year: '年份',
+    note: '两者使用同一纵轴刻度。被引次数计入被引用的年份。', inProgress: (y: number) => ` ${y} 年尚未结束（虚线）。`,
+  },
+} satisfies Record<Locale, unknown>
 
 function niceMax(v: number): number {
   if (v <= 0) return 1
@@ -73,7 +92,9 @@ function useWidth<T extends HTMLElement>() {
   return [ref, w] as const
 }
 
-export function YearTrend({ rows, title = 'Publications and citations per year' }: { rows: Row[]; title?: string }) {
+export function YearTrend({ rows, title: titleProp }: { rows: Row[]; title?: string }) {
+  const w = WORDS[useLocale()]
+  const title = titleProp ?? w.title
   const recent = rows.slice(-10)
   const years = recent.map(r => r[0])
   const n = years.length
@@ -110,7 +131,7 @@ export function YearTrend({ rows, title = 'Publications and citations per year' 
         <div className="flex gap-4 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           {SERIES.map(s => (
             <span key={s.key} className="flex items-center gap-1.5">
-              <i aria-hidden className="inline-block h-[2px] w-4 rounded-full" style={{ background: s.color }} />{s.label}
+              <i aria-hidden className="inline-block h-[2px] w-4 rounded-full" style={{ background: s.color }} />{w.series[s.key]}
             </span>
           ))}
         </div>
@@ -118,18 +139,20 @@ export function YearTrend({ rows, title = 'Publications and citations per year' 
       <div className="panel p-4">
         <p className="text-[12.5px] min-h-[1.25rem] mb-2" style={{ color: 'var(--muted)' }} aria-live="polite">
           {h
-            ? <><span className="font-medium" style={{ color: 'var(--ink)' }}>{h[0]}{partialFrom != null && hover! >= partialFrom ? ' (partial)' : ''}</span>
-                {' · '}<span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(h[1])}</span> publications
-                {' · '}<span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(h[2])}</span> citations</>
+            ? w.values(
+                <span className="font-medium" style={{ color: 'var(--ink)' }}>{h[0]}{partialFrom != null && hover! >= partialFrom ? w.partial : ''}</span>,
+                <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(h[1])}</span>,
+                <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(h[2])}</span>)
             : lastFull >= 0
-              ? <>{years[lastFull]}: <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(recent[lastFull][1])}</span> publications
-                  {' · '}<span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(recent[lastFull][2])}</span> citations
-                  <span style={{ color: 'var(--soft)' }}> · hover or tap a year</span></>
-              : <span style={{ color: 'var(--soft)' }}>Hover or tap a year for values</span>}
+              ? <>{w.latest(years[lastFull],
+                    <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(recent[lastFull][1])}</span>,
+                    <span className="font-mono tnum" style={{ color: 'var(--ink)' }}>{fmt(recent[lastFull][2])}</span>)}
+                  <span style={{ color: 'var(--soft)' }}>{w.hoverShort}</span></>
+              : <span style={{ color: 'var(--soft)' }}>{w.hover}</span>}
         </p>
         <div ref={ref}>
           {width > 0 ? (
-            <svg width={width} height={H + PAD.top + PAD.bottom} role="img" aria-label={`${title}, ${years[0]} to ${years[n - 1]}`} className="block overflow-visible">
+            <svg width={width} height={H + PAD.top + PAD.bottom} role="img" aria-label={`${title}, ${w.to(years[0], years[n - 1])}`} className="block overflow-visible">
               {ticks.map(t => (
                 <g key={t}>
                   <line x1={PAD.left} x2={PAD.left + innerW} y1={y(t)} y2={y(t)} stroke="var(--line-soft)" strokeWidth={1} />
@@ -157,7 +180,7 @@ export function YearTrend({ rows, title = 'Publications and citations per year' 
                       )
                     })}
                     {endLabels && (
-                      <text x={x(n - 1) + 10} y={pts[n - 1][1]} dy="0.32em" fontSize={12} fill="var(--ink-2)">{s.label}</text>
+                      <text x={x(n - 1) + 10} y={pts[n - 1][1]} dy="0.32em" fontSize={12} fill="var(--ink-2)">{w.series[s.key]}</text>
                     )}
                   </g>
                 )
@@ -169,12 +192,12 @@ export function YearTrend({ rows, title = 'Publications and citations per year' 
         </div>
         <table className="sr-only">
           <caption>{title}</caption>
-          <thead><tr><th>Year</th><th>Publications</th><th>Citations</th></tr></thead>
+          <thead><tr><th>{w.year}</th><th>{w.series[1]}</th><th>{w.series[2]}</th></tr></thead>
           <tbody>{recent.map(([yr, w, c]) => <tr key={yr}><td>{yr}</td><td>{w}</td><td>{c}</td></tr>)}</tbody>
         </table>
         <p className="mt-3 text-[12px]" style={{ color: 'var(--soft)' }}>
-          Both on one scale. Citations are counted in the year they were received.
-          {partialFrom != null && ` ${years[partialFrom]} is in progress (dashed).`}
+          {w.note}
+          {partialFrom != null && w.inProgress(years[partialFrom])}
         </p>
       </div>
     </section>

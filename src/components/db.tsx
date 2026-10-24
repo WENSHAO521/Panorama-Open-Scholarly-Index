@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, type Collection, type Verification, type Freshness } from '@/lib/records'
 import { BASIS, type Basis } from '@/lib/schema'
 import type { Locale } from '@/i18n/config'
+import { FRESHNESS_ZH, VERIFICATION_ZH } from '@/i18n/records-zh-Hans'
 
-export function VerificationPill({ v, withLabel = true }: { v: Verification; withLabel?: boolean }) {
-  const m = VERIFICATION[v]
+export function VerificationPill({ v, withLabel = true, locale = 'en' }: { v: Verification; withLabel?: boolean; locale?: Locale }) {
+  const m = locale === 'zh-Hans' ? { ...VERIFICATION[v], ...VERIFICATION_ZH[v] } : VERIFICATION[v]
   return (
     <span className="chip" title={m.rule}>
       <span aria-hidden className="chip-dot" style={{ background: m.color }} />
@@ -32,8 +33,8 @@ export function CollectionTag({ k, locale = 'en' }: { k: Collection; locale?: Lo
   )
 }
 
-export function FreshnessTag({ f }: { f: Freshness }) {
-  const m = FRESHNESS[f]
+export function FreshnessTag({ f, locale = 'en' }: { f: Freshness; locale?: Locale }) {
+  const m = locale === 'zh-Hans' ? { ...FRESHNESS[f], ...FRESHNESS_ZH[f] } : FRESHNESS[f]
   return (
     <span className="chip" title={m.rule}>
       <span aria-hidden className="chip-dot" style={{ background: m.color }} />

@@ -85,6 +85,11 @@ async function main() {
   const coreCollection = withoutWithdrawn(await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/core-collection.json`), 'core-collection')
   writeFileSync(resolve('src/lib/core-collection.json'), JSON.stringify(coreCollection, null, 2) + '\n', 'utf-8')
   console.log(`  Wrote src/lib/core-collection.json (${coreCollection.length} records)`)
+  // The Core Collection journals have Chinese record pages (/zh/journal/<code>/); the interface's link helper reads
+  // their codes from this small file instead of bundling the whole collection.
+  const coreCodes = coreCollection.filter(j => !j.collection_status || j.collection_status === 'core').map(j => j.journal_code).sort()
+  writeFileSync(resolve('src/i18n/core-journal-codes.json'), JSON.stringify(coreCodes, null, 2) + '\n', 'utf-8')
+  console.log(`  Wrote src/i18n/core-journal-codes.json (${coreCodes.length} codes)`)
 
   const curated = await fetchJson(`${POSI_DATA_BASE}${snapshotDir}/collections/benchmark-curated.json`)
   writeFileSync(resolve('src/lib/global-benchmark.json'), JSON.stringify(curated, null, 2) + '\n', 'utf-8')

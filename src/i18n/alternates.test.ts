@@ -1,6 +1,7 @@
 // node --test src/i18n/  (npm test)
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { localePath, stripLocale } from './config.ts'
 import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, type LocaleTable } from './alternates.ts'
 
@@ -77,8 +78,24 @@ test('localePath and stripLocale are inverse for a prefixed language', () => {
 test('every translated path has its page under src/app/zh, so no switcher or hreflang link points at a 404', async () => {
   const { existsSync } = await import('node:fs')
   for (const p of TRANSLATED_PATHS['zh-Hans'] ?? []) {
+    // A journal record page is built by the dynamic route for its code.
+    const route = /^\/journal\/[^/]+\/$/.test(p) ? '/journal/[code]/' : p
     // Documentation pages sit in the (docs) route group, which shares their sidebar.
-    const at = (dir: string) => existsSync(new URL(`../app/zh${dir}${p}page.tsx`, import.meta.url))
+    const at = (dir: string) => existsSync(new URL(`../app/zh${dir}${route}page.tsx`, import.meta.url))
     assert.ok(at('') || at('/(docs)'), p)
   }
+})
+
+test('the Chinese journal record pages are exactly the Core Collection journals', () => {
+  const records = JSON.parse(readFileSync(new URL('../lib/core-collection.json', import.meta.url), 'utf8')) as { journal_code: string; collection_status?: string | null }[]
+  const core = records.filter(j => !j.collection_status || j.collection_status === 'core').map(j => j.journal_code).sort()
+  const codes = JSON.parse(readFileSync(new URL('./core-journal-codes.json', import.meta.url), 'utf8')) as string[]
+  // scripts/sync-corpus.mjs writes both files; they differ only if one was edited by hand.
+  assert.deepEqual(codes, core)
+  assert.ok(TRANSLATED_PATHS['zh-Hans']?.includes(`/journal/${core[0]}/`))
+  assert.equal(localizedHref('zh-Hans', '/journal/?issn=1234-5678'), '/zh/journal/?issn=1234-5678')
+  // A record without a static Chinese page opens in the record viewer.
+  assert.equal(localizedHref('zh-Hans', '/journal/bench-x-0001/'), '/zh/record/?code=bench-x-0001')
+  assert.equal(localizedHref('zh-Hans', '/journal/bench-x-0001/#pqf'), '/zh/record/?code=bench-x-0001#pqf')
+  assert.equal(localizedHref('en', '/journal/bench-x-0001/'), '/journal/bench-x-0001/')
 })
