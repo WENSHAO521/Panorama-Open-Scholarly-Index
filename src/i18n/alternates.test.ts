@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { localePath, stripLocale } from './config.ts'
-import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, TRANSLATED_SECTIONS, type LocaleTable } from './alternates.ts'
+import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, viewerHref, LOCALE_TABLE, TRANSLATED_PATHS, TRANSLATED_SECTIONS, type LocaleTable } from './alternates.ts'
 
 // A second language that has translated two pages, to exercise what a single published language cannot.
 const two: LocaleTable = {
@@ -23,7 +23,7 @@ test('the published languages: Simplified Chinese under /zh/, starting with the 
     canonical: '/zh/',
     languages: { en: '/', 'zh-Hans': '/zh/', 'x-default': '/' },
   })
-  for (const p of ['/journal/abc/', '/announcements/']) {
+  for (const p of ['/journal/abc/', '/publishers/elsevier-bv/', '/certificate/verify/']) {
     assert.deepEqual(availableLocales(p), ['en'])
     assert.deepEqual(pageAlternates(p), { canonical: p })
     assert.equal(sitemapLanguages(p, 'https://posi.panorama-sg.com'), undefined)
@@ -100,6 +100,23 @@ test('the Chinese journal record pages are exactly the Core Collection journals'
   assert.equal(localizedHref('en', '/journal/bench-x-0001/'), '/journal/bench-x-0001/')
 })
 
+test('the static English publisher pages open in the Chinese publisher viewer', () => {
+  assert.equal(localizedHref('zh-Hans', '/publishers/elsevier-bv/'), '/zh/publisher/?id=elsevier-bv')
+  assert.equal(localizedHref('zh-Hans', '/publisher/?id=small-press'), '/zh/publisher/?id=small-press')
+  assert.equal(localizedHref('zh-Hans', '/publishers/'), '/zh/publishers/')
+  assert.equal(localizedHref('en', '/publishers/elsevier-bv/'), '/publishers/elsevier-bv/')
+  // The language switch on an English publisher page goes to the viewer; there is no viewer for a translated page.
+  assert.equal(viewerHref('zh-Hans', '/publishers/elsevier-bv/'), '/publisher/?id=elsevier-bv')
+  assert.equal(viewerHref('zh-Hans', '/journals/'), null)
+  // With no viewer translated, the link stays English.
+  assert.equal(localizedHref('zh-Hans', '/publishers/elsevier-bv/', two), '/publishers/elsevier-bv/')
+})
+
+test('the publication page and the News list are translated', () => {
+  assert.equal(localizedHref('zh-Hans', '/work/?id=W123'), '/zh/work/?id=W123')
+  assert.deepEqual(availableLocales('/announcements/'), ['en', 'zh-Hans'])
+})
+
 test('a section translated whole has a Chinese route for every English one', async () => {
   const { readdirSync } = await import('node:fs')
   const routes = (dir: URL): string[] => readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter(f => f.endsWith('page.tsx')).sort()
@@ -107,6 +124,7 @@ test('a section translated whole has a Chinese route for every English one', asy
     assert.deepEqual(routes(new URL(`../app/zh${section}`, import.meta.url)), routes(new URL(`../app/(en)${section}`, import.meta.url)), section)
   }
   assert.equal(localizedHref('zh-Hans', '/rankings/P1.01/'), '/zh/rankings/P1.01/')
+  assert.equal(localizedHref('zh-Hans', '/journals/subject/P1.01/?oa=1'), '/zh/journals/subject/P1.01/?oa=1')
   assert.equal(localizedHref('zh-Hans', '/rankings/edition/2025/all/'), '/zh/rankings/edition/2025/all/')
   assert.deepEqual(availableLocales('/rankings/all/'), ['en', 'zh-Hans'])
   assert.deepEqual(availableLocales('/rankingsx/'), ['en'])

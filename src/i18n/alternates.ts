@@ -28,18 +28,34 @@ export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
     // the static record pages of the Core Collection journals. The other records with a static English page (about
     // 1,000) are shown in Chinese by the record viewer (see localizedHref): static copies would pass the file limit.
     '/journal/', '/record/', ...CORE_JOURNAL_CODES.map(c => `/journal/${c}/`),
-    // The News items that carry a Chinese version (News is otherwise English only).
-    ...ANNOUNCEMENTS.filter(a => a.zh).map(a => `/announcements/${a.slug}/`)],
+    // The publisher viewer, which shows every publisher in Chinese (the 500 static English publisher pages have no
+    // Chinese copies, see VIEWERS), and the publication page.
+    '/publisher/', '/work/',
+    // The News list, and the News items that carry a Chinese version (the others are English only).
+    '/announcements/', ...ANNOUNCEMENTS.filter(a => a.zh).map(a => `/announcements/${a.slug}/`)],
 }
 
 /**
  * Sections whose pages are all translated: their Chinese routes take the same parameters as the English ones, so a
- * page under them exists in both languages. The Citation Ranking: categories, editions and each edition's categories.
+ * page under them exists in both languages. The Citation Ranking (categories, editions and each edition's
+ * categories) and the journal list of each subject category.
  */
 export const TRANSLATED_SECTIONS: Record<Locale, readonly string[]> = {
   en: [],
-  'zh-Hans': ['/rankings/'],
+  'zh-Hans': ['/rankings/', '/journals/subject/'],
 }
+
+/**
+ * Static English pages whose set is too large to copy into every language (the deploy has a file limit). A language
+ * shows them in one viewer page that builds the page in the browser from the record's data file, chosen by the query
+ * string: a link to such a page from a translated page goes to the viewer when the viewer is translated.
+ */
+const VIEWERS: { pattern: RegExp; viewer: string; key: string }[] = [
+  // The journal records outside the Core Collection (about 1,000).
+  { pattern: /^\/journal\/([^/?#]+)\/$/, viewer: '/record/', key: 'code' },
+  // The 500 largest publishers.
+  { pattern: /^\/publishers\/([^/?#]+)\/$/, viewer: '/publisher/', key: 'id' },
+]
 
 export const LOCALE_TABLE: LocaleTable = {
   locales: LOCALES,
@@ -70,13 +86,22 @@ export function availableLocales(path: string, table: LocaleTable = LOCALE_TABLE
 export function localizedHref(locale: string, href: string, table: LocaleTable = LOCALE_TABLE): string {
   if (!/^\/(?!\/)/.test(href)) return href
   const path = href.replace(/[?#].*$/, '')
-  const translated = table.translated[locale]
   if (isTranslated(locale, path, table)) return localePath(locale, href, table.prefix)
-  // A journal record without a static page in the language is shown by the record viewer, which builds the page in
-  // the browser from the record's file: one page for every such journal, so the deploy stays under its file limit.
-  const record = path.match(/^\/journal\/([^/?#]+)\/$/)
-  if (record && translated?.includes('/record/')) return localePath(locale, `/record/?code=${record[1]}${href.slice(path.length).replace(/^\?/, '&')}`, table.prefix)
-  return href
+  const viewer = viewerHref(locale, href, table)
+  return viewer ? localePath(locale, viewer, table.prefix) : href
+}
+
+/**
+ * The address (without a language prefix) of the viewer page that shows `href` in `locale`, when `href` is one of
+ * the static English pages listed in VIEWERS and that viewer is translated; otherwise null.
+ */
+export function viewerHref(locale: string, href: string, table: LocaleTable = LOCALE_TABLE): string | null {
+  const path = href.replace(/[?#].*$/, '')
+  for (const v of VIEWERS) {
+    const m = path.match(v.pattern)
+    if (m && isTranslated(locale, v.viewer, table)) return `${v.viewer}?${v.key}=${m[1]}${href.slice(path.length).replace(/^\?/, '&')}`
+  }
+  return null
 }
 
 /**
