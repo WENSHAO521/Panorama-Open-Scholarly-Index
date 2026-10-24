@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ANNOUNCEMENTS, getAnnouncementBySlug } from '@/lib/announcements'
 import { PageHeader } from '@/components/db'
+import { pageAlternates } from '@/i18n/alternates'
 
 export const dynamicParams = false
 
@@ -12,7 +13,7 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params
   const a = getAnnouncementBySlug(slug)
-  return a ? { title: a.title, description: a.summary, alternates: { canonical: `/announcements/${a.slug}/` } } : { title: 'News item not found' }
+  return a ? { title: a.title, description: a.summary, alternates: pageAlternates(`/announcements/${a.slug}/`) } : { title: 'News item not found' }
 }
 
 export default async function AnnouncementDetailPage(props: { params: Promise<{ slug: string }> }) {
@@ -28,7 +29,7 @@ export default async function AnnouncementDetailPage(props: { params: Promise<{ 
       </PageHeader>
       <div className="doc">
         {a.body.map((p, i) => <p key={i}>{p}</p>)}
-        <p className="pt-4"><Link href="/announcements/">All news</Link></p>
+        <p className="pt-4"><Link href="/announcements/">All news</Link>{a.zh && <> · <Link href={`/zh/announcements/${a.slug}/`} lang="zh-Hans">阅读中文版</Link></>}</p>
       </div>
     </div>
   )

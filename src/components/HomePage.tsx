@@ -225,7 +225,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                 <li key={a.slug} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
                   <Link href={href(`/announcements/${a.slug}/`)} className="flex gap-4 px-5 py-3.5 transition-colors hover:bg-[var(--hover)]">
                     <time dateTime={a.date} className={`shrink-0 ${locale === 'en' ? 'w-[92px]' : 'w-[116px]'} text-[13px] tnum`} style={{ color: 'var(--muted)' }}>{formatDate(locale, a.date)}</time>
-                    <span lang={locale === 'en' ? undefined : 'en'} className="text-[14px] leading-snug" style={{ color: 'var(--ink)' }}>{a.title}</span>
+                    <span lang={locale === 'en' || (locale === 'zh-Hans' && a.zh) ? undefined : 'en'} className="text-[14px] leading-snug" style={{ color: 'var(--ink)' }}>{locale === 'zh-Hans' && a.zh ? a.zh.title : a.title}</span>
                   </Link>
                 </li>
               ))}

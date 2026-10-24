@@ -79,7 +79,7 @@ test('every translated path has its page under src/app/zh, so no switcher or hre
   const { existsSync } = await import('node:fs')
   for (const p of TRANSLATED_PATHS['zh-Hans'] ?? []) {
     // A journal record page is built by the dynamic route for its code.
-    const route = /^\/journal\/[^/]+\/$/.test(p) ? '/journal/[code]/' : p
+    const route = /^\/journal\/[^/]+\/$/.test(p) ? '/journal/[code]/' : /^\/announcements\/[^/]+\/$/.test(p) ? '/announcements/[slug]/' : p
     // Documentation pages sit in the (docs) route group, which shares their sidebar.
     const at = (dir: string) => existsSync(new URL(`../app/zh${dir}${route}page.tsx`, import.meta.url))
     assert.ok(at('') || at('/(docs)'), p)
