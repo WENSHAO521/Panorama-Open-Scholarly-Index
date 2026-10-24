@@ -1,26 +1,22 @@
 import { notFound } from 'next/navigation'
-import { getEdition, getEditionList } from '@/lib/ranking-editions'
+import { getEdition } from '@/lib/ranking-editions'
 import { RankingsOverview } from '@/components/RankingViews'
+import { editionMetadata, editionParams } from '@/components/views/ranking-pages'
 
 export const dynamicParams = false
 
-// Every edition has a permanent address, the current one included.
 export function generateStaticParams() {
-  return getEditionList().map(e => ({ year: String(e.year) }))
+  return editionParams()
 }
 
 export async function generateMetadata(props: { params: Promise<{ year: string }> }) {
   const { year } = await props.params
-  return {
-    title: `Journal Citation Rankings ${year}`,
-    description: `The ${year} edition of the POSI Citation Ranking: journals ranked by PNCI within their PSC subject category, as published.`,
-    alternates: { canonical: `/rankings/edition/${year}/` },
-  }
+  return editionMetadata(year, 'en')
 }
 
 export default async function EditionPage(props: { params: Promise<{ year: string }> }) {
   const { year } = await props.params
   const e = getEdition(Number(year))
   if (!e) notFound()
-  return <RankingsOverview e={e} byYear />
+  return <RankingsOverview e={e} byYear locale="en" />
 }

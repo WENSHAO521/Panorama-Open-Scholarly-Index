@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { localePath, stripLocale } from './config.ts'
-import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, type LocaleTable } from './alternates.ts'
+import { availableLocales, localizedHref, pageAlternates, sitemapLanguages, LOCALE_TABLE, TRANSLATED_PATHS, TRANSLATED_SECTIONS, type LocaleTable } from './alternates.ts'
 
 // A second language that has translated two pages, to exercise what a single published language cannot.
 const two: LocaleTable = {
@@ -98,4 +98,16 @@ test('the Chinese journal record pages are exactly the Core Collection journals'
   assert.equal(localizedHref('zh-Hans', '/journal/bench-x-0001/'), '/zh/record/?code=bench-x-0001')
   assert.equal(localizedHref('zh-Hans', '/journal/bench-x-0001/#pqf'), '/zh/record/?code=bench-x-0001#pqf')
   assert.equal(localizedHref('en', '/journal/bench-x-0001/'), '/journal/bench-x-0001/')
+})
+
+test('a section translated whole has a Chinese route for every English one', async () => {
+  const { readdirSync } = await import('node:fs')
+  const routes = (dir: URL): string[] => readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter(f => f.endsWith('page.tsx')).sort()
+  for (const section of TRANSLATED_SECTIONS['zh-Hans']) {
+    assert.deepEqual(routes(new URL(`../app/zh${section}`, import.meta.url)), routes(new URL(`../app/(en)${section}`, import.meta.url)), section)
+  }
+  assert.equal(localizedHref('zh-Hans', '/rankings/P1.01/'), '/zh/rankings/P1.01/')
+  assert.equal(localizedHref('zh-Hans', '/rankings/edition/2025/all/'), '/zh/rankings/edition/2025/all/')
+  assert.deepEqual(availableLocales('/rankings/all/'), ['en', 'zh-Hans'])
+  assert.deepEqual(availableLocales('/rankingsx/'), ['en'])
 })

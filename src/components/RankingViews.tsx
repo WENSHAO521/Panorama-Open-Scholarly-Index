@@ -14,7 +14,7 @@ import type { Locale } from '@/i18n/config'
 import { localizedHref } from '@/i18n/alternates'
 import { fill, formatMonth, subjectName } from '@/i18n/format'
 
-// The overview's words. Category pages (CategoryRankingView) are English only so far.
+// The overview's words.
 const en = {
   editions: 'Ranking editions', edition: 'Edition', current: ' · current',
   title: 'Journal Citation Rankings', titleYear: 'Journal Citation Rankings {year}', rankings: 'Rankings', download: 'Download {year}',
@@ -187,10 +187,44 @@ export function RankingsOverview({ e, byYear = false, locale = 'en' }: { e: Edit
   )
 }
 
-export function CategoryRankingView({ e, code, byYear = false }: { e: Edition; code: string; byYear?: boolean }) {
+// A category page's words, for any edition.
+const CAT_WORDS = {
+  en: {
+    allTitle: 'Citation Rankings, all categories', rankings: 'Rankings', allCrumb: 'All categories', csv: 'Ranked journals CSV',
+    allLead: (n: string) => <>All {n} journals with a category rank, listed by PNCI. Ranks, percentiles, quartiles and zones are each journal&rsquo;s place within its own PSC category.</>,
+    lead: (n: string, code: string, name: string, domain: string, core: number) => <>{n} journals in <span className="font-mono">{code}</span> {name} ({domain}), ranked by PNCI. {core > 0 ? `${core} of them are Core Collection journals.` : ''}</>,
+    none: (code: string, name: string, domain: string, when: string, why: string) => <><span className="font-mono">{code}</span> {name} ({domain}) has no Citation Ranking{when}{why}.</>,
+    yet: ' yet', inYear: (y: number) => ` in ${y}`, tooFew: (q: number) => `: fewer than ${q} journals meet the minimum data requirements`,
+    snapshot: (d: string) => ` Snapshot ${d}.`, how: 'How the ranking works', end: '.',
+    capped: (cap: string, total: string, ranked: React.ReactNode, complete: React.ReactNode, index: React.ReactNode) => <>Showing the top {cap} of {total} journals. The {ranked} lists every ranked journal; the {complete} has every journal of the edition, and the {index} lists one file per category.</>,
+    rankedCsv: 'ranked journals CSV', completeCsv: 'complete CSV', editionIndex: 'edition index',
+    provisionalZones: (n: number, z: number) => `This category has ${n} ranked journals: POSI Zones are provisional below ${z}.`,
+    noZones: (n: number, z: number) => `This category has ${n} ranked journals: no POSI Zones are assigned below ${z}.`,
+    footer: (v: string, p: number, m: number) => `${v}. Provisional rankings (dashed) have ${p}–${m} eligible items or items from a single publication year, and carry no zone.`,
+    unranked: (n: string, current: boolean) => ` ${n} further journals in this category have citation data but no rank (too few items, incomplete citation coverage, or category too small)${current ? '; their PNCI is shown on their journal pages' : ''}.`,
+  },
+  'zh-Hans': {
+    allTitle: '引文排名：全部类别', rankings: '排名', allCrumb: '全部类别', csv: '已排名期刊 CSV',
+    allLead: (n: string) => <>全部 {n} 种获得类别排名的期刊，按 PNCI 列出。所示名次、百分位、分区和 Zone 均为期刊在其所属 PSC 类别内的位置。</>,
+    lead: (n: string, code: string, name: string, domain: string, core: number) => <><span className="font-mono">{code}</span> {name}（{domain}）类别中按 PNCI 排名的期刊共 {n} 种。{core > 0 ? `其中 ${core} 种为核心合集期刊。` : ''}</>,
+    none: (code: string, name: string, domain: string, when: string, why: string) => <><span className="font-mono">{code}</span> {name}（{domain}）{when}无引文排名{why}。</>,
+    yet: '尚', inYear: (y: number) => `在 ${y} 年`, tooFew: (q: number) => `：满足最低数据要求的期刊少于 ${q} 种`,
+    snapshot: (d: string) => `数据快照：${d}。`, how: '排名方法', end: '。',
+    capped: (cap: string, total: string, ranked: React.ReactNode, complete: React.ReactNode, index: React.ReactNode) => <>显示 {total} 种期刊中的前 {cap} 种。{ranked}列出所有已排名期刊；{complete}包含本版次的全部期刊；{index}列出每个类别的文件。</>,
+    rankedCsv: '已排名期刊 CSV', completeCsv: '完整 CSV', editionIndex: '版次索引',
+    provisionalZones: (n: number, z: number) => `本类别有 ${n} 种已排名期刊：少于 ${z} 种时 POSI Zone 为暂定。`,
+    noZones: (n: number, z: number) => `本类别有 ${n} 种已排名期刊：少于 ${z} 种时不划定 POSI Zone。`,
+    footer: (v: string, p: number, m: number) => `${v}。暂定排名（虚线标示）的合格文献为 ${p}–${m} 篇，或仅来自一个出版年份，不划定 Zone。`,
+    unranked: (n: string, current: boolean) => `本类别另有 ${n} 种期刊有引文数据但未获排名（文献过少、引文覆盖不完整或类别规模过小）${current ? '；其 PNCI 显示在各自的期刊页面上' : ''}。`,
+  },
+} satisfies Record<Locale, unknown>
+
+export function CategoryRankingView({ e, code, byYear = false, locale = 'en' }: { e: Edition; code: string; byYear?: boolean; locale?: Locale }) {
+  const w = CAT_WORDS[locale]
+  const href = (p: string) => localizedHref(locale, p)
   const base = editionBase(e, byYear)
   const all = code === 'all'
-  const cats = editionCategories(e)
+  const cats = editionCategories(e).map(x => ({ ...x, name: subjectName(locale, x.code, x.name), domainName: subjectName(locale, x.domain, x.domainName) }))
   const c = all ? null : cats.find(x => x.code === code)!
   const allRows = all ? e.ranked : editionCategoryRanking(e, code)
   const unranked = all ? [] : editionCategoryUnranked(e, code)
@@ -201,43 +235,41 @@ export function CategoryRankingView({ e, code, byYear = false }: { e: Edition; c
   const rows = allRows.slice(0, CAP)
   const n = allRows[0]?.n ?? 0
   const yearLabel = e.current && !byYear ? '' : ` ${e.year}`
+  const csv = (f: string, label: string) => <a href={`${RANKING_DOWNLOADS}/${f}`} className="link">{label}</a>
 
   return (
     <div className="wrap pb-10">
       <PageHeader
-        title={(all ? 'Citation Rankings, all categories' : c!.name) + yearLabel}
+        locale={locale}
+        title={(all ? w.allTitle : c!.name) + yearLabel}
         crumbs={[
-          { label: 'POSI', href: '/' }, { label: 'Rankings', href: '/rankings/' },
-          ...(e.current && !byYear ? [] : [{ label: String(e.year), href: `${base}/` }]),
-          { label: all ? 'All categories' : c!.code },
+          { label: 'POSI', href: href('/') }, { label: w.rankings, href: href('/rankings/') },
+          ...(e.current && !byYear ? [] : [{ label: String(e.year), href: href(`${base}/`) }]),
+          { label: all ? w.allCrumb : c!.code },
         ]}
-        actions={available ? <a href={`${RANKING_DOWNLOADS}/citation-${e.year}.csv`} className="btn">Ranked journals CSV</a> : undefined}
+        actions={available ? <a href={`${RANKING_DOWNLOADS}/citation-${e.year}.csv`} className="btn">{w.csv}</a> : undefined}
       >
         <p className="max-w-[70ch]">
           {all
-            ? <>All {fmt(allRows.length)} journals with a category rank, listed by PNCI. Ranks, percentiles, quartiles and zones are each journal&rsquo;s place within its own PSC category.</>
+            ? w.allLead(fmt(allRows.length))
             : allRows.length
-              ? <>{fmt(allRows.length)} journals in <span className="font-mono">{c!.code}</span> {c!.name} ({c!.domainName}), ranked by PNCI. {c!.core > 0 ? `${c!.core} of them are Core Collection journals.` : ''}</>
-              : <><span className="font-mono">{c!.code}</span> {c!.name} ({c!.domainName}) has no Citation Ranking{e.current ? ' yet' : ` in ${e.year}`}{available ? `: fewer than ${t.categoryQuartile} journals meet the minimum data requirements` : ''}.</>}
-          {e.snapshot && <> Snapshot {fmtSnapshot(e.snapshot)}.</>}{' '}
-          <Link href="/methodology/#ranking" className="link">How the ranking works</Link>.
+              ? w.lead(fmt(allRows.length), c!.code, c!.name, c!.domainName, c!.core)
+              : w.none(c!.code, c!.name, c!.domainName, e.current ? w.yet : w.inYear(e.year), available ? w.tooFew(t.categoryQuartile) : '')}
+          {e.snapshot && <>{w.snapshot(snapshotOf(locale, e.snapshot))}</>}{' '}
+          <Link href={href('/methodology/#ranking')} className="link">{w.how}</Link>{w.end}
         </p>
       </PageHeader>
-      <EditionNav year={e.year} code={code} />
-      <EditionNote e={e} />
-      {!available && <div className="mb-6"><RankingsPending /></div>}
+      <EditionNav year={e.year} code={code} locale={locale} />
+      <EditionNote e={e} locale={locale} />
+      {!available && <div className="mb-6"><RankingsPending locale={locale} /></div>}
       {allRows.length > CAP && (
         <p className="mb-4 text-[13.5px]" style={{ color: 'var(--muted)' }}>
-          Showing the top {fmt(CAP)} of {fmt(allRows.length)} journals. The{' '}
-          <a href={`${RANKING_DOWNLOADS}/citation-${e.year}.csv`} className="link">ranked journals CSV</a> lists every ranked journal;
-          the <a href={`${RANKING_DOWNLOADS}/citation-${e.year}-all.csv`} className="link">complete CSV</a> has every journal of the edition, and the <a href={`${RANKING_DOWNLOADS}/citation-${e.year}.json`} className="link">edition index</a> lists one file per category.
+          {w.capped(fmt(CAP), fmt(allRows.length), csv(`citation-${e.year}.csv`, w.rankedCsv), csv(`citation-${e.year}-all.csv`, w.completeCsv), csv(`citation-${e.year}.json`, w.editionIndex))}
         </p>
       )}
       {!all && n > 0 && n < t.categoryOfficialZone && (
         <p className="mb-4 text-[13.5px]" style={{ color: 'var(--muted)' }}>
-          {n >= t.categoryProvisionalZone
-            ? `This category has ${n} ranked journals: POSI Zones are provisional below ${t.categoryOfficialZone}.`
-            : `This category has ${n} ranked journals: no POSI Zones are assigned below ${t.categoryProvisionalZone}.`}
+          {n >= t.categoryProvisionalZone ? w.provisionalZones(n, t.categoryOfficialZone) : w.noZones(n, t.categoryProvisionalZone)}
         </p>
       )}
       {allRows.length > 0 && (
@@ -245,8 +277,8 @@ export function CategoryRankingView({ e, code, byYear = false }: { e: Edition; c
           categories={all ? cats.filter(x => x.ranked > 0).map(x => ({ code: x.code, name: x.name })) : undefined} />
       )}
       <p className="mt-6 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-        {e.version}. Provisional rankings (dashed) have {t.provisionalItems}–{t.officialItems - 1} eligible items or items from a single publication year, and carry no zone.
-        {unranked.length > 0 && ` ${fmt(unranked.length)} further journals in this category have citation data but no rank (too few items, incomplete citation coverage, or category too small)${e.current ? '; their PNCI is shown on their journal pages' : ''}.`}
+        {w.footer(e.version, t.provisionalItems, t.officialItems - 1)}
+        {unranked.length > 0 && w.unranked(fmt(unranked.length), e.current)}
       </p>
     </div>
   )
