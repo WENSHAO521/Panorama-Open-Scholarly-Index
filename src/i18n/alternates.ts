@@ -20,7 +20,7 @@ export interface LocaleTable {
  */
 export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
   en: null,
-  'zh-Hans': ['/', '/journals/', '/journals/open-access/', '/subjects/', '/publishers/', '/rankings/', '/core-collection/', '/publications/', '/certificate/', '/certificate/zone/', '/cite/', '/datasets/', '/certification/', '/logos/', '/about/',
+  'zh-Hans': ['/', '/journals/', '/journals/open-access/', '/subjects/', '/publishers/', '/rankings/', '/core-collection/', '/publications/', '/certificate/', '/certificate/zone/', '/cite/', '/datasets/', '/certification/', '/logos/', '/about/', '/methodology/', '/psg-format/', '/privacy/', '/editorial-policy/', '/terms/', '/docs/provenance/', '/docs/certificates/', '/docs/schema/', '/docs/data/', '/docs/', '/ratings/early-stage/', '/ratings/mature/', '/ratings/', '/responsible-use/', '/grades/', '/pqf/', '/pci/', '/coi/', '/contact/',
     // Journal pages: the profile and the Discovered record viewer (one page each, chosen by the query string), and
     // the static record pages of the Core Collection journals. The other records with a static English page (about
     // 1,000) are shown in Chinese by the record viewer (see localizedHref): static copies would pass the file limit.
