@@ -99,3 +99,7 @@ export const stripLocale = (pathname: string) => …                            
   - 做法:每页一个共用视图(`src/components/views/`),英文与中文路由都渲染它;页面专属文字放在该文件的 `Record<Locale, …>` 里,以英文为类型,漏键即 typecheck 失败。跨页共用的界面文字仍在 `messages/`。
   - **证书与验证页保持英文**(负责人 2026-10-23 确认):中文页只翻译申请表、核查结果和说明;证书 PDF、`/certificate/verify/`、`/certificate/zone/verify/` 不翻译。
   - 排名的类别页与历年版本页、期刊详情页、文档类页面仍为英文。
+- **2026-10-24,第六批**:`/zh/cite/`、`/zh/datasets/`、`/zh/certification/`、`/zh/logos/`、`/zh/about/`。
+  - 引文生成器只翻译界面(表单、提示、格式说明、批量转换);生成的引文本身按各格式规范保持英文。
+  - 认证申请表的界面为中文,生成的申请邮件保持英文(编辑部工作语言)。徽标图片、`alt` 文字与嵌入代码保持英文(出现在期刊自己的网站上)。
+  - 文档类页面:每页一个视图(`src/components/views/docs/`),英文与中文各为一个组件,共用数据;中文路由组 `zh/(docs)/` 复用文档侧栏。
