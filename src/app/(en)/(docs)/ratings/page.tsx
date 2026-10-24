@@ -1,24 +1,7 @@
-import Link from 'next/link'
-import { PageHeader } from '@/components/db'
-import { AjrCommon } from '@/components/AjrPage'
+import { RatingsView, ratingsMetadata } from '@/components/views/docs/RatingsView'
 
-export const metadata = {
-  title: 'AJR: Journal Development Ratings',
-  description: 'AJR rates a Core Collection journal’s lifecycle and publishing development: AJR-E for journals 12–59 months old, AJR-M from 60 months. Output is an AJR Score (0–100) and an AJR Rating from A+ to D, not a quartile. Published for Core Collection journals only.',
-  alternates: { canonical: '/ratings/' },
-}
+export const metadata = ratingsMetadata('en')
 
-export default function RatingsPage() {
-  return (
-    <div className="pb-12">
-      <PageHeader title="AJR: Journal Development Ratings" crumbs={[{ label: 'POSI', href: '/' }, { label: 'Methodology', href: '/methodology/' }, { label: 'AJR' }]}>
-        <p className="max-w-[68ch]">
-          How strong is a journal&rsquo;s lifecycle and publishing-development profile? AJR answers with an AJR Score and
-          an AJR Rating. Models: <Link href="/ratings/early-stage/" className="link">AJR-E</Link> and{' '}
-          <Link href="/ratings/mature/" className="link">AJR-M</Link>. AJR is published for Core Collection journals only.
-        </p>
-      </PageHeader>
-      <div className="doc"><AjrCommon /></div>
-    </div>
-  )
+export default function Page() {
+  return <RatingsView locale="en" />
 }

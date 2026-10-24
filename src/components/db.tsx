@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { COLLECTIONS, VERIFICATION, FRESHNESS, type Collection, type Verification, type Freshness } from '@/lib/records'
 import { BASIS, type Basis } from '@/lib/schema'
 import type { Locale } from '@/i18n/config'
-import { FRESHNESS_ZH, VERIFICATION_ZH } from '@/i18n/records-zh-Hans'
+import { BASIS_ZH, FRESHNESS_ZH, VERIFICATION_ZH } from '@/i18n/records-zh-Hans'
 
 export function VerificationPill({ v, withLabel = true, locale = 'en' }: { v: Verification; withLabel?: boolean; locale?: Locale }) {
   const m = locale === 'zh-Hans' ? { ...VERIFICATION[v], ...VERIFICATION_ZH[v] } : VERIFICATION[v]
@@ -43,14 +43,14 @@ export function FreshnessTag({ f, locale = 'en' }: { f: Freshness; locale?: Loca
   )
 }
 
-export function BasisTag({ b }: { b: Basis }) {
+export function BasisTag({ b, locale = 'en' }: { b: Basis; locale?: Locale }) {
   return (
     <span
       className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[var(--radius)]"
-      title={BASIS[b].description}
+      title={locale === 'zh-Hans' ? BASIS_ZH[b].description : BASIS[b].description}
       style={{ color: 'var(--muted)', border: '1px solid var(--line)' }}
     >
-      {BASIS[b].label}
+      {locale === 'zh-Hans' ? BASIS_ZH[b].label : BASIS[b].label}
     </span>
   )
 }
@@ -91,9 +91,9 @@ export function PageHeader({
 }
 
 // Numbered in-page contents for long documentation pages; ids match the page's h2 anchors.
-export function OnThisPage({ items }: { items: [id: string, label: string][] }) {
+export function OnThisPage({ items, locale = 'en' }: { items: [id: string, label: string][]; locale?: Locale }) {
   return (
-    <nav aria-label="On this page" className="mb-10 max-w-[760px]">
+    <nav aria-label={locale === 'zh-Hans' ? '本页目录' : 'On this page'} className="mb-10 max-w-[760px]">
       <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[14px] list-decimal pl-5" style={{ color: 'var(--muted)' }}>
         {items.map(([id, label]) => <li key={id}><a href={`#${id}`} className="hover:underline" style={{ color: 'var(--teal)' }}>{label}</a></li>)}
       </ol>

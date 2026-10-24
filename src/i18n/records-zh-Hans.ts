@@ -47,3 +47,39 @@ export const FIELD_LABEL_ZH: Record<string, string> = {
 export function fieldSourceZh(source: string): string {
   return source.replace(/\bPublisher\b/g, '出版方').replace(/\bJournal website\b/g, '期刊网站')
 }
+
+/** What each schema field means (record schema page), by schema key. */
+export const FIELD_DESCRIPTION_ZH: Record<string, string> = {
+  posi_id: '永久 POSI 标识符，从不重复使用，也从不重新分配。',
+  journal_code: '用于记录路径（/journal/<code>/）的 URL 安全键。',
+  title: '在 ISSN Portal 注册的期刊刊名。',
+  alternate_titles: '期刊的其他名称：曾用名、译名、缩写及其他变体，例如期刊更名后仍滞后的 Crossref/OpenAlex 刊名。可检索，但从不作为显示刊名。',
+  issn_online: '电子版 ISSN。未注册时为 null，从不推测。',
+  issn_print: '印刷版 ISSN。未注册时为 null。',
+  openalex_source_id: 'ISSN 所对应的 OpenAlex 来源记录。',
+  publisher: '注册的出版商名称。',
+  registration_country: 'ISSN 注册国家/地区，不一定是期刊实际运营所在地。',
+  country: '出版方自述的运营所在国家/地区。',
+  language: '主要出版语言。',
+  frequency: '自述出版频率，实际出版节奏可能不同。',
+  open_access: '期刊是否被记录为完全开放获取。未知时为 null，例如 DOAJ 未收录、且无其他来源说明的期刊。',
+  license: '文章默认许可协议。',
+  peer_review_type: '自述的同行评审模式。POSI 不直接观察评审过程。',
+  doaj_status: 'listed · application_submitted · not_listed · null（未核查）。',
+  website_url: '期刊主页。',
+  apc: '期刊在其网站上公布的 APC，附公布页面及 POSI 核查日期。金额为 0 表示期刊声明不收取 APC。POSI 未找到公布的 APC 时不含此字段。',
+  article_count: '截至数据截止日期，以该期刊 ISSN 注册的 DOI 数量。',
+  psc_category: '依据期刊 OpenAlex 主题分布得出的 POSI 学科分类（PSC）类别。',
+  psc_confidence: 'high · low。low 表示没有单一主题占主导，常见于多学科期刊。',
+  pqf: '编辑遴选证据得分，含六个子因子。仅用作核心合集的准入门槛。',
+  early_stage_rating: '生命周期阶段；对于创刊 12–59 个月且可评级的期刊，还包括其 AJR-E 得分与评级。仅限核心合集期刊。空字段从不以估计值填充。',
+  mature_rating: '对于创刊 60 个月及以上的期刊：其 AJR-M 评级状态、可评级时的得分与评级、模型版本及评级日期。仅限核心合集期刊；自 AJR-M-1.2 起发布。',
+  collection: 'core · curated · benchmark · discovered。仅 core 为已认证；curated 为核心合集以外的 POSI 精选记录。',
+  verification: 'VERIFIED · PARTIALLY_VERIFIED · NEEDS_CHECK · REJECTED。',
+  updated_at: '记录中任一字段最后一次变更的时间。',
+}
+
+/** Notes on the one-letter keys of the index files, by key. */
+export const INDEX_NOTE_ZH: Record<string, string> = {
+  i: '数组，电子版在前，已去重', co: '统一为英文显示名称', u: '仅日期',
+}

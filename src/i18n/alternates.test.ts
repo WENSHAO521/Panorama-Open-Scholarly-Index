@@ -23,7 +23,7 @@ test('the published languages: Simplified Chinese under /zh/, starting with the 
     canonical: '/zh/',
     languages: { en: '/', 'zh-Hans': '/zh/', 'x-default': '/' },
   })
-  for (const p of ['/journal/abc/', '/pqf/']) {
+  for (const p of ['/journal/abc/', '/announcements/']) {
     assert.deepEqual(availableLocales(p), ['en'])
     assert.deepEqual(pageAlternates(p), { canonical: p })
     assert.equal(sitemapLanguages(p, 'https://posi.panorama-sg.com'), undefined)

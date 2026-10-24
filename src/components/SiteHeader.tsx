@@ -137,7 +137,7 @@ export function SiteHeader() {
     >
       <div className="wrap flex items-center gap-3 sm:gap-4 h-16">
         <LocalizedLink href="/" aria-label={header.homeLabel} className="shrink-0"><Logo /></LocalizedLink>
-        <nav aria-label={header.navPrimary} className="hidden lg:flex items-center gap-0.5 ml-2">
+        <nav aria-label={header.navPrimary} className="hidden lg:flex shrink-0 items-center gap-0.5 ml-2">
           {groups.map(g => g.links ? (
             <Dropdown
               key={g.id}
@@ -159,8 +159,14 @@ export function SiteHeader() {
             </LocalizedLink>
           ))}
         </nav>
-        <div className="hidden md:flex ml-auto items-center gap-3">
-          {!onHome && <div className="w-[220px] xl:w-[280px]"><HeaderSearch /></div>}
+        <div className="hidden md:flex ml-auto min-w-0 items-center gap-3">
+          {/* Between lg and xl the primary nav leaves no room for the box, so the search page stands in for it. */}
+          {!onHome && <div className="w-[220px] xl:w-[280px] min-w-[150px] shrink lg:hidden xl:block"><HeaderSearch /></div>}
+          {!onHome && (
+            <LocalizedLink href="/publications/" aria-label={header.searchLabel} className="hidden lg:inline-flex xl:hidden h-9 w-9 items-center justify-center rounded-[var(--radius)] transition-colors hover:bg-[var(--hover)]" style={{ color: 'var(--ink-2)' }}>
+              <MagnifyingGlass className="h-4 w-4" aria-hidden="true" />
+            </LocalizedLink>
+          )}
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
