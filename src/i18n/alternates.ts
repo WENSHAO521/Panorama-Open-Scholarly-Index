@@ -3,6 +3,7 @@
 // entry ever points at a 404. English, the default, has every page.
 import { DEFAULT_LOCALE, HTML_LANG, LOCALES, URL_PREFIX, localePath, type Locale } from './config.ts'
 import CORE_JOURNAL_CODES from './core-journal-codes.json' with { type: 'json' }
+import { ANNOUNCEMENTS } from '../lib/announcements.ts'
 
 /** The languages and what is translated; a parameter of the functions below only so tests can use a second language. */
 export interface LocaleTable {
@@ -26,7 +27,9 @@ export const TRANSLATED_PATHS: Record<Locale, readonly string[] | null> = {
     // Journal pages: the profile and the Discovered record viewer (one page each, chosen by the query string), and
     // the static record pages of the Core Collection journals. The other records with a static English page (about
     // 1,000) are shown in Chinese by the record viewer (see localizedHref): static copies would pass the file limit.
-    '/journal/', '/record/', ...CORE_JOURNAL_CODES.map(c => `/journal/${c}/`)],
+    '/journal/', '/record/', ...CORE_JOURNAL_CODES.map(c => `/journal/${c}/`),
+    // The News items that carry a Chinese version (News is otherwise English only).
+    ...ANNOUNCEMENTS.filter(a => a.zh).map(a => `/announcements/${a.slug}/`)],
 }
 
 /**

@@ -25,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...paths.map(p => ({ url: `${BASE}${p}`, lastModified: now, changeFrequency: 'weekly' as const, priority: p === '/' ? 1 : 0.7, ...alternatesOf(p) })),
     ...translated.map(({ l, p }) => ({ url: `${BASE}${URL_PREFIX[l]}${p}`, lastModified: now, changeFrequency: 'weekly' as const, priority: p === '/' ? 0.9 : 0.6, ...alternatesOf(p) })),
-    ...ANNOUNCEMENTS.map(a => ({ url: `${BASE}/announcements/${a.slug}/`, lastModified: new Date(a.date), changeFrequency: 'yearly' as const, priority: 0.4 })),
+    ...ANNOUNCEMENTS.map(a => ({ url: `${BASE}/announcements/${a.slug}/`, lastModified: new Date(a.date), changeFrequency: 'yearly' as const, priority: 0.4, ...alternatesOf(`/announcements/${a.slug}/`) })),
     ...getStaticRecordJournals().map(j => ({ url: `${BASE}/journal/${j.journal_code}/`, lastModified: new Date(j.updated_at), changeFrequency: 'monthly' as const, priority: 0.6, ...alternatesOf(`/journal/${j.journal_code}/`) })),
     // Each Citation Ranking edition's permanent address, in every language; an edition does not change once published.
     ...getEditionList().flatMap(e => LOCALES.filter(l => availableLocales(`/rankings/edition/${e.year}/`).includes(l)).map(l => ({ url: `${BASE}${URL_PREFIX[l]}/rankings/edition/${e.year}/`, lastModified: e.ranking_snapshot_date ? new Date(e.ranking_snapshot_date) : now, changeFrequency: (e.current ? 'monthly' : 'yearly') as 'monthly' | 'yearly', priority: 0.5, ...alternatesOf(`/rankings/edition/${e.year}/`) }))),
