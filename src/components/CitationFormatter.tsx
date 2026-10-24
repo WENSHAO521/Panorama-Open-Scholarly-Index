@@ -7,6 +7,8 @@ import type { Article } from '@/lib/types'
 import { psgArticle, psgDataset, psgInText } from '@/lib/psg'
 import { footnoteArticle, footnoteDataset } from '@/lib/footnote'
 import { cleanTitle, initials, plausibleYear, spaceInitials, splitName, titleStop } from '@/lib/cite-text'
+import type { Locale } from '@/i18n/config'
+import { useLocale } from '@/i18n/LocaleProvider'
 
 export type CitationFormat = 'psg' | 'apa' | 'mla' | 'chicago' | 'footnote' | 'gbt' | 'bibtex' | 'ris'
 
@@ -30,6 +32,33 @@ const FORMAT_NOTES: Record<CitationFormat, string> = {
   gbt:     'GB/T 7714-2015 - Chinese national standard for bibliographic references',
   bibtex:  'BibTeX format - for use with LaTeX reference management',
   ris:     'RIS format - compatible with Zotero, Mendeley, EndNote, and RefWorks',
+}
+
+// The interface around a citation in each language; the citation text itself follows its style and is not translated.
+const en = {
+  notes: FORMAT_NOTES,
+  footnote: 'Footnote', inText: 'In-text Citation', shortNote: 'Short note', copy: 'Copy', copied: 'Copied', copyTitle: 'Copy to clipboard',
+}
+export const CITATION_WORDS: Record<Locale, typeof en> = {
+  en,
+  'zh-Hans': {
+    notes: {
+      psg:     'PSG 著者-出版年引文格式：Panorama Scholarly Group 的官方引文标准',
+      apa:     'APA 第 7 版：《美国心理学会出版手册》（第 7 版）',
+      mla:     'MLA 第 9 版：《MLA 手册》（第 9 版），2021 年',
+      chicago: 'Chicago 第 17 版著者-出版年制：《芝加哥格式手册》（第 17 版）',
+      footnote: '脚注：Chicago 第 17 版注释-参考文献体系。首次引用时使用完整注释，再次引用时使用简注',
+      gbt:     'GB/T 7714-2015：中国国家标准《信息与文献 参考文献著录规则》',
+      bibtex:  'BibTeX 格式：用于 LaTeX 参考文献管理',
+      ris:     'RIS 格式：兼容 Zotero、Mendeley、EndNote 与 RefWorks',
+    },
+    footnote: '脚注', inText: '文内引用', shortNote: '简注', copy: '复制', copied: '已复制', copyTitle: '复制到剪贴板',
+  },
+}
+
+/** The label of a format's tab: the style's own name, except the footnote, which is translated. */
+export function formatLabel(f: { id: CitationFormat; label: string }, locale: Locale): string {
+  return f.id === 'footnote' ? CITATION_WORDS[locale].footnote : f.label
 }
 
 /** Given and family names; OpenAlex and DataCite give only a display name, which is split here. */
@@ -226,6 +255,8 @@ interface Props {
 }
 
 export function CitationFormatter({ article }: Props) {
+  const locale = useLocale()
+  const w = CITATION_WORDS[locale]
   const [format, setFormat] = useState<CitationFormat>('psg')
   const [copied, setCopied] = useState(false)
 
@@ -233,8 +264,8 @@ export function CitationFormatter({ article }: Props) {
   const isCode = format === 'bibtex' || format === 'ris'
   // PSG adds an in-text citation; a footnote adds the short note used after the first citation.
   const second = format === 'psg'
-    ? { label: 'In-text Citation', text: generatePsgInText(article.authors, plausibleYear(article.publication_year) ? article.publication_year : null) }
-    : format === 'footnote' ? { label: 'Short note', text: generateShortNote(article) } : null
+    ? { label: w.inText, text: generatePsgInText(article.authors, plausibleYear(article.publication_year) ? article.publication_year : null) }
+    : format === 'footnote' ? { label: w.shortNote, text: generateShortNote(article) } : null
 
   async function handleCopy() {
     try {
@@ -277,7 +308,7 @@ export function CitationFormatter({ article }: Props) {
                   }
             }
           >
-            {f.label}
+            {formatLabel(f, locale)}
           </button>
         ))}
       </div>
@@ -299,13 +330,13 @@ export function CitationFormatter({ article }: Props) {
           onClick={handleCopy}
           className="btn btn-sm absolute top-4 right-4"
           style={copied ? { color: 'var(--verified)', background: 'var(--verified-soft)' } : undefined}
-          title="Copy to clipboard"
+          title={w.copyTitle}
         >
           {copied
             ? <Check className="h-3 w-3" weight="bold" />
             : <Copy className="h-3 w-3" />
           }
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? w.copied : w.copy}
         </button>
       </div>
 
@@ -322,7 +353,7 @@ export function CitationFormatter({ article }: Props) {
       {/* Format note */}
       <div className="px-5 pb-4" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
         <p className="text-[10px] pt-3" style={{ color: 'var(--posi-soft)', fontFamily: 'var(--font-mono)' }}>
-          {FORMAT_NOTES[format]}
+          {w.notes[format]}
         </p>
       </div>
     </div>
