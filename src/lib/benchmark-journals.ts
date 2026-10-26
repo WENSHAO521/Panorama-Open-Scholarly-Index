@@ -26,8 +26,9 @@
 // repo's deployment surface entirely. See git history around 2026-08-13.
 import type { Journal } from './types'
 import globalBenchmarkRaw from './global-benchmark.json'
+import { withCurrentArticleCounts } from './article-counts'
 
-export const BENCHMARK_JOURNALS: Journal[] = globalBenchmarkRaw as Journal[]
+export const BENCHMARK_JOURNALS: Journal[] = withCurrentArticleCounts(globalBenchmarkRaw as Journal[])
 
 // Kept for backward compatibility with existing call sites - every record
 // in this file is already curated-only (source_note is never set here),

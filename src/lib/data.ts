@@ -2,6 +2,7 @@ import type { Journal, PlatformStats } from './types'
 import { DISCOVERED_JOURNALS } from './discovered-journals'
 export { DISCOVERED_JOURNALS }
 import coreCollectionRaw from './core-collection.json'
+import { withCurrentArticleCounts } from './article-counts'
 
 // Canonical source: posi-data's corpus/core-collection.json (see that
 // repo's corpus/README.md) - this file is a vendored snapshot, synced
@@ -12,7 +13,7 @@ import coreCollectionRaw from './core-collection.json'
 // churn now happens in posi-data instead, and this repo's copy only
 // updates at deliberate sync points (see corpus/README.md's "Update
 // workflow").
-const coreCollectionJournals = coreCollectionRaw as (Journal & { source_group: 'psg' | 'indexed' | 'shiharr' | 'other_indexed' })[]
+const coreCollectionJournals = withCurrentArticleCounts(coreCollectionRaw as (Journal & { source_group: 'psg' | 'indexed' | 'shiharr' | 'other_indexed' })[])
 
 // source_group preserves which original curation batch a journal came
 // from - a handful of pages still read these four exports directly
