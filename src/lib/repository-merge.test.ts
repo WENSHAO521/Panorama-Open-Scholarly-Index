@@ -40,3 +40,10 @@ test(`adds at most ${MAX_ADDED} records, untitled ones never`, () => {
   assert.equal(mergeRepositories([], [many, [w('10.3/u', '')]], 'relevance').added, MAX_ADDED)
   assert.equal(mergeRepositories([], [[w('10.3/u', '')]], 'relevance').added, 0)
 })
+
+test('a journal listing takes every record its ISSN finds', () => {
+  const many = Array.from({ length: 10 }, (_, i) => w(`10.5281/zenodo.${i}`, `Article ${i}`, 2026, `2026-01-${String(i + 1).padStart(2, '0')}`))
+  const { results, added } = mergeRepositories([], [many], 'newest', Infinity)
+  assert.equal(added, 10)
+  assert.equal(results[0].title, 'Article 9')
+})
