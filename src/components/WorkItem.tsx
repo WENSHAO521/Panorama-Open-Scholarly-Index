@@ -16,6 +16,8 @@ const en = {
   openAccess: 'Open access', retracted: 'Retracted', untitled: 'Untitled', noSource: 'No source recorded',
   vol: 'Vol. {v}', no: 'No. {n}', pp: 'pp. {p}', fullText: 'Full text', cite: 'Cite',
   citationsTitle: 'Citations recorded in OpenAlex', citations: ' citations', journal: 'Journal',
+  registry: 'From {source}', registryTitle: 'Record from {source}; OpenAlex did not return it for this search',
+  registryCitations: 'Citations recorded in {source}',
   types: null as Record<string, string> | null,
 }
 const WORDS: Record<Locale, typeof en> = {
@@ -25,6 +27,8 @@ const WORDS: Record<Locale, typeof en> = {
     openAccess: '开放获取', retracted: '已撤稿', untitled: '无题名', noSource: '未记录来源',
     vol: '第 {v} 卷', no: '第 {n} 期', pp: '第 {p} 页', fullText: '全文', cite: '引用',
     citationsTitle: 'OpenAlex 记录的被引次数', citations: ' 次被引', journal: '期刊',
+    registry: '来自 {source}', registryTitle: '记录来自 {source}，OpenAlex 未在本次检索中返回',
+    registryCitations: '{source} 记录的被引次数',
     types: PUBLICATION_TYPE_ZH,
   },
 }
@@ -52,6 +56,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
         {w.publication_date && <time dateTime={w.publication_date} className="font-mono">{w.publication_date}</time>}
         {w.type && <span>{t.types?.[w.type] ?? TYPE_LABEL[w.type] ?? w.type}</span>}
         {w.fresh && <span title={t.freshTitle}>{t.fresh}</span>}
+        {w.registry && <span title={fill(t.registryTitle, { source: w.registry })}>{fill(t.registry, { source: w.registry })}</span>}
         {w.open_access?.is_oa && (
           <span className="inline-flex items-center gap-1" style={{ color: 'var(--verified)' }}>
             <LockOpen className="h-3.5 w-3.5" /> {t.openAccess}
@@ -94,7 +99,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
           <a href={w.open_access.oa_url} target="_blank" rel="noopener noreferrer" className="btn btn-sm">{t.fullText}</a>
         )}
         {doi && <Link href={href(`/cite/?doi=${encodeURIComponent(doi)}`)} prefetch={false} className="btn btn-sm">{t.cite}</Link>}
-        <span className="inline-flex items-center gap-1 ml-1" style={{ color: 'var(--muted)' }} title={t.citationsTitle}>
+        <span className="inline-flex items-center gap-1 ml-1" style={{ color: 'var(--muted)' }} title={w.registry ? fill(t.registryCitations, { source: w.registry }) : t.citationsTitle}>
           <Quotes className="h-3.5 w-3.5" /> <span className="font-mono tnum">{w.cited_by_count.toLocaleString('en-US')}</span>{t.citations}
         </span>
         {posi?.k === 'core' && <span className="ml-auto inline-flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>{t.journal} <CollectionTag k="core" locale={locale} /></span>}

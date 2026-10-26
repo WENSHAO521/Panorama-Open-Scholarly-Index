@@ -29,7 +29,7 @@ const en = {
   filters: 'Filters', clearAll: 'Clear all', published: 'Published', anyTime: 'Any time', fromYear: 'From year', toYear: 'To year', apply: 'Apply',
   access: 'Access', oaOnly: 'Open access only', type: 'Publication type',
   issnLimit: 'Limited to source ISSN ', issnEnd: '.', remove: 'Remove',
-  source: 'Publication metadata: OpenAlex (CC0), with Crossref, DataCite and Zenodo as fallbacks.',
+  source: 'Publication metadata: OpenAlex (CC0), with DataCite and Zenodo records mixed into searches, and Crossref for new articles and as a fallback.',
   label: 'Search publications', placeholder: 'Title, abstract, author, keyword or DOI', submit: 'Search', results: 'Results',
   filtersCount: ' ({n})', failed: 'Search failed', searching: 'Searching…', publications: ' publications',
   abstracts: 'Show abstracts', sort: 'Sort', sorts: { relevance: 'Most relevant', newest: 'Newest first', cited: 'Most cited' },
@@ -45,6 +45,7 @@ const en = {
   retry: 'Retry with OpenAlex',
   freshOne: 'The newest article comes from Crossref; OpenAlex has not indexed it yet.',
   freshMany: 'The {n} newest articles come from Crossref; OpenAlex has not indexed them yet.',
+  repositories: 'This page also includes {n} records from DataCite and Zenodo (data sets, software, preprints and other repository deposits).',
   none: 'No publications match', noneHint: 'Try fewer words, or clear a filter.',
   pagination: 'Pagination', previous: 'Previous', next: 'Next', page: 'page {page} of {pages}',
   types: null as Record<string, string> | null,
@@ -62,7 +63,7 @@ const WORDS: Record<Locale, typeof en> = {
     filters: '筛选', clearAll: '全部清除', published: '出版时间', anyTime: '不限', fromYear: '起始年份', toYear: '截止年份', apply: '应用',
     access: '获取方式', oaOnly: '仅限开放获取', type: '文献类型',
     issnLimit: '仅限来源 ISSN ', issnEnd: '。', remove: '移除',
-    source: '文献元数据：OpenAlex（CC0），Crossref、DataCite 与 Zenodo 作为备用来源。',
+    source: '文献元数据：OpenAlex（CC0），检索时并入 DataCite 与 Zenodo 的记录，Crossref 补充最新论文并作为备用来源。',
     label: '检索文献', placeholder: '题名、摘要、作者、关键词或 DOI', submit: '检索', results: '检索结果',
     filtersCount: '（{n}）', failed: '检索失败', searching: '正在检索…', publications: ' 篇文献',
     abstracts: '显示摘要', sort: '排序', sorts: { relevance: '相关度优先', newest: '最新优先', cited: '被引最多' },
@@ -78,6 +79,7 @@ const WORDS: Record<Locale, typeof en> = {
     retry: '改用 OpenAlex 重试',
     freshOne: '最新的 1 篇论文来自 Crossref，OpenAlex 尚未收录。',
     freshMany: '最新的 {n} 篇论文来自 Crossref，OpenAlex 尚未收录。',
+    repositories: '本页另含 {n} 条来自 DataCite 与 Zenodo 的记录（数据集、软件、预印本等仓储存档）。',
     none: '没有匹配的文献', noneHint: '请减少检索词，或清除某项筛选条件。',
     pagination: '分页', previous: '上一页', next: '下一页', page: '第 {page} 页，共 {pages} 页',
     types: PUBLICATION_TYPE_ZH,
@@ -110,7 +112,7 @@ function openalexDown(t: typeof en, why?: ProviderErrorKind): string {
   return t.down.other
 }
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind; fresh?: number }
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind; fresh?: number; repositories?: number }
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -376,6 +378,12 @@ export function PublicationSearch() {
           {status.kind === 'ok' && !status.via && !!status.fresh && (
             <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
               {status.fresh === 1 ? t.freshOne : fill(t.freshMany, { n: status.fresh })}
+            </p>
+          )}
+
+          {status.kind === 'ok' && !!status.repositories && (
+            <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              {fill(t.repositories, { n: status.repositories })}
             </p>
           )}
 
