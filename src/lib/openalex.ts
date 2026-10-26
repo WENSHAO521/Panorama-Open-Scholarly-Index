@@ -2,7 +2,8 @@
 // Publication search and publication pages call OpenAlex from the visitor's
 // browser. Busy responses (429, 5xx) are retried once or twice, honouring
 // Retry-After; if OpenAlex still does not answer, search and publication
-// pages fall back to Crossref, then DataCite, then Zenodo (see below). Answers are cached for
+// pages fall back to Crossref, then DataCite, then Zenodo (see below). A text search also mixes in DataCite's and
+// Zenodo's records that OpenAlex lacks, and a DOI typed into search is looked up. Answers are cached for
 // the browser session so back/forward and repeat queries cost nothing.
 
 import {
@@ -11,6 +12,8 @@ import {
 } from './registries'
 import type { ProviderErrorKind } from './scholarly-api/errors'
 import { mergeNewest } from './newest-merge'
+import { mergeRepositories } from './repository-merge'
+import { extractDoi } from './utils'
 import { plausibleYear } from './cite-text'
 
 const API = 'https://api.openalex.org'
@@ -55,6 +58,8 @@ export interface Work {
   keywords?: { display_name: string }[]
   /** from Crossref, not yet indexed by OpenAlex (a journal's newest articles) */
   fresh?: boolean
+  /** the record came from this repository registry rather than OpenAlex or Crossref */
+  registry?: 'DataCite' | 'Zenodo'
 }
 
 export type SortKey = 'relevance' | 'newest' | 'cited'
@@ -80,6 +85,8 @@ export interface WorkPage {
   viaWhy?: ProviderErrorKind
   /** how many of the results came from Crossref because OpenAlex has not indexed them yet */
   fresh?: number
+  /** how many of the results came from DataCite or Zenodo, mixed into the page (see repository-merge.ts) */
+  repositories?: number
 }
 
 export type Fallback = 'crossref' | 'datacite' | 'zenodo'
@@ -321,6 +328,7 @@ function recordToWork(r: RegistryRecord): Work {
     biblio: { volume: r.container.volume, issue: r.container.issue, first_page: r.container.firstPage, last_page: r.container.lastPage },
     abstract_inverted_index: invertedIndex(r.abstract),
     keywords: r.keywords.map(display_name => ({ display_name })),
+    registry: r.source === 'zenodo' ? 'Zenodo' : 'DataCite',
   }
 }
 
@@ -363,21 +371,65 @@ function wantsFresh(qy: WorkQuery): boolean {
     && (!qy.type?.length || (qy.type.length === 1 && qy.type[0] === 'article'))
 }
 
+/** Repository records asked for per registry and page, mixed into a text search (see repository-merge.ts). */
+const REPO_PER_PAGE = 5
+/** How long a page that OpenAlex has answered waits for DataCite and Zenodo before showing without them. */
+const REPO_WAIT_MS = 2500
+
+/**
+ * DataCite's and Zenodo's records for the same text search and page, each list filtered to what the page's filters
+ * allow (neither registry can apply every filter itself). Repositories have no journal ISSN, and a listing
+ * without search words would only show the newest uploads, so neither is asked then. A registry that fails or is
+ * slow just adds nothing.
+ */
+function repositoryWorks(qy: WorkQuery, signal?: AbortSignal): Promise<Work[][]> {
+  if (!qy.q.trim() || qy.issn) return Promise.resolve([])
+  const rq = { ...qy, perPage: REPO_PER_PAGE }
+  const keep = (w: Work) => (!qy.type?.length || (!!w.type && qy.type.includes(w.type))) && (!qy.oa || w.open_access.is_oa)
+  const one = (run: () => Promise<WorkPage>) => run().then(p => p.results.filter(keep)).catch(() => [] as Work[])
+  const lists = Promise.all([one(() => zenodoWorks(rq, signal)), one(() => dataciteWorks(rq, signal))])
+  return Promise.race([lists, wait(REPO_WAIT_MS, signal).then(() => [] as Work[][])]).catch(() => [])
+}
+
+function withRepositories(page: WorkPage, lists: Work[][], sort: SortKey): WorkPage {
+  const { results, added } = mergeRepositories(page.results, lists, sort)
+  return added ? { ...page, results, repositories: added } : page
+}
+
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+  // A DOI is looked up, not searched for: getWork asks the registry that holds it when OpenAlex does not have it.
+  const doi = extractDoi(qy.q)
+  if (doi) {
+    try {
+      const w = await getWork(doi, signal)
+      const shown = qy.page === 1 && (!qy.type?.length || (!!w.type && qy.type.includes(w.type))) && (!qy.oa || w.open_access.is_oa)
+      return { count: shown ? 1 : 0, results: shown ? [w] : [] }
+    } catch (e) {
+      if (e instanceof RegistryError && e.status === 404) return { count: 0, results: [] }
+      throw e
+    }
+  }
   // Started alongside OpenAlex; a Crossref failure only means the listing is OpenAlex's alone.
   const crossref = wantsFresh(qy) ? crossrefSearch({ ...qy, type: ['article'] }, signal).catch(() => null) : null
+  const repositories = repositoryWorks(qy, signal)
   try {
-    const page = await openalexSearch(qy, signal)
+    let page = await openalexSearch(qy, signal)
     const cr = await crossref
-    if (!cr) return page
-    const { results, added } = mergeNewest(page.results, cr.results.map(w => ({ ...w, fresh: true })), qy.perPage)
-    return added ? { ...page, count: page.count + added, results, fresh: added } : page
+    if (cr) {
+      const { results, added } = mergeNewest(page.results, cr.results.map(w => ({ ...w, fresh: true })), qy.perPage)
+      if (added) page = { ...page, count: page.count + added, results, fresh: added }
+    }
+    return withRepositories(page, await repositories, qy.sort)
   } catch (e) {
     if (e instanceof RegistryError && e.busy) {
       // Repositories have no journal ISSN, so an ISSN-scoped search can only fall back to Crossref.
-      const attempts = [() => crossrefSearch(qy, signal)]
-      if (!qy.issn) attempts.push(() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal))
-      return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind }
+      try {
+        return { ...withRepositories(await crossrefSearch(qy, signal), await repositories, qy.sort), viaWhy: e.kind }
+      } catch (ce) {
+        if ((ce as Error).name === 'AbortError' || qy.issn) throw ce
+        const attempts = [() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)]
+        return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind }
+      }
     }
     throw e
   }
