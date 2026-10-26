@@ -10,7 +10,7 @@ interface Mergeable {
   cited_by_count: number
 }
 
-/** At most this many repository records are added to one page. */
+/** At most this many repository records are added to a search page (a journal's listing takes them all). */
 export const MAX_ADDED = 6
 /** For relevance order, one repository record after every this many OpenAlex results. */
 const EVERY = 3
@@ -29,7 +29,7 @@ const titleKey = (w: Mergeable) => {
  * a relevance page places one repository record after every few OpenAlex results.
  */
 export function mergeRepositories<T extends Mergeable>(
-  base: T[], lists: T[][], sort: 'relevance' | 'newest' | 'cited',
+  base: T[], lists: T[][], sort: 'relevance' | 'newest' | 'cited', max = MAX_ADDED,
 ): { results: T[]; added: number } {
   const seen = new Set<string>()
   const mark = (w: T) => {
@@ -41,8 +41,8 @@ export function mergeRepositories<T extends Mergeable>(
   }
   base.forEach(mark)
   const extra: T[] = []
-  for (let i = 0; extra.length < MAX_ADDED && lists.some(l => i < l.length); i++) {
-    for (const l of lists) if (i < l.length && extra.length < MAX_ADDED && l[i].title && mark(l[i])) extra.push(l[i])
+  for (let i = 0; extra.length < max && lists.some(l => i < l.length); i++) {
+    for (const l of lists) if (i < l.length && extra.length < max && l[i].title && mark(l[i])) extra.push(l[i])
   }
   if (!extra.length) return { results: base, added: 0 }
   if (sort === 'newest') {

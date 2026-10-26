@@ -46,6 +46,7 @@ const en = {
   freshOne: 'The newest article comes from Crossref; OpenAlex has not indexed it yet.',
   freshMany: 'The {n} newest articles come from Crossref; OpenAlex has not indexed them yet.',
   repositories: 'This page also includes {n} records from DataCite and Zenodo (data sets, software, preprints and other repository deposits).',
+  journalRepositories: '{n} records on this page come from DataCite (Zenodo deposits included): their DOIs are registered there and name this journal’s ISSN.',
   none: 'No publications match', noneHint: 'Try fewer words, or clear a filter.',
   pagination: 'Pagination', previous: 'Previous', next: 'Next', page: 'page {page} of {pages}',
   types: null as Record<string, string> | null,
@@ -80,6 +81,7 @@ const WORDS: Record<Locale, typeof en> = {
     freshOne: '最新的 1 篇论文来自 Crossref，OpenAlex 尚未收录。',
     freshMany: '最新的 {n} 篇论文来自 Crossref，OpenAlex 尚未收录。',
     repositories: '本页另含 {n} 条来自 DataCite 与 Zenodo 的记录（数据集、软件、预印本等仓储存档）。',
+    journalRepositories: '本页有 {n} 条记录来自 DataCite（含 Zenodo 存档）：其 DOI 在 DataCite 注册，并标注了本刊的 ISSN。',
     none: '没有匹配的文献', noneHint: '请减少检索词，或清除某项筛选条件。',
     pagination: '分页', previous: '上一页', next: '下一页', page: '第 {page} 页，共 {pages} 页',
     types: PUBLICATION_TYPE_ZH,
@@ -383,7 +385,7 @@ export function PublicationSearch() {
 
           {status.kind === 'ok' && !!status.repositories && (
             <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-              {fill(t.repositories, { n: status.repositories })}
+              {fill(issn ? t.journalRepositories : t.repositories, { n: status.repositories })}
             </p>
           )}
 

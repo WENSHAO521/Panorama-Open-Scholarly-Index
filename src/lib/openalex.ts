@@ -7,7 +7,7 @@
 // the browser session so back/forward and repeat queries cost nothing.
 
 import {
-  RegistryError, dataciteSearch, zenodoSearch, recordByDoi, registrationAgency, registriesFor, invertedIndex, holderOf,
+  RegistryError, dataciteSearch, zenodoSearch, recordByDoi, isZenodoDoi, registrationAgency, registriesFor, invertedIndex, holderOf,
   type GetJson, type RegistryRecord, type RecordQuery,
 } from './registries'
 import type { ProviderErrorKind } from './scholarly-api/errors'
@@ -322,13 +322,13 @@ function recordToWork(r: RegistryRecord): Work {
       institutions: c.affiliations.map(display_name => ({ id: '', display_name, country_code: null })),
     })),
     primary_location: {
-      source: { id: '', display_name: src, issn_l: null, issn: null, host_organization_name: r.publisher, type: r.container.title ? 'journal' : 'repository' },
+      source: { id: '', display_name: src, issn_l: r.issn[0] ?? null, issn: r.issn.length ? r.issn : null, host_organization_name: r.publisher, type: r.container.title || r.issn.length ? 'journal' : 'repository' },
       landing_page_url: r.url, pdf_url: r.pdfUrl, license: r.licenseUrl ?? r.license,
     },
     biblio: { volume: r.container.volume, issue: r.container.issue, first_page: r.container.firstPage, last_page: r.container.lastPage },
     abstract_inverted_index: invertedIndex(r.abstract),
     keywords: r.keywords.map(display_name => ({ display_name })),
-    registry: r.source === 'zenodo' ? 'Zenodo' : 'DataCite',
+    registry: r.source === 'zenodo' || isZenodoDoi(r.doi) ? 'Zenodo' : 'DataCite',
   }
 }
 
@@ -375,25 +375,42 @@ function wantsFresh(qy: WorkQuery): boolean {
 const REPO_PER_PAGE = 5
 /** How long a page that OpenAlex has answered waits for DataCite and Zenodo before showing without them. */
 const REPO_WAIT_MS = 2500
+/** A journal's listing waits longer: for a journal whose DOIs are registered with DataCite it is the main source. */
+const JOURNAL_REPO_WAIT_MS = 8000
+
+interface RepoLists { lists: Work[][]; count: number; journal: boolean }
 
 /**
- * DataCite's and Zenodo's records for the same text search and page, each list filtered to what the page's filters
- * allow (neither registry can apply every filter itself). Repositories have no journal ISSN, and a listing
- * without search words would only show the newest uploads, so neither is asked then. A registry that fails or is
- * slow just adds nothing.
+ * DataCite's and Zenodo's records for the same page, each list filtered to what the page's filters allow (neither
+ * registry can apply every filter itself). A text search asks both for a few records. A journal's listing (ISSN)
+ * asks DataCite for a full page of the records that name the journal's ISSN: journals that register DOIs with
+ * DataCite, Zenodo included, are missing from Crossref and often from OpenAlex. Zenodo's own search has no ISSN
+ * field, but its DOIs are registered with DataCite, so DataCite's answer covers them. A listing without search words
+ * or ISSN would only show the newest uploads, so neither is asked then. A registry that fails or is slow adds nothing.
  */
-function repositoryWorks(qy: WorkQuery, signal?: AbortSignal): Promise<Work[][]> {
-  if (!qy.q.trim() || qy.issn) return Promise.resolve([])
-  const rq = { ...qy, perPage: REPO_PER_PAGE }
+function repositoryWorks(qy: WorkQuery, signal?: AbortSignal): Promise<RepoLists> {
+  const none: RepoLists = { lists: [], count: 0, journal: false }
   const keep = (w: Work) => (!qy.type?.length || (!!w.type && qy.type.includes(w.type))) && (!qy.oa || w.open_access.is_oa)
-  const one = (run: () => Promise<WorkPage>) => run().then(p => p.results.filter(keep)).catch(() => [] as Work[])
-  const lists = Promise.all([one(() => zenodoWorks(rq, signal)), one(() => dataciteWorks(rq, signal))])
-  return Promise.race([lists, wait(REPO_WAIT_MS, signal).then(() => [] as Work[][])]).catch(() => [])
+  let lists: Promise<RepoLists>
+  if (qy.issn) {
+    // Repositories type many journal deposits as data sets or "other"; filed under a journal's ISSN they are its articles.
+    const asArticle = (w: Work): Work => (!w.type || w.type === 'dataset' || w.type === 'other' || w.type === 'text' ? { ...w, type: 'article' } : w)
+    lists = dataciteWorks(qy, signal)
+      .then(p => ({ lists: [p.results.map(asArticle).filter(keep)], count: p.count, journal: true }))
+      .catch(() => none)
+  } else if (qy.q.trim()) {
+    const rq = { ...qy, perPage: REPO_PER_PAGE }
+    const one = (run: () => Promise<WorkPage>) => run().then(p => p.results.filter(keep)).catch(() => [] as Work[])
+    lists = Promise.all([one(() => zenodoWorks(rq, signal)), one(() => dataciteWorks(rq, signal))]).then(l => ({ lists: l, count: 0, journal: false }))
+  } else return Promise.resolve(none)
+  return Promise.race([lists, wait(qy.issn ? JOURNAL_REPO_WAIT_MS : REPO_WAIT_MS, signal).then(() => none)]).catch(() => none)
 }
 
-function withRepositories(page: WorkPage, lists: Work[][], sort: SortKey): WorkPage {
-  const { results, added } = mergeRepositories(page.results, lists, sort)
-  return added ? { ...page, results, repositories: added } : page
+function withRepositories(page: WorkPage, repo: RepoLists, sort: SortKey): WorkPage {
+  const { results, added } = mergeRepositories(page.results, repo.lists, sort, repo.journal ? Infinity : undefined)
+  if (!added) return page
+  // A journal's listing pages through whichever source holds more of its records.
+  return { ...page, count: repo.journal ? Math.max(page.count, repo.count) : page.count, results, repositories: added }
 }
 
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
@@ -422,12 +439,12 @@ export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<
     return withRepositories(page, await repositories, qy.sort)
   } catch (e) {
     if (e instanceof RegistryError && e.busy) {
-      // Repositories have no journal ISSN, so an ISSN-scoped search can only fall back to Crossref.
       try {
         return { ...withRepositories(await crossrefSearch(qy, signal), await repositories, qy.sort), viaWhy: e.kind }
       } catch (ce) {
-        if ((ce as Error).name === 'AbortError' || qy.issn) throw ce
-        const attempts = [() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)]
+        if ((ce as Error).name === 'AbortError') throw ce
+        // Zenodo's search has no ISSN field; DataCite's answers a journal's listing.
+        const attempts = qy.issn ? [() => dataciteWorks(qy, signal)] : [() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)]
         return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind }
       }
     }

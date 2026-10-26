@@ -71,6 +71,8 @@ export interface RecordQuery {
   /** neutral work types (see RegistryRecord.kind) */
   type?: string[]
   oa?: boolean
+  /** a journal's ISSN: records that name it as their container (DataCite only) */
+  issn?: string
 }
 
 export interface RecordPage { count: number; records: RegistryRecord[] }
@@ -259,8 +261,14 @@ export async function dataciteSearch(qy: RecordQuery, getJson: GetJson, signal?:
   const clauses: string[] = []
   const text = qy.q.replace(/[\\[\]{}()^~:"/!]/g, ' ').trim()
   if (text) clauses.push(`(${text})`)
+  // A journal's records name its ISSN as their container, or as an IsPartOf related identifier (how Zenodo
+  // registers a journal's deposits with DataCite).
+  const issn = issnOf(qy.issn)
+  if (issn) clauses.push(`(relatedIdentifiers.relatedIdentifier:"${issn}" OR container.identifier:"${issn}")`)
   if (qy.from || qy.to) clauses.push(`publicationYear:[${qy.from?.slice(0, 4) || '*'} TO ${qy.to?.slice(0, 4) || '*'}]`)
-  if (qy.type?.length) {
+  // Journals that deposit on Zenodo often type their articles as data sets or "other", so a journal's
+  // listing is not narrowed by DataCite's type; the caller filters the records instead.
+  if (qy.type?.length && !issn) {
     const general = Object.entries(DC_KIND).filter(([, v]) => qy.type!.includes(v)).map(([k]) => k)
     if (general.length) clauses.push(`types.resourceTypeGeneral:(${general.join(' OR ')})`)
   }
