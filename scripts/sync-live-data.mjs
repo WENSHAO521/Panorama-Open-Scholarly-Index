@@ -165,7 +165,7 @@ function withRegistryJournals(corpus) {
         posi_id: isCurated ? j.posi_id : `ISSNL-${issns[0]}`, curated: isCurated, title: j.title, publisher: j.publisher ?? null,
         issns, issn_l: null, openalex_source_id: j.openalex_source_id ?? null,
         country: j.country ?? null, open_access: j.open_access ?? null, in_doaj: j.doaj_status ? j.doaj_status === 'listed' : null,
-        works_count: null, crossref_total_dois: null, psc_category: j.psc_category ?? null, psc_confidence: j.psc_confidence ?? null, sources: [],
+        works_count: j.article_count ?? null, crossref_total_dois: null, psc_category: j.psc_category ?? null, psc_confidence: j.psc_confidence ?? null, sources: [],
       }
       added.push(r)
       byId.set(r.posi_id, r)
@@ -337,12 +337,70 @@ const RANKINGS_ONLY = process.argv.includes('--rankings-only')
 
 // 2. Global journal directory
 let corpus = null
+// OpenAlex journal profiles by source id: the daily API refresh (posi-engine openalex-profiles.yml) first,
+// the corpus release's monthly snapshot profiles if it is missing.
+let profiles = null
+async function loadProfiles() {
+  let lines
+  if (process.env.POSI_OPENALEX_PROFILES) {
+    lines = readFileSync(process.env.POSI_OPENALEX_PROFILES, 'utf-8')
+  } else {
+    try {
+      lines = gunzipSync(await get(`${RELEASE_DOWNLOADS}/download/openalex-profiles/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
+      console.log('sync-live-data: journal profiles from the daily OpenAlex refresh')
+    } catch (e) {
+      console.warn(`sync-live-data: daily journal profiles unavailable (${e.message}); using the corpus release's`)
+      if (!assetBase) {
+        console.warn('sync-live-data: no release to download profiles from')
+        return null
+      }
+      try {
+        lines = gunzipSync(await get(`${assetBase}/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
+      } catch (e2) {
+        console.warn(`sync-live-data: journal profiles unavailable (${e2.message})`)
+        return null
+      }
+    }
+  }
+  const map = new Map()
+  for (const l of lines.split('\n')) { if (l) { const p = JSON.parse(l); map.set(p.id, p) } }
+  return map
+}
+
+// One article count per journal, everywhere: the directory, publisher pages,
+// title search, the journal page and the record page all show the works count
+// of the daily OpenAlex refresh. The corpus release carries the count of the
+// week (or month) it was built, which drifted from the journal page.
+function withDailyWorks(corpus, profiles) {
+  if (!profiles) return
+  let n = 0
+  for (const r of corpus) {
+    const w = r.openalex_source_id ? profiles.get(r.openalex_source_id)?.w : undefined
+    if (typeof w !== 'number' || w === r.works_count) continue
+    r.works_count = w
+    n++
+  }
+  console.log(`  journal directory: ${n} article counts updated from the OpenAlex profiles`)
+}
+
+// ISSN -> article count, for the curated and discovered records (src/lib/article-counts.ts), whose own
+// article_count was taken once when the journal was added.
+function writeArticleCounts(corpus) {
+  const counts = {}
+  for (const r of corpus) {
+    const n = r.works_count ?? r.crossref_total_dois
+    if (n == null) continue
+    for (const i of r.issns ?? []) if (!(i in counts)) counts[i] = n
+  }
+  writeFileSync(join(GEN, 'article-counts.json'), JSON.stringify(counts))
+}
 // Where the release assets are downloaded from: the newest global-index-*
 // release by tag, or the latest release when the API cannot be reached.
 let assetBase = null
 const missing = []
 if (!RANKINGS_ONLY) {
   const out = join(GEN, 'journals-global.json')
+  rmSync(join(GEN, 'article-counts.json'), { force: true })
   try {
     if (process.env.POSI_GLOBAL_CORPUS) {
       corpus = JSON.parse(readFileSync(process.env.POSI_GLOBAL_CORPUS, 'utf-8'))
@@ -363,7 +421,10 @@ if (!RANKINGS_ONLY) {
     corpus = withRegistryJournals(corpus)
     // Withdrawn journals leave the directory, and so the profiles and the search index built from it.
     corpus = withoutWithdrawn(corpus, 'journal directory')
+    profiles = await loadProfiles()
+    withDailyWorks(corpus, profiles)
     writeFileSync(out, JSON.stringify(slim(corpus)))
+    writeArticleCounts(corpus)
     console.log(`sync-live-data: journal directory, ${corpus.length} journals`)
   } catch (e) {
     console.warn(`sync-live-data: journal directory uses curated records only (${e.message})`)
@@ -376,24 +437,8 @@ if (!RANKINGS_ONLY) {
   const dir = join(ROOT, 'public/data/j')
   try {
     if (!corpus) throw new Error('no corpus')
-    let lines
-    if (process.env.POSI_OPENALEX_PROFILES) {
-      lines = readFileSync(process.env.POSI_OPENALEX_PROFILES, 'utf-8')
-    } else {
-      // The daily API refresh (posi-engine openalex-profiles.yml) first; the corpus release's monthly
-      // snapshot profiles if it is missing.
-      try {
-        lines = gunzipSync(await get(`${RELEASE_DOWNLOADS}/download/openalex-profiles/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
-        console.log('sync-live-data: journal profiles from the daily OpenAlex refresh')
-      } catch (e) {
-        console.warn(`sync-live-data: daily journal profiles unavailable (${e.message}); using the corpus release's`)
-        if (!assetBase) throw new Error('no release to download profiles from')
-        lines = gunzipSync(await get(`${assetBase}/openalex-profiles.jsonl.gz`, 'buffer')).toString('utf-8')
-      }
-    }
-    const oa = new Map()
-    for (const l of lines.split('\n')) { if (l) { const p = JSON.parse(l); oa.set(p.id, p) } }
-    lines = null
+    if (!profiles) throw new Error('no OpenAlex profiles')
+    const oa = profiles
 
     // APCs POSI has verified on the journal's own website (Core Collection records).
     const verifiedApc = new Map([...CURATED.values()].filter(j => j.apc).map(j => [j.posi_id, j.apc]))

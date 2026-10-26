@@ -68,7 +68,7 @@ export const FIELD_DESCRIPTION_ZH: Record<string, string> = {
   doaj_status: 'listed · application_submitted · not_listed · null（未核查）。',
   website_url: '期刊主页。',
   apc: '期刊在其网站上公布的 APC，附公布页面及 POSI 核查日期。金额为 0 表示期刊声明不收取 APC。POSI 未找到公布的 APC 时不含此字段。',
-  article_count: '截至数据截止日期，以该期刊 ISSN 注册的 DOI 数量。',
+  article_count: '期刊已发表的作品数：取 OpenAlex 每日更新的作品数；OpenAlex 未收录的期刊，取 Crossref 中以该期刊 ISSN 注册的 DOI 数量。期刊目录与期刊页显示同一数字。',
   psc_category: '依据期刊 OpenAlex 主题分布得出的 POSI 学科分类（PSC）类别。',
   psc_confidence: 'high · low。low 表示没有单一主题占主导，常见于多学科期刊。',
   pqf: '编辑遴选证据得分，含六个子因子。仅用作核心合集的准入门槛。',

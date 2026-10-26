@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import type { Journal } from './types'
 import committed from './discovered-journals.json'
+import { withCurrentArticleCounts } from './article-counts'
 
 function load(): Journal[] {
   const generated = join(process.cwd(), 'src/lib/generated', 'discovered-journals.json')
@@ -15,4 +16,4 @@ function load(): Journal[] {
   return committed as unknown as Journal[]
 }
 
-export const DISCOVERED_JOURNALS = load()
+export const DISCOVERED_JOURNALS = withCurrentArticleCounts(load())

@@ -12,8 +12,9 @@ name: Publish site data
 #
 # Data changes reach master through bot pushes (Data sync), which do not
 # trigger push workflows, so a check every 30 minutes publishes whenever
-# master has moved past the published stamp. A check with nothing new exits
-# in seconds.
+# master has moved past the published stamp, or posi-engine's daily OpenAlex
+# refresh (journal article counts and citations) is newer than it. A check
+# with nothing new exits in seconds.
 
 on:
   push:
@@ -47,8 +48,16 @@ jobs:
         run: |
           set -euo pipefail
           # No release yet (first run) reads as nothing published.
-          published=$( (gh release download "$TAG" -p "site-data-$FORMAT.json" -O - 2>/dev/null || true) | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).commit)}catch{console.log('')}})")
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$published" = "$GITHUB_SHA" ]; then
+          stamp=$(gh release download "$TAG" -p "site-data-$FORMAT.json" -O - 2>/dev/null || true)
+          field() { printf '%s' "$stamp" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s)['$1']??'')}catch{console.log('')}})"; }
+          published=$(field commit)
+          built_at=$(field built_at)
+          # The daily OpenAlex refresh (posi-engine openalex-profiles release) changes article counts and
+          # citation figures without a commit here, so a newer refresh publishes too.
+          profiles_at=$(gh api repos/WENSHAO521/posi-engine/releases/tags/openalex-profiles \
+            --jq '[.assets[] | select(.name == "openalex-profiles.jsonl.gz") | .updated_at][0] // ""' 2>/dev/null || true)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$published" = "$GITHUB_SHA" ] \
+            && { [ -z "$profiles_at" ] || [ -z "$built_at" ] || [ "$(date -d "$profiles_at" +%s)" -le "$(date -d "$built_at" +%s)" ]; }; then
             echo "Site data for $GITHUB_SHA already published" | tee -a "$GITHUB_STEP_SUMMARY"
             echo "publish=false" >> "$GITHUB_OUTPUT"
           else
