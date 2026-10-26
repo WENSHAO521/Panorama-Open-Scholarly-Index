@@ -43,7 +43,7 @@ export interface PcsClientEntry {
   pcs_eligible_items: number | null
   pcs_items_with_citation_data: number | null
   pcs_coverage: number | null
-  pcs_source: 'crossref' | null
+  pcs_source: 'crossref' | 'datacite' | null
   pcs_source_retrieved_at: string | null
   pcs_methodology_version: string | null
 }

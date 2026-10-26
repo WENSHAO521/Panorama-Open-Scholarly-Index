@@ -145,7 +145,9 @@ function En() {
           <p>
             A supplementary independent citation indicator: the mean Crossref citations of a journal&rsquo;s citable
             items from the four complete years before the metric year (for {year}: {year - 4} to {year - 1}),{' '}
-            <code>PCS-1.0</code>. <strong>{PCS_DISCLAIMER}</strong>
+            <code>PCS-1.0</code>. A journal with no works in Crossref (its DOIs are registered with DataCite, as for
+            journals on Zenodo) is computed from DataCite&rsquo;s records and citation counts instead; its PCS states that
+            source and is not directly comparable with a Crossref-based one. <strong>{PCS_DISCLAIMER}</strong>
           </p>
           <p>
             PCI, PNCI and PCS are shown side by side and are never averaged. Total citations are descriptive and never
@@ -462,7 +464,7 @@ function Zh() {
           </ul>
           <h3 id="pcs">PCS：POSI 引文得分</h3>
           <p>
-            一项独立的补充性引文指标：期刊在指标年份之前四个完整年度内（{year} 年为 {year - 4} 至 {year - 1} 年）可引文献的 Crossref 平均被引次数，<code>PCS-1.0</code>。<strong>PCS 是补充性引文指标，不决定 POSI 官方引文排名、引文百分位、引文分区或 POSI Zone。</strong>
+            一项独立的补充性引文指标：期刊在指标年份之前四个完整年度内（{year} 年为 {year - 4} 至 {year - 1} 年）可引文献的 Crossref 平均被引次数，<code>PCS-1.0</code>。在 Crossref 中没有文献的期刊（其 DOI 在 DataCite 注册，例如托管于 Zenodo 的期刊）改用 DataCite 的记录与被引次数计算，其 PCS 注明该来源，不宜与基于 Crossref 的 PCS 直接比较。<strong>PCS 是补充性引文指标，不决定 POSI 官方引文排名、引文百分位、引文分区或 POSI Zone。</strong>
           </p>
           <p>
             PCI、PNCI 与 PCS 并列展示，从不取平均。总被引次数仅用于描述，从不决定排名。各指标的详细说明见<Link href={L('/pci/')}>引文指标</Link>页面。

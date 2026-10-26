@@ -264,7 +264,8 @@ export async function dataciteSearch(qy: RecordQuery, getJson: GetJson, signal?:
   // A journal's records name its ISSN as their container, or as an IsPartOf related identifier (how Zenodo
   // registers a journal's deposits with DataCite).
   const issn = issnOf(qy.issn)
-  if (issn) clauses.push(`(relatedIdentifiers.relatedIdentifier:"${issn}" OR container.identifier:"${issn}")`)
+  // Zenodo registers each deposit twice, a concept DOI (HasVersion) and a version DOI; only the version is kept.
+  if (issn) clauses.push(`(relatedIdentifiers.relatedIdentifier:"${issn}" OR container.identifier:"${issn}")`, 'NOT relatedIdentifiers.relationType:HasVersion')
   if (qy.from || qy.to) clauses.push(`publicationYear:[${qy.from?.slice(0, 4) || '*'} TO ${qy.to?.slice(0, 4) || '*'}]`)
   // Journals that deposit on Zenodo often type their articles as data sets or "other", so a journal's
   // listing is not narrowed by DataCite's type; the caller filters the records instead.
