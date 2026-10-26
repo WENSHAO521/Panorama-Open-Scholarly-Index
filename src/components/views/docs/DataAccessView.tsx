@@ -14,8 +14,8 @@ const EN_META = {
 const SOURCES = [
   ['Crossref', 'Journal list, ISSNs, DOI counts, article metadata, item-level citation counts for PNCI and PCS, certificate checks', 'Daily'],
   ['OpenAlex', 'Journal profiles, topics, output and citations per year, h-index, open access and DOAJ status, publication search', 'Daily; search is live'],
-  ['DataCite', 'Fallback for publication search and publication pages: DOIs registered by repositories (datasets, software, preprints)', 'Live, only when OpenAlex and Crossref cannot answer'],
-  ['Zenodo', 'Second fallback for the same pages: Zenodo records, with files and licences', 'Live, only when the sources above cannot answer'],
+  ['DataCite', 'Records mixed into publication search; articles of journals whose DOIs are registered with DataCite (Zenodo included), on their journal listings and, when Crossref has none of their works, for AJR article data and PCS; publication pages when OpenAlex cannot answer', 'Search and listings live; AJR and PCS with each run'],
+  ['Zenodo', 'Records mixed into publication search; Zenodo records, with files and licences, on publication pages when the sources above cannot answer', 'Live'],
   ['Journal websites', 'AJR evidence: editorial governance, peer review, research integrity and transparency policies', 'Monthly, Core Collection'],
   ['POSI editorial', 'Core Collection records, PQF evaluations, verified classifications, certification decisions', 'On each decision'],
 ]
@@ -114,8 +114,8 @@ const L = (p: string) => localizedHref('zh-Hans', p)
 const SOURCES_ZH = [
   ['Crossref', '期刊列表、ISSN、DOI 数量、文章元数据、用于 PNCI 与 PCS 的文献级被引次数、证书核查', '每日'],
   ['OpenAlex', '期刊概况、主题、逐年产出与被引、h 指数、开放获取与 DOAJ 状态、文献检索', '每日；检索为实时'],
-  ['DataCite', '文献检索与文献页面的备用来源：由知识库注册的 DOI（数据集、软件、预印本）', '实时，仅在 OpenAlex 与 Crossref 无法提供结果时使用'],
-  ['Zenodo', '上述页面的第二备用来源：Zenodo 记录，含文件与许可协议', '实时，仅在上述来源均无法提供结果时使用'],
+  ['DataCite', '并入文献检索的记录；DOI 在 DataCite 注册的期刊（含 Zenodo）的文章，用于其期刊文献列表，并在 Crossref 无其文献时用于 AJR 文章数据与 PCS；OpenAlex 无法响应时用于文献页面', '检索与列表为实时；AJR 与 PCS 随每次运行更新'],
+  ['Zenodo', '并入文献检索的记录；上述来源无法响应时，文献页面使用 Zenodo 记录（含文件与许可协议）', '实时'],
   ['期刊网站', 'AJR 证据：编辑治理、同行评议、科研诚信与透明度政策', '每月，核心合集'],
   ['POSI 编辑部', '核心合集记录、PQF 评估、经核实的分类、认证决定', '每次作出决定时'],
 ]
