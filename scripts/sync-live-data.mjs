@@ -12,6 +12,9 @@
  *                         collections/citation-ranking.json.gz)
  *   pcs-q.json            the PCS edition, for PCS values only (collections/pcs-q.json.gz,
  *                         or pcs-q.json in older snapshots); its PCS-Q quartiles are retired
+ *   discovered-journals.json, discovered-aliases.json
+ *                         the discovered journals in the site's shape, and the old journal
+ *                         codes that redirect, from collections/discovered-journals.json.gz
  *   journals-global.json  the global journal corpus (every Crossref and
  *                         OpenAlex journal), from the newest posi-engine release
  *                         tagged journals-* (monthly directory refresh) or
@@ -29,7 +32,8 @@
  * if the API refuses (its unauthenticated limit is 60 requests an hour per
  * IP, shared on build machines), through the releases/latest/download link.
  * Locally they fall back to the curated records. On Cloudflare Pages
- * (CF_PAGES=1), and in the site-data publish (POSI_REQUIRE_FULL_DATA=1), a build without them fails instead, so the last good
+ * (CF_PAGES=1), and in the site-data publish (POSI_REQUIRE_FULL_DATA=1), a build without them, or without
+ * the discovered journals (which have no committed fallback), fails instead, so the last good
  * deployment stays live rather than one with ~25k of ~158k journals and no
  * search; POSI_ALLOW_PARTIAL_DATA=1 overrides that.
  * POSI_GLOBAL_CORPUS=<path> and POSI_OPENALEX_PROFILES=<path> use local files
@@ -45,7 +49,7 @@ import { withoutWithdrawn } from './lib/withdrawn.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
-const DATA = 'https://data.posi.panorama-sg.com'
+const DATA = process.env.POSI_DATA_BASE || 'https://data.posi.panorama-sg.com'
 const RELEASES = 'https://api.github.com/repos/WENSHAO521/posi-engine/releases?per_page=30'
 const RELEASE_DOWNLOADS = 'https://github.com/WENSHAO521/posi-engine/releases'
 
@@ -128,8 +132,7 @@ const publisherOf = (posiId, registryPublisher) => clean(CURATED.get(posiId)?.pu
 function withRegistryJournals(corpus) {
   const read = f => JSON.parse(readFileSync(f, 'utf-8'))
   const curated = [...CURATED.values(), ...read(join(ROOT, 'src/lib/global-benchmark.json'))].filter(j => j.posi_id)
-  const genDiscovered = join(GEN, 'discovered-journals.json')
-  const discovered = read(existsSync(genDiscovered) ? genDiscovered : join(ROOT, 'src/lib/discovered-journals.json'))
+  const discovered = read(join(GEN, 'discovered-journals.json'))
   const issnsOf = j => [...new Set([j.issn_online, j.issn_print].filter(Boolean))]
 
   const inCorpus = new Set(corpus.map(r => r.posi_id))
@@ -311,25 +314,26 @@ const EDITIONS = join(GEN, 'editions')
   }
 }
 
-// The discovered journals from the data layer (posi-data's discovered-journals collection) in place of the
-// committed src/lib/discovered-journals.json. On by default since the parity gate passed (2026-10-23, #99);
-// POSI_DISCOVERED_FROM_DATA_LAYER=0 keeps the committed copy. Any failure, or a collection that fails the
-// safety checks (scripts/lib/discovered-sync.mjs), leaves the committed file in use.
+// The discovered journals: posi-data's discovered-journals collection, in the site's shape. The data layer
+// is their only source since #100 (the committed copy and the website's own sync jobs are gone; the final
+// copy is the posi-data release site-discovered-journals-2026-10-23). A collection that fails the safety
+// checks (scripts/lib/discovered-sync.mjs) is not used; without one, a production build fails below and
+// a local build goes on with no discovered journals.
+const missing = []
 {
   const out = join(GEN, 'discovered-journals.json'), outAliases = join(GEN, 'discovered-aliases.json')
   rmSync(out, { force: true }); rmSync(outAliases, { force: true })
-  if (process.env.POSI_DISCOVERED_FROM_DATA_LAYER !== '0') {
-    try {
-      if (!snapshotDir) throw new Error('no current snapshot')
-      const { buildDiscovered } = await import('./lib/discovered-sync.mjs')
-      const collection = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/discovered-journals.json.gz`, 'buffer')).toString('utf-8'))
-      const committed = JSON.parse(readFileSync(join(ROOT, 'src/lib/discovered-journals.json'), 'utf-8'))
-      const { records, aliases, report } = buildDiscovered(collection, committed)
-      writeFileSync(out, JSON.stringify(records)); writeFileSync(outAliases, JSON.stringify(aliases))
-      console.log(`sync-live-data: discovered journals from the data layer, ${report.records} records, ${report.aliases} redirects`)
-    } catch (e) {
-      console.warn(`sync-live-data: discovered journals use the committed file (${e.message})`)
-    }
+  try {
+    if (!snapshotDir) throw new Error('no current snapshot')
+    const { buildDiscovered } = await import('./lib/discovered-sync.mjs')
+    const collection = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/discovered-journals.json.gz`, 'buffer')).toString('utf-8'))
+    const { records, aliases, report } = buildDiscovered(collection)
+    writeFileSync(out, JSON.stringify(records)); writeFileSync(outAliases, JSON.stringify(aliases))
+    console.log(`sync-live-data: discovered journals from the data layer, ${report.records} records, ${report.aliases} redirects`)
+  } catch (e) {
+    writeFileSync(out, '[]'); writeFileSync(outAliases, '{}')
+    console.warn(`sync-live-data: discovered journals not available (${e.message})`)
+    missing.push('discovered journals')
   }
 }
 
@@ -397,7 +401,6 @@ function writeArticleCounts(corpus) {
 // Where the release assets are downloaded from: the newest global-index-*
 // release by tag, or the latest release when the API cannot be reached.
 let assetBase = null
-const missing = []
 if (!RANKINGS_ONLY) {
   const out = join(GEN, 'journals-global.json')
   rmSync(join(GEN, 'article-counts.json'), { force: true })
@@ -590,7 +593,7 @@ if (!RANKINGS_ONLY) {
   }
 }
 
-// A production build without the global corpus would publish a site with a
+// A production build without the global corpus or the discovered journals would publish a site with a
 // fraction of the journals and no search. Fail it so the last good
 // deployment stays live.
 if (missing.length) {

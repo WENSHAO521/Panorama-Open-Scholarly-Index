@@ -15,19 +15,21 @@ posi-engine ──release──▶ posi-data ──snapshot──▶ posi-data-d
 | `posi-engine` | Computes indicators, ratings, rankings; publishes GitHub releases | A formula, harvest or rating step is wrong |
 | `posi-data` | Source of truth: records, specs, schemas, releases. Rankings and metrics are generated, never hand-edited | A Core Collection / Global Benchmark record, an identity, a spec or a taxonomy changes |
 | `posi-data-delivery` | Read-only snapshots, generated from posi-data. Nothing is edited by hand | Almost never |
-| this repo | The website, plus the records only it owns (section 2) | A discovered-journal record is wrong, or the site's code changes |
+| this repo | The website, plus the few files only it owns (section 2) | The site's code changes |
 
 Rule: **fix a record where it is owned.** A fix to synced data made here is
 overwritten by the next sync.
 
 ## 2. Who owns each file in `src/lib/`
 
-The target is a front end that holds no records of its own. Today (see `docs/MIGRATION-PLAN.md` for the
-steps and their state):
+The target is a front end that holds no records of its own. Discovered journals are no longer here: they
+live in posi-data (identity in `journals/discovered`, screening in `screening/`), posi-engine's
+`directory-sync` keeps them current, and the build reads them from the data layer (#99, #100; the site's
+final copy of 25,766 records is the posi-data release `site-discovered-journals-2026-10-23`). The rest
+(see `docs/MIGRATION-PLAN.md` for the steps and their state):
 
 | File | Owner | Refreshed by | Cadence |
 |---|---|---|---|
-| `discovered-journals.json` (~25,700 records) | **moving to posi-data** (identity in `journals/discovered`, screening in `screening/`); until the site is switched this committed copy is what the site shows | `directory-sync` in posi-engine writes posi-data; `daily-sync` / `doaj-sync` here are manual only since 2026-10-23 (#97), so this copy no longer changes | daily; full DOAJ 1st and 16th |
 | `withdrawn-journals.json` | this repo | by hand; an entry removes a journal from indexing | on demand |
 | `citation-stats.json` | this repo, for now | `citation-stats` (OpenAlex, Crossref) | weekly, Monday |
 | `scopus-sources.json`, `pubmed-journals.json` | this repo | `scripts/import-*` by hand | on demand |
@@ -37,8 +39,10 @@ steps and their state):
 | `psc-v1.0.snapshot.json` | posi-data taxonomy | by hand when PSC changes | rare |
 
 The build (`prebuild`: `sync-live-data.mjs`) downloads the global corpus, the ranking edition and the
-discovered journals from the data layer itself (the last since 2026-10-23, #99; `POSI_DISCOVERED_FROM_DATA_LAYER=0`
-falls back to the committed `discovered-journals.json`). `publish-site-data`
+discovered journals from the data layer itself. The discovered journals have no committed fallback: a
+Cloudflare Pages or `publish-site-data` build without them fails, so the last good deployment stays live;
+a local build goes on with none. `POSI_DATA_BASE` points the build at another copy of the data layer.
+`publish-site-data`
 rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/site/v1/` whenever master moves.
 
 ### Discovered journals: where a change goes
@@ -56,8 +60,8 @@ rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/
 | When | What happens | Where |
 |---|---|---|
 | Every 20 min | posi-data imports a new global-index release (:02) → delivery snapshot (:08) → this repo's data-sync (:14) | all three |
-| Daily 02:00 UTC | discover journals, fill publishers, score metadata and auto-PQF | this repo |
-| 1st, 16th | full DOAJ sync | this repo |
+| Daily 02:17 UTC | `directory-sync`: discover journals, fill publishers, score metadata and auto-PQF; opens PR `directory-sync` in posi-data | posi-engine → posi-data |
+| 1st, 16th | full DOAJ sync (in `directory-sync`) | posi-engine → posi-data |
 | 3rd | Crossref publisher sync | posi-engine |
 | 4th–6th | monthly journal directory release (`journals-YYYY-MM`) | posi-engine |
 | 7th | AJR rerate of the Core Collection; opens PR `ajr-rerate/YYYY-MM` in posi-data, **needs review and merge** | posi-engine → posi-data |
@@ -68,9 +72,10 @@ rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/
 
 1. **Status.** `npm run status`. FAIL blocks everything else; WARN is
    explained in its line.
-2. **Watch the human gates.** The only step that waits for a person is the
-   posi-data PR `ajr-rerate/YYYY-MM` (7th). If it is open, review it; the
-   Core Collection does not change until it is merged.
+2. **Watch the human gates.** Two steps wait for a merge in posi-data: the
+   daily PR from branch `directory-sync` (new and updated discovered
+   journals reach the site only once it is merged) and `ajr-rerate/YYYY-MM`
+   (7th; the Core Collection does not change until it is merged).
 3. **Check the pipeline.** Latest runs of the workflows above are green,
    and `data-editions.json` matches `current.json` on the data layer. A
    stuck stage upstream (delivery not following posi-data, posi-data not
@@ -85,9 +90,9 @@ rebuilds the site's data files and publishes them to `data.posi.panorama-sg.com/
    and what you will leave alone. Past examples: #83 (publisher of 30
    records), #84 (open access `null` when DOAJ does not list a journal), #85
    (swapped print/online ISSN).
-2. Script the change against `src/lib/discovered-journals.json`; do not
-   hand-edit 25,000 records. Keep the file's existing formatting so the diff
-   shows only changed records.
+2. Script the change; do not hand-edit thousands of records. Discovered
+   journals are corrected in posi-data (section 2), the files here in place.
+   Keep a file's existing formatting so the diff shows only changed records.
 3. Missing is `null`, never a guess: a journal absent from DOAJ is not shown
    to be subscription-only.
 4. Never reuse or reassign ids. A record that moves keeps its identity.

@@ -5,7 +5,7 @@
  * Computes POSI Early-Stage Journal Ratings for the Core Collection
  * (PSG_JOURNALS + INDEXED_JOURNALS + SHIHARR_JOURNALS + OTHER_INDEXED_JOURNALS
  * in data.ts) — the manually-curated "admitted" set, as opposed to the
- * unreviewed DISCOVERED_JOURNALS pool auto-pqf.mjs scores separately.
+ * unreviewed DISCOVERED_JOURNALS pool posi-engine's auto-pqf.mjs scores separately.
  *
  * Fully automated 100-point methodology — see posi-data's
  * EARLY-STAGE-RATING-SPEC.md (v0.2). No code path in this file accepts a
@@ -70,7 +70,7 @@ const OBSERVATION_MAX_MONTHS = 11   // 0-11mo: too early to evaluate at all
 const EARLY_STAGE_MAX_MONTHS = 59   // 12-59mo: early_stage; 60mo+: mature
 const MIN_ARTICLES = 10
 
-// ─── Low-level fetch helpers (duplicated from auto-pqf.mjs — scripts in this
+// ─── Low-level fetch helpers (duplicated from posi-engine's auto-pqf.mjs — scripts in this
 // repo don't share fetch logic across files by convention, see that file's
 // header) ─────────────────────────────────────────────────────────────────
 

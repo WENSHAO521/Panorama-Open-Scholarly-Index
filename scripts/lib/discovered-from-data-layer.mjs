@@ -1,5 +1,5 @@
 // Turns a record of the data layer's discovered-journals collection (posi-data, compose-discovered.mjs)
-// into the shape src/lib/discovered-journals.json has always held, so pages and scripts are unchanged.
+// into the shape the site's Journal records have always had (the former src/lib/discovered-journals.json), so pages are unchanged.
 // The data layer holds the country as an ISO code; the site shows names.
 import { isoToCountry } from './country-codes.mjs'
 
