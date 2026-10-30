@@ -12,22 +12,22 @@ import { localizedHref } from '@/i18n/alternates'
 import { fill } from '@/i18n/format'
 
 const en = {
-  more: ', +{n} more', sep: ', ', fresh: 'New in Crossref', freshTitle: 'Registered with Crossref; OpenAlex has not indexed it yet',
+  more: ', +{n} more', sep: ', ',
   openAccess: 'Open access', retracted: 'Retracted', untitled: 'Untitled', noSource: 'No source recorded',
   vol: 'Vol. {v}', no: 'No. {n}', pp: 'pp. {p}', fullText: 'Full text', cite: 'Cite',
   citationsTitle: 'Citations recorded in OpenAlex', citations: ' citations', journal: 'Journal',
-  registry: 'From {source}', registryTitle: 'Record from {source}; OpenAlex did not return it for this search',
+  registry: 'From {source}', registryTitle: 'Record from {source}, searched alongside OpenAlex; not among OpenAlex’s results',
   registryCitations: 'Citations recorded in {source}',
   types: null as Record<string, string> | null,
 }
 const WORDS: Record<Locale, typeof en> = {
   en,
   'zh-Hans': {
-    more: '等 {n} 人', sep: '，', fresh: 'Crossref 新登记', freshTitle: '已在 Crossref 登记，OpenAlex 尚未收录',
+    more: '等 {n} 人', sep: '，',
     openAccess: '开放获取', retracted: '已撤稿', untitled: '无题名', noSource: '未记录来源',
     vol: '第 {v} 卷', no: '第 {n} 期', pp: '第 {p} 页', fullText: '全文', cite: '引用',
     citationsTitle: 'OpenAlex 记录的被引次数', citations: ' 次被引', journal: '期刊',
-    registry: '来自 {source}', registryTitle: '记录来自 {source}，OpenAlex 未在本次检索中返回',
+    registry: '来自 {source}', registryTitle: '记录来自 {source}（与 OpenAlex 同步检索），不在 OpenAlex 的结果中',
     registryCitations: '{source} 记录的被引次数',
     types: PUBLICATION_TYPE_ZH,
   },
@@ -55,7 +55,6 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]" style={{ color: 'var(--muted)' }}>
         {w.publication_date && <time dateTime={w.publication_date} className="font-mono">{w.publication_date}</time>}
         {w.type && <span>{t.types?.[w.type] ?? TYPE_LABEL[w.type] ?? w.type}</span>}
-        {w.fresh && <span title={t.freshTitle}>{t.fresh}</span>}
         {w.registry && <span title={fill(t.registryTitle, { source: w.registry })}>{fill(t.registry, { source: w.registry })}</span>}
         {w.open_access?.is_oa && (
           <span className="inline-flex items-center gap-1" style={{ color: 'var(--verified)' }}>

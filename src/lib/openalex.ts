@@ -2,8 +2,8 @@
 // Publication search and publication pages call OpenAlex from the visitor's
 // browser. Busy responses (429, 5xx) are retried once or twice, honouring
 // Retry-After; if OpenAlex still does not answer, search and publication
-// pages fall back to Crossref, then DataCite, then Zenodo (see below). A text search also mixes in DataCite's and
-// Zenodo's records that OpenAlex lacks, and a DOI typed into search is looked up. Answers are cached for
+// pages fall back to Crossref, then DataCite, then Zenodo (see below). Search asks Crossref, DataCite and Zenodo
+// alongside OpenAlex and mixes in their records that OpenAlex does not hold, and a DOI typed into search is looked up. Answers are cached for
 // the browser session so back/forward and repeat queries cost nothing.
 
 import {
@@ -11,10 +11,10 @@ import {
   type GetJson, type RegistryRecord, type RecordQuery,
 } from './registries'
 import type { ProviderErrorKind } from './scholarly-api/errors'
-import { mergeNewest } from './newest-merge'
 import { mergeRepositories } from './repository-merge'
 import { extractDoi } from './utils'
 import { plausibleYear } from './cite-text'
+import { getJournalProfile } from './journal-profile'
 
 const API = 'https://api.openalex.org'
 const MAILTO = 'posi@panorama-sg.com'
@@ -56,10 +56,8 @@ export interface Work {
   abstract_inverted_index?: Record<string, number[]> | null
   primary_topic?: { display_name: string; field?: { display_name: string } } | null
   keywords?: { display_name: string }[]
-  /** from Crossref, not yet indexed by OpenAlex (a journal's newest articles) */
-  fresh?: boolean
-  /** the record came from this repository registry rather than OpenAlex or Crossref */
-  registry?: 'DataCite' | 'Zenodo'
+  /** the record came from this registry, searched alongside OpenAlex, which does not hold it */
+  registry?: 'Crossref' | 'DataCite' | 'Zenodo'
 }
 
 export type SortKey = 'relevance' | 'newest' | 'cited'
@@ -83,23 +81,31 @@ export interface WorkPage {
   via?: Fallback
   /** why OpenAlex could not answer, when `via` is set */
   viaWhy?: ProviderErrorKind
-  /** how many of the results came from Crossref because OpenAlex has not indexed them yet */
-  fresh?: number
-  /** how many of the results came from DataCite or Zenodo, mixed into the page (see repository-merge.ts) */
+  /** how many of the results came from Crossref, DataCite or Zenodo, mixed into the page (see repository-merge.ts) */
   repositories?: number
+  /** per registry searched, how many of the page's records it supplied; `failed` when it did not answer */
+  sources?: { source: RegistrySource; n: number; total?: number; failed?: boolean }[]
+  /** a journal's listing: the journal's article count as the journal directory shows it, and where it comes from */
+  journalCount?: number
+  journalBasis?: 'openalex' | 'crossref'
 }
 
 export type Fallback = 'crossref' | 'datacite' | 'zenodo'
 
 export interface Facet { key: string; label: string; count: number }
 
-function filters(qy: WorkQuery): string {
+/**
+ * OpenAlex filters for the query. A journal's listing is filtered to the journal's OpenAlex source when it is known,
+ * the same source whose works count the journal directory shows; an ISSN can also match a duplicate source record.
+ */
+function filters(qy: WorkQuery, source?: string): string {
   const f: string[] = []
   if (qy.from) f.push(`from_publication_date:${qy.from}`)
   if (qy.to) f.push(`to_publication_date:${qy.to}`)
   if (qy.type?.length) f.push(`type:${qy.type.join('|')}`)
   if (qy.oa) f.push('is_oa:true')
-  if (qy.issn) f.push(`primary_location.source.issn:${qy.issn}`)
+  if (source) f.push(`primary_location.source.id:${source}`)
+  else if (qy.issn) f.push(`primary_location.source.issn:${qy.issn}`)
   return f.join(',')
 }
 
@@ -288,7 +294,13 @@ async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
   if (qy.from) f.push(`from-pub-date:${qy.from}`)
   if (qy.to) f.push(`until-pub-date:${qy.to}`)
   if (qy.issn) f.push(`issn:${qy.issn}`)
-  if (qy.type?.length === 1 && qy.type[0] === 'article') f.push('type:journal-article')
+  // Crossref ORs repeated filters of one name. A type Crossref has no counterpart for (editorial, review, ...) cannot be
+  // asked for; when no requested type has one, Crossref has nothing to add.
+  if (qy.type?.length) {
+    const types = Object.entries(CR_TYPE).filter(([, v]) => qy.type!.includes(v)).map(([k]) => k)
+    if (!types.length) return { count: 0, results: [], via: 'crossref' }
+    f.push(...types.map(t => `type:${t}`))
+  }
   const sort = qy.sort === 'cited' ? 'is-referenced-by-count' : qy.sort === 'newest' || !qy.q ? 'published' : undefined
   const j = await fetchJson<{ message: { 'total-results': number; items: CrItem[] } }>(crUrl('/works', {
     'query.bibliographic': qy.q || undefined,
@@ -361,56 +373,139 @@ async function firstAnswer<T>(attempts: (() => Promise<T>)[], first: unknown): P
   throw err
 }
 
-/**
- * A journal's newest articles, first page: Crossref has them as soon as the publisher deposits them,
- * OpenAlex days to weeks later. Filters Crossref cannot apply (open access, types other than articles)
- * keep the listing OpenAlex-only.
- */
-function wantsFresh(qy: WorkQuery): boolean {
-  return !!qy.issn && qy.sort === 'newest' && !qy.q && qy.page === 1 && !qy.oa
-    && (!qy.type?.length || (qy.type.length === 1 && qy.type[0] === 'article'))
+/** Records asked for per registry and page in a text search, mixed into it (see repository-merge.ts). */
+const EXTRA_PER_PAGE = 5
+/** How long a page that OpenAlex has answered waits for each other registry before showing without it. */
+const EXTRA_WAIT_MS = 2500
+/** A journal's listing waits longer: for a journal OpenAlex does not list, Crossref or DataCite is the main source. */
+const JOURNAL_EXTRA_WAIT_MS = 8000
+
+export type RegistrySource = 'OpenAlex' | 'Crossref' | 'DataCite' | 'Zenodo'
+
+interface Extras {
+  /** one list per registry asked, in the order their records take turns on the page */
+  lists: Work[][]
+  /** each registry's total for the query, in the order of `asked` (0 when it did not answer) */
+  totals: number[]
+  journal: boolean
+  /** registries that were asked and did not answer in time */
+  failed: RegistrySource[]
+  asked: RegistrySource[]
 }
 
-/** Repository records asked for per registry and page, mixed into a text search (see repository-merge.ts). */
-const REPO_PER_PAGE = 5
-/** How long a page that OpenAlex has answered waits for DataCite and Zenodo before showing without them. */
-const REPO_WAIT_MS = 2500
-/** A journal's listing waits longer: for a journal whose DOIs are registered with DataCite it is the main source. */
-const JOURNAL_REPO_WAIT_MS = 8000
-
-interface RepoLists { lists: Work[][]; count: number; journal: boolean }
-
 /**
- * DataCite's and Zenodo's records for the same page, each list filtered to what the page's filters allow (neither
- * registry can apply every filter itself). A text search asks both for a few records. A journal's listing (ISSN)
- * asks DataCite for a full page of the records that name the journal's ISSN: journals that register DOIs with
- * DataCite, Zenodo included, are missing from Crossref and often from OpenAlex. Zenodo's own search has no ISSN
+ * Crossref's, DataCite's and Zenodo's records for the same page, searched alongside OpenAlex, each list filtered to
+ * what the page's filters allow (none of them can apply every filter itself). A text search asks each for a few
+ * records. A journal's listing (ISSN) asks Crossref and DataCite for a full page of the journal's records: Crossref
+ * has a publisher's deposits the day they are made, OpenAlex days to weeks later, and journals that register DOIs
+ * with DataCite (Zenodo included) are missing from Crossref and often from OpenAlex. Zenodo's own search has no ISSN
  * field, but its DOIs are registered with DataCite, so DataCite's answer covers them. A listing without search words
- * or ISSN would only show the newest uploads, so neither is asked then. A registry that fails or is slow adds nothing.
+ * or ISSN would only show the newest deposits, so none is asked then. A registry that fails or is slow adds nothing.
+ * `skip` leaves out the registry that already answers the page itself (OpenAlex fell back to it).
  */
-function repositoryWorks(qy: WorkQuery, signal?: AbortSignal): Promise<RepoLists> {
-  const none: RepoLists = { lists: [], count: 0, journal: false }
+function registryWorks(qy: WorkQuery, signal?: AbortSignal, skip?: RegistrySource): Promise<Extras> {
   const keep = (w: Work) => (!qy.type?.length || (!!w.type && qy.type.includes(w.type))) && (!qy.oa || w.open_access.is_oa)
-  let lists: Promise<RepoLists>
+  const asCrossref = (w: Work): Work => ({ ...w, registry: 'Crossref' })
+  const timeout = qy.issn ? JOURNAL_EXTRA_WAIT_MS : EXTRA_WAIT_MS
+  type Ask = { name: RegistrySource; run: () => Promise<WorkPage>; map: (w: Work) => Work }
+  const same = (w: Work) => w
+  let asks: Ask[]
   if (qy.issn) {
     // Repositories type many journal deposits as data sets or "other"; filed under a journal's ISSN they are its articles.
     const asArticle = (w: Work): Work => (!w.type || w.type === 'dataset' || w.type === 'other' || w.type === 'text' ? { ...w, type: 'article' } : w)
-    lists = dataciteWorks(qy, signal)
-      .then(p => ({ lists: [p.results.map(asArticle).filter(keep)], count: p.count, journal: true }))
-      .catch(() => none)
+    asks = [
+      { name: 'Crossref', run: () => crossrefSearch(qy, signal), map: asCrossref },
+      { name: 'DataCite', run: () => dataciteWorks(qy, signal), map: asArticle },
+    ]
   } else if (qy.q.trim()) {
-    const rq = { ...qy, perPage: REPO_PER_PAGE }
-    const one = (run: () => Promise<WorkPage>) => run().then(p => p.results.filter(keep)).catch(() => [] as Work[])
-    lists = Promise.all([one(() => zenodoWorks(rq, signal)), one(() => dataciteWorks(rq, signal))]).then(l => ({ lists: l, count: 0, journal: false }))
-  } else return Promise.resolve(none)
-  return Promise.race([lists, wait(qy.issn ? JOURNAL_REPO_WAIT_MS : REPO_WAIT_MS, signal).then(() => none)]).catch(() => none)
+    const rq = { ...qy, perPage: EXTRA_PER_PAGE }
+    asks = [
+      { name: 'Crossref', run: () => crossrefSearch(rq, signal), map: asCrossref },
+      { name: 'Zenodo', run: () => zenodoWorks(rq, signal), map: same },
+      { name: 'DataCite', run: () => dataciteWorks(rq, signal), map: same },
+    ]
+  } else return Promise.resolve({ lists: [], totals: [], journal: false, failed: [], asked: [] })
+  // Crossref has no open access flag, so an open-access-only page cannot use it.
+  asks = asks.filter(a => a.name !== skip && !(qy.oa && a.name === 'Crossref'))
+  const failed: RegistrySource[] = []
+  const one = ({ name, run, map }: Ask) => Promise.race([
+    run().then(p => ({ count: p.count, results: p.results.map(map).filter(keep) })),
+    wait(timeout, signal).then(() => { throw new RegistryError(name, 0, true) }),
+  ]).catch(e => {
+    if ((e as Error).name === 'AbortError') throw e
+    failed.push(name)
+    return { count: 0, results: [] as Work[] }
+  })
+  return Promise.all(asks.map(one)).then(pages => ({
+    lists: pages.map(p => p.results),
+    totals: pages.map(p => p.count),
+    journal: !!qy.issn,
+    failed,
+    asked: asks.map(a => a.name),
+  }))
 }
 
-function withRepositories(page: WorkPage, repo: RepoLists, sort: SortKey): WorkPage {
-  const { results, added } = mergeRepositories(page.results, repo.lists, sort, repo.journal ? Infinity : undefined)
-  if (!added) return page
-  // A journal's listing pages through whichever source holds more of its records.
-  return { ...page, count: repo.journal ? Math.max(page.count, repo.count) : page.count, results, repositories: added }
+const doiKey = (doi: string | null | undefined) => doi?.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').toLowerCase() || null
+
+/**
+ * Which of these DOIs OpenAlex holds (within the journal, for a journal's listing): one cheap filter request per 50
+ * DOIs. A record another registry returned that OpenAlex also holds belongs on whichever OpenAlex page ranks it,
+ * so it is not added a second time. Null when OpenAlex could not be asked; the records are then added unchecked.
+ */
+async function openalexHas(dois: string[], source: string | undefined, issn: string | undefined, signal?: AbortSignal): Promise<Set<string> | null> {
+  // "|" and "," separate values in an OpenAlex filter; a DOI containing one cannot be asked for.
+  const ask = [...new Set(dois.filter(d => !/[|,]/.test(d)))]
+  if (!ask.length) return new Set()
+  const scope = source ? `,primary_location.source.id:${source}` : issn ? `,primary_location.source.issn:${issn}` : ''
+  try {
+    const chunks: string[][] = []
+    for (let i = 0; i < ask.length; i += 50) chunks.push(ask.slice(i, i + 50))
+    const pages = await Promise.all(chunks.map(c => get<{ results: { doi: string | null }[] }>(url('/works', {
+      filter: `doi:${c.join('|')}${scope}`, select: 'doi', per_page: 50,
+    }), signal)))
+    return new Set(pages.flatMap(p => p.results.map(r => doiKey(r.doi)).filter((d): d is string => !!d)))
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+    return null
+  }
+}
+
+/**
+ * Per registry, how many of the page's records it supplied, which registries did not answer, and for a journal's
+ * listing each registry's total for the journal (a text search's totals are not comparable: Crossref matches
+ * almost any word somewhere in its metadata).
+ */
+function sourcesOf(results: Work[], base: RegistrySource, baseCount: number, extras: Extras): WorkPage['sources'] {
+  const n = (s: RegistrySource) => results.filter(w => (w.registry ?? base) === s).length
+  const total = (s: RegistrySource) => !extras.journal ? undefined : s === base ? baseCount : extras.failed.includes(s) ? undefined : extras.totals[extras.asked.indexOf(s)]
+  const names = [base, ...extras.asked.filter(s => s !== base)]
+  // A journal's Zenodo deposits come through DataCite's answer.
+  if (extras.journal && names.includes('DataCite') && !names.includes('Zenodo')) names.push('Zenodo')
+  return names.map(s => ({ source: s, n: n(s), total: s === 'Zenodo' && extras.journal ? undefined : total(s), failed: extras.failed.includes(s) || undefined }))
+}
+
+async function withRegistries(page: WorkPage, extras: Extras, base: RegistrySource, qy: WorkQuery, source: string | undefined, signal?: AbortSignal): Promise<WorkPage> {
+  let lists = extras.lists
+  const onPage = new Set(page.results.map(w => doiKey(w.doi)).filter(Boolean))
+  const candidates = lists.flat().map(w => doiKey(w.doi)).filter((d): d is string => !!d && !onPage.has(d))
+  if (base === 'OpenAlex' && candidates.length) {
+    const held = await openalexHas(candidates, source, qy.issn, signal)
+    if (held) lists = lists.map(l => l.filter(w => !held.has(doiKey(w.doi) ?? '')))
+  }
+  const { results, added } = mergeRepositories(page.results, lists, qy.sort, extras.journal ? Infinity : undefined)
+  // A journal's listing pages through whichever registry holds the most of its records.
+  const count = extras.journal ? Math.max(page.count, ...extras.totals) : page.count
+  return { ...page, count, results, repositories: added || undefined, sources: sourcesOf(results, base, page.count, extras) }
+}
+
+/** The OpenAlex source a journal's listing is filtered to, and the journal's article count in the journal directory. */
+async function journalOf(issn: string | undefined, signal?: AbortSignal): Promise<{ source?: string; count?: number; basis?: 'openalex' | 'crossref' }> {
+  if (!issn) return {}
+  const p = await getJournalProfile(issn, signal).catch(e => { if ((e as Error).name === 'AbortError') throw e; return null })
+  if (!p) return {}
+  // The directory shows the daily OpenAlex works count, or the Crossref DOI count for a journal OpenAlex does not list.
+  const count = p.w ?? p.cr
+  return { source: p.oid, count, basis: p.w != null ? 'openalex' : p.cr != null ? 'crossref' : undefined }
 }
 
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
@@ -426,37 +521,33 @@ export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<
       throw e
     }
   }
-  // Started alongside OpenAlex; a Crossref failure only means the listing is OpenAlex's alone.
-  const crossref = wantsFresh(qy) ? crossrefSearch({ ...qy, type: ['article'] }, signal).catch(() => null) : null
-  const repositories = repositoryWorks(qy, signal)
+  const journal = await journalOf(qy.issn, signal)
+  const extras = registryWorks(qy, signal)
   try {
-    let page = await openalexSearch(qy, signal)
-    const cr = await crossref
-    if (cr) {
-      const { results, added } = mergeNewest(page.results, cr.results.map(w => ({ ...w, fresh: true })), qy.perPage)
-      if (added) page = { ...page, count: page.count + added, results, fresh: added }
-    }
-    return withRepositories(page, await repositories, qy.sort)
+    const page = await openalexSearch(qy, journal.source, signal)
+    return { ...(await withRegistries(page, await extras, 'OpenAlex', qy, journal.source, signal)), journalCount: journal.count, journalBasis: journal.basis }
   } catch (e) {
     if (e instanceof RegistryError && e.busy) {
       try {
-        return { ...withRepositories(await crossrefSearch(qy, signal), await repositories, qy.sort), viaWhy: e.kind }
+        const base = await crossrefSearch(qy, signal)
+        const rest = await registryWorks(qy, signal, 'Crossref')
+        return { ...(await withRegistries(base, rest, 'Crossref', qy, journal.source, signal)), viaWhy: e.kind, journalCount: journal.count, journalBasis: journal.basis }
       } catch (ce) {
         if ((ce as Error).name === 'AbortError') throw ce
         // Zenodo's search has no ISSN field; DataCite's answers a journal's listing.
         const attempts = qy.issn ? [() => dataciteWorks(qy, signal)] : [() => dataciteWorks(qy, signal), () => zenodoWorks(qy, signal)]
-        return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind }
+        return { ...(await firstAnswer(attempts, e)), viaWhy: e.kind, journalCount: journal.count, journalBasis: journal.basis }
       }
     }
     throw e
   }
 }
 
-async function openalexSearch(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
+async function openalexSearch(qy: WorkQuery, source: string | undefined, signal?: AbortSignal): Promise<WorkPage> {
   const sort = qy.sort === 'newest' ? 'publication_date:desc' : qy.sort === 'cited' ? 'cited_by_count:desc' : qy.q ? 'relevance_score:desc' : 'publication_date:desc'
   const j = await get<{ meta: { count: number }; results: Work[] }>(url('/works', {
     search: qy.q || undefined,
-    filter: filters(qy) || undefined,
+    filter: filters(qy, source) || undefined,
     sort,
     page: qy.page,
     per_page: qy.perPage,
@@ -467,9 +558,10 @@ async function openalexSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
 
 /** Counts per work type for the current query (one extra request). */
 export async function typeFacets(qy: WorkQuery, signal?: AbortSignal): Promise<Facet[]> {
+  const { source } = await journalOf(qy.issn, signal)
   const j = await get<{ group_by: { key: string; key_display_name: string; count: number }[] }>(url('/works', {
     search: qy.q || undefined,
-    filter: filters({ ...qy, type: undefined }) || undefined,
+    filter: filters({ ...qy, type: undefined }, source) || undefined,
     group_by: 'type',
     per_page: 20,
   }), signal)

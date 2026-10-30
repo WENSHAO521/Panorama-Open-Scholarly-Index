@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { openalexTotals } from '@/lib/openalex-totals'
-import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type Work, type WorkQuery, type Fallback, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
+import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type WorkQuery, type WorkPage, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
 import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -29,7 +29,7 @@ const en = {
   filters: 'Filters', clearAll: 'Clear all', published: 'Published', anyTime: 'Any time', fromYear: 'From year', toYear: 'To year', apply: 'Apply',
   access: 'Access', oaOnly: 'Open access only', type: 'Publication type',
   issnLimit: 'Limited to source ISSN ', issnEnd: '.', remove: 'Remove',
-  source: 'Publication metadata: OpenAlex (CC0), with DataCite and Zenodo records mixed into searches, and Crossref for new articles and as a fallback.',
+  source: 'Publication metadata: OpenAlex (CC0), searched together with Crossref, DataCite and Zenodo; their records that OpenAlex does not hold are added to the results. If OpenAlex does not answer, Crossref takes its place.',
   label: 'Search publications', placeholder: 'Title, abstract, author, keyword or DOI', submit: 'Search', results: 'Results',
   filtersCount: ' ({n})', failed: 'Search failed', searching: 'Searching…', publications: ' publications',
   abstracts: 'Show abstracts', sort: 'Sort', sorts: { relevance: 'Most relevant', newest: 'Newest first', cited: 'Most cited' },
@@ -43,11 +43,14 @@ const en = {
   via: 'Results from {source} ({why}). Some abstracts, open access details and type filters may be missing.',
   totalsAsOf: ' Totals are OpenAlex’s, as of {date}.',
   retry: 'Retry with OpenAlex',
-  freshOne: 'The newest article comes from Crossref; OpenAlex has not indexed it yet.',
-  freshMany: 'The {n} newest articles come from Crossref; OpenAlex has not indexed them yet.',
-  repositories: 'This page also includes {n} records from DataCite and Zenodo (data sets, software, preprints and other repository deposits).',
-  journalRepositories: '{n} records on this page come from DataCite (Zenodo deposits included): their DOIs are registered there and name this journal’s ISSN.',
+  sourcesLabel: 'On this page: ', sourcesSep: ' · ', noAnswer: 'no answer',
+  viaDataCite: ' (via DataCite)',
+  ofTotal: ' of {total}',
+  journalTotal: 'The total is the journal directory’s figure ({basis}); the list pages through every registry’s records.',
+  journalDiffers: 'The journal directory shows {n} ({basis}); {source} holds more of this journal’s records ({total}), so the total here is {source}’s.',
+  basis: { openalex: 'OpenAlex works count, refreshed daily', crossref: 'Crossref DOI count' },
   none: 'No publications match', noneHint: 'Try fewer words, or clear a filter.',
+  beyond: 'There are no results on page {page}.', firstPage: 'Go to page 1',
   pagination: 'Pagination', previous: 'Previous', next: 'Next', page: 'page {page} of {pages}',
   types: null as Record<string, string> | null,
 }
@@ -64,7 +67,7 @@ const WORDS: Record<Locale, typeof en> = {
     filters: '筛选', clearAll: '全部清除', published: '出版时间', anyTime: '不限', fromYear: '起始年份', toYear: '截止年份', apply: '应用',
     access: '获取方式', oaOnly: '仅限开放获取', type: '文献类型',
     issnLimit: '仅限来源 ISSN ', issnEnd: '。', remove: '移除',
-    source: '文献元数据：OpenAlex（CC0），检索时并入 DataCite 与 Zenodo 的记录，Crossref 补充最新论文并作为备用来源。',
+    source: '文献元数据：OpenAlex（CC0），与 Crossref、DataCite、Zenodo 同步检索，OpenAlex 未收录的记录并入结果。OpenAlex 无响应时由 Crossref 代替。',
     label: '检索文献', placeholder: '题名、摘要、作者、关键词或 DOI', submit: '检索', results: '检索结果',
     filtersCount: '（{n}）', failed: '检索失败', searching: '正在检索…', publications: ' 篇文献',
     abstracts: '显示摘要', sort: '排序', sorts: { relevance: '相关度优先', newest: '最新优先', cited: '被引最多' },
@@ -78,11 +81,14 @@ const WORDS: Record<Locale, typeof en> = {
     via: '检索结果来自 {source}（{why}）。部分摘要、开放获取信息与类型筛选可能缺失。',
     totalsAsOf: '总数为 OpenAlex 截至 {date} 的数据。',
     retry: '改用 OpenAlex 重试',
-    freshOne: '最新的 1 篇论文来自 Crossref，OpenAlex 尚未收录。',
-    freshMany: '最新的 {n} 篇论文来自 Crossref，OpenAlex 尚未收录。',
-    repositories: '本页另含 {n} 条来自 DataCite 与 Zenodo 的记录（数据集、软件、预印本等仓储存档）。',
-    journalRepositories: '本页有 {n} 条记录来自 DataCite（含 Zenodo 存档）：其 DOI 在 DataCite 注册，并标注了本刊的 ISSN。',
+    sourcesLabel: '本页来源：', sourcesSep: ' · ', noAnswer: '未响应',
+    viaDataCite: '（经 DataCite）',
+    ofTotal: '（共 {total}）',
+    journalTotal: '总数与期刊目录一致（{basis}）；列表合并各来源的记录分页显示。',
+    journalDiffers: '期刊目录显示 {n} 篇（{basis}）；{source} 登记的本刊记录更多（{total} 条），此处总数以 {source} 为准。',
+    basis: { openalex: 'OpenAlex 每日更新的发文量', crossref: 'Crossref DOI 数' },
     none: '没有匹配的文献', noneHint: '请减少检索词，或清除某项筛选条件。',
+    beyond: '第 {page} 页没有结果。', firstPage: '回到第 1 页',
     pagination: '分页', previous: '上一页', next: '下一页', page: '第 {page} 页，共 {pages} 页',
     types: PUBLICATION_TYPE_ZH,
   },
@@ -114,7 +120,7 @@ function openalexDown(t: typeof en, why?: ProviderErrorKind): string {
   return t.down.other
 }
 
-type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | { kind: 'ok'; count: number; results: Work[]; via?: Fallback; viaWhy?: ProviderErrorKind; fresh?: number; repositories?: number }
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'error'; message: string; why?: ProviderErrorKind } | ({ kind: 'ok' } & WorkPage)
 
 export function PublicationSearch() {
   const router = useRouter()
@@ -147,10 +153,12 @@ export function PublicationSearch() {
 
   const query: WorkQuery = useMemo(() => {
     const p = PRESETS.find(x => x.key === preset)
+    // A range typed the wrong way round ("2024" to "2020") is read the right way round.
+    const [y0, y1] = fromYear && toYear && fromYear > toYear ? [toYear, fromYear] : [fromYear, toYear]
     return {
       q, page, perPage: PER_PAGE, sort,
-      from: p ? p.from() : fromYear ? `${fromYear}-01-01` : undefined,
-      to: !p && toYear ? `${toYear}-12-31` : undefined,
+      from: p ? p.from() : y0 ? `${y0}-01-01` : undefined,
+      to: !p && y1 ? `${y1}-12-31` : undefined,
       type: types, oa, issn: issn || undefined,
     }
   }, [q, page, sort, preset, fromYear, toYear, types, oa, issn])
@@ -197,8 +205,22 @@ export function PublicationSearch() {
 
   const activeFilters = (preset ? 1 : 0) + (fromYear || toYear ? 1 : 0) + types.length + (oa ? 1 : 0) + (issn ? 1 : 0)
   const results = status.kind === 'ok' ? status.results : []
-  const count = snapshot ? snapshot.works : status.kind === 'ok' ? status.count : null
-  const lastPage = count !== null ? Math.min(MAX_PAGE, Math.max(1, Math.ceil(count / PER_PAGE))) : page
+  // A journal's listing with nothing narrowing it shows the count the journal directory and the journal page show;
+  // the registries' live totals (OpenAlex's, Crossref's, DataCite's) still decide how many pages there are.
+  // Crossref usually holds a few more DOIs than OpenAlex (its newest deposits, issue and component DOIs); only when
+  // another registry holds far more of the journal's records (1.5 times or more, e.g. a journal OpenAlex barely
+  // covers) is its live total shown instead, and the page says why it differs from the directory.
+  const wholeJournal = status.kind === 'ok' && !!issn && !q && !preset && !fromYear && !toYear && !types.length && !oa && !!status.journalCount
+  const leader = status.kind === 'ok' ? status.sources?.reduce<{ source: string; total: number } | null>((m, s) => (s.total != null && (!m || s.total > m.total) ? { source: s.source, total: s.total } : m), null) : null
+  const directorySource = status.kind === 'ok' ? (status.journalBasis === 'crossref' ? 'Crossref' : 'OpenAlex') : null
+  const outgrown = !!leader && leader.source !== directorySource && status.kind === 'ok' && leader.total >= 1.5 * (status.journalCount ?? 0)
+  const journalTotal = wholeJournal && status.kind === 'ok' && !outgrown ? status.journalCount! : null
+  const journalDiffers = wholeJournal && status.kind === 'ok' && journalTotal === null && leader ? { directory: status.journalCount!, leader } : null
+  const count = snapshot ? snapshot.works : journalTotal ?? (status.kind === 'ok' ? status.count : null)
+  const pageable = status.kind === 'ok' ? Math.max(count ?? 0, status.count) : count
+  const lastPage = pageable !== null ? Math.min(MAX_PAGE, Math.max(1, Math.ceil(pageable / PER_PAGE))) : page
+  // Selected types stay listed (and can be cleared) even when the type counts are missing or rank them lower.
+  const typeOptions = facets === null ? null : [...facets.slice(0, 10), ...types.filter(k => !facets.slice(0, 10).some(f => f.key === k)).map(k => facets.find(f => f.key === k) ?? { key: k, label: k, count: null })]
 
   const filterPanel = (
     <div className="space-y-6 text-[13.5px]">
@@ -251,18 +273,18 @@ export function PublicationSearch() {
 
       <fieldset>
         <legend className="font-medium mb-2" style={{ color: 'var(--ink-2)' }}>{t.type}</legend>
-        {facets === null ? (
+        {typeOptions === null ? (
           <div className="space-y-2" aria-hidden="true">
             {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-3.5 rounded-[var(--radius)] animate-pulse" style={{ background: 'var(--surface-3)', width: `${80 - i * 10}%` }} />)}
           </div>
         ) : (
           <ul className="space-y-1.5">
-            {facets.slice(0, 10).map(f => (
+            {typeOptions.map(f => (
               <li key={f.key}>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={types.includes(f.key)} onChange={() => toggleType(f.key)} style={{ accentColor: 'var(--teal)' }} />
                   <span className="flex-1">{t.types?.[f.key] ?? TYPE_LABEL[f.key] ?? f.label}</span>
-                  <span className="font-mono text-[11.5px] tnum" style={{ color: 'var(--soft)' }}>{f.count.toLocaleString('en-US')}</span>
+                  {f.count !== null && <span className="font-mono text-[11.5px] tnum" style={{ color: 'var(--soft)' }}>{f.count.toLocaleString('en-US')}</span>}
                 </label>
               </li>
             ))}
@@ -377,22 +399,38 @@ export function PublicationSearch() {
             </div>
           )}
 
-          {status.kind === 'ok' && !status.via && !!status.fresh && (
+          {status.kind === 'ok' && !!status.sources?.length && (
             <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-              {status.fresh === 1 ? t.freshOne : fill(t.freshMany, { n: status.fresh })}
-            </p>
-          )}
-
-          {status.kind === 'ok' && !!status.repositories && (
-            <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-              {fill(issn ? t.journalRepositories : t.repositories, { n: status.repositories })}
+              {t.sourcesLabel}
+              {status.sources.map((s, i) => (
+                <span key={s.source}>
+                  {i > 0 && t.sourcesSep}
+                  {s.source}{' '}
+                  {s.failed
+                    ? <span style={{ color: 'var(--soft)' }}>{t.noAnswer}</span>
+                    : <span className="tnum" style={{ color: 'var(--ink-2)' }}>{s.n.toLocaleString('en-US')}</span>}
+                  {s.total != null && !s.failed && <span style={{ color: 'var(--soft)' }}>{fill(t.ofTotal, { total: s.total.toLocaleString('en-US') })}</span>}
+                  {issn && s.source === 'Zenodo' && <span style={{ color: 'var(--soft)' }}>{t.viaDataCite}</span>}
+                </span>
+              ))}
+              {journalTotal !== null && status.journalBasis && <><br />{fill(t.journalTotal, { basis: t.basis[status.journalBasis] })}</>}
+              {journalDiffers && status.journalBasis && <><br />{fill(t.journalDiffers, { n: journalDiffers.directory.toLocaleString('en-US'), basis: t.basis[status.journalBasis], source: journalDiffers.leader.source, total: journalDiffers.leader.total.toLocaleString('en-US') })}</>}
             </p>
           )}
 
           {status.kind === 'ok' && !results.length && (
             <div className="panel py-16 mt-3 text-center">
-              <p className="font-medium">{t.none}</p>
-              <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>{t.noneHint}</p>
+              {page > 1 && pageable ? (
+                <>
+                  <p className="font-medium">{fill(t.beyond, { page })}</p>
+                  <button type="button" className="btn btn-sm mt-4" onClick={() => update({ page: null }, false)}>{t.firstPage}</button>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium">{t.none}</p>
+                  <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>{t.noneHint}</p>
+                </>
+              )}
             </div>
           )}
 
@@ -405,7 +443,7 @@ export function PublicationSearch() {
             />
           ))}
 
-          {status.kind === 'ok' && count! > PER_PAGE && (
+          {status.kind === 'ok' && (pageable! > PER_PAGE || page > 1) && (
             <nav aria-label={t.pagination} className="flex items-center justify-between pt-5">
               <button type="button" className="btn btn-sm" disabled={page <= 1} onClick={() => update({ page: String(page - 1) }, false)}>
                 <CaretLeft className="h-4 w-4" /> {t.previous}
