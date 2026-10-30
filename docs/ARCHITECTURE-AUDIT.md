@@ -77,7 +77,11 @@ suggested action:
   of Frontiers in Environmental Engineering (POSI-J-000173). Its id is keyed on its own ISSN-L `2296-665X`, so the
   permanent id is right and only attributes are wrong.
 
-### Legacy directory copy in the frontend
+### Legacy directory copy in the frontend (resolved 2026-10-30)
+
+Resolved by #99 and #100: the site reads the directory from the data layer, and the copy and its scripts are
+deleted (final copy: posi-data release `site-discovered-journals-2026-10-23`). The original finding:
+
 
 `src/lib/discovered-journals.json` (25,676 journals) is still written by this repo's scripts
 (`discover-journals.mjs`, `auto-pqf.mjs`), so the site holds journal data and computes auto-PQF outside

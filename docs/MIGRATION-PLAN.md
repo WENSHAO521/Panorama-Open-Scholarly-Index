@@ -51,16 +51,16 @@ keep `journal_code` stable so public URLs and certificates keep working.
 - Secrets `DOAJ_API_KEY` and `POSI_DATA_TOKEN` in posi-engine (step 5).
 - A decision, per difference list in step 2, on which side is correct.
 
-## Status (2026-10-11, end of day)
+## Status (2026-10-11, updated 2026-10-30)
 
 | Step | State |
 |---|---|
 | 1 Unique ids | done |
 | 2 Reconcile | done; posi-data #59 (repairs), #60 and #62 (234 + 5 journals minted, 55 duplicates marked superseded) merged |
 | 3 Publish from posi-data | done: screening collection (posi-data #61), `collections/discovered-journals.json.gz` published in snapshot 2026-10-11, validated by posi-engine |
-| 4 Read it at build time | **on** since 2026-10-23 (#99): every build reads the collection; `POSI_DISCOVERED_FROM_DATA_LAYER=0` falls back to the committed file. Parity gate on snapshot 2026-10-23: 0 missing, 25 regressions ([run](https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/actions/runs/39997701104)); the gate now runs daily for the one-week side-by-side check |
+| 4 Read it at build time | **done** (#99, closed 2026-10-30): every build reads the collection since 2026-10-23; the daily parity runs 2026-10-24 to 10-29 all passed with the same counts (0 missing, 25 regressions, 503 aliases). Parity gate on snapshot 2026-10-23: 0 missing, 25 regressions ([run](https://github.com/WENSHAO521/Panorama-Open-Scholarly-Index/actions/runs/39997701104)) The gate and its workflow were removed with the committed file |
 | 5 Move the jobs to posi-engine | built and run once by hand end to end (posi-engine #53, #55; it opened posi-data #63, merged): **manual only**, no schedule. Needs the `DOAJ_API_KEY` secret for fresher DOAJ data (optional) |
-| 6 Cut over | not done. Left for a decision, see below |
+| 6 Cut over | **done** 2026-10-30 (#100): `discovered-journals.json`, `Daily Journal Sync`, `DOAJ Journal Sync`, the parity check and the scripts they used are deleted; the final copy is the posi-data release `site-discovered-journals-2026-10-23` (JSON, gzip, SHA256SUMS, README). A build without the collection fails in production |
 
 ### What is left before the website holds no records
 

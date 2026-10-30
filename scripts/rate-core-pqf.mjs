@@ -4,7 +4,7 @@
  *
  * Re-computes PQF scores for the Core Collection (PSG/INDEXED/SHIHARR/
  * OTHER_INDEXED — a JSON corpus file, Journal[]) using the same direct-
- * verification methodology as auto-pqf.mjs (JTF/EGF/RIF from a live site
+ * verification methodology as posi-engine's scripts/directory/auto-pqf.mjs (JTF/EGF/RIF from a live site
  * crawl, MQF from a Crossref work sample, TDF from sitemap/robots/DOI
  * checks, CVF from OpenAlex + OpenCitations) — that script only covers
  * DISCOVERED_JOURNALS (a different, TS-literal source file); this is the
@@ -53,7 +53,7 @@ const DATA_PATH = resolve((() => {
 const ONLY = argList('--only')
 const SKIP = argList('--skip') ?? []
 
-// ─── Website crawl — same evidence categories as auto-pqf.mjs ──────────────
+// ─── Website crawl — same evidence categories as posi-engine auto-pqf.mjs ──────────────
 
 async function fetchText(url, timeoutMs = 10000) {
   try {
@@ -111,7 +111,7 @@ async function crawlJournalSite(websiteUrl) {
 }
 
 // Disclosed fallback for JTF/EGF/RIF when a direct website crawl fails — see
-// auto-pqf.mjs's header for the full rationale (bot-blocked sites etc.).
+// posi-engine scripts/directory/auto-pqf.mjs header for the full rationale (bot-blocked sites etc.).
 async function fetchDoajFallback(issn) {
   if (!issn) return null
   try {
@@ -264,7 +264,7 @@ async function fetchOpenCitationsSample(doi) {
   }
 }
 
-// ─── Scoring — identical formulas to auto-pqf.mjs ───────────────────────────
+// ─── Scoring — identical formulas to posi-engine auto-pqf.mjs ───────────────────────────
 
 function grade(total) {
   if (total >= 90) return 'A+'
