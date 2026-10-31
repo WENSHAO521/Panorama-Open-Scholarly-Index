@@ -243,6 +243,13 @@ const CR_TYPE: Record<string, string> = {
   'reference-entry': 'reference-entry', report: 'report', standard: 'standard', component: 'other',
 }
 
+/**
+ * The Crossref types that are works. Crossref also holds a record for each issue, volume and the journal itself
+ * ("journal-issue", often untitled and dated with the issue's cover date) and for a figure or table of an article
+ * ("component"); under a journal's ISSN they would be listed and counted as its articles.
+ */
+const CR_WORK_TYPES = Object.keys(CR_TYPE).filter(t => t !== 'component')
+
 function crToWork(m: CrItem): Work {
   const parts = m.issued?.['date-parts']?.[0] ?? []
   const [y, mo, d] = parts
@@ -300,7 +307,7 @@ async function crossrefSearch(qy: WorkQuery, signal?: AbortSignal): Promise<Work
     const types = Object.entries(CR_TYPE).filter(([, v]) => qy.type!.includes(v)).map(([k]) => k)
     if (!types.length) return { count: 0, results: [], via: 'crossref' }
     f.push(...types.map(t => `type:${t}`))
-  }
+  } else f.push(...CR_WORK_TYPES.map(t => `type:${t}`))
   const sort = qy.sort === 'cited' ? 'is-referenced-by-count' : qy.sort === 'newest' || !qy.q ? 'published' : undefined
   const j = await fetchJson<{ message: { 'total-results': number; items: CrItem[] } }>(crUrl('/works', {
     'query.bibliographic': qy.q || undefined,
