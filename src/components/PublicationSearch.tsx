@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CaretLeft, CaretRight, DownloadSimple, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react/dist/ssr'
 import { openalexTotals } from '@/lib/openalex-totals'
-import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type WorkQuery, type WorkPage, type SortKey, type Facet, RegistryError } from '@/lib/openalex'
+import { searchWorks, typeFacets, openalexBlockedUntil, toBibtex, toRis, toCsvRows, download, TYPE_LABEL, type WorkQuery, type WorkPage, type SortKey, type Facet, type JournalTotal, journalWorksTotal, RegistryError } from '@/lib/openalex'
 import type { ProviderErrorKind } from '@/lib/scholarly-api/errors'
 import { Note } from './db'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -43,12 +43,9 @@ const en = {
   via: 'Results from {source} ({why}). Some abstracts, open access details and type filters may be missing.',
   totalsAsOf: ' Totals are OpenAlex’s, as of {date}.',
   retry: 'Retry with OpenAlex',
-  sourcesLabel: 'On this page: ', sourcesSep: ' · ', noAnswer: 'no answer',
-  viaDataCite: ' (via DataCite)',
-  ofTotal: ' of {total}',
-  journalTotal: 'The total is the journal directory’s figure ({basis}); the list pages through every registry’s records.',
-  journalDiffers: 'The journal directory shows {n} ({basis}); {source} holds more of this journal’s records ({total}), so the total here is {source}’s.',
-  basis: { openalex: 'OpenAlex works count, refreshed daily', crossref: 'Crossref DOI count' },
+  merged: 'Merged from {names}; a record held by more than one counts once.',
+  noAnswer: ' {names} did not answer.',
+  and: ' and ', listSep: ', ',
   none: 'No publications match', noneHint: 'Try fewer words, or clear a filter.',
   beyond: 'There are no results on page {page}.', firstPage: 'Go to page 1',
   pagination: 'Pagination', previous: 'Previous', next: 'Next', page: 'page {page} of {pages}',
@@ -81,12 +78,9 @@ const WORDS: Record<Locale, typeof en> = {
     via: '检索结果来自 {source}（{why}）。部分摘要、开放获取信息与类型筛选可能缺失。',
     totalsAsOf: '总数为 OpenAlex 截至 {date} 的数据。',
     retry: '改用 OpenAlex 重试',
-    sourcesLabel: '本页来源：', sourcesSep: ' · ', noAnswer: '未响应',
-    viaDataCite: '（经 DataCite）',
-    ofTotal: '（共 {total}）',
-    journalTotal: '总数与期刊目录一致（{basis}）；列表合并各来源的记录分页显示。',
-    journalDiffers: '期刊目录显示 {n} 篇（{basis}）；{source} 登记的本刊记录更多（{total} 条），此处总数以 {source} 为准。',
-    basis: { openalex: 'OpenAlex 每日更新的发文量', crossref: 'Crossref DOI 数' },
+    merged: '已合并 {names} 的记录，同一记录只计一次。',
+    noAnswer: '{names} 未响应。',
+    and: '、', listSep: '、',
     none: '没有匹配的文献', noneHint: '请减少检索词，或清除某项筛选条件。',
     beyond: '第 {page} 页没有结果。', firstPage: '回到第 1 页',
     pagination: '分页', previous: '上一页', next: '下一页', page: '第 {page} 页，共 {pages} 页',
@@ -189,6 +183,17 @@ export function PublicationSearch() {
     return () => ctrl.abort()
   }, [query, queryKey, attempt])
 
+  // The journal's merged total, asked once per journal (answers are cached, and shared with the journal page).
+  const [merged, setMerged] = useState<{ issn: string; total: JournalTotal | null } | null>(null)
+  useEffect(() => {
+    if (!issn) return
+    const ctrl = new AbortController()
+    journalWorksTotal(issn, ctrl.signal)
+      .then(total => setMerged({ issn, total }))
+      .catch(e => { if (e.name !== 'AbortError') setMerged({ issn, total: null }) })
+    return () => ctrl.abort()
+  }, [issn, attempt])
+
   function update(patch: Record<string, string | null>, resetPage = true) {
     const n = new URLSearchParams(sp.toString())
     for (const [k, v] of Object.entries(patch)) { if (v === null || v === '') n.delete(k); else n.set(k, v) }
@@ -205,18 +210,12 @@ export function PublicationSearch() {
 
   const activeFilters = (preset ? 1 : 0) + (fromYear || toYear ? 1 : 0) + types.length + (oa ? 1 : 0) + (issn ? 1 : 0)
   const results = status.kind === 'ok' ? status.results : []
-  // A journal's listing with nothing narrowing it shows the count the journal directory and the journal page show;
-  // the registries' live totals (OpenAlex's, Crossref's, DataCite's) still decide how many pages there are.
-  // Crossref usually holds a few more DOIs than OpenAlex (its newest deposits, issue and component DOIs); only when
-  // another registry holds far more of the journal's records (1.5 times or more, e.g. a journal OpenAlex barely
-  // covers) is its live total shown instead, and the page says why it differs from the directory.
-  const wholeJournal = status.kind === 'ok' && !!issn && !q && !preset && !fromYear && !toYear && !types.length && !oa && !!status.journalCount
-  const leader = status.kind === 'ok' ? status.sources?.reduce<{ source: string; total: number } | null>((m, s) => (s.total != null && (!m || s.total > m.total) ? { source: s.source, total: s.total } : m), null) : null
-  const directorySource = status.kind === 'ok' ? (status.journalBasis === 'crossref' ? 'Crossref' : 'OpenAlex') : null
-  const outgrown = !!leader && leader.source !== directorySource && status.kind === 'ok' && leader.total >= 1.5 * (status.journalCount ?? 0)
-  const journalTotal = wholeJournal && status.kind === 'ok' && !outgrown ? status.journalCount! : null
-  const journalDiffers = wholeJournal && status.kind === 'ok' && journalTotal === null && leader ? { directory: status.journalCount!, leader } : null
+  // A journal's listing with nothing narrowing it shows the journal's total with every registry merged, the figure
+  // the journal page shows (journalWorksTotal); the registries' live totals still decide how many pages there are.
+  const wholeJournal = status.kind === 'ok' && !!issn && !q && !preset && !fromYear && !toYear && !types.length && !oa
+  const journalTotal = wholeJournal && status.kind === 'ok' ? (merged?.issn === issn && merged.total ? merged.total.total : status.journalCount ?? null) : null
   const count = snapshot ? snapshot.works : journalTotal ?? (status.kind === 'ok' ? status.count : null)
+  const list = (names: string[]) => names.length > 1 ? `${names.slice(0, -1).join(t.listSep)}${t.and}${names[names.length - 1]}` : names.join('')
   const pageable = status.kind === 'ok' ? Math.max(count ?? 0, status.count) : count
   const lastPage = pageable !== null ? Math.min(MAX_PAGE, Math.max(1, Math.ceil(pageable / PER_PAGE))) : page
   // Selected types stay listed (and can be cleared) even when the type counts are missing or rank them lower.
@@ -401,20 +400,8 @@ export function PublicationSearch() {
 
           {status.kind === 'ok' && !!status.sources?.length && (
             <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-              {t.sourcesLabel}
-              {status.sources.map((s, i) => (
-                <span key={s.source}>
-                  {i > 0 && t.sourcesSep}
-                  {s.source}{' '}
-                  {s.failed
-                    ? <span style={{ color: 'var(--soft)' }}>{t.noAnswer}</span>
-                    : <span className="tnum" style={{ color: 'var(--ink-2)' }}>{s.n.toLocaleString('en-US')}</span>}
-                  {s.total != null && !s.failed && <span style={{ color: 'var(--soft)' }}>{fill(t.ofTotal, { total: s.total.toLocaleString('en-US') })}</span>}
-                  {issn && s.source === 'Zenodo' && <span style={{ color: 'var(--soft)' }}>{t.viaDataCite}</span>}
-                </span>
-              ))}
-              {journalTotal !== null && status.journalBasis && <><br />{fill(t.journalTotal, { basis: t.basis[status.journalBasis] })}</>}
-              {journalDiffers && status.journalBasis && <><br />{fill(t.journalDiffers, { n: journalDiffers.directory.toLocaleString('en-US'), basis: t.basis[status.journalBasis], source: journalDiffers.leader.source, total: journalDiffers.leader.total.toLocaleString('en-US') })}</>}
+              {fill(t.merged, { names: list(status.sources.filter(s => !s.failed).map(s => s.source)) })}
+              {status.sources.some(s => s.failed) && fill(t.noAnswer, { names: list(status.sources.filter(s => s.failed).map(s => s.source)) })}
             </p>
           )}
 

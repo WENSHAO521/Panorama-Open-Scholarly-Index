@@ -508,6 +508,56 @@ async function journalOf(issn: string | undefined, signal?: AbortSignal): Promis
   return { source: p.oid, count, basis: p.w != null ? 'openalex' : p.cr != null ? 'crossref' : undefined }
 }
 
+/** A journal whose registries hold more records than this is not listed in full to merge its total. */
+const MERGE_LIMIT = 200
+
+export interface JournalTotal {
+  /** the journal's records in OpenAlex, Crossref and DataCite (Zenodo included), each record counted once */
+  total: number
+  /** the journal directory's figure (the daily OpenAlex works count, or the Crossref DOI count) */
+  directory: number | null
+}
+
+/**
+ * A journal's article count with OpenAlex, Crossref and DataCite merged: a record two of them hold (by DOI, or by
+ * title and year: Zenodo gives each deposit its own DOI) counts once. A small journal (each registry holding at most
+ * MERGE_LIMIT records) is listed in full, so its total is exact; a larger one adds the registry records OpenAlex does
+ * not hold to the directory's figure, or, when OpenAlex cannot be asked, takes the largest of the figures. Null when
+ * no registry answered and the directory has no figure. Answers are cached, so the journal page and the journal's
+ * listing share them.
+ */
+export async function journalWorksTotal(issn: string, signal?: AbortSignal): Promise<JournalTotal | null> {
+  // Without an ISSN the registries' queries would not be narrowed to the journal.
+  if (!/^\d{4}-?\d{3}[\dX]$/i.test(issn.trim())) return null
+  const journal = await journalOf(issn, signal)
+  const directory = journal.count ?? null
+  const qy: WorkQuery = { q: '', page: 1, perPage: MERGE_LIMIT, sort: 'newest', issn }
+  const settle = (p: Promise<WorkPage>) => p.catch(e => { if ((e as Error).name === 'AbortError') throw e; return null })
+  const openalexUp = !openalexBlockedUntil() && !!journal.source
+  const [oa, cr, dc] = await Promise.all([
+    openalexUp && (directory ?? 0) <= MERGE_LIMIT
+      ? settle(get<{ meta: { count: number }; results: Work[] }>(url('/works', {
+        filter: `primary_location.source.id:${journal.source}`, select: 'doi,title,publication_year,publication_date,cited_by_count', per_page: MERGE_LIMIT,
+      }), signal).then(j => ({ count: j.meta.count, results: j.results })))
+      : Promise.resolve(null),
+    settle(crossrefSearch(qy, signal)),
+    settle(dataciteWorks(qy, signal)),
+  ])
+  const registries = [cr, dc].filter((p): p is WorkPage => !!p)
+  if (!registries.length && directory === null && !oa) return null
+  const listed = (p: WorkPage | null) => !!p && p.results.length >= p.count
+  const largest = Math.max(directory ?? 0, oa?.count ?? 0, ...registries.map(p => p.count))
+  if (registries.every(listed) && (oa ? listed(oa) : true)) {
+    const lists = registries.map(p => p.results)
+    if (oa) return { total: Math.max(largest, mergeRepositories(oa.results, lists, 'newest', Infinity).results.length), directory }
+    const union = mergeRepositories([] as Work[], lists, 'newest', Infinity).results
+    const held = openalexUp && union.length ? await openalexHas(union.map(w => doiKey(w.doi)).filter((d): d is string => !!d), journal.source, issn, signal) : null
+    const extra = held ? union.filter(w => !held.has(doiKey(w.doi) ?? '')).length : 0
+    return { total: Math.max(largest, union.length, (directory ?? 0) + extra), directory }
+  }
+  return { total: largest, directory }
+}
+
 export async function searchWorks(qy: WorkQuery, signal?: AbortSignal): Promise<WorkPage> {
   // A DOI is looked up, not searched for: getWork asks the registry that holds it when OpenAlex does not have it.
   const doi = extractDoi(qy.q)

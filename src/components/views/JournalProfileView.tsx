@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Books, Certificate, SealCheck } from '@phosphor-icons/react/dist/ssr'
 import { getJournalProfile, PSC_CONFIDENCE_TEXT, type JournalProfile } from '@/lib/journal-profile'
+import { journalWorksTotal } from '@/lib/openalex'
 import { recordHref } from '@/lib/records'
 import { countryNameIn } from '@/i18n/places'
 import { usePosiIssnMap, matchIssn } from '@/lib/use-posi-issn'
@@ -95,6 +96,18 @@ export function JournalProfileView() {
     return () => ctrl.abort()
   }, [key])
 
+  // Publications: OpenAlex, Crossref and DataCite (Zenodo included) merged, each record counted once, the total the
+  // journal's listing shows. The directory's figure stands until it arrives, or if no registry answers.
+  const [merged, setMerged] = useState<{ key: string; total: number } | null>(null)
+  useEffect(() => {
+    if (!key) return
+    const ctrl = new AbortController()
+    journalWorksTotal(key, ctrl.signal)
+      .then(t => { if (t) setMerged({ key, total: t.total }) })
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [key])
+
   if (!key) return <Empty title={w.noneTitle} body={w.noneBody} w={w} />
   const current = state?.key === key ? state : null
   if (!current) return <Skeleton label={w.loading} />
@@ -160,7 +173,7 @@ export function JournalProfileView() {
 
       <dl className="stat-strip grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         {([
-          [w.stats.publications, fmt(j.w ?? j.cr)],
+          [w.stats.publications, fmt(merged?.key === key ? merged.total : j.w ?? j.cr)],
           [w.stats.citations, fmt(j.c)],
           ['h-index', fmt(j.h)],
           ['i10-index', fmt(j.i10)],
