@@ -18,6 +18,7 @@ import { dataUrl } from '@/lib/data-base'
 import type { Locale } from '@/i18n/config'
 import { localizedHref, pageAlternates } from '@/i18n/alternates'
 import { subjectName } from '@/i18n/format'
+import { jsonLdText, periodicalJsonLd } from '@/lib/structured-data'
 
 // Core, other curated and Global Benchmark records get a static page. Discovered
 // records (~24k) are served by the in-browser viewer at /record/ to stay
@@ -68,6 +69,7 @@ export function JournalRecordView({ code, locale }: { code: string; locale: Loca
 
   return (
     <div className="wrap pb-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(periodicalJsonLd(j, `/journal/${j.journal_code}/`)) }} />
       <RecordView
         locale={locale}
         journal={j}
