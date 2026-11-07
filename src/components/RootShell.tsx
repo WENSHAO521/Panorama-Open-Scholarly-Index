@@ -7,6 +7,7 @@ import { THEME_SCRIPT } from "@/lib/theme";
 import { HTML_LANG, type Locale } from "@/i18n/config";
 import { clientMessages, getMessages } from "@/i18n";
 import { LocaleProvider } from "@/i18n/LocaleProvider";
+import { jsonLdText, siteJsonLd } from "@/lib/structured-data";
 
 // Self-hosted (not next/font/google) -- that mechanism fetches font files
 // from Google Fonts live at build time, and Cloudflare Pages' build
@@ -43,6 +44,9 @@ export function RootShell({ locale, children }: Readonly<{ locale: Locale; child
         <script dangerouslySetInnerHTML={{ __html: TRANSLATION_GUARD_SCRIPT }} />
         {/* Applies a pinned Light/Dark choice before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* The site and its publisher for search engines (schema.org). */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(siteJsonLd()) }} />
+        <link rel="alternate" type="application/rss+xml" title="POSI news" href="/announcements/feed.xml" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <a

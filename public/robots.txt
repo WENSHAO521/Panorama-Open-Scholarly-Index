@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /api/private/
 
 Sitemap: https://posi.panorama-sg.com/sitemap.xml
+Sitemap: https://posi.panorama-sg.com/sitemaps/index.xml
