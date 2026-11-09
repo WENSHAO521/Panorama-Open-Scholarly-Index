@@ -27,7 +27,7 @@
  *
  * The ranking falls back to the committed src/lib/citation-ranking.json and
  * PCS to src/lib/pcs-q.json. The journal directory, profiles and title index
- * need the global corpus: every download is retried, and the release is
+ * need the global corpus: every download is retried, and when GitHub keeps failing (a 504) it comes through the API or, last, from the copy the previous build cached (.next/cache/posi-downloads); the release is
  * found through the GitHub API (authenticated with GITHUB_TOKEN when set) or,
  * if the API refuses (its unauthenticated limit is 60 requests an hour per
  * IP, shared on build machines), through the releases/latest/download link.
@@ -46,6 +46,7 @@ import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
 import { titleWords, prefixOf, neverSplit, partOf } from '../src/lib/title-words.mjs'
 import { withoutWithdrawn } from './lib/withdrawn.mjs'
+import { createFetcher } from '../src/lib/resilient-fetch.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const GEN = join(ROOT, 'src/lib/generated')
@@ -63,24 +64,14 @@ function shardOf(key) {
   return String(h % SHARDS).padStart(4, '0')
 }
 
-async function getOnce(url, as) {
-  const headers = { 'User-Agent': 'posi-site-build' }
-  if (url.startsWith('https://api.github.com/') && process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
-  const res = await fetch(url, { signal: AbortSignal.timeout(180_000), headers })
-  if (!res.ok) throw new Error(`${res.status} ${url}`)
-  return as === 'json' ? res.json() : Buffer.from(await res.arrayBuffer())
-}
-
-/** Fetch with up to three attempts; a 404 is final, not retried. */
-async function get(url, as = 'json', tries = 3) {
-  for (let i = 1; ; i++) {
-    try { return await getOnce(url, as) } catch (e) {
-      if (i >= tries || /^404 /.test(e.message)) throw e
-      console.warn(`sync-live-data: ${e.message}; retry ${i} of ${tries - 1}`)
-      await new Promise(r => setTimeout(r, 3000 * i))
-    }
-  }
-}
+// Downloads retry with backoff, fall back to the GitHub API for release assets, and then to the last
+// good copy in the download cache (src/lib/resilient-fetch.mjs), so a GitHub 504 does not fail the build.
+const get = createFetcher({
+  label: 'sync-live-data',
+  userAgent: 'posi-site-build',
+  token: process.env.GITHUB_TOKEN,
+  cacheDir: process.env.POSI_DOWNLOAD_CACHE || join(ROOT, '.next/cache/posi-downloads'),
+})
 
 // Only the fields the site uses, to keep build memory and page data small.
 function slim(corpus) {
