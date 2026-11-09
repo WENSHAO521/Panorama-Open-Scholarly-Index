@@ -70,6 +70,17 @@ jobs:
           node-version: '24'
           cache: npm
 
+      # The last good copy of every download (posi-engine release assets, data layer files). When GitHub
+      # answers 504 past the retries and the API fallback, the build uses these instead of failing
+      # (src/lib/resilient-fetch.mjs). Each run saves a fresh copy; the newest one is restored.
+      - name: Restore download cache
+        if: steps.decide.outputs.publish == 'true'
+        uses: actions/cache@v5
+        with:
+          path: .next/cache/posi-downloads
+          key: posi-downloads-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: posi-downloads-
+
       - name: Build
         if: steps.decide.outputs.publish == 'true'
         env:
@@ -92,7 +103,9 @@ jobs:
           node -e "console.log(JSON.stringify({format:process.env.FORMAT,commit:process.env.GITHUB_SHA,built_at:new Date().toISOString(),files:+process.argv[1],bytes:+process.argv[2]},null,1))" "$files" "$bytes" > "site-data-$FORMAT.json"
           cat "site-data-$FORMAT.json"
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Site data (latest)" --notes "The website's data files, rebuilt from master. Served at https://data.posi.panorama-sg.com/site/ by posi-data-delivery; not a versioned release." --latest=false
+          # GitHub answers 502/503/504 now and then: each upload is tried four times, 20, 40 and 60 s apart.
+          upload() { for i in 1 2 3 4; do gh release upload "$TAG" "$1" --clobber && return 0; [ "$i" = 4 ] || sleep $((20 * i)); done; return 1; }
           # The stamp goes last: a reader that sees the new stamp finds the new archive.
-          gh release upload "$TAG" "site-data-$FORMAT.tar.gz" --clobber
-          gh release upload "$TAG" "site-data-$FORMAT.json" --clobber
+          upload "site-data-$FORMAT.tar.gz"
+          upload "site-data-$FORMAT.json"
           echo "Published $files files ($((bytes / 1048576)) MiB) for $GITHUB_SHA" | tee -a "$GITHUB_STEP_SUMMARY"
