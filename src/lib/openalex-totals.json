@@ -1,132 +1,132 @@
 {
-  "fetched_at": "2026-11-09",
-  "works": 314989375,
-  "journals": 217063,
+  "fetched_at": "2026-11-16",
+  "works": 295269453,
+  "journals": 217279,
   "types": [
     {
       "key": "article",
       "label": "article",
-      "count": 186807328
-    },
-    {
-      "key": "dataset",
-      "label": "dataset",
-      "count": 29126011
+      "count": 184789821
     },
     {
       "key": "book-chapter",
       "label": "book-chapter",
-      "count": 23025906
+      "count": 24020752
     },
     {
       "key": "conference-paper",
       "label": "conference-paper",
-      "count": 16177440
+      "count": 16333112
+    },
+    {
+      "key": "dataset",
+      "label": "dataset",
+      "count": 13285619
     },
     {
       "key": "dissertation",
       "label": "dissertation",
-      "count": 10868626
+      "count": 11218365
     },
     {
       "key": "other",
       "label": "other",
-      "count": 9933125
-    },
-    {
-      "key": "paratext",
-      "label": "paratext",
-      "count": 6353351
+      "count": 9583922
     },
     {
       "key": "book",
       "label": "book",
-      "count": 6051202
+      "count": 6827326
     },
     {
       "key": "book-review",
       "label": "book-review",
-      "count": 4519016
+      "count": 4458759
     },
     {
       "key": "preprint",
       "label": "preprint",
-      "count": 4286396
+      "count": 4329620
+    },
+    {
+      "key": "paratext",
+      "label": "paratext",
+      "count": 3982185
     },
     {
       "key": "conference-abstract",
       "label": "conference-abstract",
-      "count": 3445440
-    },
-    {
-      "key": "reference-entry",
-      "label": "reference-entry",
-      "count": 3268901
+      "count": 3439140
     },
     {
       "key": "review",
       "label": "review",
-      "count": 2999365
+      "count": 3010823
     },
     {
       "key": "report",
       "label": "report",
-      "count": 2326978
+      "count": 2349904
     },
     {
       "key": "editorial",
       "label": "editorial",
-      "count": 1893304
+      "count": 1896996
+    },
+    {
+      "key": "reference-entry",
+      "label": "reference-entry",
+      "count": 1841009
     },
     {
       "key": "peer-review",
       "label": "peer-review",
-      "count": 1387533
+      "count": 1391980
     },
     {
       "key": "letter",
       "label": "letter",
-      "count": 844962
+      "count": 858603
     },
     {
       "key": "erratum",
       "label": "erratum",
-      "count": 598956
+      "count": 601387
     },
     {
       "key": "standard",
       "label": "standard",
-      "count": 407630
+      "count": 405996
     },
     {
       "key": "supplementary-materials",
       "label": "supplementary-materials",
-      "count": 342084
+      "count": 313060
     },
     {
       "key": "software",
       "label": "software",
-      "count": 151575
+      "count": 157110
     },
     {
       "key": "study-registration",
       "label": "study-registration",
-      "count": 92773
+      "count": 95030
     },
     {
       "key": "retraction",
       "label": "retraction",
-      "count": 51023
+      "count": 51318
     },
     {
       "key": "data-paper",
       "label": "data-paper",
-      "count": 25359
+      "count": 22512
     },
     {
       "key": "software-paper",
       "label": "software-paper",
-      "count": 5091
+      "count": 5104
     }
   ]
 }
