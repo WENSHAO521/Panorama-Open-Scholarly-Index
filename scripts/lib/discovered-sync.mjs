@@ -28,9 +28,18 @@ export function buildDiscovered(collection, minRecords = MIN_RECORDS) {
     ids.add(r.id); codes.add(r.journal_code)
   }
   const aliases = {}
+  const conflictingAliases = new Set()
   for (const d of collection) for (const a of d.journal_code_aliases ?? []) {
-    if (codes.has(a)) throw new Error(`alias ${a} is also a journal code`)
+    // A current journal must keep its route even if an older record lists that code as an alias.
+    if (codes.has(a)) {
+      conflictingAliases.add(a)
+      continue
+    }
     aliases[a] = d.journal_code
   }
-  return { records, aliases, report: { records: records.length, aliases: Object.keys(aliases).length } }
+  return {
+    records,
+    aliases,
+    report: { records: records.length, aliases: Object.keys(aliases).length, conflictingAliases: [...conflictingAliases] },
+  }
 }

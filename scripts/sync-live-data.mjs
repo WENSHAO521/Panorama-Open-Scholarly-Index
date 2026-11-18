@@ -320,6 +320,9 @@ const missing = []
     const collection = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/discovered-journals.json.gz`, 'buffer')).toString('utf-8'))
     const { records, aliases, report } = buildDiscovered(collection)
     writeFileSync(out, JSON.stringify(records)); writeFileSync(outAliases, JSON.stringify(aliases))
+    if (report.conflictingAliases.length) {
+      console.warn(`sync-live-data: journal codes take precedence over these aliases: ${report.conflictingAliases.join(', ')}`)
+    }
     console.log(`sync-live-data: discovered journals from the data layer, ${report.records} records, ${report.aliases} redirects`)
   } catch (e) {
     writeFileSync(out, '[]'); writeFileSync(outAliases, '{}')

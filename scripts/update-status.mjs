@@ -105,6 +105,9 @@ if (current) {
     try {
       const { records, report } = buildDiscovered(collection)
       add('ok', 'discovered journals', `${report.records} records, ${report.aliases} old codes redirected; passes the build's checks`)
+      if (report.conflictingAliases.length) {
+        add('warn', 'discovered journal aliases', `journal codes take precedence over these aliases: ${report.conflictingAliases.join(', ')}`)
+      }
       const unscored = records.filter((j) => !j.auto_pqf).length
       const newest = records.reduce((m, j) => (j.auto_pqf && j.auto_pqf.evaluated_at > m ? j.auto_pqf.evaluated_at : m), '')
       // Scored in posi-engine (directory-sync); a gap of more than a few days means that job is stuck.
