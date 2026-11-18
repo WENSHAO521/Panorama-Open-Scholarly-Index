@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildDiscovered, MIN_RECORDS } from '../../scripts/lib/discovered-sync.mjs'
+import { buildDiscovered, correctLegacyCorpusIssn, MIN_RECORDS } from '../../scripts/lib/discovered-sync.mjs'
 
 const d = (code: string, extra: object = {}) => ({
   posi_id: `POSI-J-${code}`, journal_code: code, title: `Journal ${code}`, short_title: null, issn_print: null, issn_online: '1234-5678',
@@ -36,4 +36,21 @@ test('a short collection, a repeated id or a title-less record is refused', () =
   assert.throws(() => buildDiscovered([d('a'), d('a')], 1), /duplicate id/)
   assert.throws(() => buildDiscovered([d('a', { title: ' ' })], 1), /no title/)
   assert.throws(() => buildDiscovered([], 1), /empty/)
+})
+
+test('a verified discovered ISSN is detached from the stale corpus record only', () => {
+  const current = d('issn-3033-5981', { issn_online: '3033-5981' })
+  const old = {
+    issn_l: '2077-1770',
+    issns: ['2077-1770', '2218-7405', '3033-5981'],
+    openalex_source_id: 'S2738561021',
+    crossref_total_dois: 51,
+  }
+  const corrected = { ...old, issns: ['2077-1770', '2218-7405'], crossref_total_dois: 2692 }
+  assert.equal(correctLegacyCorpusIssn([old], []), false)
+  assert.equal(correctLegacyCorpusIssn([old], [current]), true)
+  assert.deepEqual(old.issns, corrected.issns)
+  assert.equal(old.crossref_total_dois, null)
+  assert.equal(correctLegacyCorpusIssn([corrected], [current]), false)
+  assert.equal(corrected.crossref_total_dois, 2692)
 })

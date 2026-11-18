@@ -46,6 +46,7 @@ import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
 import { titleWords, prefixOf, neverSplit, partOf } from '../src/lib/title-words.mjs'
 import { withoutWithdrawn } from './lib/withdrawn.mjs'
+import { buildDiscovered, correctLegacyCorpusIssn } from './lib/discovered-sync.mjs'
 import { createFetcher } from '../src/lib/resilient-fetch.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -124,6 +125,9 @@ function withRegistryJournals(corpus) {
   const read = f => JSON.parse(readFileSync(f, 'utf-8'))
   const curated = [...CURATED.values(), ...read(join(ROOT, 'src/lib/global-benchmark.json'))].filter(j => j.posi_id)
   const discovered = read(join(GEN, 'discovered-journals.json'))
+  if (correctLegacyCorpusIssn(corpus, discovered)) {
+    console.log('  journal directory: removed the stale registry link from 3033-5981 to 2077-1770')
+  }
   const issnsOf = j => [...new Set([j.issn_online, j.issn_print].filter(Boolean))]
 
   const inCorpus = new Set(corpus.map(r => r.posi_id))
@@ -316,7 +320,6 @@ const missing = []
   rmSync(out, { force: true }); rmSync(outAliases, { force: true })
   try {
     if (!snapshotDir) throw new Error('no current snapshot')
-    const { buildDiscovered } = await import('./lib/discovered-sync.mjs')
     const collection = JSON.parse(gunzipSync(await get(`${DATA}${snapshotDir}collections/discovered-journals.json.gz`, 'buffer')).toString('utf-8'))
     const { records, aliases, report } = buildDiscovered(collection)
     writeFileSync(out, JSON.stringify(records)); writeFileSync(outAliases, JSON.stringify(aliases))
