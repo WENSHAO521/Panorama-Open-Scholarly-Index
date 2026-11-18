@@ -21,11 +21,19 @@ test('aliases are returned for redirects', () => {
   assert.equal(report.aliases, 1)
 })
 
-test('a short collection, a repeated id, an alias that is a code or a title-less record is refused', () => {
+test('a current journal code takes precedence over an old alias', () => {
+  const collection = [d('older-record', { journal_code_aliases: ['current-code', 'old-code'] }), d('current-code')]
+  const { records, aliases, report } = buildDiscovered(collection, 1)
+  assert.deepEqual(records.map((r) => r.journal_code), ['older-record', 'current-code'])
+  assert.deepEqual(aliases, { 'old-code': 'older-record' })
+  assert.equal(report.aliases, 1)
+  assert.deepEqual(report.conflictingAliases, ['current-code'])
+})
+
+test('a short collection, a repeated id or a title-less record is refused', () => {
   assert.ok(MIN_RECORDS >= 25000)
   assert.throws(() => buildDiscovered([d('a')]), /1 records \(need/)
   assert.throws(() => buildDiscovered([d('a'), d('a')], 1), /duplicate id/)
-  assert.throws(() => buildDiscovered([d('a'), d('b', { journal_code_aliases: ['a'] })], 1), /also a journal code/)
   assert.throws(() => buildDiscovered([d('a', { title: ' ' })], 1), /no title/)
   assert.throws(() => buildDiscovered([], 1), /empty/)
 })
