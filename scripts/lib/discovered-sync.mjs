@@ -43,3 +43,17 @@ export function buildDiscovered(collection, minRecords = MIN_RECORDS) {
     report: { records: records.length, aliases: Object.keys(aliases).length, conflictingAliases: [...conflictingAliases] },
   }
 }
+
+/** Keep older directory releases and cached copies from reattaching a verified discovered ISSN. */
+export function correctLegacyCorpusIssn(corpus, discovered) {
+  const issn = '3033-5981'
+  // ISSN Portal identifies this as Russian Social and Humanitarian Studies.
+  // https://portal.issn.org/resource/ISSN/3033-5981
+  if (!discovered.some(j => j.journal_code === `issn-${issn}` && j.issn_online === issn)) return false
+  const old = corpus.find(r => r.issn_l === '2077-1770' && r.openalex_source_id === 'S2738561021' && r.issns?.includes(issn))
+  if (!old) return false
+  old.issns = old.issns.filter(code => code !== issn)
+  // The cached total can come from the conflicting Crossref entry for 3033-5981.
+  old.crossref_total_dois = null
+  return true
+}
