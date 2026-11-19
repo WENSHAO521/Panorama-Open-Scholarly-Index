@@ -89,3 +89,9 @@ Panorama block mark: ink blocks follow text colour (as before), the red block is
 - Text/background pairs: all >= 4.5:1 in Light and Dark (scripted); runtime audit of 20 pages x Light/Dark x desktop/mobile found no failing text.
 - Categorical chart colours: minimum pairwise CIELAB distance >= 9 under protanopia, deuteranopia and tritanopia simulation (Machado 2009), >= 20 for normal vision.
 - Not yet covered: pixel-level visual regression baselines, `next build` static export, certificate artefact recolouring (deliberately untouched).
+
+## Publisher and partners (home page)
+Below the index overview: Panorama Scholarly Group (publisher of POSI; block mark from panorama-sg.com, ink follows
+the scheme, the red stays) and Asia Technology Research Institute (publishing partner; `public/partners/atri-logo.webp`,
+inverted on the dark scheme). The section always carries the conflict-of-interest note and its link: partner
+journals are evaluated under the same published rules as every other journal.

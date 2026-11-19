@@ -4,6 +4,7 @@ import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
 import { IndexGlance } from '@/components/IndexGlance'
 import { getCoreCollection } from '@/lib/data'
+import { publisherHref } from '@/lib/publishers'
 import { ajrOf } from '@/lib/evaluation/journal'
 import { countryNameIn } from '@/i18n/places'
 import type { Journal } from '@/lib/types'
@@ -60,6 +61,61 @@ function cardJournal(): { j: Journal; ajr: string } | null {
   if (!pool.length) return null
   const day = Math.floor(Date.now() / 86_400_000)
   return pool[day % pool.length]
+}
+
+/** The Panorama Scholarly Group logo: its block mark (ink follows the colour scheme, the red stays) and wordmark. */
+function PsgLogo() {
+  return (
+    <span className="inline-flex items-center gap-3" style={{ color: 'var(--ink)' }}>
+      <svg viewBox="88 88 214 226" className="h-11 w-auto" aria-hidden="true">
+        <g transform="translate(100, 100)">
+          <rect x="0" y="0" width="30" height="200" fill="currentColor" />
+          <path d="M30 0 H120 C150 0, 150 70, 120 70 H30 Z" fill="#CC0000" />
+          <path d="M0 100 H120 V130 H30 V150 H120 V200 H0 V170 H90 V150 H0 Z" fill="currentColor" />
+          <path d="M150 200 H50 V170 H150 V50 H180 V200 Z" fill="currentColor" />
+          <rect x="160" y="10" width="30" height="30" fill="#CC0000" />
+        </g>
+      </svg>
+      <span className="leading-none">
+        <span className="block font-display text-[20px]" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>PANORAMA</span>
+        <span className="block mt-1 text-[9px] font-medium" style={{ letterSpacing: '0.15em', color: 'var(--muted)' }}>SCHOLARLY GROUP</span>
+      </span>
+    </span>
+  )
+}
+
+/** POSI's publisher and its publishing partner, with the conflict-of-interest note that has to go with them. */
+function Partners({ locale, m }: { locale: Locale; m: Messages['home']['partners'] }) {
+  const href = (p: string) => localizedHref(locale, p)
+  const atri = getPublishers().find(p => /^Asia Technology Research Institute$/i.test(p.name))
+  const items: { key: string; role: string; to: string; external?: boolean; logo: React.ReactNode }[] = [
+    { key: 'psg', role: m.publisher, to: 'https://panorama-sg.com/', external: true, logo: <PsgLogo /> },
+    {
+      key: 'atri', role: m.partner, to: atri ? href(publisherHref(atri)) : href('/publishers/'),
+      // eslint-disable-next-line @next/next/no-img-element -- a small static logo; the site is a static export without image optimisation
+      logo: <img src="/partners/atri-logo.webp" alt="Asia Technology Research Institute" width={110} height={48} className="partner-raster h-12 w-auto" />,
+    },
+  ]
+  return (
+    <section aria-labelledby="partners" className="pt-12 md:pt-16 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-center" style={{ borderTop: '1px solid var(--line)' }}>
+      <div>
+        <h2 id="partners" className="font-display text-[24px] md:text-[28px] leading-tight" style={{ color: 'var(--ink)' }}>{m.title}</h2>
+        <p className="mt-3 text-[14px] leading-relaxed max-w-[440px]" style={{ color: 'var(--muted)' }}>
+          {m.note}{locale === 'en' ? ' ' : ''}<Link href={href('/coi/')} className="link">{m.coi}</Link>
+        </p>
+      </div>
+      <ul className="grid sm:grid-cols-2 gap-px rounded-[var(--radius-lg)] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+        {items.map(i => (
+          <li key={i.key} style={{ background: 'var(--surface)' }}>
+            <a href={i.to} {...(i.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="flex h-full flex-col justify-between gap-6 p-6 transition-colors hover:bg-[var(--hover)]">
+              <span className="flex h-12 items-center">{i.logo}</span>
+              <span className="text-[13px]" style={{ color: 'var(--muted)' }}>{i.role}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
 }
 
 /** A Core Collection journal set as a library catalogue card: the home page's one rich moment. */
@@ -253,6 +309,8 @@ export function HomePage({ locale }: { locale: Locale }) {
         </section>
 
         <IndexGlance locale={locale} records={records} cats={dirCats} publishers={getPublishers().slice(0, 8)} />
+
+        <Partners locale={locale} m={h.partners} />
 
         <div className="grid gap-12 lg:gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <section aria-labelledby="services">

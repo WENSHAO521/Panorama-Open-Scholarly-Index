@@ -54,6 +54,13 @@ export const en = {
     title: 'Find, check and cite scholarly journals',
     lead: 'An open index of {journals} journals with POSI grades and quality flags, publications merged from four open sources, and ready-to-use citations. Free, with no account.',
     browse: 'Browse',
+    partners: {
+      title: 'Publisher and partners',
+      publisher: 'Publisher of POSI',
+      partner: 'Publishing partner',
+      note: 'Journals from Panorama Scholarly Group and its partners are evaluated under the same published rules as every other journal.',
+      coi: 'Conflict of interest statement',
+    },
     card: {
       label: 'From the Core Collection',
       note: 'A different journal each day',

@@ -57,6 +57,13 @@ export const zhHans: Messages = {
     title: '查找、核验与引用学术期刊',
     lead: '开放的学术索引：收录 {journals} 种期刊，附 POSI 等级与质量标识；整合四个开放数据源的文献记录，并提供可直接使用的引文格式。免费使用，无需注册。',
     browse: '浏览',
+    partners: {
+      title: '出版方与合作伙伴',
+      publisher: 'POSI 出版方',
+      partner: '出版合作伙伴',
+      note: 'Panorama Scholarly Group 及其合作伙伴的期刊，与其他所有期刊一样，按同一套公开规则评价。',
+      coi: '利益冲突声明',
+    },
     card: {
       label: '核心合集选录',
       note: '每日更换一种期刊',
