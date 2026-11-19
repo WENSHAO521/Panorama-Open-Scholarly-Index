@@ -36,7 +36,7 @@ function En() {
         <div className="panel overflow-x-auto max-w-[480px]">
           <table className="dtable">
             <thead><tr><th>Factor</th><th className="text-right">Points</th></tr></thead>
-            <tbody>{FACTORS.map(([c, n, pts]) => <tr key={c}><td><span className="font-mono text-[12.5px] mr-2">{c}</span>{n}</td><td className="text-right font-mono">{pts}</td></tr>)}</tbody>
+            <tbody>{FACTORS.map(([c, n, pts]) => <tr key={c}><td><span className="font-mono text-[13px] mr-2">{c}</span>{n}</td><td className="text-right font-mono">{pts}</td></tr>)}</tbody>
           </table>
         </div>
         <h2 id="status">Status</h2>
@@ -101,7 +101,7 @@ function Zh() {
         <div className="panel overflow-x-auto max-w-[480px]">
           <table className="dtable">
             <thead><tr><th>因子</th><th className="text-right">分值</th></tr></thead>
-            <tbody>{FACTORS.map(([c, , pts]) => <tr key={c}><td><span className="font-mono text-[12.5px] mr-2">{c}</span>{FACTOR_ZH[c]}</td><td className="text-right font-mono">{pts}</td></tr>)}</tbody>
+            <tbody>{FACTORS.map(([c, , pts]) => <tr key={c}><td><span className="font-mono text-[13px] mr-2">{c}</span>{FACTOR_ZH[c]}</td><td className="text-right font-mono">{pts}</td></tr>)}</tbody>
           </table>
         </div>
         <h2 id="status">状态</h2>

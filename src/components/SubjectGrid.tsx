@@ -13,7 +13,7 @@ export function SubjectGrid({ cats, count = c => c.count, query = '', locale = '
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 items-start">
       {domains.map(([d, name]) => (
         <div key={d} className="panel">
-          <h3 className="px-4 py-3 text-[14px] font-semibold" style={{ color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>{name}</h3>
+          <h3 className="px-4 py-3 text-[14px] font-medium" style={{ color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>{name}</h3>
           <ul>
             {shown.filter(c => c.domain === d).map((c, i) => (
               <li key={c.code} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>

@@ -140,7 +140,7 @@ export function WorkViewer() {
   if (state.kind === 'error') {
     return (
       <div className="pt-16 max-w-xl">
-        <h1 className="text-[24px] font-semibold">{state.notFound ? t.notFoundTitle : t.errorTitle}</h1>
+        <h1 className="text-[24px] font-medium">{state.notFound ? t.notFoundTitle : t.errorTitle}</h1>
         <p className="mt-2" style={{ color: 'var(--muted)' }}>
           {state.notFound
             ? fill(t.notFoundBody, { id })
@@ -164,7 +164,7 @@ export function WorkViewer() {
 
   return (
     <article className="pt-6 md:pt-8">
-      <nav aria-label={t.breadcrumb} className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+      <nav aria-label={t.breadcrumb} className="mb-2.5 text-[13px]" style={{ color: 'var(--muted)' }}>
         <Link href={href('/')} className="hover:underline">POSI</Link>
         <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
         <Link href={href('/publications/')} className="hover:underline">{t.publications}</Link>
@@ -188,18 +188,18 @@ export function WorkViewer() {
               </span>
             )}
           </div>
-          <h1 className="mt-2 text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
+          <h1 className="mt-2 text-[24px] md:text-[32px] font-medium leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>
             {w.title || t.untitled}
           </h1>
 
-          <ul className="mt-4 flex flex-wrap gap-x-1 text-[14.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+          <ul className="mt-4 flex flex-wrap gap-x-1 text-[15px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
             {w.authorships.map((a, i) => (
               <li key={a.author.id + i}>
                 {a.author.orcid
                   ? <a href={a.author.orcid} target="_blank" rel="noopener noreferrer" className="hover:underline">{a.author.display_name}</a>
                   : a.author.display_name}
                 {a.institutions[0]?.country_code && (
-                  <sup className="ml-0.5 text-[10px]" style={{ color: 'var(--soft)' }} title={a.institutions[0].display_name}>{a.institutions[0].country_code}</sup>
+                  <sup className="ml-0.5 text-[12px]" style={{ color: 'var(--soft)' }} title={a.institutions[0].display_name}>{a.institutions[0].country_code}</sup>
                 )}
                 {i < w.authorships.length - 1 && ','}
               </li>
@@ -215,7 +215,7 @@ export function WorkViewer() {
           <section className="mt-10" aria-labelledby="abstract">
             <SectionTitle id="abstract">{t.abstract}</SectionTitle>
             {abs
-              ? <p className="text-[15.5px] leading-[1.75] max-w-[75ch]" style={{ color: 'var(--ink-2)' }}>{abs}</p>
+              ? <p className="text-[16px] leading-[1.75] max-w-[75ch]" style={{ color: 'var(--ink-2)' }}>{abs}</p>
               : <p className="text-[14px]" style={{ color: 'var(--muted)' }}>{t.noAbstract}</p>}
           </section>
 
@@ -234,7 +234,7 @@ export function WorkViewer() {
 
           <section className="mt-10 panel p-5" aria-labelledby="cite">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <h2 id="cite" className="text-[20px] font-semibold tracking-tight">{t.cite}</h2>
+              <h2 id="cite" className="font-display text-[24px] leading-tight">{t.cite}</h2>
               <div className="flex gap-1" role="tablist" aria-label={t.citeFormat}>
                 {CITE_FORMATS.map(({ id: f, label }) => (
                   <button
@@ -269,9 +269,9 @@ export function WorkViewer() {
           </section>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start text-[13.5px]">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start text-[14px]">
           <div className="panel p-4">
-            <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{t.publishedIn}</p>
+            <p className="text-[13px]" style={{ color: 'var(--muted)' }}>{t.publishedIn}</p>
             {src ? (
               (posi || src.id)
               ? <Link href={href(posi ? recordHref(posi) : `/journal/?id=${src.id.replace('https://openalex.org/', '')}`)} className="mt-1 block font-medium hover:underline" style={{ color: 'var(--ink)' }}>{src.display_name}</Link>
@@ -310,15 +310,15 @@ export function WorkViewer() {
           <div className="panel grid grid-cols-2">
             <div className="p-4" style={{ borderRight: '1px solid var(--line)' }}>
               <p className="font-mono text-[22px] tnum">{w.cited_by_count.toLocaleString('en-US')}</p>
-              <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{t.citations}</p>
+              <p className="text-[13px]" style={{ color: 'var(--muted)' }}>{t.citations}</p>
             </div>
             <div className="p-4">
               <p className="font-mono text-[22px] tnum">{(w.referenced_works_count ?? 0).toLocaleString('en-US')}</p>
-              <p className="text-[12.5px]" style={{ color: 'var(--muted)' }}>{t.references}</p>
+              <p className="text-[13px]" style={{ color: 'var(--muted)' }}>{t.references}</p>
             </div>
           </div>
           {w.primary_topic && (
-            <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
               {fill(t.topic, { topic: w.primary_topic.display_name, field: w.primary_topic.field ? (locale === 'zh-Hans' ? `（${w.primary_topic.field.display_name}）` : ` (${w.primary_topic.field.display_name})`) : '' })}
             </p>
           )}

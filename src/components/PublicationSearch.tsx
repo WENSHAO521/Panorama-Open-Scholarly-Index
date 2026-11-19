@@ -222,11 +222,11 @@ export function PublicationSearch() {
   const typeOptions = facets === null ? null : [...facets.slice(0, 10), ...types.filter(k => !facets.slice(0, 10).some(f => f.key === k)).map(k => facets.find(f => f.key === k) ?? { key: k, label: k, count: null })]
 
   const filterPanel = (
-    <div className="space-y-6 text-[13.5px]">
+    <div className="space-y-6 text-[14px]">
       <div className="flex items-center justify-between">
         <p className="font-medium">{t.filters}</p>
         {activeFilters > 0 && (
-          <button type="button" className="link text-[12.5px]" onClick={() => update({ range: null, from: null, to: null, type: null, oa: null, issn: null })}>
+          <button type="button" className="link text-[13px]" onClick={() => update({ range: null, from: null, to: null, type: null, oa: null, issn: null })}>
             {t.clearAll}
           </button>
         )}
@@ -283,7 +283,7 @@ export function PublicationSearch() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={types.includes(f.key)} onChange={() => toggleType(f.key)} style={{ accentColor: 'var(--teal)' }} />
                   <span className="flex-1">{t.types?.[f.key] ?? TYPE_LABEL[f.key] ?? f.label}</span>
-                  {f.count !== null && <span className="font-mono text-[11.5px] tnum" style={{ color: 'var(--soft)' }}>{f.count.toLocaleString('en-US')}</span>}
+                  {f.count !== null && <span className="font-mono text-[12px] tnum" style={{ color: 'var(--soft)' }}>{f.count.toLocaleString('en-US')}</span>}
                 </label>
               </li>
             ))}
@@ -292,7 +292,7 @@ export function PublicationSearch() {
       </fieldset>
 
       {issn && (
-        <div className="rounded-[var(--radius)] p-3 text-[12.5px]" style={{ background: 'var(--teal-soft)' }}>
+        <div className="rounded-[var(--radius)] p-3 text-[13px]" style={{ background: 'var(--teal-soft)' }}>
           {t.issnLimit}<span className="font-mono">{issn}</span>{t.issnEnd}{' '}
           <button type="button" className="link" onClick={() => update({ issn: null })}>{t.remove}</button>
         </div>
@@ -326,7 +326,7 @@ export function PublicationSearch() {
             <p className="text-[14px]" aria-live="polite" style={{ color: 'var(--muted)' }}>
               {count === null
                 ? status.kind === 'error' ? t.failed : t.searching
-                : <><span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{count.toLocaleString('en-US')}</span>{t.publications}</>}
+                : <><span className="font-medium tnum" style={{ color: 'var(--ink)' }}>{count.toLocaleString('en-US')}</span>{t.publications}</>}
             </p>
             <div className="ml-auto flex flex-wrap items-center gap-2">
               <label className="flex items-center gap-2 text-[13px] cursor-pointer" style={{ color: 'var(--ink-2)' }}>
@@ -399,7 +399,7 @@ export function PublicationSearch() {
           )}
 
           {status.kind === 'ok' && !!status.sources?.length && (
-            <p className="mt-2 mb-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+            <p className="mt-2 mb-3 text-[13px]" style={{ color: 'var(--muted)' }}>
               {fill(t.merged, { names: list(status.sources.filter(s => !s.failed).map(s => s.source)) })}
               {status.sources.some(s => s.failed) && fill(t.noAnswer, { names: list(status.sources.filter(s => s.failed).map(s => s.source)) })}
             </p>

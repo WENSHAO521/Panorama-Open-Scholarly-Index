@@ -33,26 +33,26 @@ function En() {
         <ul className="panel divide-y divide-[var(--line-soft)]">
           {TOPICS.map(t => (
             <li key={t.topic} className="p-5" style={{ borderColor: 'var(--line-soft)' }}>
-              <h2 className="text-[15.5px] font-semibold">{t.topic}</h2>
+              <h2 className="text-[16px] font-medium">{t.topic}</h2>
               <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{t.body}</p>
-              <p className="mt-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              <p className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>
                 Subject: <span className="font-mono" style={{ color: 'var(--ink-2)' }}>{t.subject}</span>
               </p>
-              <Link href={t.href} className="link mt-2 inline-block text-[13.5px]">{t.cta}</Link>
+              <Link href={t.href} className="link mt-2 inline-block text-[14px]">{t.cta}</Link>
             </li>
           ))}
         </ul>
 
         <aside>
           <address className="not-italic panel p-5 text-[14px] leading-relaxed">
-            <p className="font-semibold" style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</p>
+            <p className="font-medium" style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</p>
             <p className="mt-1" style={{ color: 'var(--ink-2)' }}>
               Room 1508, 15/F., Office Tower Two, Grand Plaza<br />
               625 Nathan Road, Kowloon<br />
               Hong Kong SAR
             </p>
             <p className="mt-3"><a href="mailto:posi@panorama-sg.com" className="link">posi@panorama-sg.com</a></p>
-            <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>Certification reviews take ten to twenty business days.</p>
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>Certification reviews take ten to twenty business days.</p>
           </address>
         </aside>
       </div>
@@ -98,26 +98,26 @@ function Zh() {
         <ul className="panel divide-y divide-[var(--line-soft)]">
           {TOPICS_ZH.map(t => (
             <li key={t.topic} className="p-5" style={{ borderColor: 'var(--line-soft)' }}>
-              <h2 className="text-[15.5px] font-semibold">{t.topic}</h2>
+              <h2 className="text-[16px] font-medium">{t.topic}</h2>
               <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{t.body}</p>
-              <p className="mt-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              <p className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>
                 邮件主题：<span className="font-mono" style={{ color: 'var(--ink-2)' }}>{t.subject}</span>
               </p>
-              <Link href={L(t.href)} className="link mt-2 inline-block text-[13.5px]">{t.cta}</Link>
+              <Link href={L(t.href)} className="link mt-2 inline-block text-[14px]">{t.cta}</Link>
             </li>
           ))}
         </ul>
 
         <aside>
           <address className="not-italic panel p-5 text-[14px] leading-relaxed">
-            <p className="font-semibold" style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</p>
+            <p className="font-medium" style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</p>
             <p className="mt-1" style={{ color: 'var(--ink-2)' }}>
               Room 1508, 15/F., Office Tower Two, Grand Plaza<br />
               625 Nathan Road, Kowloon<br />
               Hong Kong SAR
             </p>
             <p className="mt-3"><a href="mailto:posi@panorama-sg.com" className="link">posi@panorama-sg.com</a></p>
-            <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>认证评审需十至二十个工作日。</p>
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>认证评审需十至二十个工作日。</p>
           </address>
         </aside>
       </div>

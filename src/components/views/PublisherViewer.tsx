@@ -62,7 +62,7 @@ export function PublisherViewer() {
 
   return (
     <div className="pt-16 pb-8 max-w-xl">
-      <h1 className="text-[24px] font-semibold" style={{ color: 'var(--ink)' }}>
+      <h1 className="text-[24px] font-medium" style={{ color: 'var(--ink)' }}>
         {state.kind === 'error' ? w.errorTitle : w.missingTitle}
       </h1>
       <p className="mt-2" style={{ color: 'var(--muted)' }}>

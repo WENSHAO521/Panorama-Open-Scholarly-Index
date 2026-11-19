@@ -114,7 +114,7 @@ function Zh() {
       </PageHeader>
 
       <div className="doc">
-        <p className="panel p-4 text-[13.5px]" style={{ color: 'var(--ink-2)' }}>
+        <p className="panel p-4 text-[14px]" style={{ color: 'var(--ink-2)' }}>
           本译文仅供参考。中文译文与<Link href="/terms/">英文版本</Link>如有任何不一致，以英文版本为准。
         </p>
 

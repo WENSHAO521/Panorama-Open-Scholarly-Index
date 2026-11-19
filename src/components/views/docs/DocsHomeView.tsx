@@ -25,8 +25,8 @@ function En() {
       <div className="grid gap-4 md:grid-cols-2">
         {sections.map(section => (
           <section key={section.title} className="panel p-5">
-            <h2 className="text-[16px] font-semibold" style={{ color: 'var(--ink)' }}>{section.title}</h2>
-            <p className="mt-1 text-[13.5px]" style={{ color: 'var(--muted)' }}>{section.blurb}</p>
+            <h2 className="text-[16px] font-medium" style={{ color: 'var(--ink)' }}>{section.title}</h2>
+            <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>{section.blurb}</p>
             <ul className="mt-3 grid gap-1 text-[14px]">
               {section.links.filter(l => l.href !== '/docs/').map(l => (
                 <li key={l.href}><Link href={l.href} className="link">{l.label}</Link></li>
@@ -65,8 +65,8 @@ function Zh() {
       <div className="grid gap-4 md:grid-cols-2">
         {sections.map(section => (
           <section key={section.title} className="panel p-5">
-            <h2 className="text-[16px] font-semibold" style={{ color: 'var(--ink)' }}>{section.title}</h2>
-            <p className="mt-1 text-[13.5px]" style={{ color: 'var(--muted)' }}>{section.blurb}</p>
+            <h2 className="text-[16px] font-medium" style={{ color: 'var(--ink)' }}>{section.title}</h2>
+            <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>{section.blurb}</p>
             <ul className="mt-3 grid gap-1 text-[14px]">
               {section.links.filter(l => l.href !== '/docs/').map(l => (
                 <li key={l.href}><Link href={localizedHref('zh-Hans', l.href)} className="link">{l.label}</Link></li>

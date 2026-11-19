@@ -126,7 +126,7 @@ function En({ core, psg }: Data) {
 
       <section aria-labelledby="publisher">
         <h2 id="publisher">Publisher</h2>
-        <address className="not-italic mt-3 panel p-4 text-[14.5px] leading-relaxed">
+        <address className="not-italic mt-3 panel p-4 text-[15px] leading-relaxed">
           <strong style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</strong><br />
           Room 1508, 15/F., Office Tower Two, Grand Plaza<br />
           625 Nathan Road, Kowloon, Hong Kong SAR<br />
@@ -199,7 +199,7 @@ function Zh({ core, psg }: Data) {
 
       <section aria-labelledby="publisher">
         <h2 id="publisher">出版者</h2>
-        <address className="not-italic mt-3 panel p-4 text-[14.5px] leading-relaxed">
+        <address className="not-italic mt-3 panel p-4 text-[15px] leading-relaxed">
           <strong style={{ color: 'var(--ink)' }}>Panorama Scholarly Group Ltd.</strong><br />
           Room 1508, 15/F., Office Tower Two, Grand Plaza<br />
           625 Nathan Road, Kowloon, Hong Kong SAR<br />

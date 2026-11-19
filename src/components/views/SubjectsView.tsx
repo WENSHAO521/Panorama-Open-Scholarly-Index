@@ -71,7 +71,7 @@ export function SubjectsView({ locale }: { locale: Locale }) {
       <div className="space-y-8">
         {domains.map(d => (
           <section key={d.code} aria-labelledby={`d-${d.code}`}>
-            <h2 id={`d-${d.code}`} className="text-[17px] font-semibold tracking-tight mb-3">
+            <h2 id={`d-${d.code}`} className="text-[17px] font-medium tracking-tight mb-3">
               <span className="font-mono text-[13px] mr-2" style={{ color: 'var(--muted)' }}>{d.code}</span>{subjectName(locale, d.code, d.name)}
             </h2>
             <div className="panel overflow-x-auto">
@@ -86,7 +86,7 @@ export function SubjectsView({ locale }: { locale: Locale }) {
                     const name = subjectName(locale, c.code, c.name)
                     return (
                       <tr key={c.code}>
-                        <td className="font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>{c.code}</td>
+                        <td className="font-mono text-[13px]" style={{ color: 'var(--muted)' }}>{c.code}</td>
                         <td>
                           {n?.count
                             ? <Link href={href(`/journals/subject/${c.code}/`)} className="hover:underline" style={{ color: 'var(--teal)' }}>{name}</Link>
@@ -108,20 +108,20 @@ export function SubjectsView({ locale }: { locale: Locale }) {
         ))}
 
         <section aria-labelledby="other">
-          <h2 id="other" className="text-[17px] font-semibold tracking-tight mb-3">{w.other}</h2>
+          <h2 id="other" className="text-[17px] font-medium tracking-tight mb-3">{w.other}</h2>
           <ul className="panel divide-y divide-[var(--line-soft)] text-[14px]">
             {multi && (
               <li className="p-4" style={{ borderColor: 'var(--line-soft)' }}>
                 <Link href={href('/journals/subject/multidisciplinary/')} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{w.multi}</Link>
                 <span className="ml-2 font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{fmt(multi.count)}</span>
-                <p className="mt-1 text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{w.multiNote}</p>
+                <p className="mt-1 text-[14px]" style={{ color: 'var(--ink-2)' }}>{w.multiNote}</p>
               </li>
             )}
             {unclassified && (
               <li className="p-4" style={{ borderColor: 'var(--line-soft)' }}>
                 <Link href={href('/journals/subject/unclassified/')} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{w.unclassified}</Link>
                 <span className="ml-2 font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{fmt(unclassified.count)}</span>
-                <p className="mt-1 text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{w.unclassifiedNote}</p>
+                <p className="mt-1 text-[14px]" style={{ color: 'var(--ink-2)' }}>{w.unclassifiedNote}</p>
               </li>
             )}
           </ul>

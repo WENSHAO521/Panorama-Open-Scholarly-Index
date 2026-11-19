@@ -79,7 +79,7 @@ export function JournalsView({ locale }: { locale: Locale }) {
         {unclassified && unclassified.count > 0 && (
           <div className="panel mt-6 p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
             <p className="flex-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-              <span className="font-semibold" style={{ color: 'var(--ink)' }}>{fill(w.unclassifiedTitle, { n: fmt(unclassified.count) })}</span>{locale === 'en' ? ' ' : ''}
+              <span className="font-medium" style={{ color: 'var(--ink)' }}>{fill(w.unclassifiedTitle, { n: fmt(unclassified.count) })}</span>{locale === 'en' ? ' ' : ''}
               {w.unclassifiedBody}
             </p>
             <Link href={href('/journals/subject/unclassified/')} className="btn shrink-0">{w.az}</Link>

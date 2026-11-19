@@ -51,7 +51,7 @@ export function QuartileBadge({ q, provisional = false, locale = 'en' }: { q: Ci
     Q4: { background: 'transparent', color: 'var(--muted)', borderColor: 'var(--line)' },
   }[q]
   return (
-    <span className="chip font-semibold whitespace-nowrap" title={provisional ? `${zh ? `${ZH.provisional}。` : 'Provisional. '}${tip}` : tip}
+    <span className="chip font-medium whitespace-nowrap" title={provisional ? `${zh ? `${ZH.provisional}。` : 'Provisional. '}${tip}` : tip}
       style={provisional ? { ...tone, background: 'transparent', color: 'var(--ink-2)', borderColor: 'var(--line)', borderStyle: 'dashed' } : tone}>
       {provisional ? (zh ? `${ZH.provisional} ${label}` : `Provisional ${label}`) : label}
     </span>
@@ -73,7 +73,7 @@ export function ZoneBadge({ z, status = 'official', long = false, locale = 'en' 
   const provisional = status === 'provisional'
   const share = zh ? ZH.share[z] : ZONE_SHARE[z]
   return (
-    <span className="chip font-semibold whitespace-nowrap" title={zh
+    <span className="chip font-medium whitespace-nowrap" title={zh
         ? `${ZH.zoneTitle.replace('{z}', String(z)).replace('{share}', share)}${provisional ? ZH.zoneProvisional : ''}`
         : `POSI Zone ${z}: ${ZONE_SHARE[z]} of the journal’s PSC category by PNCI percentile${provisional ? ' (provisional: category of 30–49 journals)' : ''}`}
       style={{ ...ZONE_TONE[z], borderStyle: provisional ? 'dashed' : 'solid' }}>
@@ -199,10 +199,10 @@ function Block({ title, id, children, aside }: { title: string; id: string; chil
   return (
     <section aria-labelledby={id} className="py-3 first:pt-0" style={{ borderTop: '1px solid var(--line-soft)' }}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 id={id} className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{title}</h3>
+        <h3 id={id} className="text-[12px] font-medium" style={{ color: 'var(--muted)' }}>{title}</h3>
         {aside}
       </div>
-      <dl className="mt-1 text-[13.5px] divide-y divide-[var(--line-soft)]">{children}</dl>
+      <dl className="mt-1 text-[14px] divide-y divide-[var(--line-soft)]">{children}</dl>
     </section>
   )
 }
@@ -236,13 +236,13 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true, loc
       </Block>
 
       {showPqf && (
-        <Block title="PQF" id={`${idPrefix}-pqf`} aside={ev.pqf.version ? <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{ev.pqf.version}</span> : null}>
+        <Block title="PQF" id={`${idPrefix}-pqf`} aside={ev.pqf.version ? <span className="font-mono text-[12px]" style={{ color: 'var(--soft)' }}>{ev.pqf.version}</span> : null}>
           <Row k={t.pqfScore} v={ev.pqf.score != null ? mono(`${fmtPqf(ev.pqf.score)} / 100`) : soft(t.notAssessed)} />
           <Row k={t.eligibility} v={t.pqfStatus(ev.pqf.status)} note={t.pqfDisclaimer} />
         </Block>
       )}
 
-      {core === 'core' && <Block title={t.devRating} id={`${idPrefix}-ajr`} aside={a.version ? <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{a.version}</span> : null}>
+      {core === 'core' && <Block title={t.devRating} id={`${idPrefix}-ajr`} aside={a.version ? <span className="font-mono text-[12px]" style={{ color: 'var(--soft)' }}>{a.version}</span> : null}>
         <Row k={t.lifecycle} v={a.model ? `${a.model === 'Observation' ? t.observationModel : a.model} · ${t.model[a.model]}` : soft(t.notAvailable)}
           note={a.monthsSinceLaunch != null ? t.months(a.monthsSinceLaunch) : undefined} />
         {a.score != null
@@ -268,7 +268,7 @@ export function EvaluationPanel({ ev, core, idPrefix = 'ev', showPqf = true, loc
         <Row k={t.rankingStatus} v={<RankingStatusBadge status={r.status} locale={locale} />} note={t.reason(r.reason, ev.citations.eligibleItems) ?? undefined} />
         <Row k={t.snapshot} v={r.snapshot ? t.month(r.snapshot) : soft(t.notYetGenerated)} note={r.methodology ? `${r.methodology} · ${ev.evaluationVersion}` : ev.evaluationVersion} />
       </Block>
-      <p className="pt-2 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>{t.pcsDisclaimer}</p>
+      <p className="pt-2 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>{t.pcsDisclaimer}</p>
     </div>
   )
 }
@@ -283,15 +283,15 @@ function Card({ step, title, version, state, value, children, action, wide = fal
   return (
     <div className={`p-4 flex flex-col gap-1.5 min-w-0${wide ? ' sm:col-span-2' : ''}`} style={{ background: 'var(--surface)' }}>
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{step} · {title}</h3>
-        {version && <span className="font-mono text-[10.5px]" style={{ color: 'var(--soft)' }}>{version}</span>}
+        <h3 className="text-[12px] font-medium" style={{ color: 'var(--muted)' }}>{step} · {title}</h3>
+        {version && <span className="font-mono text-[12px]" style={{ color: 'var(--soft)' }}>{version}</span>}
       </div>
       <div className="flex items-center gap-2 text-[15px] font-medium" style={{ color: 'var(--ink)' }}>
         <span aria-hidden className="inline-block h-2 w-2 rounded-full shrink-0" style={{ background: CARD_DOT[state] }} />
         <span className="min-w-0">{value}</span>
       </div>
-      {children && <div className="text-[12.5px] leading-snug space-y-1" style={{ color: 'var(--muted)' }}>{children}</div>}
-      {action && <div className="mt-auto pt-1 text-[12.5px]">{action}</div>}
+      {children && <div className="text-[13px] leading-snug space-y-1" style={{ color: 'var(--muted)' }}>{children}</div>}
+      {action && <div className="mt-auto pt-1 text-[13px]">{action}</div>}
     </div>
   )
 }
@@ -320,7 +320,7 @@ export function EvaluationCards({ ev, core, autoPqf, locale = 'en' }: {
     <div>
       <div className="grid sm:grid-cols-2 gap-px rounded-[var(--radius-lg)] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         <Card step={1} title={t.coreCollection} state={core === 'core' ? 'done' : 'none'}
-          value={core === 'core' ? <span style={{ color: 'var(--teal)' }}>{t.certified}</span> : t.notCertified}
+          value={core === 'core' ? <span>{t.certified}</span> : t.notCertified}
           action={core === 'core'
             ? <Link href={href('/core-collection/')} className="link">{t.coreCollection}</Link>
             : <Link href={href('/certification/')} className="link">{t.apply}</Link>}>
@@ -365,7 +365,7 @@ export function EvaluationCards({ ev, core, autoPqf, locale = 'en' }: {
           <p>{t.snapshotLine(r.snapshot ? t.month(r.snapshot) : t.notYetGeneratedLower)}</p>
         </Card>
       </div>
-      <p className="mt-2 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>{t.pqfDisclaimer} {t.pcsDisclaimer}</p>
+      <p className="mt-2 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>{t.pqfDisclaimer} {t.pcsDisclaimer}</p>
     </div>
   )
 }
@@ -378,7 +378,7 @@ export function RankingsPending({ locale = 'en' }: { locale?: Locale }) {
         <Hourglass className="h-5 w-5" />
       </span>
       <div className="min-w-0 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-        <p className="text-[15px] font-semibold" style={{ color: 'var(--ink)' }}>首个排名版本正在编制中</p>
+        <p className="text-[15px] font-medium" style={{ color: 'var(--ink)' }}>首个排名版本正在编制中</p>
         <p className="mt-1">
           依据 POSI-EVAL-1.0（PNCI-1.0）编制的首个引文排名版本，将在下一个数据周期依据篇级引文数据计算。在此之前，所有期刊均无排名、引文分区或 POSI Zone。
         </p>
@@ -394,7 +394,7 @@ export function RankingsPending({ locale = 'en' }: { locale?: Locale }) {
         <Hourglass className="h-5 w-5" />
       </span>
       <div className="min-w-0 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-        <p className="text-[15px] font-semibold" style={{ color: 'var(--ink)' }}>The first ranking edition is in preparation</p>
+        <p className="text-[15px] font-medium" style={{ color: 'var(--ink)' }}>The first ranking edition is in preparation</p>
         <p className="mt-1">
           The first Citation Ranking edition under POSI-EVAL-1.0 (PNCI-1.0) is computed from item-level citation data in
           the next data cycle. Until then no journal has a rank, quartile or zone.

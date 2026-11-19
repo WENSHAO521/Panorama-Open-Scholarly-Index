@@ -52,7 +52,7 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
 
   return (
     <article className="panel p-5 mt-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]" style={{ color: 'var(--muted)' }}>
         {w.publication_date && <time dateTime={w.publication_date} className="font-mono">{w.publication_date}</time>}
         {w.type && <span>{t.types?.[w.type] ?? TYPE_LABEL[w.type] ?? w.type}</span>}
         {w.registry && <span title={fill(t.registryTitle, { source: w.registry })}>{fill(t.registry, { source: w.registry })}</span>}
@@ -68,13 +68,13 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
         )}
       </div>
 
-      <h3 className="mt-1.5 text-[16.5px] font-medium leading-snug">
+      <h3 className="mt-1.5 text-[17px] font-medium leading-snug">
         <Link href={href(`/work/?id=${shortId(w)}`)} className="hover:underline" style={{ color: 'var(--teal)' }}>
           {w.title || t.untitled}
         </Link>
       </h3>
 
-      <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}><Authors w={w} t={t} /></p>
+      <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}><Authors w={w} t={t} /></p>
 
       <p className="mt-1 text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
         {src ? <>
@@ -86,9 +86,9 @@ export function WorkItem({ w, expand, posi }: { w: Work; expand: boolean; posi: 
         {vol && <>{locale === 'en' ? '. ' : '。'}{vol}</>}
       </p>
 
-      {abs && <p className="mt-3 text-[13.5px] leading-relaxed max-w-[90ch] line-clamp-3" style={{ color: 'var(--ink-2)' }}>{abs}</p>}
+      {abs && <p className="mt-3 text-[14px] leading-relaxed max-w-[90ch] line-clamp-3" style={{ color: 'var(--ink-2)' }}>{abs}</p>}
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12.5px]">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
         {doi && (
           <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm font-mono">
             {doi}

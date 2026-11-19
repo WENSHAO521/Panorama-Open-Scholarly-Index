@@ -102,8 +102,8 @@ function En() {
               <tbody>
                 {PQF.map(f => (
                   <tr key={f.code}>
-                    <td className="whitespace-nowrap"><span className="font-mono text-[12.5px] mr-2" style={{ color: 'var(--muted)' }}>{f.code}</span>{f.name}</td>
-                    <td className="text-[13.5px]">{f.body}</td>
+                    <td className="whitespace-nowrap"><span className="font-mono text-[13px] mr-2" style={{ color: 'var(--muted)' }}>{f.code}</span>{f.name}</td>
+                    <td className="text-[14px]">{f.body}</td>
                     <td className="text-right font-mono tnum">{f.pts}</td>
                   </tr>
                 ))}
@@ -116,7 +116,7 @@ function En() {
               <thead><tr><th>Status</th><th>PQF score</th><th>Result</th></tr></thead>
               <tbody>
                 {OUTCOMES.map(([s, r, d]) => (
-                  <tr key={s}><td className="whitespace-nowrap font-medium">{s}</td><td className="whitespace-nowrap font-mono text-[13px]">{r}</td><td className="text-[13.5px]">{d}</td></tr>
+                  <tr key={s}><td className="whitespace-nowrap font-medium">{s}</td><td className="whitespace-nowrap font-mono text-[13px]">{r}</td><td className="text-[14px]">{d}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -147,7 +147,7 @@ function En() {
             <table className="dtable">
               <tbody>
                 {STATES.map(([s, d]) => (
-                  <tr key={s}><td className="whitespace-nowrap font-medium align-top">{s}</td><td className="text-[13.5px]">{d}</td></tr>
+                  <tr key={s}><td className="whitespace-nowrap font-medium align-top">{s}</td><td className="text-[14px]">{d}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -276,8 +276,8 @@ function Zh() {
               <tbody>
                 {PQF.map(f => (
                   <tr key={f.code}>
-                    <td className="whitespace-nowrap"><span className="font-mono text-[12.5px] mr-2" style={{ color: 'var(--muted)' }}>{f.code}</span>{PQF_ZH[f.code].name}</td>
-                    <td className="text-[13.5px]">{PQF_ZH[f.code].body}</td>
+                    <td className="whitespace-nowrap"><span className="font-mono text-[13px] mr-2" style={{ color: 'var(--muted)' }}>{f.code}</span>{PQF_ZH[f.code].name}</td>
+                    <td className="text-[14px]">{PQF_ZH[f.code].body}</td>
                     <td className="text-right font-mono tnum">{f.pts}</td>
                   </tr>
                 ))}
@@ -290,7 +290,7 @@ function Zh() {
               <thead><tr><th>状态</th><th>PQF 得分</th><th>结果</th></tr></thead>
               <tbody>
                 {OUTCOMES_ZH.map(([s, r, d]) => (
-                  <tr key={s}><td className="whitespace-nowrap font-medium">{s}</td><td className="whitespace-nowrap font-mono text-[13px]">{r}</td><td className="text-[13.5px]">{d}</td></tr>
+                  <tr key={s}><td className="whitespace-nowrap font-medium">{s}</td><td className="whitespace-nowrap font-mono text-[13px]">{r}</td><td className="text-[14px]">{d}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -319,7 +319,7 @@ function Zh() {
             <table className="dtable">
               <tbody>
                 {STATES_ZH.map(([s, d]) => (
-                  <tr key={s}><td className="whitespace-nowrap font-medium align-top">{s}</td><td className="text-[13.5px]">{d}</td></tr>
+                  <tr key={s}><td className="whitespace-nowrap font-medium align-top">{s}</td><td className="text-[14px]">{d}</td></tr>
                 ))}
               </tbody>
             </table>

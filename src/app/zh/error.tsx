@@ -9,7 +9,7 @@ export default function PageError({ error, retry }: { error: Error & { digest?: 
   useEffect(() => { console.error(error) }, [error])
   return (
     <div className="wrap py-24 max-w-2xl">
-      <h1 className="text-[26px] font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>页面出错了</h1>
+      <h1 className="font-display text-[26px] leading-tight" style={{ color: 'var(--ink)' }}>页面出错了</h1>
       <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
         显示此页面时出现问题。请重试；如果您正在使用浏览器的翻译功能，刷新页面后重新翻译通常可以解决。
       </p>

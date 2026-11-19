@@ -35,7 +35,7 @@ export function LanguageSwitcher() {
       hrefLang={HTML_LANG[other]}
       aria-label={`${header.language}: ${LANGUAGE_NAME[other]}`}
       title={LANGUAGE_NAME[other]}
-      className="inline-flex h-7 items-center gap-1.5 px-2 sm:px-2.5 rounded-[var(--radius)] text-[13px] font-medium whitespace-nowrap transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+      className="inline-flex h-8 items-center gap-1.5 px-2 sm:px-2.5 rounded-[var(--radius)] text-[13px] font-medium whitespace-nowrap transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
       style={{ border: '1px solid var(--line)', color: 'var(--ink-2)' }}
       onClick={e => {
         const { search, hash } = window.location

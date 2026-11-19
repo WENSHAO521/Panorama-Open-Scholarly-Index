@@ -1,46 +1,60 @@
-# POSI Design System — Japanese Editorial Academic
+# POSI Design System: the catalogue card
 
-Restrained, exact, professional. Deep green brand, 卯の花 canvas, 利休鼠 greys, 墨 text, 枯茶 accent.
-No gradients, glass, heavy shadows or decorative motifs.
+Exact, archival, a little warm. The site is set like a library catalogue card and a printed citation index:
+warm paper, ink text, hairline rules, one ink-blue brand. No gradients, glass, glows or decorative motifs.
+(November 2026 redesign, made with the unslop method by Damir Sokolovsky, CC BY 4.0. It replaces the
+October 2026 deep-green palette.)
 
-Shape (since the October 2026 redesign): controls and chips-in-groups use `--posi-radius` (6px), panels and cards
-`--posi-radius-lg` (10px) with `--posi-shadow-card` (a barely-there shadow; none in dark), stand-alone chips are pills.
-Body text is 15px. The header is one row (no utility strip); the theme switch sits at its right, the language
-switch in the footer and mobile menu.
+Type: page titles and the home headline in **Newsreader** (display serif; Chinese pages keep the sans), the
+interface in **IBM Plex Sans** (15px body; weights 400 and 500, 600 only for rare emphasis), identifiers and codes
+in **IBM Plex Mono**. Labels are sentence case, never uppercase with wide tracking. Sizes come from a short scale:
+12, 13, 14, 15, 16, 18, 22/24/28 (section titles), 40 to 60 (home headline). All fonts are vendored in `src/fonts`.
+
+Shape: controls and tags `--posi-radius` (8px), panels and cards `--posi-radius-lg` (12px), the grade strip and
+the catalogue card 6px. Spacing on a 4px grid. Depth from hairlines; light shadows only on the catalogue card and
+menus. One easing curve, `--ease` (`cubic-bezier(0.22, 1, 0.36, 1)`); transitions name their properties.
 
 ## Tokens
 Single source: `src/styles/posi-tokens.css` (`--posi-*`). `src/app/globals.css` keeps the older short
-names (`--ink`, `--teal`, `--line`, `--verified` …) as **aliases** so existing components follow the palette.
-New code uses `--posi-*`; components never hold raw hex.
+names (`--ink`, `--teal`, `--line`, `--verified` …) as **aliases** so existing components follow the palette
+(`--teal` now means the ink-blue brand). New code uses `--posi-*`; components never hold raw hex.
 
 | Token | Light | Dark |
 |---|---|---|
-| canvas | #F7F7F5 | #161C1A |
-| surface | #FFFFFF | #1F2724 |
-| surface-soft | #F0F1EE | #27302C |
-| brand / hover | #244D40 / #1B3F35 | #BFD2C3 / #D6E4D9 |
-| text | #1D2521 | #EAE7DD |
-| muted | #56605A | #B3BDB6 |
-| border | #E1E3DF | #3A4540 |
-| accent (fills, rules) | #AB8760 | #D1B58A |
-| accent-text | #81603A | #D1B58A |
-| border-strong (controls, ≥3:1) | #7E8A83 | #6C7A72 |
+| canvas (paper) | #F7F4EE | #161513 |
+| surface | #FDFBF7 | #1C1A18 |
+| surface-soft | #F1ECE3 | #24221F |
+| brand / hover | #1F4370 / #173559 | #A9C0DE / #C3D3EA |
+| text | #1F1B16 | #EFE9DE |
+| text-2 | #3B352E | #D6CFC3 |
+| muted | #5E554A | #AAA398 |
+| border | #E3DCCF | #34312C |
+| border-strong (controls, ≥3:1) | #8A8175 | #6E675D |
 
-Schemes: Light (default) and Dark. `ThemeToggle`, a sun and a moon (utility bar; mobile menu), stores the choice in
-this browser's localStorage; `THEME_SCRIPT` applies it before first paint. The operating system's setting is not followed.
-Print always uses a light, high-contrast token set.
+Schemes: Light (default) and Dark. `ThemeToggle`, a sun and a moon, stores the choice in this browser's
+localStorage; `THEME_SCRIPT` applies it before first paint. Print always uses a light, high-contrast token set.
 
-## Accent use
-枯茶 is sparing: the active-nav underline, dropdown top rule, focus ring on filled buttons, selection tint.
-Text in accent colour uses `--posi-accent-text` (AA).
+## Brand use
+The ink blue is the one strong hue in the chrome: the primary button (one per screen), links, the selection and
+the current quartile/zone fills. Navigation shows the current section as ink text over a 2px ink rule, not a tint.
+The `--posi-accent*` names remain for older code and now resolve to the brand. The Panorama red (`#e30613`) is
+the logo's and the catalogue card's heading rule only.
+
+## Signature: call numbers
+Identifiers (POSI IDs, ISSNs, PSC codes such as `P1.02`) are set in Plex Mono, on a ruled `.id-tag` where they
+stand alone. Headline figures sit under a 1px ink rule (`.stat-strip`), like the totals line of a printed index.
+
+## The home page catalogue card
+The home hero's one rich object: a Core Collection journal (real data: PSC code, POSI ID, ISSN, title, publisher,
+PQF, AJR, article count) set as a catalogue card with a red heading rule and the rod hole. The journal is picked by
+the build day from Core journals that have a PQF score, an AJR rating and a Latin-script title.
 
 ## Status (never colour alone)
 success `--posi-success*`, warning, caution, danger, info; each has `-bg` and `-border`. A status always
 carries its word or an icon. `Badge` maps every variant to one tone.
 
-Neutrals carry only a slight green bias (October 2026 colour pass), so the brand green stays the one strong hue.
-Record states (Verified, Current, Needs check …) are neutral pills with a coloured dot (`.chip-dot`), never a green
-fill: green fills belong to the brand (buttons, Core Collection, C-Q1). Links to Web of Science, Scopus and PubMed
+Record states (Verified, Current, Needs check …) are neutral tags with a coloured dot (`.chip-dot`), never a brand
+fill: brand fills belong to buttons, Core Collection and C-Q1. Links to Web of Science, Scopus and PubMed
 are outlined secondary buttons with a small marker in the index's colour (`.index-mark`), so other sites never
 outshine POSI's own actions.
 

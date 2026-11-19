@@ -22,7 +22,7 @@ export function NotFoundBody({ text }: { text: Record<Locale, Text> }) {
   return (
     <div className="wrap py-24 max-w-2xl" lang={locale === 'zh-Hans' ? 'zh-Hans' : undefined}>
       <p className="font-mono text-[13px]" style={{ color: 'var(--muted)' }}>404</p>
-      <h1 className="mt-2 text-[26px] font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>{t.title}</h1>
+      <h1 className="mt-2 font-display text-[26px] leading-tight" style={{ color: 'var(--ink)' }}>{t.title}</h1>
       <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{t.body}</p>
       <div className="mt-8 flex flex-wrap gap-2">
         <Link href={href('/publications/')} className="btn btn-primary">{t.searchPublications}</Link>

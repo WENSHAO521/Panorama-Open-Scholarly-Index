@@ -94,13 +94,13 @@ export function PosiGrades({ tier, ajr, quartile, quartileProvisional, zone, zon
     segs.push({ key: 'z', text: w.zoneUnassigned, title: w.zoneUnassignedTitle, style: { color: 'var(--soft)' } })
   }
 
-  const text = size === 'md' ? 'text-[12.5px] h-7' : 'text-[11.5px] h-6'
+  const text = size === 'md' ? 'text-[13px] [&>span]:h-7' : 'text-[12px] [&>span]:h-6'
   const label = segs.map(s => s.text).join(w.sep)
   return (
     <Link href={localizedHref(locale, '/grades/')} prefetch={false} aria-label={w.label.replace('{list}', label)}
-      className={`posi-grades inline-flex items-stretch whitespace-nowrap rounded-[var(--radius)] overflow-hidden font-medium align-middle ${text} transition-shadow hover:shadow-[0_0_0_2px_var(--posi-brand-line)]`}
+      className={`posi-grades inline-flex flex-wrap max-w-full items-stretch whitespace-nowrap rounded-[6px] overflow-hidden font-medium align-middle ${text} transition-[border-color] hover:border-[var(--ink)]`}
       style={{ border: '1px solid var(--line)', background: 'var(--surface)' }}>
-      <span className="grid place-items-center px-1.5 font-semibold tracking-wide" style={{ background: 'var(--posi-brand)', color: 'var(--posi-on-brand)' }} title={w.own}>POSI</span>
+      <span className="grid place-items-center px-2 font-mono" style={{ background: 'var(--ink)', color: 'var(--paper)' }} title={w.own}>POSI</span>
       {segs.map(s => (
         <span key={s.key} title={s.title} className="grid place-items-center px-2 tnum"
           style={{ ...s.style, borderLeft: `1px ${s.dashed ? 'dashed' : 'solid'} var(--line)` }}>{s.text}</span>

@@ -45,14 +45,14 @@ function En() {
               {(Object.keys(VERIFICATION) as Verification[]).map(v => (
                 <tr key={v}>
                   <td className="whitespace-nowrap"><VerificationPill v={v} /></td>
-                  <td className="text-[13.5px]">{VERIFICATION[v].rule}</td>
+                  <td className="text-[14px]">{VERIFICATION[v].rule}</td>
                   <td className="text-right font-mono tnum">{fmt(byV[v] ?? 0)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+        <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--muted)' }}>
           The state describes the record&apos;s identity, not the journal&apos;s quality. A Discovered record marked
           needs check may describe an excellent journal; it only means POSI has not confirmed the record yet.
         </p>
@@ -65,13 +65,13 @@ function En() {
             <li key={f} className="panel p-4 flex items-start justify-between gap-4">
               <div>
                 <FreshnessTag f={f} />
-                <p className="mt-2 text-[13.5px]" style={{ color: 'var(--muted)' }}>{FRESHNESS[f].rule}</p>
+                <p className="mt-2 text-[14px]" style={{ color: 'var(--muted)' }}>{FRESHNESS[f].rule}</p>
               </div>
               <span className="font-mono tnum text-[18px]">{fmt(byF[f] ?? 0)}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+        <p className="mt-3 text-[14px]" style={{ color: 'var(--muted)' }}>
           Journal records use a 6 to 12 month window. Freshness is computed from each record&apos;s own update
           timestamp against the data cutoff; it is never assumed.
         </p>
@@ -170,14 +170,14 @@ function Zh() {
               {(Object.keys(VERIFICATION) as Verification[]).map(v => (
                 <tr key={v}>
                   <td className="whitespace-nowrap"><VerificationPill v={v} locale="zh-Hans" /></td>
-                  <td className="text-[13.5px]">{VERIFICATION_ZH[v].rule}</td>
+                  <td className="text-[14px]">{VERIFICATION_ZH[v].rule}</td>
                   <td className="text-right font-mono tnum">{fmt(byV[v] ?? 0)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-[13.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+        <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--muted)' }}>
           该状态描述的是记录的身份信息，而非期刊的质量。标记为“待核查”的 Discovered 记录可能描述的是一本优秀的期刊，这只表示 POSI 尚未确认该记录。
         </p>
       </section>
@@ -189,13 +189,13 @@ function Zh() {
             <li key={f} className="panel p-4 flex items-start justify-between gap-4">
               <div>
                 <FreshnessTag f={f} locale="zh-Hans" />
-                <p className="mt-2 text-[13.5px]" style={{ color: 'var(--muted)' }}>{FRESHNESS_ZH[f].rule}</p>
+                <p className="mt-2 text-[14px]" style={{ color: 'var(--muted)' }}>{FRESHNESS_ZH[f].rule}</p>
               </div>
               <span className="font-mono tnum text-[18px]">{fmt(byF[f] ?? 0)}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+        <p className="mt-3 text-[14px]" style={{ color: 'var(--muted)' }}>
           期刊记录采用 6 至 12 个月的时间窗口。时效状态依据每条记录自身的更新时间戳与数据截止日期计算，从不凭推定。
         </p>
       </section>

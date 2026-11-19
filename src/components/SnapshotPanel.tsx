@@ -112,7 +112,7 @@ export function SnapshotPanel() {
                 : w.pre}{' '}
             {w.cutoff(<span className="font-mono">{String(manifest.data_cutoff ?? 'n/a')}</span>)}
           </p>
-          <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[12.5px]">
+          <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[13px]">
             <dt style={{ color: 'var(--muted)' }}>{w.dataVersion}</dt>
             <dd className="font-mono truncate">{String(manifest.data_commit).slice(0, 12)}</dd>
             <dt style={{ color: 'var(--muted)' }}>{w.engineVersion}</dt>

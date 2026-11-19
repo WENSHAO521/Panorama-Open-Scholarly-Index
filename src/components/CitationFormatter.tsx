@@ -290,7 +290,7 @@ export function CitationFormatter({ article }: Props) {
           <button
             key={f.id}
             onClick={() => setFormat(f.id)}
-            className="shrink-0 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] transition-colors"
+            className="shrink-0 px-4 py-2.5 text-[12px] font-medium transition-colors"
             style={
               format === f.id
                 ? {
@@ -343,7 +343,7 @@ export function CitationFormatter({ article }: Props) {
       {/* PSG in-text citation, or the short form of a footnote */}
       {second?.text && (
         <div className="px-5 pb-4 pt-0" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mt-3 mb-1.5" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+          <p className="text-[12px] font-medium mt-3 mb-1.5" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
             {second.label}
           </p>
           <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{second.text}</p>
@@ -352,7 +352,7 @@ export function CitationFormatter({ article }: Props) {
 
       {/* Format note */}
       <div className="px-5 pb-4" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
-        <p className="text-[10px] pt-3" style={{ color: 'var(--posi-soft)', fontFamily: 'var(--font-mono)' }}>
+        <p className="text-[12px] pt-3" style={{ color: 'var(--posi-soft)', fontFamily: 'var(--font-mono)' }}>
           {w.notes[format]}
         </p>
       </div>
