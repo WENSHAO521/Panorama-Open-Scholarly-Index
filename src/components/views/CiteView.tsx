@@ -535,7 +535,7 @@ function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
   return (
     <div className="panel">
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--posi-border)', background: bg }}>
-        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]" style={{ color }}>
+        <span className="text-[12px] font-mono font-medium" style={{ color }}>
           {w.fmt[fmt] ?? fmt}
         </span>
         <CopyBtn text={pair.plain} />
@@ -548,7 +548,7 @@ function CitCard({ fmt, pair }: { fmt: string; pair: CitPair }) {
         />
       </div>
       <div className="px-5 pb-4 pt-3" style={{ borderTop: '1px solid var(--posi-border-light)' }}>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-1" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
+        <p className="text-[12px] font-medium mb-1" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
           {fmt === 'footnote' ? w.shortNote : w.inText}
         </p>
         <p className="text-sm font-mono" style={{ color: 'var(--posi-text)' }}>{pair.intext}</p>
@@ -570,7 +570,7 @@ function MultiFormatCards({ citations }: { citations: AllCitations }) {
 const inputCls = "input"
 
 function FL({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[11px] font-medium mb-1" style={{ color: 'var(--posi-muted)' }}>{children}</label>
+  return <label className="block text-[12px] font-medium mb-1" style={{ color: 'var(--posi-muted)' }}>{children}</label>
 }
 
 function FInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
@@ -586,7 +586,7 @@ function AuthorList({ authors, onChange }: { authors: ManualAuthor[]; onChange: 
       <div className="flex items-center justify-between">
         <FL>{w.authors}</FL>
         <button type="button" onClick={() => onChange([...authors, { ...EMPTY_AUTHOR }])}
-          className="flex items-center gap-1 text-[10px] px-2 py-1"
+          className="flex items-center gap-1 text-[12px] px-2 py-1"
           style={{ border: '1px solid var(--posi-border)', color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>
           <Plus className="h-3 w-3" /> {w.add}
         </button>
@@ -724,7 +724,7 @@ function WebsiteForm({
           <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer">
             <input type="checkbox" checked={form.isOrg}
               onChange={e => setForm({ ...form, isOrg: e.target.checked })} className="w-3 h-3" />
-            <span className="text-[10px]" style={{ color: 'var(--posi-muted)' }}>{w.orgNotPerson}</span>
+            <span className="text-[12px]" style={{ color: 'var(--posi-muted)' }}>{w.orgNotPerson}</span>
           </label>
         </div>
         <div>
@@ -976,7 +976,7 @@ export function CiteView() {
           <div className="flex items-start gap-3">
             <XCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--rejected)' }} />
             <div>
-              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--rejected)' }}>{w.notFound}</p>
+              <p className="text-sm font-medium mb-1" style={{ color: 'var(--rejected)' }}>{w.notFound}</p>
               <p className="text-xs leading-relaxed text-justify" style={{ color: 'var(--rejected)' }}>{error}</p>
             </div>
           </div>
@@ -1017,7 +1017,7 @@ export function CiteView() {
               className="btn btn-primary">
               {picked.size ? fill(w.convertSelected, { n: picked.size }) : w.convertNone}
             </button>
-            <span className="text-[11px]" style={{ color: 'var(--posi-muted)' }}>{w.tickHint}</span>
+            <span className="text-[12px]" style={{ color: 'var(--posi-muted)' }}>{w.tickHint}</span>
           </div>
         </div>
       )}
@@ -1027,13 +1027,13 @@ export function CiteView() {
         <div className="space-y-4">
           <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.articleFound}</p>
-              <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-[0.1em]"
+              <p className="text-[12px] font-medium" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.articleFound}</p>
+              <span className="text-[12px] px-1.5 py-0.5"
                 style={{ fontFamily: 'var(--font-mono)', background: autoResult.source === 'openalex' ? 'var(--verified-soft)' : 'var(--surface-2)', color: autoResult.source === 'openalex' ? 'var(--verified)' : 'var(--muted)', border: `1px solid ${autoResult.source === 'openalex' ? 'var(--posi-success-border)' : 'var(--line)'}` }}>
                 {fill(w.via, { source: { openalex: 'OpenAlex', zenodo: 'Zenodo', datacite: 'DataCite', crossref: 'Crossref' }[autoResult.source] })}
               </span>
             </div>
-            <h2 className="text-sm font-semibold leading-snug mb-2" style={{ color: 'var(--posi-text)' }}>
+            <h2 className="text-sm font-medium leading-snug mb-2" style={{ color: 'var(--posi-text)' }}>
               {decodeHtml(autoResult.article.title)}
             </h2>
             {autoResult.article.authors.length > 0 && (
@@ -1067,9 +1067,9 @@ export function CiteView() {
           <div className="panel p-5">
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="h-4 w-4" style={{ color: 'var(--posi-brand)' }} />
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.bookFound}</p>
+              <p className="text-[12px] font-medium" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.bookFound}</p>
             </div>
-            <h2 className="text-sm font-semibold leading-snug mb-1" style={{ color: 'var(--posi-text)' }}>
+            <h2 className="text-sm font-medium leading-snug mb-1" style={{ color: 'var(--posi-text)' }}>
               {autoResult.book.title}{autoResult.book.subtitle && <span style={{ color: 'var(--posi-muted)' }}>: {autoResult.book.subtitle}</span>}
             </h2>
             {autoResult.book.authors.length > 0 && (
@@ -1091,7 +1091,7 @@ export function CiteView() {
         <div className="panel p-5">
           <div className="flex items-center gap-2 mb-4">
             <Globe className="h-4 w-4" style={{ color: 'var(--posi-brand)' }} />
-            <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.webpageCitation}</p>
+            <p className="text-[12px] font-medium" style={{ color: 'var(--posi-brand)', fontFamily: 'var(--font-mono)' }}>{w.webpageCitation}</p>
           </div>
           <p className="text-xs mb-4" style={{ color: 'var(--posi-muted)' }}>{w.noDoi}</p>
           <form onSubmit={handleWpSubmit} className="space-y-3">
@@ -1105,7 +1105,7 @@ export function CiteView() {
                 <FInput value={wpForm.author} onChange={e => setWpForm(f => ({ ...f, author: e.target.value }))} placeholder={w.authorOrgPh} required />
                 <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer">
                   <input type="checkbox" checked={wpForm.is_org} onChange={e => setWpForm(f => ({ ...f, is_org: e.target.checked }))} className="w-3 h-3" />
-                  <span className="text-[10px]" style={{ color: 'var(--posi-muted)' }}>{w.organization}</span>
+                  <span className="text-[12px]" style={{ color: 'var(--posi-muted)' }}>{w.organization}</span>
                 </label>
               </div>
               <div>
@@ -1139,7 +1139,7 @@ export function CiteView() {
           <div className="panel p-4">
             <div className="flex items-center gap-2 mb-1">
               <Globe className="h-3.5 w-3.5" style={{ color: 'var(--posi-muted)' }} />
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>{w.webpage}</p>
+              <p className="text-[12px] font-medium" style={{ color: 'var(--posi-muted)', fontFamily: 'var(--font-mono)' }}>{w.webpage}</p>
             </div>
             <p className="text-sm font-medium" style={{ color: 'var(--posi-text)' }}>{autoResult.title}</p>
           </div>

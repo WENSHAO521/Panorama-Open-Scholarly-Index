@@ -92,12 +92,12 @@ function EditionNote({ e, locale = 'en' }: { e: Edition; locale?: Locale }) {
   if (e.current) return null
   const archive = e.info.edition
   if (locale === 'zh-Hans') return (
-    <p className="mb-6 text-[13.5px] max-w-[75ch] panel px-4 py-3" style={{ color: 'var(--ink-2)' }}>
+    <p className="mb-6 text-[14px] max-w-[75ch] panel px-4 py-3" style={{ color: 'var(--ink-2)' }}>
       {fill(ZH.archived, { year: e.year, snapshot: e.snapshot ? fill(ZH.snapshot, { date: snapshotOf(locale, e.snapshot) }) : '', archive: archive ? fill(ZH.archive, { archive }) : '', version: e.version, pnciVersion: e.pnciVersion })}
     </p>
   )
   return (
-    <p className="mb-6 text-[13.5px] max-w-[75ch] panel px-4 py-3" style={{ color: 'var(--ink-2)' }}>
+    <p className="mb-6 text-[14px] max-w-[75ch] panel px-4 py-3" style={{ color: 'var(--ink-2)' }}>
       The {e.year} edition, as published{e.snapshot ? ` (snapshot ${fmtSnapshot(e.snapshot)})` : ''}{archive ? `, archive ${archive}` : ''}.
       Editions are frozen once published; each year is computed under the methodology version it names ({e.version}, {e.pnciVersion}),
       so ranks from different editions compare journals within that year only. Core Collection membership and AJR Ratings describe
@@ -157,7 +157,7 @@ export function RankingsOverview({ e, byYear = false, locale = 'en' }: { e: Edit
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 items-start">
           {domains.map(([d, name]) => (
             <div key={d} className="panel">
-              <h3 className="px-4 py-3 text-[14px] font-semibold" style={{ color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>{name}</h3>
+              <h3 className="px-4 py-3 text-[14px] font-medium" style={{ color: 'var(--ink)', borderBottom: '1px solid var(--line)' }}>{name}</h3>
               <ul>
                 {cats.filter(c => c.domain === d).map((c, i) => (
                   <li key={c.code} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
@@ -179,7 +179,7 @@ export function RankingsOverview({ e, byYear = false, locale = 'en' }: { e: Edit
       {available && (
         <section aria-labelledby="highest">
           <SectionTitle id="highest" aside={<Link href={href(`${base}/all/`)} className="link">{w.all}</Link>}>{fill(w.highest, { n: top.length })}</SectionTitle>
-          <p className="mb-4 text-[13.5px] max-w-[70ch]" style={{ color: 'var(--muted)' }}>{w.highestNote}</p>
+          <p className="mb-4 text-[14px] max-w-[70ch]" style={{ color: 'var(--muted)' }}>{w.highestNote}</p>
           <RankingTable rows={top} categories={rankedCats.map(c => ({ code: c.code, name: c.name }))} fileName={`posi-citation-ranking-highest-pnci-top${top.length}-${e.year}.csv`} />
         </section>
       )}
@@ -263,12 +263,12 @@ export function CategoryRankingView({ e, code, byYear = false, locale = 'en' }: 
       <EditionNote e={e} locale={locale} />
       {!available && <div className="mb-6"><RankingsPending locale={locale} /></div>}
       {allRows.length > CAP && (
-        <p className="mb-4 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+        <p className="mb-4 text-[14px]" style={{ color: 'var(--muted)' }}>
           {w.capped(fmt(CAP), fmt(allRows.length), csv(`citation-${e.year}.csv`, w.rankedCsv), csv(`citation-${e.year}-all.csv`, w.completeCsv), csv(`citation-${e.year}.json`, w.editionIndex))}
         </p>
       )}
       {!all && n > 0 && n < t.categoryOfficialZone && (
-        <p className="mb-4 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+        <p className="mb-4 text-[14px]" style={{ color: 'var(--muted)' }}>
           {n >= t.categoryProvisionalZone ? w.provisionalZones(n, t.categoryOfficialZone) : w.noZones(n, t.categoryProvisionalZone)}
         </p>
       )}
@@ -276,7 +276,7 @@ export function CategoryRankingView({ e, code, byYear = false, locale = 'en' }: 
         <RankingTable rows={rows} fileName={`posi-citation-ranking-${code}-${e.year}.csv`}
           categories={all ? cats.filter(x => x.ranked > 0).map(x => ({ code: x.code, name: x.name })) : undefined} />
       )}
-      <p className="mt-6 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+      <p className="mt-6 text-[13px]" style={{ color: 'var(--muted)' }}>
         {w.footer(e.version, t.provisionalItems, t.officialItems - 1)}
         {unranked.length > 0 && w.unranked(fmt(unranked.length), e.current)}
       </p>

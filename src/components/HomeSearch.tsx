@@ -38,7 +38,7 @@ export function HomeSearch() {
 
   return (
     <div className="w-full">
-      <div role="tablist" aria-label={t.scopeLabel} className="inline-flex gap-1 p-1 mb-3 rounded-[var(--radius-lg)]" style={{ background: 'var(--surface-2)' }}>
+      <div role="tablist" aria-label={t.scopeLabel} className="flex gap-6 mb-3">
         {SCOPES.map(s => (
           <button
             key={s}
@@ -46,9 +46,9 @@ export function HomeSearch() {
             role="tab"
             aria-selected={scope === s}
             onClick={() => setScope(s)}
-            className="h-8 px-4 rounded-[var(--radius)] text-[13.5px] font-medium transition-colors"
+            className="h-8 text-[14px] font-medium transition-colors hover:text-[var(--ink)]"
             style={scope === s
-              ? { background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'var(--posi-shadow-card), 0 0 0 1px var(--line)' }
+              ? { color: 'var(--ink)', boxShadow: 'inset 0 -2px 0 var(--ink)' }
               : { color: 'var(--muted)' }}
           >
             {t.scopes[s].label}
@@ -65,11 +65,11 @@ export function HomeSearch() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder={active.placeholder}
-            className="input h-[52px] pl-12 text-[16px] rounded-[var(--radius-lg)]"
-            style={{ boxShadow: 'var(--posi-shadow-card)' }}
+            className="input h-12 pl-12 text-[16px]"
+            style={{ background: 'var(--surface)' }}
           />
         </div>
-        <button type="submit" className="btn btn-primary h-[52px] px-8 text-[15px] rounded-[var(--radius-lg)]">{t.submit}</button>
+        <button type="submit" className="btn btn-primary h-12 px-6 text-[15px]">{t.submit}</button>
       </form>
     </div>
   )

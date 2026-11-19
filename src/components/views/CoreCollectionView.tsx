@@ -130,11 +130,11 @@ export function CoreCollectionView({ locale }: { locale: Locale }) {
                   <td className="min-w-[240px]">
                     <Link href={href(`/journal/${j.journal_code}/`)} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{j.title}</Link>
                   </td>
-                  <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>
+                  <td className="text-[14px]" style={{ color: 'var(--ink-2)' }}>
                     {j.publisher}
                     {country && <span style={{ color: 'var(--muted)' }}>{w.sep}{country}</span>}
                   </td>
-                  <td className="font-mono text-[12.5px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
+                  <td className="font-mono text-[13px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
                   <td className="text-[13px]">{j.psc_category ? subjectName(locale, j.psc_category, categoryName(j.psc_category) ?? j.psc_category) : <span style={{ color: 'var(--muted)' }}>{w.unclassified}</span>}</td>
                   <td className="text-[13px] whitespace-nowrap">{pqfLabel(getPQFStatus((j.pqf ?? j.ojqf)?.total))}</td>
                   <td className="text-[13px] whitespace-nowrap">{a.rating ? fill(w.rating, { model: a.model ?? '', r: a.rating }) : <span style={{ color: 'var(--muted)' }}>{a.lifecycle === 'observation' ? w.observation : a.model === 'AJR-M' ? w.ajrMUnrated : w.notRated}</span>}</td>
@@ -149,7 +149,7 @@ export function CoreCollectionView({ locale }: { locale: Locale }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+      <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>
         {w.noteA}{RANKING_AVAILABLE ? '' : w.notePending}{w.noteB}<Link href={href('/methodology/')} className="link">{w.methodology}</Link>{w.noteC}
       </p>
     </div>

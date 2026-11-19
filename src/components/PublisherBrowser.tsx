@@ -82,7 +82,7 @@ export function PublisherBrowser({ top }: { top: PublisherRow[] }) {
       </div>
 
       <p className="mt-4 mb-2 text-[13px]" style={{ color: 'var(--muted)' }} aria-live="polite">
-        <span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{' '}{w.count}
+        <span className="font-medium tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{' '}{w.count}
         {!full && <span style={{ color: 'var(--soft)' }}>{w.loading}</span>}
       </p>
 

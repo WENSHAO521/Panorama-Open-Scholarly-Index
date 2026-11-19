@@ -39,15 +39,15 @@ export function RankingHistory({ rows, locale = 'en' }: { rows: RankingHistoryRo
           return (
             <li key={r.year} className="py-2.5 first:pt-0 last:pb-0">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-mono tnum text-[14px] font-semibold" style={{ color: 'var(--ink)' }}>
-                  {r.year}{r.current && <span className="ml-1.5 font-sans text-[11.5px] font-normal" style={{ color: 'var(--muted)' }}>{zh ? '当前' : 'current'}</span>}
+                <span className="font-mono tnum text-[14px] font-medium" style={{ color: 'var(--ink)' }}>
+                  {r.year}{r.current && <span className="ml-1.5 font-sans text-[12px] font-normal" style={{ color: 'var(--muted)' }}>{zh ? '当前' : 'current'}</span>}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <QuartileBadge q={r.q} provisional={r.status === 'provisional'} locale={locale} />
                   {zone && <ZoneBadge z={r.zone} status={r.zoneStatus!} locale={locale} />}
                 </span>
               </div>
-              <p className="mt-1 text-[12.5px] leading-snug" style={{ color: 'var(--muted)' }}>
+              <p className="mt-1 text-[13px] leading-snug" style={{ color: 'var(--muted)' }}>
                 {href ? <Link href={href} className="link">{catName ?? r.cat}</Link> : (catName ?? r.cat ?? '–')}
                 {r.rank != null && (zh
                   ? <> · 排名 <span className="font-mono tnum" style={{ color: 'var(--ink-2)' }}>{fmt(r.rank)}</span> / {fmt(r.total ?? 0)}</>
@@ -57,7 +57,7 @@ export function RankingHistory({ rows, locale = 'en' }: { rows: RankingHistoryRo
           )
         })}
       </ol>
-      <p className="mt-2.5 text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>
+      <p className="mt-2.5 text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>
         {zh ? '各版本均按发布时原样保留；每一版均依据当年的类别对期刊进行排名。' : 'Editions are kept as published; each ranks the journal within its category that year.'}
       </p>
     </div>

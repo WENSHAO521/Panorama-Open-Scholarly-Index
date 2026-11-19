@@ -46,7 +46,7 @@ export function FreshnessTag({ f, locale = 'en' }: { f: Freshness; locale?: Loca
 export function BasisTag({ b, locale = 'en' }: { b: Basis; locale?: Locale }) {
   return (
     <span
-      className="font-mono text-[10.5px] uppercase tracking-wider px-1.5 py-px rounded-[var(--radius)]"
+      className="font-mono text-[12px] px-1.5 py-px rounded-[var(--radius)]"
       title={locale === 'zh-Hans' ? BASIS_ZH[b].description : BASIS[b].description}
       style={{ color: 'var(--muted)', border: '1px solid var(--line)' }}
     >
@@ -69,7 +69,7 @@ export function PageHeader({
   return (
     <header className="pt-6 pb-8 md:pt-8">
       {crumbs && (
-        <nav aria-label={locale === 'zh-Hans' ? '面包屑导航' : 'Breadcrumb'} className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <nav aria-label={locale === 'zh-Hans' ? '面包屑导航' : 'Breadcrumb'} className="mb-2.5 text-[13px]" style={{ color: 'var(--muted)' }}>
           {crumbs.map((c, i) => (
             <span key={i}>
               {i > 0 && <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>}
@@ -81,8 +81,8 @@ export function PageHeader({
       <div className="flex flex-col md:flex-row md:items-end gap-4 md:justify-between">
         <div className="min-w-0 max-w-3xl">
           {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-          <h1 className="text-[26px] md:text-[34px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
-          {children && <div className="mt-3 text-[15.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
+          <h1 className="text-[26px] md:text-[34px] font-medium leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h1>
+          {children && <div className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{children}</div>}
         </div>
         {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
       </div>
@@ -104,7 +104,7 @@ export function OnThisPage({ items, locale = 'en' }: { items: [id: string, label
 export function SectionTitle({ id, children, aside }: { id?: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 mb-3">
-      <h2 id={id} className="text-[20px] font-semibold tracking-tight scroll-mt-28" style={{ color: 'var(--ink)' }}>{children}</h2>
+      <h2 id={id} className="font-display text-[24px] leading-tight scroll-mt-28" style={{ color: 'var(--ink)' }}>{children}</h2>
       {aside && <div className="text-[13px]" style={{ color: 'var(--muted)' }}>{aside}</div>}
     </div>
   )

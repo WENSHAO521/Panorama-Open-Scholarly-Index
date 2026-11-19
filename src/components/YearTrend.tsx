@@ -127,8 +127,8 @@ export function YearTrend({ rows, title: titleProp }: { rows: Row[]; title?: str
   return (
     <section aria-labelledby="per-year">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-3">
-        <h2 id="per-year" className="text-[17px] font-semibold tracking-tight">{title}</h2>
-        <div className="flex gap-4 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <h2 id="per-year" className="text-[17px] font-medium tracking-tight">{title}</h2>
+        <div className="flex gap-4 text-[13px]" style={{ color: 'var(--muted)' }}>
           {SERIES.map(s => (
             <span key={s.key} className="flex items-center gap-1.5">
               <i aria-hidden className="inline-block h-[2px] w-4 rounded-full" style={{ background: s.color }} />{w.series[s.key]}
@@ -137,7 +137,7 @@ export function YearTrend({ rows, title: titleProp }: { rows: Row[]; title?: str
         </div>
       </div>
       <div className="panel p-4">
-        <p className="text-[12.5px] min-h-[1.25rem] mb-2" style={{ color: 'var(--muted)' }} aria-live="polite">
+        <p className="text-[13px] min-h-[1.25rem] mb-2" style={{ color: 'var(--muted)' }} aria-live="polite">
           {h
             ? w.values(
                 <span className="font-medium" style={{ color: 'var(--ink)' }}>{h[0]}{partialFrom != null && hover! >= partialFrom ? w.partial : ''}</span>,

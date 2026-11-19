@@ -122,7 +122,7 @@ export function IndexChecks({ issns }: { issns: string[] }) {
   const st = scopus ? status(scopus.entry, locale) : null
   return (
     <div className="space-y-2 pt-3 mt-1" style={{ borderTop: '1px solid var(--line-soft)' }}>
-      <p className="text-[11.5px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{w.title}</p>
+      <p className="text-[12px] font-medium" style={{ color: 'var(--muted)' }}>{w.title}</p>
       <a href={mjlHref(issn)} target="_blank" rel="noopener noreferrer" className="btn w-full justify-start">
         <span aria-hidden className="index-mark" style={{ background: 'var(--wos-brand)' }} /> Web of Science
         <ArrowSquareOut aria-hidden className="ml-auto h-3.5 w-3.5" style={{ color: 'var(--muted)' }} />
@@ -165,7 +165,7 @@ export function IndexChecks({ issns }: { issns: string[] }) {
           </span>
         </p>
       )}
-      <p className="text-[11.5px] leading-snug" style={{ color: 'var(--soft)' }}>
+      <p className="text-[12px] leading-snug" style={{ color: 'var(--soft)' }}>
         {w.note}
       </p>
     </div>

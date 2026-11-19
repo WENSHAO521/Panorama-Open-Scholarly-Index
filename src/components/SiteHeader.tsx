@@ -28,8 +28,8 @@ export function Logo({ inverted = false }: { inverted?: boolean }) {
         <rect x="50" y="50" width="24" height="8" fill="currentColor" />
       </svg>
       <span className="leading-none whitespace-nowrap">
-        <span className="text-[15px] font-semibold tracking-tight">{header.brand}</span>
-        <span className="hidden xl:inline text-[12px] font-medium ml-2 pl-2" style={{ color: inverted ? 'var(--band-muted)' : 'var(--muted)', borderLeft: `1px solid ${inverted ? 'var(--band-line)' : 'var(--line)'}` }}>
+        <span className="text-[14px] sm:text-[16px] font-medium">{header.brand}</span>
+        <span className="hidden xl:inline font-mono text-[12px] ml-2 pl-2" style={{ color: inverted ? 'var(--band-muted)' : 'var(--muted)', borderLeft: `1px solid ${inverted ? 'var(--band-line)' : 'var(--line)'}` }}>
           {header.brandShort}
         </span>
       </span>
@@ -59,7 +59,7 @@ function HeaderSearch({ onDone }: { onDone?: () => void }) {
         value={q}
         onChange={e => setQ(e.target.value)}
         placeholder={header.searchPlaceholder}
-        className="input pl-8 h-8 text-[13px]"
+        className="input pl-8 !min-h-8 h-8 text-[13px]"
       />
     </form>
   )
@@ -89,19 +89,20 @@ function Dropdown({ group, active, open, onOpen, onClose }: { group: NavGroup; a
         aria-expanded={open}
         aria-controls={id}
         onClick={onOpen}
-        className="inline-flex h-9 items-center gap-1 px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
-        style={{ color: active || open ? 'var(--posi-brand)' : 'var(--ink-2)', background: active ? 'var(--posi-brand-soft)' : undefined }}
+        className="nav-item inline-flex h-9 items-center gap-1 px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+        data-active={active || undefined}
+        style={{ color: active || open ? 'var(--ink)' : 'var(--muted)' }}
       >
         {group.label}
         <CaretDown className="h-3 w-3 transition-transform" style={{ transform: open ? 'rotate(180deg)' : undefined }} />
       </button>
       {open && (
         <div id={id} className="absolute left-0 top-full z-50 pt-2">
-          <ul className="w-[300px] p-1.5" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--posi-shadow-pop)' }}>
+          <ul className="w-[300px] p-2" style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--posi-shadow-pop)' }}>
             {group.links!.map(l => (
               <li key={l.href}>
                 <LocalizedLink href={l.href} onClick={onClose} className="block px-3 py-2 rounded-[var(--radius)] transition-colors hover:bg-[var(--hover)]">
-                  <span className="block text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
+                  <span className="block text-[14px] font-medium" style={{ color: 'var(--ink)' }}>{l.label}</span>
                   {l.description && <span className="block text-[12px] mt-0.5 leading-snug" style={{ color: 'var(--muted)' }}>{l.description}</span>}
                 </LocalizedLink>
               </li>
@@ -133,9 +134,9 @@ export function SiteHeader() {
     <>
     <header
       className="sticky top-0 z-40"
-      style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
+      style={{ background: 'var(--paper)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="wrap flex items-center gap-3 sm:gap-4 h-16">
+      <div className="wrap flex items-center gap-2 sm:gap-4 h-16">
         <LocalizedLink href="/" aria-label={header.homeLabel} className="shrink-0"><Logo /></LocalizedLink>
         <nav aria-label={header.navPrimary} className="hidden lg:flex shrink-0 items-center gap-0.5 ml-2">
           {groups.map(g => g.links ? (
@@ -152,8 +153,9 @@ export function SiteHeader() {
               key={g.id}
               href={g.href!}
               aria-current={groupActive(g, pathname) ? 'page' : undefined}
-              className="inline-flex h-9 items-center px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
-              style={{ color: groupActive(g, pathname) ? 'var(--posi-brand)' : 'var(--ink-2)', background: groupActive(g, pathname) ? 'var(--posi-brand-soft)' : undefined }}
+              className="nav-item inline-flex h-9 items-center px-3 rounded-[var(--radius)] text-[14px] font-medium transition-colors hover:bg-[var(--hover)] hover:text-[var(--ink)]"
+              data-active={groupActive(g, pathname) || undefined}
+              style={{ color: groupActive(g, pathname) ? 'var(--ink)' : 'var(--muted)' }}
             >
               {g.label}
             </LocalizedLink>
@@ -173,7 +175,7 @@ export function SiteHeader() {
         <div className="md:hidden ml-auto"><LanguageSwitcher /></div>
         <button
           type="button"
-          className="lg:hidden md:ml-0 btn btn-sm"
+          className="lg:hidden md:ml-0 btn btn-sm !px-2 shrink-0"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? header.menuClose : header.menuOpen}
           onClick={() => setMobileOpen(o => !o)}

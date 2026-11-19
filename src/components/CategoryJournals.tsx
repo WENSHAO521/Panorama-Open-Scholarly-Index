@@ -121,7 +121,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
           <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
           <input id="cat-q" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={t.placeholder} className="input h-10 pl-9" />
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-[13.5px]">
+        <div className="flex flex-wrap items-center gap-4 text-[14px]">
           {([[t.oa, oa, setOa], [t.doaj, doaj, setDoaj], [t.coreOnly, coreOnly, setCoreOnly]] as const).map(([label, val, set]) => (
             <label key={label} className="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={val} onChange={() => set(!val)} style={{ accentColor: 'var(--teal)' }} /> {label}
@@ -140,7 +140,7 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
 
       <p className="mt-4 mb-2 text-[13px]" style={{ color: 'var(--muted)' }} aria-live="polite">
         {rows
-          ? <><span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{t.count}{split ? fill(t.startingWith, { letter: letter === '0' ? t.digit : letter.toUpperCase() }) : ''}{fill(t.ofTotal, { total: fmt(total) })}</>
+          ? <><span className="font-medium tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{t.count}{split ? fill(t.startingWith, { letter: letter === '0' ? t.digit : letter.toUpperCase() }) : ''}{fill(t.ofTotal, { total: fmt(total) })}</>
           : current ? t.loadFailed : t.loading}
       </p>
 
@@ -157,12 +157,12 @@ export function CategoryJournals({ code, files, total }: { code: string; files: 
               <tr key={r.id}>
                 <td className="max-w-[420px]">
                   <Link href={localizedHref(locale, r.h)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.t}</Link>
-                  {r.p && <div className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>{r.p}</div>}
+                  {r.p && <div className="text-[13px] truncate" style={{ color: 'var(--muted)' }}>{r.p}</div>}
                 </td>
-                <td className="font-mono text-[12.5px] whitespace-nowrap">{r.i[0] ?? ''}</td>
+                <td className="font-mono text-[13px] whitespace-nowrap">{r.i[0] ?? ''}</td>
                 <td className="text-[13px]">{countryNameIn(locale, r.co) ?? ''}</td>
-                <td className="text-right font-mono tnum text-[12.5px]">{r.w != null ? fmt(r.w) : ''}</td>
-                <td className="text-[12.5px]">{[r.oa ? t.oa : null, r.dj ? 'DOAJ' : null].filter(Boolean).join(locale === 'zh-Hans' ? '、' : ', ')}</td>
+                <td className="text-right font-mono tnum text-[13px]">{r.w != null ? fmt(r.w) : ''}</td>
+                <td className="text-[13px]">{[r.oa ? t.oa : null, r.dj ? 'DOAJ' : null].filter(Boolean).join(locale === 'zh-Hans' ? '、' : ', ')}</td>
                 <td>
                   <span className="chip" style={r.core ? { color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' } : undefined}>
                     {r.core ? t.core : t.indexed}

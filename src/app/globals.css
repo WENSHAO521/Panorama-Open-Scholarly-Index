@@ -3,14 +3,15 @@
 @import "../styles/posi-tokens.css";
 
 /*
- * POSI interface: a research database in the Japanese Editorial Academic
- * style. Dense, exact and quiet: hairline rules instead of cards and shadows,
- * one deep-green brand, one clay accent used sparingly. All colour lives in
+ * POSI interface: a research database set like a library catalogue card.
+ * Warm paper, ink text, hairline rules; one ink-blue brand for the primary
+ * action, links and the selection. Page titles in Newsreader, the interface
+ * in IBM Plex Sans, identifiers in IBM Plex Mono. All colour lives in
  * src/styles/posi-tokens.css (Light / Dark); this file and every
  * component read tokens, never raw hex.
  *
- * Shape rule: controls use --radius (6px), panels and cards --radius-lg
- * (10px), chips are pills.
+ * Shape rule: controls and tags use --radius (8px), panels and cards
+ * --radius-lg (12px).
  */
 :root {
   /*
@@ -70,9 +71,10 @@
   --posi-soft: var(--posi-faint);
   --posi-accent-light: var(--posi-brand-soft);
 
-  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-mono: var(--font-plex-mono), 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --font-body: var(--font-ibm), 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  --font-display: var(--font-body);
+  --font-display: var(--font-newsreader), 'Newsreader', Georgia, 'Times New Roman', serif;
 }
 
 html { background: var(--posi-canvas); }
@@ -89,12 +91,20 @@ body {
 }
 
 .font-mono, code, .mono, kbd, samp { font-family: var(--font-mono); }
-.font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+.font-display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; }
 .tnum { font-variant-numeric: tabular-nums; }
 /* Numbers read in the body face with tabular figures: monospace digits (and
    their wide commas) are kept for identifiers and code only. */
 .font-mono.tnum, .figure { font-family: var(--font-body); font-variant-numeric: tabular-nums lining-nums; }
-.figure { font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+.figure { font-weight: 500; letter-spacing: -0.01em; color: var(--ink); }
+
+/* Page titles are set in the display serif, like the title line of a
+   catalogue card. Unlayered so it wins over a weight utility on the h1.
+   Chinese pages keep the interface face: Newsreader has no CJK glyphs. */
+h1 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.015em; }
+h1:lang(zh), .font-display:lang(zh) { font-family: var(--font-body); font-weight: 600; letter-spacing: 0; }
+.home-title:lang(zh) { font-size: 36px; line-height: 1.2; }
+@media (min-width: 768px) { .home-title:lang(zh) { font-size: 48px; } }
 
 :focus-visible { outline: var(--posi-focus-ring); outline-offset: 2px; border-radius: 2px; }
 /* Controls on a dark or brand fill need an outline that still reads. */
@@ -125,28 +135,33 @@ body {
 }
 
 .eyebrow {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--muted);
 }
 
 .link { color: var(--teal); text-underline-offset: 3px; }
+
+/* Header navigation: the current section is ink text over a short ink rule,
+   not a tinted pill. */
+.nav-item { position: relative; }
+.nav-item[data-active]::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: -14px; height: 2px; background: var(--ink);
+}
 .link:hover { text-decoration: underline; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 36px; padding: 0 14px;
+  min-height: 36px; padding: 0 16px;
   font-size: 14px; font-weight: 500;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-strong);
   background: var(--surface); color: var(--ink);
-  transition: background .15s, border-color .15s, color .15s;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), color 150ms var(--ease), transform 120ms var(--ease);
   white-space: nowrap; cursor: pointer;
 }
-.btn:hover { border-color: var(--posi-brand); background: var(--hover); color: var(--posi-brand); }
-.btn:active { transform: translateY(1px); }
+.btn:hover { border-color: var(--ink); background: var(--hover); color: var(--ink); }
+.btn:active { transform: scale(0.98); }
 /* Disabled: faded AND not-allowed AND (where used) aria-disabled, so it is
    not conveyed by lightness alone. */
 .btn:disabled, .btn[aria-disabled="true"] {
@@ -162,12 +177,12 @@ body {
 }
 .btn-primary { background: var(--posi-brand); border-color: var(--posi-brand); color: var(--posi-on-brand); }
 .btn-primary:hover { background: var(--posi-brand-hover); border-color: var(--posi-brand-hover); color: var(--posi-on-brand); }
-.btn-sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.btn-sm { min-height: 32px; padding: 0 12px; font-size: 13px; }
 @keyframes posi-spin { to { transform: rotate(360deg); } }
 
 /* Form controls: input, select, textarea share one look. */
 .input, select.input, textarea.input {
-  min-height: 38px; padding: 0 12px; width: 100%;
+  min-height: 40px; padding: 0 12px; width: 100%;
   background: var(--surface); color: var(--ink);
   border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
   font-size: 14px;
@@ -194,7 +209,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 .notice-info    { border-left-color: var(--posi-info); }
 
 /* Empty state */
-.empty { padding: 36px 16px; text-align: center; color: var(--muted); font-size: 13.5px; }
+.empty { padding: 40px 16px; text-align: center; color: var(--muted); font-size: 14px; }
 
 /* Loading skeleton: a pulse is not enough alone, so pair with aria-busy. */
 .animate-pulse { animation: posi-pulse 1.6s ease-in-out infinite; }
@@ -202,9 +217,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 
 .chip {
   display: inline-flex; align-items: center; gap: 5px;
-  height: 22px; padding: 0 9px;
+  height: 24px; padding: 0 8px;
   font-size: 12px; font-weight: 500;
-  border-radius: 999px; border: 1px solid var(--line);
+  border-radius: 6px; border: 1px solid var(--line);
   background: var(--surface-2); color: var(--ink-2);
   white-space: nowrap;
 }
@@ -215,35 +230,38 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 /* Links to other indexes: outlined like a secondary button; the index's colour is a small marker only. */
 .index-mark { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 
+/* The signature detail: an identifier set like a catalogue call number,
+   mono on a ruled tag. Used for POSI IDs, ISSNs and subject codes only. */
 .id-tag {
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--ink-2); background: var(--surface-2);
-  border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 1px 6px; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 12px; line-height: 18px;
+  color: var(--ink-2); background: transparent;
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  padding: 0 6px; white-space: nowrap;
 }
 
-/* Figure strip: a row of headline figures, each on its own quiet tile. */
-.stat-strip { display: grid; gap: 12px !important; }
+/* Figure strip: headline figures under an ink rule, like the totals line of
+   a printed index. No tiles. */
+.stat-strip { display: grid; gap: 24px !important; }
 .stat-strip > * {
-  padding: 14px 16px 16px; min-width: 0;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 12px 0 0; min-width: 0;
+  background: transparent; border: 0; border-top: 1px solid var(--ink); border-radius: 0;
 }
-.stat-strip dt, .stat-strip .label { font-size: 12.5px; color: var(--muted); }
+.stat-strip dt, .stat-strip .label { font-size: 13px; color: var(--muted); }
 .stat-strip dd, .stat-strip .note { margin: 0; }
-.stat-strip .note { margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.stat-strip .note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
 .stat-strip a:hover .figure { color: var(--posi-brand); }
 
 /* Data tables */
-.dtable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.dtable { width: 100%; border-collapse: collapse; font-size: 14px; }
 .dtable th {
-  text-align: left; font-weight: 600; font-size: 12px;
+  text-align: left; font-weight: 500; font-size: 13px;
   color: var(--ink-2); background: var(--surface-2);
-  padding: 7px 10px; border-bottom: 1px solid var(--line-strong);
+  padding: 8px 12px; border-bottom: 1px solid var(--line-strong);
   white-space: nowrap; position: sticky; top: 0;
 }
-.dtable td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.dtable td { padding: 8px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
 .dtable tbody tr:hover td { background: var(--hover); }
-.dtable caption { text-align: left; padding: 8px 10px; color: var(--muted); font-size: 12.5px; }
+.dtable caption { text-align: left; padding: 8px 12px; color: var(--muted); font-size: 13px; }
 /* Wide tables scroll sideways on narrow screens; none of their columns is hidden. */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .table-scroll > table { min-width: 640px; }
@@ -251,7 +269,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 
 /* Definition list used on record pages */
 .fields { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; }
-.fields > dt, .fields > dd { padding: 9px 14px; border-bottom: 1px solid var(--line-soft); margin: 0; }
+.fields > dt, .fields > dd { padding: 8px 16px; border-bottom: 1px solid var(--line-soft); margin: 0; }
 .fields > dt { color: var(--muted); font-size: 13px; background: var(--hover); }
 .fields > dd { font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
 .fields > dt:last-of-type, .fields > dd:last-of-type { border-bottom: none; }
@@ -262,7 +280,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 
 /* Long-form documentation */
 .prose-doc { font-size: 15px; line-height: 1.7; color: var(--ink-2); }
-.prose-doc h2 { font-size: 20px; color: var(--ink); font-weight: 600; margin: 2em 0 .6em; letter-spacing: -0.01em; }
+.prose-doc h2 { font-size: 20px; color: var(--ink); font-weight: 500; margin: 2em 0 .6em; letter-spacing: -0.01em; }
 .prose-doc h3 { font-size: 16px; color: var(--ink); font-weight: 600; margin: 1.6em 0 .4em; }
 .prose-doc p { margin: 0 0 1em; }
 .prose-doc ul { margin: 0 0 1em; padding-left: 1.2em; list-style: disc; }
@@ -272,16 +290,16 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--posi-brand); }
 .prose-doc a:hover { text-decoration: underline; }
 
 pre.code {
-  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6;
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.6;
   background: var(--code-bg); color: var(--code-ink);
-  border-radius: var(--radius); padding: 14px 16px; overflow-x: auto;
+  border-radius: var(--radius); padding: 16px; overflow-x: auto;
 }
 
 }
 
 /* ── Legacy helpers kept for pages not yet rewritten ────────── */
 
-.tactile { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.tactile { transition: transform 150ms var(--ease); }
 .tactile:active { transform: scale(0.98); }
 
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -338,7 +356,7 @@ pre.code {
     --posi-canvas: #ffffff; --posi-surface: #ffffff; --posi-surface-soft: #f3f3f0; --posi-hover: #ffffff;
     --posi-border: #c9cbc3; --posi-border-soft: #dcded6; --posi-border-strong: #6f7a72;
     --posi-text: #1b211e; --posi-text-2: #2c3430; --posi-muted: #3e4a43; --posi-faint: #4d5a52;
-    --posi-brand: #244d40; --posi-brand-soft: #e8eee9; --posi-on-brand: #ffffff;
+    --posi-brand: #1f4370; --posi-brand-soft: #eceff4; --posi-on-brand: #ffffff;
     --posi-success: #1f5a3c; --posi-success-bg: #ffffff; --posi-warning: #6a4f15; --posi-warning-bg: #ffffff;
     --posi-caution: #823f1f; --posi-caution-bg: #ffffff; --posi-danger: #8a2d2d; --posi-danger-bg: #ffffff;
     --posi-info: #2e4f63; --posi-info-bg: #ffffff;
@@ -362,11 +380,11 @@ pre.code {
 @layer components {
   .doc { max-width: 760px; color: var(--ink-2); font-size: 15px; line-height: 1.7; }
   .doc > section + section { margin-top: 2.75rem; }
-  .doc h2 { color: var(--ink); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; scroll-margin-top: 7rem; }
+  .doc h2 { color: var(--ink); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; scroll-margin-top: 7rem; }
   /* Pages that put h2s straight in .doc (no <section> wrappers) still need
      section spacing; a heading that opens a section keeps none. */
   .doc h2:not(:first-child) { margin-top: 2.5rem; }
-  .doc h3 { color: var(--ink); font-size: 15.5px; font-weight: 600; margin-top: 1.5rem; }
+  .doc h3 { color: var(--ink); font-size: 16px; font-weight: 500; margin-top: 1.5rem; }
   .doc p, .doc ul, .doc ol, .doc table, .doc dl, .doc .panel { margin-top: 0.75rem; }
   /* A bordered panel supplies its own spacing; the prose margin on its first
      child (usually a table) would open a gap above the header row. */
@@ -376,7 +394,7 @@ pre.code {
   .doc li + li { margin-top: 0.35rem; }
 
   .doc code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.9em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
-  .doc .formula { font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem 1rem; overflow-x: auto; }
+  .doc .formula { font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.75rem 1rem; overflow-x: auto; }
 }
 /* Unlayered: the global a {} reset is unlayered too. */
 .doc a:not(.btn):not(.posi-grades) { color: var(--posi-brand); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
@@ -411,7 +429,34 @@ pre.code {
 .map-country, .map-country-off, .map-dot circle { vector-effect: non-scaling-stroke; }
 .map-zoom {
   display: grid; place-items: center; width: 28px; height: 28px;
-  background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); border-radius: 2px;
+  background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); border-radius: 6px;
 }
 .map-zoom:hover { background: var(--hover); color: var(--ink); }
 .map-zoom:disabled { opacity: .4; pointer-events: none; }
+
+/* Home page catalogue card: a Core Collection journal set as a library
+   catalogue card, with the red heading rule and the rod hole of the real
+   thing. The one rich object on the home page; everything around it stays
+   quiet. */
+.catalogue-card {
+  background: var(--posi-card-paper, var(--surface));
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(31, 27, 22, 0.05), 0 12px 32px -12px rgba(31, 27, 22, 0.16);
+}
+.catalogue-back { transform: rotate(-2deg) translate(4px, 8px); background: var(--surface-2); box-shadow: 0 1px 2px rgba(31, 27, 22, 0.05); }
+.catalogue-front { transition: transform 200ms var(--ease), box-shadow 200ms var(--ease); }
+.catalogue-front:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(31, 27, 22, 0.05), 0 18px 40px -14px rgba(31, 27, 22, 0.22); }
+.catalogue-rule { height: 1px; background: color-mix(in srgb, var(--brand-red) 85%, var(--surface)); }
+.catalogue-hole {
+  position: absolute; left: 50%; bottom: 16px; width: 16px; height: 16px; margin-left: -8px;
+  border-radius: 999px; background: var(--paper);
+  box-shadow: inset 0 1px 2px rgba(31, 27, 22, 0.25);
+}
+:root[data-theme="dark"] .catalogue-card { box-shadow: none; }
+:root[data-theme="dark"] .catalogue-back { background: var(--surface-3); }
+:root[data-theme="dark"] .catalogue-hole { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); }
+@media (prefers-reduced-motion: reduce) { .catalogue-front:hover { transform: none; } }
+
+/* Partner logos supplied as dark-on-transparent rasters: turned light on the dark scheme. */
+:root[data-theme="dark"] .partner-raster { filter: invert(1) hue-rotate(180deg); }

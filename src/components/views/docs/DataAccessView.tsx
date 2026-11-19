@@ -43,7 +43,7 @@ function En() {
               <thead><tr><th>Source</th><th>Used for</th><th>Updated</th></tr></thead>
               <tbody>
                 {SOURCES.map(([s, u, f]) => (
-                  <tr key={s}><td className="font-medium whitespace-nowrap">{s}</td><td className="text-[13.5px]">{u}</td><td className="whitespace-nowrap text-[13.5px]">{f}</td></tr>
+                  <tr key={s}><td className="font-medium whitespace-nowrap">{s}</td><td className="text-[14px]">{u}</td><td className="whitespace-nowrap text-[14px]">{f}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -61,7 +61,7 @@ function En() {
               <thead><tr><th>Data</th><th>Format</th><th>Where</th></tr></thead>
               <tbody>
                 {FORMATS.map(([d, f, w]) => (
-                  <tr key={d as string}><td className="font-medium whitespace-nowrap">{d}</td><td className="text-[13.5px]">{f}</td><td className="text-[13.5px]">{w}</td></tr>
+                  <tr key={d as string}><td className="font-medium whitespace-nowrap">{d}</td><td className="text-[14px]">{f}</td><td className="text-[14px]">{w}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -143,7 +143,7 @@ function Zh() {
               <thead><tr><th>来源</th><th>用途</th><th>更新频率</th></tr></thead>
               <tbody>
                 {SOURCES_ZH.map(([s, u, f]) => (
-                  <tr key={s}><td className="font-medium whitespace-nowrap">{s}</td><td className="text-[13.5px]">{u}</td><td className="text-[13.5px] min-w-[120px]">{f}</td></tr>
+                  <tr key={s}><td className="font-medium whitespace-nowrap">{s}</td><td className="text-[14px]">{u}</td><td className="text-[14px] min-w-[120px]">{f}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -160,7 +160,7 @@ function Zh() {
               <thead><tr><th>数据</th><th>格式</th><th>位置</th></tr></thead>
               <tbody>
                 {FORMATS_ZH.map(([d, f, w]) => (
-                  <tr key={d as string}><td className="font-medium whitespace-nowrap">{d}</td><td className="text-[13.5px]">{f}</td><td className="text-[13.5px]">{w}</td></tr>
+                  <tr key={d as string}><td className="font-medium whitespace-nowrap">{d}</td><td className="text-[14px]">{f}</td><td className="text-[14px]">{w}</td></tr>
                 ))}
               </tbody>
             </table>

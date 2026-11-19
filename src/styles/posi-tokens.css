@@ -1,22 +1,20 @@
 /*
- * POSI design tokens — Japanese Editorial Academic Design System.
+ * POSI design tokens: the catalogue-card system (November 2026).
  *
  * One file owns every colour. Components read the semantic tokens below
  * (--posi-*); they never hold raw hex. The older short names used across the
- * code base (--paper, --ink, --teal, --line, --verified ...) are kept at the
- * bottom as aliases of the semantic tokens, so every existing page follows
- * the palette and the colour scheme without being rewritten.
+ * code base (--paper, --ink, --teal, --line, --verified ...) are aliases in
+ * globals.css, so every page follows the palette and the colour scheme.
  *
- * Palette: 深緑 (brand), a near-white canvas, 利休鼠 (muted greens), 墨 (text),
- * 枯茶 (accent). Restrained, low-saturation; no gradients, no glass. Panels
- * are white cards with a 10px radius and a barely-there shadow; controls 6px.
+ * World: a library catalogue card and a printed citation index. Warm paper
+ * neutrals, ink text, and one ink-blue brand used for the primary action,
+ * links and the selection. The Panorama red stays in the logo only. No
+ * gradients, no glass, depth from hairlines. Controls 8px, cards 12px.
  *
  * Schemes: light by default; dark when the visitor chose it with the sun/moon
- * switch (html[data-theme="dark"]). The operating system's setting is not
- * followed. See ThemeToggle + THEME_SCRIPT.
+ * switch (html[data-theme="dark"]). See ThemeToggle + THEME_SCRIPT.
  *
- * Contrast (WCAG 2.x, checked with scripts in docs/DESIGN-SYSTEM.md):
- * every text/background pair below is >= 4.5:1; control borders
+ * Contrast: every text/background pair below is >= 4.5:1; control borders
  * (--posi-border-strong) are >= 3:1 on their surface.
  */
 
@@ -24,34 +22,34 @@
   color-scheme: light;
 
   /* ── Surfaces ───────────────────────────────────────────── */
-  --posi-canvas: #f7f7f5;          /* page: a near-white neutral, the green bias kept slight */
-  --posi-surface: #ffffff;         /* cards, tables, inputs */
-  --posi-surface-soft: #f0f1ee;    /* table headers, chips, hero band */
-  --posi-surface-sunken: #e6e8e3;  /* tracks, unfilled bars */
-  --posi-hover: #f2f3f0;           /* row / item hover */
+  --posi-canvas: #f7f4ee;          /* page: warm paper */
+  --posi-surface: #fdfbf7;         /* cards, tables, inputs */
+  --posi-surface-soft: #f1ece3;    /* table headers, chips, hero band */
+  --posi-surface-sunken: #e7e0d4;  /* tracks, unfilled bars */
+  --posi-hover: #f3eee6;           /* row / item hover */
 
   /* ── Lines ──────────────────────────────────────────────── */
-  --posi-border: #e1e3df;          /* hairlines, dividers */
-  --posi-border-soft: #ebece9;     /* row separators */
-  --posi-border-strong: #7e8a83;   /* input / control edges, >= 3:1 */
+  --posi-border: #e3dccf;          /* hairlines, dividers */
+  --posi-border-soft: #ece6dc;     /* row separators */
+  --posi-border-strong: #8a8175;   /* input / control edges, >= 3:1 */
 
   /* ── Text ───────────────────────────────────────────────── */
-  --posi-text: #1d2521;            /* 墨 */
-  --posi-text-2: #36403b;
-  --posi-muted: #56605a;           /* 利休鼠 */
-  --posi-faint: #626c66;           /* placeholders, tertiary; still AA */
+  --posi-text: #1f1b16;            /* ink */
+  --posi-text-2: #3b352e;
+  --posi-muted: #5e554a;           /* secondary */
+  --posi-faint: #6b6257;           /* placeholders, tertiary; still AA */
 
-  /* ── Brand 深緑 ─────────────────────────────────────────── */
-  --posi-brand: #244d40;
-  --posi-brand-hover: #1b3f35;
-  --posi-brand-soft: #e2eae3;
-  --posi-brand-line: #aebfb4;
+  /* ── Brand: ink blue ───────────────────────────────────── */
+  --posi-brand: #1f4370;
+  --posi-brand-hover: #173559;
+  --posi-brand-soft: #e5e9ef;
+  --posi-brand-line: #b4c0d0;
   --posi-on-brand: #ffffff;
 
-  /* ── Accent 枯茶 (sparing: rules, markers, key figures) ───── */
-  --posi-accent: #ab8760;          /* fills, rules (non-text) */
-  --posi-accent-text: #81603a;     /* text and icons */
-  --posi-accent-soft: #f1ebe0;
+  /* ── Accent: the brand ink, kept as its own name for older code ── */
+  --posi-accent: #1f4370;          /* fills, rules (non-text) */
+  --posi-accent-text: #1f4370;     /* text and icons */
+  --posi-accent-soft: #dfe5ee;
 
   /* ── Status (always paired with a word or icon, never colour alone) ── */
   --posi-success: #2b6b4a;  --posi-success-bg: #e4efe7;  --posi-success-border: #b7d3c1;
@@ -61,12 +59,12 @@
   --posi-info: #3d5f73;     --posi-info-bg: #e3ebef;     --posi-info-border: #b7c8d2;
 
   /* ── Dark band: utility bar, footer, code blocks ─────────── */
-  --posi-band: #1e2b26;
-  --posi-band-ink: #eae7dd;
-  --posi-band-muted: #b3c0b6;
-  --posi-band-line: rgba(234, 231, 221, 0.14);
-  --posi-code-bg: #1e2b26;
-  --posi-code-ink: #dfe5dc;
+  --posi-band: #22201c;
+  --posi-band-ink: #efe9de;
+  --posi-band-muted: #b5ada1;
+  --posi-band-line: rgba(239, 233, 222, 0.14);
+  --posi-code-bg: #22201c;
+  --posi-code-ink: #e9e3d8;
 
   /* ── Charts ────────────────────────────────────────────────
      Categorical: one hue per category, same lightness band, low chroma.
@@ -78,7 +76,7 @@
   --posi-cat-4: #a8832a;  /* 黄土 ochre */
   --posi-cat-5: #a9677f;  /* 桃鼠 dusty rose */
   --posi-cat-6: #4f4388;  /* 菖蒲 iris */
-  --posi-cat-neutral: #a7afaa; /* 鼠 multidisciplinary / other */
+  --posi-cat-neutral: #aaa398; /* 鼠 multidisciplinary / other */
 
   /* ── External index buttons (text only, no logos) ──────────── */
   --posi-wos: #4f3f86;     --posi-on-wos: #ffffff;
@@ -89,11 +87,11 @@
   --posi-brand-red: #e30613;   /* the red block of the Panorama mark */
 
   /* ── Shape, type ───────────────────────────────────────────── */
-  --posi-radius: 6px;               /* controls, chips */
-  --posi-radius-lg: 10px;           /* panels, cards */
-  --posi-shadow-card: 0 1px 2px rgba(29, 37, 33, 0.05), 0 1px 1px rgba(29, 37, 33, 0.03);
-  --posi-shadow-pop: 0 2px 8px rgba(30, 43, 38, 0.10);  /* menus only */
-  --posi-focus: #244d40;
+  --posi-radius: 8px;               /* controls, chips */
+  --posi-radius-lg: 12px;           /* panels, cards */
+  --posi-shadow-card: 0 1px 2px rgba(31, 27, 22, 0.04);
+  --posi-shadow-pop: 0 2px 8px rgba(31, 27, 22, 0.08), 0 1px 2px rgba(31, 27, 22, 0.05);  /* menus only */
+  --posi-focus: #1f4370;
   --posi-focus-ring: 2px solid var(--posi-focus);
 }
 
@@ -101,30 +99,30 @@
    it before first paint). Without a choice the page is light, whatever the operating system prefers. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --posi-canvas: #161c1a;
-  --posi-surface: #1f2724;
-  --posi-surface-soft: #27302c;
-  --posi-surface-sunken: #1a211e;
-  --posi-hover: #27302c;
+  --posi-canvas: #161513;
+  --posi-surface: #1c1a18;
+  --posi-surface-soft: #24221f;
+  --posi-surface-sunken: #12110f;
+  --posi-hover: #23211e;
 
-  --posi-border: #3a4540;
-  --posi-border-soft: #2e3833;
-  --posi-border-strong: #6c7a72;
+  --posi-border: #34312c;
+  --posi-border-soft: #2a2825;
+  --posi-border-strong: #6e675d;
 
-  --posi-text: #eae7dd;
-  --posi-text-2: #d4d6cb;
-  --posi-muted: #b3bdb6;
-  --posi-faint: #a1aca5;
+  --posi-text: #efe9de;
+  --posi-text-2: #d6cfc3;
+  --posi-muted: #aaa398;
+  --posi-faint: #9a9388;
 
-  --posi-brand: #bfd2c3;
-  --posi-brand-hover: #d6e4d9;
-  --posi-brand-soft: #2c3f35;
-  --posi-brand-line: #567063;
-  --posi-on-brand: #161c1a;
+  --posi-brand: #a9c0de;
+  --posi-brand-hover: #c3d3ea;
+  --posi-brand-soft: #222b38;
+  --posi-brand-line: #485870;
+  --posi-on-brand: #161513;
 
-  --posi-accent: #d1b58a;
-  --posi-accent-text: #d1b58a;
-  --posi-accent-soft: #3a3427;
+  --posi-accent: #a9c0de;
+  --posi-accent-text: #a9c0de;
+  --posi-accent-soft: #2a3443;
 
   --posi-success: #9acbae;  --posi-success-bg: #274236;  --posi-success-border: #3f6552;
   --posi-warning: #d9be7c;  --posi-warning-bg: #3f3a24;  --posi-warning-border: #665c35;
@@ -132,12 +130,12 @@
   --posi-danger: #e8a3a0;   --posi-danger-bg: #472b2d;   --posi-danger-border: #724346;
   --posi-info: #9cbfd3;     --posi-info-bg: #2a3e49;     --posi-info-border: #46606f;
 
-  --posi-band: #101a17;
-  --posi-band-ink: #eae7dd;
-  --posi-band-muted: #a9b8ae;
-  --posi-band-line: rgba(234, 231, 221, 0.14);
-  --posi-code-bg: #101a17;
-  --posi-code-ink: #dfe5dc;
+  --posi-band: #100f0d;
+  --posi-band-ink: #efe9de;
+  --posi-band-muted: #aaa398;
+  --posi-band-line: rgba(239, 233, 222, 0.14);
+  --posi-code-bg: #100f0d;
+  --posi-code-ink: #e9e3d8;
 
   --posi-cat-1: #9cc6e0;
   --posi-cat-2: #d68e66;
@@ -145,7 +143,7 @@
   --posi-cat-4: #d2ae5a;
   --posi-cat-5: #d198ae;
   --posi-cat-6: #8274bd;
-  --posi-cat-neutral: #7d8982;
+  --posi-cat-neutral: #7f786e;
 
   --posi-wos: #b9aee6;     --posi-on-wos: #161c1a;
   --posi-scopus: #e0a070;  --posi-on-scopus: #161c1a;
@@ -153,6 +151,6 @@
 
   --posi-shadow-pop: 0 2px 8px rgba(0, 0, 0, 0.4);
   --posi-shadow-card: none;
-  --posi-focus: #d1b58a;
+  --posi-focus: #a9c0de;
 }
 :root[data-theme="light"] { color-scheme: light; }

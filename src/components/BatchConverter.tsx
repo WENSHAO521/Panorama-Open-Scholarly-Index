@@ -136,19 +136,19 @@ export function BatchRun({ entries }: { entries: RefEntry[] }) {
                   {text}
                 </p>
                 {intext && (
-                  <p className="text-[11.5px] mt-1" style={{ color: 'var(--posi-muted)' }}>
+                  <p className="text-[12px] mt-1" style={{ color: 'var(--posi-muted)' }}>
                     {fmt === 'footnote' ? w.shortNote : w.inText}{locale === 'zh-Hans' ? '：' : ': '}<span className="font-mono">{intext}</span>
                   </p>
                 )}
                 {w.sourceNote[it.source] && (
-                  <p className="text-[11px] mt-1" style={{ color: 'var(--check)' }}>{w.sourceNote[it.source]}</p>
+                  <p className="text-[12px] mt-1" style={{ color: 'var(--check)' }}>{w.sourceNote[it.source]}</p>
                 )}
               </li>
             ))}
           </ol>
           {failed.length > 0 && (
             <div className="px-5 py-4" style={{ borderTop: '1px solid var(--posi-border)', background: 'var(--rejected-soft)' }}>
-              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--rejected)' }}>{w.byHand}</p>
+              <p className="text-xs font-medium mb-2" style={{ color: 'var(--rejected)' }}>{w.byHand}</p>
               <ul className="space-y-1">
                 {failed.map((it, i) => (
                   <li key={i} className="text-xs font-mono break-words" style={{ color: 'var(--rejected)' }}>{it.entry.raw.slice(0, 200)}</li>

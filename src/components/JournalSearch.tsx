@@ -118,11 +118,11 @@ export function JournalSearch() {
                     <li key={h.key} className="px-5 py-3.5 grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
                       <div className="min-w-0">
                         <Link href={localizedHref(locale, journalHref(h.key))} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{h.title}</Link>
-                        <p className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>
+                        <p className="text-[13px] truncate" style={{ color: 'var(--muted)' }}>
                           {[h.publisher, `ISSN ${h.key}`, h.psc ? `PSC ${h.psc}` : null].filter(Boolean).join(', ')}
                         </p>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                      <div className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: 'var(--muted)' }}>
                         {h.works > 0 && <span className="font-mono tnum">{fill(w.works, { n: fmt(h.works) })}</span>}
                         {h.oa && <span>{w.openAccess}</span>}
                         <PosiGrades tier={curated?.k === 'core' ? 'core' : 'indexed'}

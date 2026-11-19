@@ -119,14 +119,14 @@ export function CertificationView({ locale }: { locale: Locale }) {
 
       <section aria-labelledby="tiers" className="grid gap-px rounded-[var(--radius)] overflow-hidden md:grid-cols-2 mb-14" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
         <div className="p-6" style={{ background: 'var(--surface)' }}>
-          <h2 id="tiers" className="text-[18px] font-semibold">{w.indexed}</h2>
+          <h2 id="tiers" className="text-[18px] font-medium">{w.indexed}</h2>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>{w.indexedNote}</p>
           <ul className="mt-4 space-y-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>
             {w.indexedItems.map(t => <li key={t}>{t}</li>)}
           </ul>
         </div>
         <div className="p-6" style={{ background: 'var(--teal-soft)' }}>
-          <h2 className="text-[18px] font-semibold" style={{ color: 'var(--teal)' }}>{w.core}</h2>
+          <h2 className="text-[18px] font-medium" style={{ color: 'var(--teal)' }}>{w.core}</h2>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>{w.coreNote}</p>
           <ul className="mt-4 space-y-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>
             {w.coreItems.map(t => <li key={t}>{t}</li>)}
@@ -140,7 +140,7 @@ export function CertificationView({ locale }: { locale: Locale }) {
           <ul className="space-y-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>
             {w.eligible.map(e => <li key={e} className="pl-4" style={{ borderLeft: '2px solid var(--teal)' }}>{e}</li>)}
           </ul>
-          <p className="mt-6 text-[13.5px] font-medium">{w.notEligibleTitle}</p>
+          <p className="mt-6 text-[14px] font-medium">{w.notEligibleTitle}</p>
           <ul className="mt-2 space-y-2 text-[14px]" style={{ color: 'var(--muted)' }}>
             {w.notEligible.map(e => <li key={e} className="pl-4" style={{ borderLeft: '2px solid var(--line)' }}>{e}</li>)}
           </ul>
@@ -167,9 +167,9 @@ export function CertificationView({ locale }: { locale: Locale }) {
         <ol className="stat-strip md:grid-cols-4">
           {w.steps.map(s => (
             <li key={s.verb}>
-              <p className="text-[16px] font-semibold" style={{ color: 'var(--teal)' }}>{s.verb}</p>
+              <p className="text-[16px] font-medium" style={{ color: 'var(--teal)' }}>{s.verb}</p>
               <p className="mt-0.5 font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{s.time}</p>
-              <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{s.body}</p>
+              <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{s.body}</p>
             </li>
           ))}
         </ol>

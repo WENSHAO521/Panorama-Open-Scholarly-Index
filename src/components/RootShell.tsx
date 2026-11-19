@@ -24,10 +24,21 @@ const ibmPlexSans = localFont({
   ],
 });
 
-const geistMono = localFont({
-  variable: "--font-geist-mono",
+// Identifiers and codes (ISSN, POSI IDs, subject codes): the mono of the same family.
+const ibmPlexMono = localFont({
+  variable: "--font-plex-mono",
   display: "swap",
-  src: [{ path: "../fonts/geist-mono.woff2", weight: "400 700", style: "normal" }],
+  src: [
+    { path: "../fonts/ibm-plex-mono-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/ibm-plex-mono-500.woff2", weight: "500", style: "normal" },
+  ],
+});
+
+// Page titles and the home headline only (SIL OFL, see src/fonts/LICENSE-newsreader.txt).
+const newsreader = localFont({
+  variable: "--font-newsreader",
+  display: "swap",
+  src: [{ path: "../fonts/newsreader-latin.woff2", weight: "200 800", style: "normal" }],
 });
 
 /**
@@ -37,7 +48,7 @@ const geistMono = localFont({
 export function RootShell({ locale, children }: Readonly<{ locale: Locale; children: React.ReactNode }>) {
   const messages = getMessages(locale);
   return (
-    <html lang={HTML_LANG[locale]} className={`${ibmPlexSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
+    <html lang={HTML_LANG[locale]} className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${newsreader.variable} h-full`} suppressHydrationWarning>
       {/* eslint-disable-next-line @next/next/no-head-element -- the document head of a root layout, as before the move into this component */}
       <head>
         {/* Before React loads: survive browser page translation (see lib/translation-guard). */}
@@ -51,7 +62,7 @@ export function RootShell({ locale, children }: Readonly<{ locale: Locale; child
       <body className="min-h-full flex flex-col antialiased">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
           style={{ background: 'var(--posi-brand)', color: 'var(--posi-on-brand)' }}
         >
           {messages.common.skipToContent}

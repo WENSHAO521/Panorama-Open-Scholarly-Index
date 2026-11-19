@@ -51,9 +51,9 @@ export function AnnouncementsView({ locale }: { locale: Locale }) {
               <Link href={href(`/announcements/${a.slug}/`)} className="block p-5 transition-colors hover:bg-[var(--hover)]">
                 <span className="flex items-center gap-2">
                   <time dateTime={a.date} className="font-mono text-[12px]" style={{ color: 'var(--muted)' }}>{when(locale, a.date)}</time>
-                  {lang && w.english && <span className="chip text-[11px]">{w.english}</span>}
+                  {lang && w.english && <span className="chip text-[12px]">{w.english}</span>}
                 </span>
-                <h2 lang={lang} className="mt-1 text-[16px] font-semibold leading-snug" style={{ color: 'var(--ink)' }}>{text?.title ?? a.title}</h2>
+                <h2 lang={lang} className="mt-1 text-[16px] font-medium leading-snug" style={{ color: 'var(--ink)' }}>{text?.title ?? a.title}</h2>
                 <p lang={lang} className="mt-1.5 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{text?.summary ?? a.summary}</p>
               </Link>
             </li>

@@ -115,7 +115,7 @@ export function CertificationApply() {
       <div className="grid gap-5 md:grid-cols-2">
         {FIELDS.map(f => (
           <div key={f.key} className={`flex flex-col gap-2 ${f.key === 'title' || f.key === 'ethics' || f.key === 'license' ? 'md:col-span-2' : ''}`}>
-            <label htmlFor={`ap-${f.key}`} className="text-[13.5px] font-medium">
+            <label htmlFor={`ap-${f.key}`} className="text-[14px] font-medium">
               {w.label[f.key]}{!f.required && <span className="font-normal" style={{ color: 'var(--muted)' }}>{w.optional}</span>}
             </label>
             <div className={f.key === 'issn' ? 'flex gap-2' : undefined}>
@@ -131,7 +131,7 @@ export function CertificationApply() {
               />
               {f.key === 'issn' && <button type="button" className="btn shrink-0" onClick={checkIssn} disabled={check.state === 'checking'}>{check.state === 'checking' ? w.checking : w.check}</button>}
             </div>
-            <p id={`ap-${f.key}-help`} className="text-[12.5px]" style={{ color: errors[f.key] ? 'var(--rejected)' : 'var(--muted)' }}>
+            <p id={`ap-${f.key}-help`} className="text-[13px]" style={{ color: errors[f.key] ? 'var(--rejected)' : 'var(--muted)' }}>
               {errors[f.key] ?? w.help[f.key]}
             </p>
             {f.key === 'issn' && check.state === 'found' && (
@@ -152,7 +152,7 @@ export function CertificationApply() {
         {ready && (
           <a href={ready} className="btn"><EnvelopeSimple className="h-4 w-4" /> {w.openMail}</a>
         )}
-        <span className="text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <span className="text-[13px]" style={{ color: 'var(--muted)' }}>
           {ready ? fill(w.ready, { to: TO }) : w.notSent}
         </span>
       </div>

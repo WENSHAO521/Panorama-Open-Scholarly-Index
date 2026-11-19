@@ -9,7 +9,7 @@ export default function PageError({ error, retry }: { error: Error & { digest?: 
   useEffect(() => { console.error(error) }, [error])
   return (
     <div className="wrap py-24 max-w-2xl">
-      <h1 className="text-[26px] font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>This page stopped working</h1>
+      <h1 className="font-display text-[26px] leading-tight" style={{ color: 'var(--ink)' }}>This page stopped working</h1>
       <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
         Something went wrong while showing this page. Try again; if you are using your browser&rsquo;s translation,
         reloading the page and translating it again usually helps.

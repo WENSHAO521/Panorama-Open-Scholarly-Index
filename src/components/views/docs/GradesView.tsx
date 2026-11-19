@@ -33,7 +33,7 @@ function En() {
 
       <div className="doc">
         <h2 id="examples">Examples</h2>
-        <div className="panel p-4 space-y-3 max-w-[560px] text-[13.5px]">
+        <div className="panel p-4 space-y-3 max-w-[560px] text-[14px]">
           <div className="flex flex-wrap items-center gap-3">
             <PosiGrades size="md" tier="core" ajr="A−" quartile="Q1" zone={1} />
             <span style={{ color: 'var(--muted)' }}>A certified journal, rated and ranked</span>
@@ -55,9 +55,9 @@ function En() {
             <tbody>
               {PARTS.map(([part, values, meaning, link]) => (
                 <tr key={part}>
-                  <td className="font-semibold whitespace-nowrap">{part}</td>
-                  <td className="font-mono text-[12.5px] min-w-[150px]">{values}</td>
-                  <td className="text-[13.5px] min-w-[240px]">{meaning}</td>
+                  <td className="font-medium whitespace-nowrap">{part}</td>
+                  <td className="font-mono text-[13px] min-w-[150px]">{values}</td>
+                  <td className="text-[14px] min-w-[240px]">{meaning}</td>
                   <td className="whitespace-nowrap text-[13px]">{link}</td>
                 </tr>
               ))}
@@ -122,7 +122,7 @@ function Zh() {
 
       <div className="doc">
         <h2 id="examples">示例</h2>
-        <div className="panel p-4 space-y-3 max-w-[560px] text-[13.5px]">
+        <div className="panel p-4 space-y-3 max-w-[560px] text-[14px]">
           <div className="flex flex-wrap items-center gap-3">
             <PosiGrades locale="zh-Hans" size="md" tier="core" ajr="A−" quartile="Q1" zone={1} />
             <span style={{ color: 'var(--muted)' }}>已认证期刊，已评级并已排名</span>
@@ -144,9 +144,9 @@ function Zh() {
             <tbody>
               {PARTS_ZH.map(([part, values, meaning, link]) => (
                 <tr key={part}>
-                  <td className="font-semibold whitespace-nowrap">{part}</td>
-                  <td className="font-mono text-[12.5px] min-w-[150px]">{values}</td>
-                  <td className="text-[13.5px] min-w-[240px]">{meaning}</td>
+                  <td className="font-medium whitespace-nowrap">{part}</td>
+                  <td className="font-mono text-[13px] min-w-[150px]">{values}</td>
+                  <td className="text-[14px] min-w-[240px]">{meaning}</td>
                   <td className="whitespace-nowrap text-[13px]">{link}</td>
                 </tr>
               ))}

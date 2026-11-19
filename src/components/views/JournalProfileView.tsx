@@ -126,7 +126,7 @@ export function JournalProfileView() {
   return (
     <article className="pb-12">
       <header className="pt-6 pb-6 md:pt-8">
-        <nav aria-label={w.breadcrumb} className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <nav aria-label={w.breadcrumb} className="mb-2.5 text-[13px]" style={{ color: 'var(--muted)' }}>
           <Link href={href('/')} className="hover:underline">POSI</Link>
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
           <Link href={href('/journals/')} className="hover:underline">{w.journals}</Link>
@@ -144,19 +144,19 @@ export function JournalProfileView() {
           {j.dj && <span className="chip">DOAJ</span>}
           {j.sc === 'multidisciplinary' && <span className="chip">{w.multidisciplinary}</span>}
         </div>
-        <h1 className="text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
-        <p className="mt-2 text-[15.5px]" style={{ color: 'var(--ink-2)' }}>
+        <h1 className="text-[24px] md:text-[32px] font-medium leading-tight tracking-tight max-w-4xl" style={{ color: 'var(--ink)' }}>{j.t}</h1>
+        <p className="mt-2 text-[16px]" style={{ color: 'var(--ink-2)' }}>
           {[j.pub ?? curated?.p, country].filter(Boolean).join(' · ') || w.publisherMissing}
         </p>
         {(j.ab || j.alt?.length) && (
-          <p className="mt-1 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+          <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>
             {w.alsoKnown}{[j.ab, ...(j.alt ?? [])].filter((x, i, a) => x && a.indexOf(x) === i).join('; ')}
           </p>
         )}
-        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[13px]" style={{ color: 'var(--muted)' }}>
           {j.is.map(i => <span key={i}>ISSN {i}</span>)}
         </p>
-        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px]">
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
           <Link href={href(`/publications/?issn=${encodeURIComponent(j.k)}&sort=newest`)} className="btn btn-primary" prefetch={false}>
             <Books className="h-4 w-4" /> {w.browse}
           </Link>
@@ -192,7 +192,7 @@ export function JournalProfileView() {
           {!!j.cy?.length && <YearTrend rows={j.cy} />}
 
           <section aria-labelledby="subject">
-            <h2 id="subject" className="text-[17px] font-semibold tracking-tight mb-3">{w.subject}</h2>
+            <h2 id="subject" className="text-[17px] font-medium tracking-tight mb-3">{w.subject}</h2>
             <div className="panel p-4">
               <p className="text-[15px]">
                 {catName && catHref
@@ -203,7 +203,7 @@ export function JournalProfileView() {
                 {w.confidence[j.sc ?? 'unclassified'] ?? j.sc}{w.classA}{locale === 'en' ? ' ' : ''}<Link href={href('/subjects/')} className="link">{w.psc}</Link>{locale === 'en' ? ' ' : ''}{w.classB}
               </p>
               {!!j.tp?.length && (
-                <p className="mt-4 text-[12.5px] font-medium" style={{ color: 'var(--muted)' }}>{w.topics}</p>
+                <p className="mt-4 text-[13px] font-medium" style={{ color: 'var(--muted)' }}>{w.topics}</p>
               )}
               {!!j.tp?.length && (
                 <ul className="mt-2 space-y-2.5">
@@ -211,7 +211,7 @@ export function JournalProfileView() {
                     const max = j.tp![0][3] || 1
                     return (
                       <li key={topic}>
-                        <div className="flex justify-between gap-3 text-[13.5px]">
+                        <div className="flex justify-between gap-3 text-[14px]">
                           <span className="min-w-0 truncate" style={{ color: 'var(--ink)' }}>{topic}</span>
                           <span className="font-mono tnum shrink-0" style={{ color: 'var(--muted)' }}>{fmt(n)}</span>
                         </div>
@@ -232,13 +232,13 @@ export function JournalProfileView() {
           <EvaluationCard j={j} core={core} w={w} locale={locale} />
 
           <section aria-labelledby="coverage" className="panel p-4">
-            <h2 id="coverage" className="text-[15px] font-semibold">{w.coverage}</h2>
-            <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+            <h2 id="coverage" className="text-[15px] font-medium">{w.coverage}</h2>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
               {core
                 ? w.coverageCore
                 : w.coverageIndexed}
             </p>
-            <p className="mt-2 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+            <p className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>
               {w.sources}{(j.src ?? []).map(s => (s === 'openalex' ? 'OpenAlex' : s === 'crossref' ? 'Crossref' : s)).join(', ') || 'POSI'}
             </p>
             {!core && (
@@ -249,8 +249,8 @@ export function JournalProfileView() {
             <div className="mt-3"><IndexChecks issns={[j.k, ...j.is.filter(i => i !== j.k)]} /></div>
           </section>
           <section aria-labelledby="ids" className="panel">
-            <h2 id="ids" className="px-4 pt-4 text-[15px] font-semibold">{w.identifiers}</h2>
-            <dl className="px-4 pb-4 pt-2 text-[13.5px] divide-y divide-[var(--line-soft)]">
+            <h2 id="ids" className="px-4 pt-4 text-[15px] font-medium">{w.identifiers}</h2>
+            <dl className="px-4 pb-4 pt-2 text-[14px] divide-y divide-[var(--line-soft)]">
               <Row k="ISSN-L" v={j.k} mono />
               <Row k="ISSN" v={j.is.join(', ')} mono />
               <Row k="POSI ID" v={j.pid} mono />
@@ -282,11 +282,11 @@ function EvaluationCard({ j, core, w, locale }: { j: JournalProfile; core: boole
   const history = historyRows(j)
   return (
     <section aria-labelledby="evaluation" className="panel p-4">
-      <h2 id="evaluation" className="text-[15px] font-semibold mb-3">{w.evaluation}</h2>
+      <h2 id="evaluation" className="text-[15px] font-medium mb-3">{w.evaluation}</h2>
       <EvaluationPanel ev={ev} core={core ? 'core' : 'indexed'} idPrefix="pev" showPqf={core} locale={locale} />
       {history.length > 0 && (
         <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--line-soft)' }}>
-          <h3 id="history" className="mb-2.5 text-[13px] font-semibold">{w.history}</h3>
+          <h3 id="history" className="mb-2.5 text-[13px] font-medium">{w.history}</h3>
           <RankingHistory rows={history} locale={locale} />
         </div>
       )}
@@ -295,7 +295,7 @@ function EvaluationCard({ j, core, w, locale }: { j: JournalProfile; core: boole
           <Certificate className="h-4 w-4" /> {w.zoneCertificate}
         </Link>
       )}
-      <Link href={href('/methodology/')} className="link mt-3 inline-block text-[12.5px]">{w.how}</Link>
+      <Link href={href('/methodology/')} className="link mt-3 inline-block text-[13px]">{w.how}</Link>
     </section>
   )
 }
@@ -332,7 +332,7 @@ function Empty({ title, body, w }: { title: string; body: string; w: typeof en }
   const locale = useLocale()
   return (
     <div className="py-16 max-w-xl">
-      <h1 className="text-[24px] font-semibold tracking-tight">{title}</h1>
+      <h1 className="font-display text-[24px] leading-tight">{title}</h1>
       <p className="mt-2 text-[15px]" style={{ color: 'var(--ink-2)' }}>{body}</p>
       <Link href={localizedHref(locale, '/journals/')} className="btn btn-primary mt-5">{w.search}</Link>
     </div>

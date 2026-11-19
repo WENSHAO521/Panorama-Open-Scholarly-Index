@@ -105,15 +105,15 @@ function FieldGroup({ id, title, intro, fields, locale }: { id: string; title: s
   const missing = fields.filter(f => isEmpty(f.value)).map(f => label(f.k))
   return (
     <section aria-labelledby={id} className="px-4 sm:px-5 py-4 first:border-t-0" style={{ borderTop: '1px solid var(--line-soft)' }}>
-      <h3 id={id} className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{title}</h3>
-      {intro && <p className="mt-1 text-[12.5px] max-w-[65ch]" style={{ color: 'var(--soft)' }}>{intro}</p>}
+      <h3 id={id} className="text-[12px] font-medium" style={{ color: 'var(--muted)' }}>{title}</h3>
+      {intro && <p className="mt-1 text-[13px] max-w-[65ch]" style={{ color: 'var(--soft)' }}>{intro}</p>}
       {have.length > 0 && (
         <dl className="mt-3 grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[14px]">
           {have.map(({ k, value, mono }) => {
             const f = FIELD_BY_KEY[k]
             return (
               <div key={k} className="min-w-0">
-                <dt className="text-[12.5px]" style={{ color: 'var(--muted)' }}>
+                <dt className="text-[13px]" style={{ color: 'var(--muted)' }}>
                   {label(k)}
                   {f && (zh
                     ? <span style={{ color: 'var(--soft)' }} title={BASIS_ZH[f.basis].description}> · {fieldSourceZh(f.source)} · {BASIS_ZH[f.basis].label}</span>
@@ -125,7 +125,7 @@ function FieldGroup({ id, title, intro, fields, locale }: { id: string; title: s
           })}
         </dl>
       )}
-      {missing.length > 0 && <p className="mt-3 text-[12.5px]" style={{ color: 'var(--soft)' }}>{w.notRecorded}{missing.join(w.listSep)}</p>}
+      {missing.length > 0 && <p className="mt-3 text-[13px]" style={{ color: 'var(--soft)' }}>{w.notRecorded}{missing.join(w.listSep)}</p>}
     </section>
   )
 }
@@ -146,7 +146,7 @@ function Figure({ label, value, note, sample, href, w }: {
         : <dd className="figure text-[24px] sm:text-[28px] leading-tight mt-1 tnum break-words">{value}</dd>}
       {note && <dd className="note">{note}</dd>}
       {sample && <dd className="text-[12px] mt-0.5" style={{ color: sample.tone }}>{sample.label}</dd>}
-      {href && <dd className="mt-1 text-[12.5px]"><Link href={href} className="link">{w.how}</Link></dd>}
+      {href && <dd className="mt-1 text-[13px]"><Link href={href} className="link">{w.how}</Link></dd>}
     </div>
   )
 }
@@ -179,7 +179,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
   return (
     <article>
       <header className="pt-6 pb-6 md:pt-8">
-        <nav aria-label={w.breadcrumb} className="mb-2.5 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+        <nav aria-label={w.breadcrumb} className="mb-2.5 text-[13px]" style={{ color: 'var(--muted)' }}>
           <Link href={href('/')} className="hover:underline">POSI</Link>
           <span className="mx-1.5" style={{ color: 'var(--soft)' }}>&rsaquo;</span>
           <Link href={href('/journals/')} className="hover:underline">{w.journals}</Link>
@@ -195,11 +195,11 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
               <VerificationPill v={v} locale={locale} />
               <FreshnessTag f={f} locale={locale} />
             </div>
-            <h1 className="mt-4 text-[24px] md:text-[32px] font-semibold leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
-            <p className="mt-2 text-[15.5px]" style={{ color: 'var(--ink-2)' }}>
+            <h1 className="mt-4 text-[24px] md:text-[32px] font-medium leading-tight tracking-tight" style={{ color: 'var(--ink)' }}>{j.title}</h1>
+            <p className="mt-2 text-[16px]" style={{ color: 'var(--ink-2)' }}>
               {[j.publisher, country(j.registration_country || j.country)].filter(Boolean).join(' · ')}
             </p>
-            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[12.5px]" style={{ color: 'var(--muted)' }}>
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[13px]" style={{ color: 'var(--muted)' }}>
               {j.posi_id && <span>{j.posi_id}</span>}
               {j.issn_online && <span>eISSN {j.issn_online}</span>}
               {j.issn_print && j.issn_print !== j.issn_online && <span>pISSN {j.issn_print}</span>}
@@ -265,13 +265,13 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
               <div className="flex flex-col min-w-0">
                 <dt>{w.subject}</dt>
                 {j.psc_category
-                  ? <dd className="text-[16px] sm:text-[17px] font-semibold leading-snug mt-1.5" style={{ color: 'var(--ink)' }}>{pscName ?? j.psc_category}</dd>
+                  ? <dd className="text-[16px] sm:text-[17px] font-medium leading-snug mt-1.5" style={{ color: 'var(--ink)' }}>{pscName ?? j.psc_category}</dd>
                   : <dd className="text-[15px] py-1.5" style={{ color: 'var(--soft)' }}>{w.notClassified}</dd>}
                 {j.psc_category && <dd className="note"><span className="font-mono">{j.psc_category}</span>{j.psc_confidence && w.confidence(j.psc_confidence)}</dd>}
               </div>
             </dl>
             {oa && (
-              <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+              <p className="mt-3 text-[13px]" style={{ color: 'var(--muted)' }}>
                 {w.openalexStats(<span className="tnum">{fmtScore(oa.two_yr_mean_citedness, 'n/a')}</span>, <span className="tnum">{fmt(oa.h_index)}</span>, citationStats?.fetched_at?.slice(0, 10))}
               </p>
             )}
@@ -280,12 +280,12 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
 
         <aside className="space-y-4 lg:row-span-2 lg:col-start-2 lg:row-start-1">
           <div className="panel p-4 space-y-2">
-            <p className="text-[13.5px] font-medium" style={{ color: 'var(--ink)' }}>{w.more}</p>
+            <p className="text-[14px] font-medium" style={{ color: 'var(--ink)' }}>{w.more}</p>
             {links}
             <Link href={href('/certificate/')} className="btn w-full justify-start"><Certificate className="h-4 w-4" /> {w.certificate}</Link>
             {issn && <IndexChecks issns={[j.issn_online, j.issn_print].filter((x): x is string => !!x)} />}
           </div>
-          <div className="panel p-4 space-y-4 text-[13.5px] hidden lg:block">
+          <div className="panel p-4 space-y-4 text-[14px] hidden lg:block">
             <StatusNotes j={j} k={k} v={v} f={f} locale={locale} />
           </div>
         </aside>
@@ -357,7 +357,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
                       <li key={label}>
                         <div className="flex items-baseline justify-between gap-3 text-[14px]">
                           <span style={{ color: 'var(--ink)' }}>{label}</span>
-                          <span className="tnum shrink-0"><span className="font-semibold">{val}</span><span style={{ color: 'var(--muted)' }}> / {max}</span></span>
+                          <span className="tnum shrink-0"><span className="font-medium">{val}</span><span style={{ color: 'var(--muted)' }}> / {max}</span></span>
                         </div>
                         <div className="mt-1.5 h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-3)' }}>
                           <div className="h-full rounded-full" style={{ width: `${Math.min(100, (val / max) * 100)}%`, background: 'var(--teal)' }} />
@@ -369,7 +369,7 @@ export function RecordView({ journal: j, metrics = {}, jsonHref, links, locale =
             </section>
           )}
 
-          <div className="panel p-4 space-y-4 text-[13.5px] lg:hidden">
+          <div className="panel p-4 space-y-4 text-[14px] lg:hidden">
             <StatusNotes j={j} k={k} v={v} f={f} locale={locale} />
           </div>
           <div className="panel p-4 text-[13px]">

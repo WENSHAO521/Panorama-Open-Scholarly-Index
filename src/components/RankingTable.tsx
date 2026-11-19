@@ -132,7 +132,7 @@ export function RankingTable({ rows, fileName, categories }: { rows: RankedJourn
           <div className="relative flex-1 min-w-[200px]">
             <label htmlFor="rsearch" className="sr-only">{w.find}</label>
             <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'var(--soft)' }} />
-            <input id="rsearch" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={w.findPlaceholder} className="input h-9 pl-9 text-[13.5px]" />
+            <input id="rsearch" type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={w.findPlaceholder} className="input h-9 pl-9 text-[14px]" />
           </div>
           <button type="button" className="btn h-9 self-start" onClick={download} disabled={!filtered.length}><DownloadSimple className="h-4 w-4" /> CSV</button>
         </div>
@@ -206,15 +206,15 @@ export function RankingTable({ rows, fileName, categories }: { rows: RankedJourn
                 <tr key={r.id}>
                   <td className="text-right font-mono tnum">
                     <span style={{ color: 'var(--ink)' }}>{r.rank}</span>
-                    <span className="text-[11px]" style={{ color: 'var(--soft)' }}>/{r.n}</span>
+                    <span className="text-[12px]" style={{ color: 'var(--soft)' }}>/{r.n}</span>
                   </td>
                   <td className="max-w-[360px]">
                     {href ? <Link href={href} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{r.title}</Link> : <span className="font-medium">{r.title}</span>}
-                    <div className="text-[12.5px] truncate" style={{ color: 'var(--muted)' }}>
+                    <div className="text-[13px] truncate" style={{ color: 'var(--muted)' }}>
                       {[r.core ? w.coreCollection : null, r.publisher, r.issn[0] && `ISSN ${r.issn[0]}`].filter(Boolean).join(w.sep)}
                     </div>
                   </td>
-                  {categories && <td className="font-mono text-[12.5px]"><Link href={localizedHref(locale, `/rankings/${r.cat}/`)} className="hover:underline">{r.cat}</Link></td>}
+                  {categories && <td className="font-mono text-[13px]"><Link href={localizedHref(locale, `/rankings/${r.cat}/`)} className="hover:underline">{r.cat}</Link></td>}
                   <td className="text-right font-mono tnum">{fmtScore(r.pnci, '–')}</td>
                   <td className="text-right font-mono tnum">{fmtPercentile(r.pct, '–')}</td>
                   <td><QuartileBadge q={r.q} provisional={r.status === 'provisional'} locale={locale} /></td>

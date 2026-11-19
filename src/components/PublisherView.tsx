@@ -214,7 +214,7 @@ export function PublisherView({ p }: { p: PublisherDetail }) {
 
         {p.n > 5 && (
           <p className="mt-4 mb-2 text-[13px]" style={{ color: 'var(--muted)' }} aria-live="polite">
-            <span className="font-semibold tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{fill(t.of, { n: fmt(p.n) })}
+            <span className="font-medium tnum" style={{ color: 'var(--ink)' }}>{fmt(filtered.length)}</span>{fill(t.of, { n: fmt(p.n) })}
             {journals.length < p.n && <span style={{ color: 'var(--soft)' }}>{t.loadingFull}</span>}
           </p>
         )}
@@ -236,9 +236,9 @@ export function PublisherView({ p }: { p: PublisherDetail }) {
                   <td className="max-w-[380px]">
                     <Link href={href(j.h)} prefetch={false} className="font-medium hover:underline" style={{ color: 'var(--teal)' }}>{j.t}</Link>
                     {j.core && <span className="chip ml-2" style={{ color: 'var(--teal)', background: 'var(--teal-soft)', borderColor: 'transparent' }}>{t.core}</span>}
-                    {j.co && <span className="block text-[12.5px]" style={{ color: 'var(--muted)' }}>{country(j.co)}</span>}
+                    {j.co && <span className="block text-[13px]" style={{ color: 'var(--muted)' }}>{country(j.co)}</span>}
                   </td>
-                  <td className="font-mono text-[12.5px] whitespace-nowrap">{j.i ?? '-'}</td>
+                  <td className="font-mono text-[13px] whitespace-nowrap">{j.i ?? '-'}</td>
                   <td className="text-[13px]" style={{ color: j.s ? 'var(--ink-2)' : 'var(--soft)' }}>{j.s ? subject(j.s) : t.unclassified}</td>
                   <td className="text-[13px]" style={{ color: j.oa ? 'var(--ink)' : 'var(--soft)' }}>
                     {j.oa ? (j.dj ? t.yesDoaj : t.yes) : j.oa === false ? t.no : '-'}

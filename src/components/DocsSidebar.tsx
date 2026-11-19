@@ -21,7 +21,7 @@ export function DocsSidebar() {
     <nav aria-label={m.common.documentation} className="space-y-5">
       {sections.map(section => (
         <div key={section.title}>
-          <h2 className="mb-1.5 text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{section.title}</h2>
+          <h2 className="mb-1.5 text-[12px] font-medium" style={{ color: 'var(--muted)' }}>{section.title}</h2>
           <ul>
             {section.links.map(l => {
               const active = norm(l.href) === pathname

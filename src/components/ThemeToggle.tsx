@@ -39,11 +39,11 @@ export function ThemeToggle({ onBand = false }: { onBand?: boolean }) {
             aria-label={header.theme[id]}
             title={header.theme[id]}
             onClick={() => pick(id)}
-            className="inline-flex items-center justify-center w-8 h-7"
+            className="inline-flex items-center justify-center w-8 h-8 transition-colors"
             style={{
               borderLeft: i ? `1px solid ${onBand ? 'var(--band-line)' : 'var(--line)'}` : undefined,
-              background: on ? (onBand ? 'var(--band-ink)' : 'var(--posi-brand)') : 'transparent',
-              color: on ? (onBand ? 'var(--band)' : 'var(--posi-on-brand)') : (onBand ? 'var(--band-muted)' : 'var(--muted)'),
+              background: on ? (onBand ? 'var(--band-ink)' : 'var(--surface-2)') : 'transparent',
+              color: on ? (onBand ? 'var(--band)' : 'var(--ink)') : (onBand ? 'var(--band-muted)' : 'var(--muted)'),
             }}
           >
             <Icon className="h-3.5 w-3.5" weight={on ? 'fill' : 'regular'} aria-hidden="true" />

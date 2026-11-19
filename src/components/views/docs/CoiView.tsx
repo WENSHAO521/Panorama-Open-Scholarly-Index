@@ -49,7 +49,7 @@ function En() {
                 {psg.map(j => (
                   <tr key={j.id}>
                     <td><Link href={`/journal/${j.journal_code}/`} className="hover:underline" style={{ color: 'var(--teal)' }}>{j.title}</Link></td>
-                    <td className="font-mono text-[12.5px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
+                    <td className="font-mono text-[13px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -121,7 +121,7 @@ function Zh() {
                 {psg.map(j => (
                   <tr key={j.id}>
                     <td><Link href={L(`/journal/${j.journal_code}/`)} className="hover:underline" style={{ color: 'var(--teal)' }}>{j.title}</Link></td>
-                    <td className="font-mono text-[12.5px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
+                    <td className="font-mono text-[13px] whitespace-nowrap">{j.issn_online ?? j.issn_print ?? '-'}</td>
                   </tr>
                 ))}
               </tbody>

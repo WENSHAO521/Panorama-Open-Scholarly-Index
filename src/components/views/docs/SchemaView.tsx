@@ -49,7 +49,7 @@ function En() {
                   <td className="font-mono text-[12px] min-w-[170px] max-w-[240px]" style={{ color: 'var(--muted)' }}>{f.type}</td>
                   <td><BasisTag b={f.basis} /></td>
                   <td className="text-[13px] whitespace-nowrap" style={{ color: 'var(--muted)' }}>{f.source}</td>
-                  <td className="text-[13.5px]">{f.description}</td>
+                  <td className="text-[14px]">{f.description}</td>
                 </tr>
               ))}
             </tbody>
@@ -135,7 +135,7 @@ function Zh() {
                   <td className="font-mono text-[12px] min-w-[170px] max-w-[240px]" style={{ color: 'var(--muted)' }}>{f.type}</td>
                   <td><BasisTag b={f.basis} locale="zh-Hans" /></td>
                   <td className="text-[13px] whitespace-nowrap" style={{ color: 'var(--muted)' }}>{fieldSourceZh(f.source)}</td>
-                  <td className="text-[13.5px]">{FIELD_DESCRIPTION_ZH[f.key] ?? f.description}</td>
+                  <td className="text-[14px]">{FIELD_DESCRIPTION_ZH[f.key] ?? f.description}</td>
                 </tr>
               ))}
             </tbody>

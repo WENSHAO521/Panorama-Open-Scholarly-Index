@@ -47,7 +47,7 @@ export function OpenAccessView({ locale }: { locale: Locale }) {
         <p className="max-w-[68ch]">{fill(w.lead, { n: fmt(oa.length), doaj: fmt(doaj) })}</p>
       </PageHeader>
       <SubjectGrid cats={getDirectoryCategories()} count={c => c.oa} query="?oa=1" locale={locale} />
-      <p className="mt-8 text-[13.5px]" style={{ color: 'var(--muted)' }}>
+      <p className="mt-8 text-[14px]" style={{ color: 'var(--muted)' }}>
         {w.source} <Link href={href('/journals/')} className="link">{w.all}</Link>
       </p>
     </div>

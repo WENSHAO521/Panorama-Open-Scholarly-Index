@@ -4,6 +4,10 @@ import { HomeSearch, LiveWorksCount } from '@/components/HomeSearch'
 import { getDirectory, getDirectoryCategories, getPublishers } from '@/lib/global-journals'
 import { IndexGlance } from '@/components/IndexGlance'
 import { getCoreCollection } from '@/lib/data'
+import { publisherHref } from '@/lib/publishers'
+import { ajrOf } from '@/lib/evaluation/journal'
+import { countryNameIn } from '@/i18n/places'
+import type { Journal } from '@/lib/types'
 import { getRankings, getCategories, getCategoryRanking, RANKING_AVAILABLE, RANKING_SNAPSHOT } from '@/lib/rankings'
 import { fmtScore, fmtSnapshot } from '@/lib/evaluation/display'
 import { getSortedAnnouncements } from '@/lib/announcements'
@@ -12,7 +16,7 @@ import { getMessages, type Messages } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { localizedHref, pageAlternates } from '@/i18n/alternates'
 import { fill, formatDate, formatMonth, subjectName } from '@/i18n/format'
-import { ArrowRight, Certificate, Database, MagnifyingGlass, Medal, Quotes, SealCheck, ShieldCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
+import { ArrowRight, Certificate, Database, Medal, SealCheck, Stamp, TextAa } from '@phosphor-icons/react/dist/ssr'
 import type { Icon } from '@phosphor-icons/react'
 
 // The home page, shared by the root of every language (src/app/(en)/page.tsx, src/app/zh/page.tsx).
@@ -37,11 +41,126 @@ const SERVICE_GROUPS: { key: 'forAuthors' | 'forJournals'; items: Service[] }[] 
 ]
 
 // What the site is for, in the order a visitor meets it: check a journal, find its papers, cite them.
-const PILLARS: { key: 'journal' | 'publications' | 'cite'; href: string; moreHref?: string; icon: Icon }[] = [
-  { key: 'journal', href: '/journals/', moreHref: '/methodology/', icon: ShieldCheck },
-  { key: 'publications', href: '/publications/', icon: MagnifyingGlass },
-  { key: 'cite', href: '/cite/', moreHref: '/psg-format/', icon: Quotes },
+const PILLARS: { key: 'journal' | 'publications' | 'cite'; href: string; moreHref?: string }[] = [
+  { key: 'journal', href: '/journals/', moreHref: '/methodology/' },
+  { key: 'publications', href: '/publications/' },
+  { key: 'cite', href: '/cite/', moreHref: '/psg-format/' },
 ]
+
+/**
+ * The journal shown on the home page's catalogue card: a Core Collection
+ * journal with a PQF score, an AJR rating and a Latin-script title, picked by
+ * the build day so the card changes with each daily build. Real data only.
+ */
+function cardJournal(): { j: Journal; ajr: string } | null {
+  const pool: { j: Journal; ajr: string }[] = []
+  for (const j of getCoreCollection()) {
+    const ajr = ajrOf(j).rating
+    if (ajr && j.pqf && j.issn_online && j.posi_id && /^[\x20-\x7e]+$/.test(j.title)) pool.push({ j, ajr })
+  }
+  if (!pool.length) return null
+  const day = Math.floor(Date.now() / 86_400_000)
+  return pool[day % pool.length]
+}
+
+/** The Panorama Scholarly Group logo: its block mark (ink follows the colour scheme, the red stays) and wordmark. */
+function PsgLogo() {
+  return (
+    <span className="inline-flex items-center gap-3" style={{ color: 'var(--ink)' }}>
+      <svg viewBox="88 88 214 226" className="h-11 w-auto" aria-hidden="true">
+        <g transform="translate(100, 100)">
+          <rect x="0" y="0" width="30" height="200" fill="currentColor" />
+          <path d="M30 0 H120 C150 0, 150 70, 120 70 H30 Z" fill="#CC0000" />
+          <path d="M0 100 H120 V130 H30 V150 H120 V200 H0 V170 H90 V150 H0 Z" fill="currentColor" />
+          <path d="M150 200 H50 V170 H150 V50 H180 V200 Z" fill="currentColor" />
+          <rect x="160" y="10" width="30" height="30" fill="#CC0000" />
+        </g>
+      </svg>
+      <span className="leading-none">
+        <span className="block font-display text-[20px]" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>PANORAMA</span>
+        <span className="block mt-1 text-[9px] font-medium" style={{ letterSpacing: '0.15em', color: 'var(--muted)' }}>SCHOLARLY GROUP</span>
+      </span>
+    </span>
+  )
+}
+
+/** POSI's publisher and its publishing partner, with the conflict-of-interest note that has to go with them. */
+function Partners({ locale, m }: { locale: Locale; m: Messages['home']['partners'] }) {
+  const href = (p: string) => localizedHref(locale, p)
+  const atri = getPublishers().find(p => /^Asia Technology Research Institute$/i.test(p.name))
+  const items: { key: string; role: string; to: string; external?: boolean; logo: React.ReactNode }[] = [
+    { key: 'psg', role: m.publisher, to: 'https://panorama-sg.com/', external: true, logo: <PsgLogo /> },
+    {
+      key: 'atri', role: m.partner, to: atri ? href(publisherHref(atri)) : href('/publishers/'),
+      // eslint-disable-next-line @next/next/no-img-element -- a small static logo; the site is a static export without image optimisation
+      logo: <img src="/partners/atri-logo.webp" alt="Asia Technology Research Institute" width={110} height={48} className="partner-raster h-12 w-auto" />,
+    },
+  ]
+  return (
+    <section aria-labelledby="partners" className="pt-12 md:pt-16 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-center" style={{ borderTop: '1px solid var(--line)' }}>
+      <div>
+        <h2 id="partners" className="font-display text-[24px] md:text-[28px] leading-tight" style={{ color: 'var(--ink)' }}>{m.title}</h2>
+        <p className="mt-3 text-[14px] leading-relaxed max-w-[440px]" style={{ color: 'var(--muted)' }}>
+          {m.note}{locale === 'en' ? ' ' : ''}<Link href={href('/coi/')} className="link">{m.coi}</Link>
+        </p>
+      </div>
+      <ul className="grid sm:grid-cols-2 gap-px rounded-[var(--radius-lg)] overflow-hidden" style={{ background: 'var(--line)', border: '1px solid var(--line)' }}>
+        {items.map(i => (
+          <li key={i.key} style={{ background: 'var(--surface)' }}>
+            <a href={i.to} {...(i.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="flex h-full flex-col justify-between gap-6 p-6 transition-colors hover:bg-[var(--hover)]">
+              <span className="flex h-12 items-center">{i.logo}</span>
+              <span className="text-[13px]" style={{ color: 'var(--muted)' }}>{i.role}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+/** A Core Collection journal set as a library catalogue card: the home page's one rich moment. */
+function CatalogueCard({ locale, m }: { locale: Locale; m: Messages['home']['card'] }) {
+  const pick = cardJournal()
+  if (!pick) return null
+  const { j, ajr } = pick
+  const country = countryNameIn(locale, j.registration_country ?? j.country)
+  const rows: [string, React.ReactNode][] = [
+    [m.collection, m.core],
+    [m.pqf, <><span className="tnum">{j.pqf!.total}</span><span style={{ color: 'var(--muted)' }}> / 100</span></>],
+    [m.ajr, ajr],
+    [m.articles, <span key="a" className="tnum">{fmt(j.article_count)}</span>],
+  ]
+  return (
+    <figure className="catalogue relative mx-auto w-full max-w-[520px]" aria-label={m.label}>
+      {/* the card behind, slightly turned, so the front one reads as one of a drawer */}
+      <div className="relative">
+      <div aria-hidden className="catalogue-card catalogue-back absolute inset-0" />
+      <Link href={localizedHref(locale, `/journal/${j.journal_code}/`)} className="catalogue-card catalogue-front relative block px-6 pt-5 pb-12 sm:px-8 sm:pt-6">
+        <div className="flex items-baseline justify-between gap-4 font-mono text-[12px]" style={{ color: 'var(--muted)' }}>
+          <span>{j.psc_category ? `${j.psc_category} · ` : ''}{j.posi_id}</span>
+          <span>ISSN {j.issn_online}</span>
+        </div>
+        <div className="catalogue-rule mt-3" aria-hidden />
+        <p lang="en" className="mt-4 font-display text-[26px] sm:text-[30px] leading-[1.12]" style={{ color: 'var(--ink)' }}>{j.title}</p>
+        <p className="mt-2 text-[14px]" style={{ color: 'var(--ink-2)' }}>{j.publisher}{country ? ` · ${country}` : ''}</p>
+        <dl className="mt-6 grid sm:grid-cols-2 gap-x-6">
+          {rows.map(([k, v]) => (
+            <div key={k} className="flex items-baseline justify-between gap-3 py-2" style={{ borderTop: '1px solid var(--line)' }}>
+              <dt className="text-[13px]" style={{ color: 'var(--muted)' }}>{k}</dt>
+              <dd className="text-[14px] font-medium text-right" style={{ color: 'var(--ink)' }}>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium" style={{ color: 'var(--posi-brand)' }}>
+          {m.open}<ArrowRight className="h-4 w-4" aria-hidden />
+        </p>
+        <span aria-hidden className="catalogue-hole" />
+      </Link>
+      </div>
+      <figcaption className="mt-4 text-center text-[13px]" style={{ color: 'var(--muted)' }}>{m.label} · {m.note}</figcaption>
+    </figure>
+  )
+}
 
 const QUICK: { key: keyof Messages['home']['quick']; href: string }[] = [
   { key: 'allJournals', href: '/journals/' },
@@ -55,8 +174,8 @@ function SectionHead({ id, title, href, linkLabel, children }: { id: string; tit
   return (
     <div className="mb-4">
       <div className="flex items-end justify-between gap-4">
-        <h2 id={id} className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--ink)' }}>{title}</h2>
-        {href && <Link href={href} className="link text-[13.5px] shrink-0">{linkLabel}</Link>}
+        <h2 id={id} className="font-display text-[24px] md:text-[28px] leading-tight" style={{ color: 'var(--ink)' }}>{title}</h2>
+        {href && <Link href={href} className="link text-[14px] shrink-0 pb-1">{linkLabel}</Link>}
       </div>
       {children && <p className="mt-1 text-[14px]" style={{ color: 'var(--muted)' }}>{children}</p>}
     </div>
@@ -100,49 +219,49 @@ export function HomePage({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <section style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}>
-        <div className="wrap pt-12 pb-10 md:pt-20 md:pb-14">
-          <div className="max-w-[820px] mx-auto text-center">
-            <p className="text-[13px] font-medium" style={{ color: 'var(--posi-brand)' }}>{h.eyebrow}</p>
-            <h1 className="mt-3 text-[30px] md:text-[44px] font-semibold tracking-tight leading-[1.1]" style={{ color: 'var(--ink)' }}>
-              {h.title}
-            </h1>
-            <p className="mt-4 text-[15.5px] md:text-[17px] leading-relaxed max-w-[640px] mx-auto" style={{ color: 'var(--ink-2)' }}>
-              {fill(h.lead, { journals: fmt(records.length) })}
-            </p>
-            <div className="mt-8 text-left">
-              <HomeSearch />
+      <section>
+        <div className="wrap pt-12 pb-12 md:pt-20 md:pb-16">
+          <div className="grid gap-12 lg:gap-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-center">
+            <div className="min-w-0">
+              <h1 className="home-title text-[40px] md:text-[60px] leading-[1.04]" style={{ color: 'var(--ink)' }}>
+                {h.title}
+              </h1>
+              <p className="mt-5 text-[17px] md:text-[18px] leading-relaxed max-w-[560px]" style={{ color: 'var(--ink-2)' }}>
+                {fill(h.lead, { journals: fmt(records.length) })}
+              </p>
+              <div className="mt-8 max-w-[600px]">
+                <HomeSearch />
+              </div>
+              <nav aria-label={h.browse} className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-2 text-[14px]">
+                <span style={{ color: 'var(--muted)' }}>{h.browse}</span>
+                {QUICK.map(l => <Link key={l.href} href={href(l.href)} className="link">{h.quick[l.key]}</Link>)}
+              </nav>
             </div>
-            <nav aria-label={h.browse} className="mt-4 flex flex-wrap justify-center gap-2">
-              {QUICK.map(l => <Link key={l.href} href={href(l.href)} className="chip h-7 px-3 text-[13px] transition-colors hover:border-[var(--posi-brand)] hover:text-[var(--posi-brand)]">{h.quick[l.key]}</Link>)}
-            </nav>
+            <CatalogueCard locale={locale} m={h.card} />
           </div>
 
-          <dl className="mt-12 max-w-[980px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <dl className="stat-strip mt-14 md:mt-20 grid grid-cols-2 lg:grid-cols-4">
             {stats.map(([k, v, to]) => (
-              <Link key={k} href={href(to)} className="block rounded-[var(--radius-lg)] px-5 py-4 transition-colors hover:bg-[var(--hover)]" style={{ background: 'var(--surface-2)' }}>
-                <dd className="figure text-[22px] md:text-[26px] leading-tight">{v}</dd>
-                <dt className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>{k}</dt>
+              <Link key={k} href={href(to)} className="block group">
+                <dd className="figure text-[28px] md:text-[32px] leading-none transition-colors group-hover:text-[var(--posi-brand)]">{v}</dd>
+                <dt className="mt-2 text-[13px]" style={{ color: 'var(--muted)' }}>{k}</dt>
               </Link>
             ))}
           </dl>
         </div>
       </section>
 
-      <div className="wrap py-12 md:py-16 space-y-14 md:space-y-20">
-        <section aria-labelledby="pillars">
+      <div className="wrap pb-16 space-y-16 md:space-y-24">
+        <section aria-labelledby="pillars" className="pt-12 md:pt-16" style={{ borderTop: '1px solid var(--line)' }}>
           <h2 id="pillars" className="sr-only">{h.pillarsHeading}</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-10 md:gap-12 md:grid-cols-3">
             {PILLARS.map(p => (
-              <div key={p.key} className="panel p-6 flex flex-col">
-                <span aria-hidden className="h-10 w-10 grid place-items-center rounded-[var(--radius)]" style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}>
-                  <p.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 text-[17px] font-semibold" style={{ color: 'var(--ink)' }}>{h.pillars[p.key].title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--ink-2)' }}>{h.pillars[p.key].body}</p>
-                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <Link href={href(p.href)} className="btn btn-primary">{h.pillars[p.key].cta}<ArrowRight className="h-4 w-4" /></Link>
-                  {p.moreHref && <Link href={href(p.moreHref)} className="link text-[13.5px]">{(h.pillars[p.key] as { more?: string }).more}</Link>}
+              <div key={p.key} className="flex flex-col">
+                <h3 className="font-display text-[22px] leading-tight" style={{ color: 'var(--ink)' }}>{h.pillars[p.key].title}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed flex-1" style={{ color: 'var(--ink-2)' }}>{h.pillars[p.key].body}</p>
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px]">
+                  <Link href={href(p.href)} className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-[var(--posi-brand-hover)]" style={{ color: 'var(--posi-brand)' }}>{h.pillars[p.key].cta}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
+                  {p.moreHref && <Link href={href(p.moreHref)} className="transition-colors hover:text-[var(--ink)]" style={{ color: 'var(--muted)' }}>{(h.pillars[p.key] as { more?: string }).more}</Link>}
                 </div>
               </div>
             ))}
@@ -156,7 +275,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           {!RANKING_AVAILABLE && (
             <div className="panel px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <p className="flex-1 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                <span className="font-semibold" style={{ color: 'var(--ink)' }}>{h.rankings.pendingTitle}</span>{locale === 'en' ? ' ' : ''}
+                <span className="font-medium" style={{ color: 'var(--ink)' }}>{h.rankings.pendingTitle}</span>{locale === 'en' ? ' ' : ''}
                 {h.rankings.pendingBody}
               </p>
               <Link href={href('/methodology/')} className="btn shrink-0">{h.rankings.howRankingsWork}</Link>
@@ -191,23 +310,23 @@ export function HomePage({ locale }: { locale: Locale }) {
 
         <IndexGlance locale={locale} records={records} cats={dirCats} publishers={getPublishers().slice(0, 8)} />
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Partners locale={locale} m={h.partners} />
+
+        <div className="grid gap-12 lg:gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <section aria-labelledby="services">
             <SectionHead id="services" title={h.services.title} />
             <div className="grid gap-6 sm:grid-cols-2">
               {SERVICE_GROUPS.map(g => (
                 <div key={g.key}>
-                  <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{h.services[g.key]}</h3>
-                  <ul className="space-y-1">
+                  <h3 className="mb-2 text-[13px] font-medium" style={{ color: 'var(--muted)' }}>{h.services[g.key]}</h3>
+                  <ul>
                     {g.items.map(s => (
                       <li key={s.href}>
-                        <Link href={href(s.href)} className="flex items-center gap-3 -mx-2 px-2 py-2 rounded-[var(--radius)] transition-colors hover:bg-[var(--hover)]">
-                          <span aria-hidden className="h-8 w-8 shrink-0 grid place-items-center rounded-[var(--radius)]" style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}>
-                            <s.icon className="h-[18px] w-[18px]" />
-                          </span>
+                        <Link href={href(s.href)} className="flex items-start gap-3 py-3 transition-colors hover:text-[var(--posi-brand)]" style={{ borderTop: '1px solid var(--line)' }}>
+                          <s.icon aria-hidden className="mt-0.5 h-[18px] w-[18px] shrink-0" style={{ color: 'var(--muted)' }} />
                           <span className="min-w-0">
-                            <span className="block text-[14px] font-medium leading-snug" style={{ color: 'var(--ink)' }}>{h.services.items[s.key].label}</span>
-                            <span className="block text-[12.5px] leading-snug" style={{ color: 'var(--muted)' }}>{h.services.items[s.key].note}</span>
+                            <span className="block text-[15px] font-medium leading-snug">{h.services.items[s.key].label}</span>
+                            <span className="block mt-0.5 text-[13px] leading-snug" style={{ color: 'var(--muted)' }}>{h.services.items[s.key].note}</span>
                           </span>
                         </Link>
                       </li>
@@ -223,7 +342,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             <ul className="panel">
               {news.map((a, i) => (
                 <li key={a.slug} style={i ? { borderTop: '1px solid var(--line-soft)' } : undefined}>
-                  <Link href={href(`/announcements/${a.slug}/`)} className="flex gap-4 px-5 py-3.5 transition-colors hover:bg-[var(--hover)]">
+                  <Link href={href(`/announcements/${a.slug}/`)} className="flex gap-4 px-5 py-4 transition-colors hover:bg-[var(--hover)]">
                     <time dateTime={a.date} className={`shrink-0 ${locale === 'en' ? 'w-[92px]' : 'w-[116px]'} text-[13px] tnum`} style={{ color: 'var(--muted)' }}>{formatDate(locale, a.date)}</time>
                     <span lang={locale === 'en' || (locale === 'zh-Hans' && a.zh) ? undefined : 'en'} className="text-[14px] leading-snug" style={{ color: 'var(--ink)' }}>{locale === 'zh-Hans' && a.zh ? a.zh.title : a.title}</span>
                   </Link>

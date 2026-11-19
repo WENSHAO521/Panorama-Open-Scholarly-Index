@@ -62,11 +62,11 @@ function En() {
             <table className="dtable">
               <thead><tr><th>Layer</th><th>Question</th><th>Published as</th></tr></thead>
               <tbody>
-                <tr><td className="font-medium whitespace-nowrap">PQF</td><td className="text-[13.5px]">Can the journal enter, or remain in, the Core Collection?</td><td className="text-[13.5px]">Score 0–100 and an eligibility status</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">AJR</td><td className="text-[13.5px]">How strong is the journal&rsquo;s lifecycle and publishing-development profile?</td><td className="text-[13.5px]">AJR Score 0–100 and AJR Rating A+ to D</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">PCI, PNCI, PCS</td><td className="text-[13.5px]">What does citation evidence show?</td><td className="text-[13.5px]">Citation indicators</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">Citation Ranking</td><td className="text-[13.5px]">Where does the journal rank within its PSC category?</td><td className="text-[13.5px]">Citation Rank, Citation Percentile, Citation Quartile C-Q1 to C-Q4, from PNCI</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">POSI Zones</td><td className="text-[13.5px]">POSI&rsquo;s selective grouping of the same ranking</td><td className="text-[13.5px]">Zone 1 to Zone 4, from the same percentile</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">PQF</td><td className="text-[14px]">Can the journal enter, or remain in, the Core Collection?</td><td className="text-[14px]">Score 0–100 and an eligibility status</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">AJR</td><td className="text-[14px]">How strong is the journal&rsquo;s lifecycle and publishing-development profile?</td><td className="text-[14px]">AJR Score 0–100 and AJR Rating A+ to D</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">PCI, PNCI, PCS</td><td className="text-[14px]">What does citation evidence show?</td><td className="text-[14px]">Citation indicators</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">Citation Ranking</td><td className="text-[14px]">Where does the journal rank within its PSC category?</td><td className="text-[14px]">Citation Rank, Citation Percentile, Citation Quartile C-Q1 to C-Q4, from PNCI</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">POSI Zones</td><td className="text-[14px]">POSI&rsquo;s selective grouping of the same ranking</td><td className="text-[14px]">Zone 1 to Zone 4, from the same percentile</td></tr>
               </tbody>
             </table>
           </div>
@@ -199,7 +199,7 @@ function En() {
               <thead><tr><th>Percentile</th><th>Zone</th><th>Share of the ranking</th></tr></thead>
               <tbody>
                 {([[1, '≥ 95'], [2, '80 to < 95'], [3, '50 to < 80'], [4, '< 50']] as const).map(([z, p]) => (
-                  <tr key={z}><td className="font-mono text-[13px]">{p}</td><td className="font-medium">Zone {z} · {ZONE_SHARE[z]}</td><td className="text-[13.5px]">{ZONE_METHOD[z]}</td></tr>
+                  <tr key={z}><td className="font-mono text-[13px]">{p}</td><td className="font-medium">Zone {z} · {ZONE_SHARE[z]}</td><td className="text-[14px]">{ZONE_METHOD[z]}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -217,9 +217,9 @@ function En() {
             <table className="dtable">
               <thead><tr><th>Requirement</th><th>Official</th><th>Otherwise</th></tr></thead>
               <tbody>
-                <tr><td>Eligible citable items</td><td className="text-[13.5px]">{t.officialItems} or more, from at least {t.officialPublicationYears} publication years</td><td className="text-[13.5px]">{t.provisionalItems}–{t.officialItems - 1} items or a single year: provisional. Fewer than {t.provisionalItems}: insufficient data (observation period for journals under 12 months)</td></tr>
-                <tr><td>Citation coverage</td><td className="text-[13.5px]">Citation data retrieved for at least {t.minCoverage * 100}% of eligible items</td><td className="text-[13.5px]">Incomplete citation coverage: not ranked</td></tr>
-                <tr><td>PSC category</td><td className="text-[13.5px]">High-confidence or editor-confirmed, not multidisciplinary</td><td className="text-[13.5px]">PNCI shown, not ranked</td></tr>
+                <tr><td>Eligible citable items</td><td className="text-[14px]">{t.officialItems} or more, from at least {t.officialPublicationYears} publication years</td><td className="text-[14px]">{t.provisionalItems}–{t.officialItems - 1} items or a single year: provisional. Fewer than {t.provisionalItems}: insufficient data (observation period for journals under 12 months)</td></tr>
+                <tr><td>Citation coverage</td><td className="text-[14px]">Citation data retrieved for at least {t.minCoverage * 100}% of eligible items</td><td className="text-[14px]">Incomplete citation coverage: not ranked</td></tr>
+                <tr><td>PSC category</td><td className="text-[14px]">High-confidence or editor-confirmed, not multidisciplinary</td><td className="text-[14px]">PNCI shown, not ranked</td></tr>
               </tbody>
             </table>
           </div>
@@ -269,10 +269,10 @@ function En() {
             <table className="dtable">
               <thead><tr><th>Assignment</th><th>Rule</th><th>Ranked</th></tr></thead>
               <tbody>
-                <tr><td className="font-medium whitespace-nowrap">High confidence</td><td className="text-[13.5px]">The leading category holds at least 35% of the journal&rsquo;s topic mass, at least 1.5 times the next category, and the journal has at least 50 works.</td><td>Yes</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">Provisional</td><td className="text-[13.5px]">A category leads, but on fewer than 50 works, or without a clear margin.</td><td>No</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">Multidisciplinary</td><td className="text-[13.5px]">No category and no domain dominates.</td><td>No</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">Not classified</td><td className="text-[13.5px]">No topic data.</td><td>No</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">High confidence</td><td className="text-[14px]">The leading category holds at least 35% of the journal&rsquo;s topic mass, at least 1.5 times the next category, and the journal has at least 50 works.</td><td>Yes</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">Provisional</td><td className="text-[14px]">A category leads, but on fewer than 50 works, or without a clear margin.</td><td>No</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">Multidisciplinary</td><td className="text-[14px]">No category and no domain dominates.</td><td>No</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">Not classified</td><td className="text-[14px]">No topic data.</td><td>No</td></tr>
               </tbody>
             </table>
           </div>
@@ -394,11 +394,11 @@ function Zh() {
             <table className="dtable">
               <thead><tr><th>层面</th><th>问题</th><th>发布形式</th></tr></thead>
               <tbody>
-                <tr><td className="font-medium whitespace-nowrap">PQF</td><td className="text-[13.5px]">期刊能否进入或继续保留在核心合集中？</td><td className="text-[13.5px]">0–100 分的得分及准入资格状态</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">AJR</td><td className="text-[13.5px]">期刊的生命周期与出版发展状况如何？</td><td className="text-[13.5px]">0–100 分的 AJR 得分及 A+ 至 D 的 AJR 评级</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">PCI、PNCI、PCS</td><td className="text-[13.5px]">引文证据显示了什么？</td><td className="text-[13.5px]">引文指标</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">引文排名</td><td className="text-[13.5px]">期刊在其 PSC 类别中排名如何？</td><td className="text-[13.5px]">依据 PNCI 得出的引文排名、引文百分位、引文分区 C-Q1 至 C-Q4</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">POSI Zone</td><td className="text-[13.5px]">POSI 对同一排名的精选分组</td><td className="text-[13.5px]">依据同一百分位划分的 Zone 1 至 Zone 4</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">PQF</td><td className="text-[14px]">期刊能否进入或继续保留在核心合集中？</td><td className="text-[14px]">0–100 分的得分及准入资格状态</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">AJR</td><td className="text-[14px]">期刊的生命周期与出版发展状况如何？</td><td className="text-[14px]">0–100 分的 AJR 得分及 A+ 至 D 的 AJR 评级</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">PCI、PNCI、PCS</td><td className="text-[14px]">引文证据显示了什么？</td><td className="text-[14px]">引文指标</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">引文排名</td><td className="text-[14px]">期刊在其 PSC 类别中排名如何？</td><td className="text-[14px]">依据 PNCI 得出的引文排名、引文百分位、引文分区 C-Q1 至 C-Q4</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">POSI Zone</td><td className="text-[14px]">POSI 对同一排名的精选分组</td><td className="text-[14px]">依据同一百分位划分的 Zone 1 至 Zone 4</td></tr>
               </tbody>
             </table>
           </div>
@@ -514,7 +514,7 @@ function Zh() {
               <thead><tr><th>百分位</th><th>Zone</th><th>在排名中的位置</th></tr></thead>
               <tbody>
                 {([[1, '≥ 95'], [2, '80 至 < 95'], [3, '50 至 < 80'], [4, '< 50']] as const).map(([z, p]) => (
-                  <tr key={z}><td className="font-mono text-[13px]">{p}</td><td className="font-medium">Zone {z} · {ZONE_SHARE_ZH[z]}</td><td className="text-[13.5px]">{ZONE_METHOD_ZH[z]}</td></tr>
+                  <tr key={z}><td className="font-mono text-[13px]">{p}</td><td className="font-medium">Zone {z} · {ZONE_SHARE_ZH[z]}</td><td className="text-[14px]">{ZONE_METHOD_ZH[z]}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -530,9 +530,9 @@ function Zh() {
             <table className="dtable">
               <thead><tr><th>要求</th><th>正式</th><th>否则</th></tr></thead>
               <tbody>
-                <tr><td>合格可引文献</td><td className="text-[13.5px]">{t.officialItems} 篇及以上，来自至少 {t.officialPublicationYears} 个出版年份</td><td className="text-[13.5px]">{t.provisionalItems}–{t.officialItems - 1} 篇或仅有一个年份：暂定。少于 {t.provisionalItems} 篇：数据不足（创刊不满 12 个月的期刊处于观察期）</td></tr>
-                <tr><td>引文覆盖率</td><td className="text-[13.5px]">至少 {t.minCoverage * 100}% 的合格文献已获取引文数据</td><td className="text-[13.5px]">引文覆盖不完整：不参与排名</td></tr>
-                <tr><td>PSC 类别</td><td className="text-[13.5px]">高置信度或经编辑确认，且非多学科</td><td className="text-[13.5px]">显示 PNCI，不参与排名</td></tr>
+                <tr><td>合格可引文献</td><td className="text-[14px]">{t.officialItems} 篇及以上，来自至少 {t.officialPublicationYears} 个出版年份</td><td className="text-[14px]">{t.provisionalItems}–{t.officialItems - 1} 篇或仅有一个年份：暂定。少于 {t.provisionalItems} 篇：数据不足（创刊不满 12 个月的期刊处于观察期）</td></tr>
+                <tr><td>引文覆盖率</td><td className="text-[14px]">至少 {t.minCoverage * 100}% 的合格文献已获取引文数据</td><td className="text-[14px]">引文覆盖不完整：不参与排名</td></tr>
+                <tr><td>PSC 类别</td><td className="text-[14px]">高置信度或经编辑确认，且非多学科</td><td className="text-[14px]">显示 PNCI，不参与排名</td></tr>
               </tbody>
             </table>
           </div>
@@ -576,10 +576,10 @@ function Zh() {
             <table className="dtable">
               <thead><tr><th>归属</th><th>规则</th><th>参与排名</th></tr></thead>
               <tbody>
-                <tr><td className="font-medium whitespace-nowrap">高置信度</td><td className="text-[13.5px]">首位类别至少占期刊主题权重的 35%，且至少为次位类别的 1.5 倍，期刊至少有 50 篇作品。</td><td>是</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">暂定</td><td className="text-[13.5px]">有类别居首，但作品少于 50 篇，或领先幅度不明显。</td><td>否</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">多学科</td><td className="text-[13.5px]">没有任何类别或领域占主导。</td><td>否</td></tr>
-                <tr><td className="font-medium whitespace-nowrap">未分类</td><td className="text-[13.5px]">没有主题数据。</td><td>否</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">高置信度</td><td className="text-[14px]">首位类别至少占期刊主题权重的 35%，且至少为次位类别的 1.5 倍，期刊至少有 50 篇作品。</td><td>是</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">暂定</td><td className="text-[14px]">有类别居首，但作品少于 50 篇，或领先幅度不明显。</td><td>否</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">多学科</td><td className="text-[14px]">没有任何类别或领域占主导。</td><td>否</td></tr>
+                <tr><td className="font-medium whitespace-nowrap">未分类</td><td className="text-[14px]">没有主题数据。</td><td>否</td></tr>
               </tbody>
             </table>
           </div>

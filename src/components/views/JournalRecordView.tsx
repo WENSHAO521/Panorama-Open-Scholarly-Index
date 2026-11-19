@@ -84,7 +84,7 @@ export function JournalRecordView({ code, locale }: { code: string; locale: Loca
         }}
         links={issn && (
           <>
-            <Link href={href(`/journal/?issn=${issn}`)} className="btn btn-primary w-full justify-start"><ChartLine className="h-4 w-4" /> {w.profile}</Link>
+            <Link href={href(`/journal/?issn=${issn}`)} className="btn w-full justify-start"><ChartLine className="h-4 w-4" /> {w.profile}</Link>
             {evaluation.ranking.zone != null && (
               <Link href={href(`/certificate/zone/?issn=${issn}`)} className="btn w-full justify-start" prefetch={false}><Certificate className="h-4 w-4" /> {w.zone}</Link>
             )}

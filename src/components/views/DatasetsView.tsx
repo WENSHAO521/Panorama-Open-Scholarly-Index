@@ -149,7 +149,7 @@ function FileTable({ files, w }: { files: DataFile[]; w: typeof en }) {
               <td className="font-mono text-[13px] whitespace-nowrap">
                 {f.path.includes('{') ? fileName(f.path) : <a className="link" href={f.path}>{fileName(f.path)}</a>}
               </td>
-              <td className="text-[13.5px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
+              <td className="text-[14px]" style={{ color: 'var(--ink-2)' }}>{f.what}</td>
               <td className="text-right font-mono tnum text-[13px]">{f.rows === null ? '' : fmt(f.rows)}</td>
               <td className="text-right font-mono tnum text-[13px]" style={{ color: 'var(--muted)' }}>{f.bytes ? kb(f.bytes) : ''}</td>
               <td className="text-[13px] whitespace-nowrap">
@@ -261,8 +261,8 @@ export function DatasetsView({ locale }: { locale: Locale }) {
                     <td className="whitespace-nowrap align-top">
                       <a href={AUDIT_BASE + a.path} className="link font-medium" target="_blank" rel="noopener">{w.audit[i][0]}</a>
                     </td>
-                    <td className="font-mono text-[12.5px] whitespace-nowrap align-top" style={{ color: 'var(--muted)' }}>{a.date}</td>
-                    <td className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{w.audit[i][1]}</td>
+                    <td className="font-mono text-[13px] whitespace-nowrap align-top" style={{ color: 'var(--muted)' }}>{a.date}</td>
+                    <td className="text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>{w.audit[i][1]}</td>
                   </tr>
                 ))}
               </tbody>
