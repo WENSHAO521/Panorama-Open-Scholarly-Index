@@ -10,7 +10,7 @@ import { fill } from '@/i18n/format'
 
 const en = {
   title: 'Publishers',
-  description: 'Every publisher with journals indexed in POSI, from Crossref and OpenAlex, with journal counts, open-access share and works.',
+  description: 'All publishers with journals indexed in POSI, compiled from Crossref and OpenAlex, with journal counts, open access share and number of works.',
   lead: '{n} publishers across {journals} indexed journals,',
   global: ' aggregated from the publisher name registered for each journal at Crossref and OpenAlex.',
   curated: ' aggregated from the publisher name on each curated record (the global journal directory was not available for this build).',

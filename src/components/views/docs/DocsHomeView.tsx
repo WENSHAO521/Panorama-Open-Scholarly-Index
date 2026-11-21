@@ -9,7 +9,7 @@ import type { Locale } from '@/i18n/config'
 
 const EN_META = {
   title: 'Documentation',
-  description: 'How POSI works: policies, methodology, data sources, record schema and provenance.',
+  description: 'Official documentation of POSI: policies, methodology, data sources, record schema and provenance.',
   alternates: pageAlternates('/docs/'),
 }
 
@@ -50,7 +50,7 @@ export function DocsHomeView({ locale }: { locale: Locale }) {
 
 const ZH_META = {
   title: '文档',
-  description: 'POSI 的运作方式：政策、评价方法、数据来源、记录结构与数据溯源。',
+  description: 'POSI 官方文档：政策、评价方法、数据来源、记录结构与数据溯源。',
 }
 
 function Zh() {
