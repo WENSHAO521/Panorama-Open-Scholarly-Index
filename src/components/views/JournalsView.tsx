@@ -12,7 +12,7 @@ import { fill } from '@/i18n/format'
 
 const en = {
   title: 'Journals',
-  description: 'Every journal indexed in the Panorama Open Scholarly Index, organised by subject category, with open access and DOAJ status and the Core Collection marked.',
+  description: 'All journals indexed in the Panorama Open Scholarly Index, organised by subject category, with open access and DOAJ status and Core Collection membership indicated.',
   lead: '{n} indexed journals, organised by subject category. Search by title, publisher or ISSN, or open a category to browse, filter and download its journals.',
   stats: { indexed: 'Indexed journals', core: 'Core Collection', oa: 'Open access', subjects: 'Subject categories' },
   bySubject: 'Browse by subject',
